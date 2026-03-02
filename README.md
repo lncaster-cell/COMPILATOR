@@ -36,6 +36,18 @@
 - `al_transition_location` (предпочтительный способ задания перехода);
 - fallback-поля перехода: `al_transition_area`, `al_transition_x`, `al_transition_y`, `al_transition_z`, `al_transition_facing`.
 
+### Настройка сна через 2 waypoint (bed docking)
+Новый поток сна работает не по одной точке, а по паре waypoint рядом с кроватью:
+
+1. На route-waypoint сна (с нужным `al_activity`) задайте:
+   - либо `al_bed_tag=<BED_ID>` и создайте waypoint с тегами `<BED_ID>_approach` и `<BED_ID>_pose`;
+   - либо явные локалы `al_bed_approach_wp=<tag>` и `al_bed_pose_wp=<tag>`.
+2. `approach`-точка должна стоять на валидном walkmesh (достижимая `ActionMoveToLocation`).
+3. `pose`-точка может быть на/внутри кровати: до `ActionJumpToLocation` скрипт временно отключает collision у NPC.
+4. При выходе из сна NPC возвращается к `approach`-точке и collision включается обратно.
+
+Если `approach` не найден, система уходит в безопасный fallback (сон «на полу» без docking к кровати).
+
 
 ### Аудит
 - Подробный аудит поведения NPC и рисков модуля см. в `docs/ambient-life-technical.md`, раздел **"7) Полный аудит модуля поведения (AL)"**.
@@ -45,3 +57,4 @@
 - **NPC не активируется** — проверьте `al_activity` на waypoint текущего маршрута, наличие игроков в area и скрытое состояние NPC.
 - **Парные активности не запускаются** — проверьте локальные ссылки `*_ref` (например, пары `al_training_npc1_ref`/`al_training_npc2_ref`, `al_bar_bartender_ref`/`al_bar_barmaid_ref`).
 - **После замены ключевых NPC** обязательно обновляйте `*_ref`-локалы на area (для training/bar пар), иначе система оставит пару в безопасном unbound-состоянии до появления валидной ссылки.
+- **Сон не докуется к кровати** — проверьте, что route-waypoint содержит `al_bed_tag` или `al_bed_approach_wp`, и что `approach`-точка находится на walkmesh; `pose`-точка может быть вне walkmesh, если нужна точная укладка на кровать.

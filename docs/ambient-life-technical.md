@@ -187,6 +187,20 @@ Domain includes
 
 ---
 
+
+### 6.3 Настройка сна через 2 waypoint и walkmesh
+1. На route-waypoint сна (где `al_activity` указывает sleep-loop) задайте одну из схем:
+   - `al_bed_tag=<BED_ID>` + пара waypoint `<BED_ID>_approach` и `<BED_ID>_pose`;
+   - либо явные теги: `al_bed_approach_wp=<tag>`, `al_bed_pose_wp=<tag>`.
+2. Требования к позиционированию:
+   - `approach` должен стоять на проходимом walkmesh (NPC приходит туда через `ActionMoveToLocation`);
+   - `pose` допускается на кровати/вне walkmesh, т.к. укладка выполняется `ActionJumpToLocation` с временным `SetCollision(FALSE)`.
+3. Поведение рантайма:
+   - при успешном docking ставятся локалы `al_sleep_docked=1`, `al_sleep_approach_tag=<tag>`;
+   - при выходе из сна NPC прыгает обратно в `approach`, затем возвращает `SetCollision(TRUE)`;
+   - если `approach` не найден, включается fallback: сон без docking (анимация на месте/«на полу»).
+4. Для отладки включите `al_debug=1` на NPC или area: появятся сообщения `Sleep docking success` / `Sleep fallback to floor`.
+
 ## 7) Полный аудит модуля поведения (AL) — 2026-03-01
 
 Ниже зафиксирован результат ревизии runtime-поведения NPC (`al_npc_onud` + `al_npc_acts_inc` + `al_npc_routes`) и связанного orchestration-слоя area/registry.
