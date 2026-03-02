@@ -5,6 +5,8 @@
 #include "al_debug_inc"
 #include "al_npc_routes"
 
+void AL_PlayCustomAnimation(object oNpc, string sAnimation, int bLooping);
+
 void AL_SleepDebugLog(object oNpc, string sMessage)
 {
     object oArea = GetArea(oNpc);
@@ -44,9 +46,9 @@ object AL_FindWaypointByTagInArea(object oArea, string sTag)
 
 void AL_QueueSleepAnimationLoop(object oNpc)
 {
-    AssignCommand(oNpc, ActionDoCommand(PlayCustomAnimation(oNpc, "laydownB", FALSE, 1.0)));
+    AssignCommand(oNpc, AL_PlayCustomAnimation(oNpc, "laydownB", FALSE));
     AssignCommand(oNpc, ActionWait(0.1));
-    AssignCommand(oNpc, ActionDoCommand(PlayCustomAnimation(oNpc, "proneB", TRUE, 1.0)));
+    AssignCommand(oNpc, AL_PlayCustomAnimation(oNpc, "proneB", TRUE));
 }
 
 int AL_StartSleepAtBed(object oNpc, object oSleepWp)
