@@ -112,15 +112,6 @@ void AL_PlayCustomAnimation(object oNpc, string sAnimation, int bLooping)
     PlayCustomAnimation(oNpc, sAnimation, bLooping, 1.0);
 }
 
-void AL_PlayNumericAnimation(int nAnimation)
-{
-    if (nAnimation <= 0)
-    {
-        return;
-    }
-
-    ActionPlayAnimation(nAnimation, 1.0, 1.0);
-}
 
 // Requirement checks avoid tag searches by relying on prebuilt locals/routes:
 // - Routes for pacing/WWP use locals r<slot>_n / r<slot>_<idx> (see AL_NPC_Routes_Inc).
@@ -165,8 +156,6 @@ void AL_ApplyActivityForSlot(object oNpc, int nSlot)
     string sCustom = bLocateWrapper
         ? AL_GetLocateWrapperCustomAnims(nActivity)
         : AL_GetActivityCustomAnims(nActivity);
-    string sNumeric = AL_GetActivityNumericAnims(nActivity);
-
     if (sCustom != "")
     {
         string sAnim = AL_SelectRandomToken(sCustom);
@@ -175,10 +164,4 @@ void AL_ApplyActivityForSlot(object oNpc, int nSlot)
         return;
     }
 
-    if (sNumeric != "")
-    {
-        string sAnimId = AL_SelectRandomToken(sNumeric);
-        int nAnimId = StringToInt(sAnimId);
-        AL_PlayNumericAnimation(nAnimId);
-    }
 }
