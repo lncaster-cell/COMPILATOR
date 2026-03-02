@@ -2,22 +2,10 @@
 // Tries to open a nearby closed door when movement is blocked.
 
 #include "al_constants_inc"
-#include "al_debug_inc"
 
 int AL_GetSecondsOfDay()
 {
     return GetTimeSecond() + GetTimeMinute() * 60 + GetTimeHour() * 3600;
-}
-
-int AL_IsDebugEnabled(object oNpc)
-{
-    object oArea = GetArea(oNpc);
-    if (!GetIsObjectValid(oArea))
-    {
-        return GetLocalInt(oNpc, "al_debug") == 1;
-    }
-
-    return GetLocalInt(oNpc, "al_debug") == 1 || GetLocalInt(oArea, "al_debug") == 1;
 }
 
 void AL_TryOpenNearestDoor(object oNpc)
@@ -57,11 +45,6 @@ void AL_TryOpenNearestDoor(object oNpc)
     AssignCommand(oNpc, ActionOpenDoor(oDoor));
     AssignCommand(oNpc, ActionWait(0.2));
     AssignCommand(oNpc, ActionDoCommand(SignalEvent(oNpc, EventUserDefined(AL_EVT_RESYNC))));
-
-    if (AL_IsDebugEnabled(oNpc))
-    {
-        AL_SendDebugMessageToAreaPCs(GetArea(oNpc), "AL: OnBlocked opened door, resync queued.");
-    }
 }
 
 void main()
