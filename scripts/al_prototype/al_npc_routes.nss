@@ -23,16 +23,7 @@ void AL_RouteDebugLog(object oNpc, string sMessage)
         return;
     }
 
-    object oPc = GetFirstPC();
-    while (GetIsObjectValid(oPc))
-    {
-        if (GetArea(oPc) == oArea)
-        {
-            SendMessageToPC(oPc, sMessage);
-        }
-
-        oPc = GetNextPC();
-    }
+    AL_SendDebugMessageToAreaPCs(oArea, sMessage);
 }
 
 string AL_GetRoutePrefix(int nSlot)
