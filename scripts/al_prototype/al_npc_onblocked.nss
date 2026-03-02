@@ -22,7 +22,7 @@ int AL_IsDebugEnabled(object oNpc)
 
 void AL_TryOpenNearestDoor(object oNpc)
 {
-    int nNow = AL_GetAmbientLifeDaySeconds();
+    int nNow = AL_GetSecondsOfDay();
     int nLastBlockedTs = GetLocalInt(oNpc, "al_last_blocked_ts");
     int nElapsed = nNow - nLastBlockedTs;
     if (nElapsed < 0)
