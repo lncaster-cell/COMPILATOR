@@ -248,9 +248,28 @@ void main()
     AL_InitBarPair(oNpc);
 
     object oArea = GetArea(oNpc);
-    if (AL_IsParticipantNPC(oNpc))
+    int bParticipant = AL_IsParticipantNPC(oNpc);
+
+    if (bParticipant == TRUE)
     {
         AL_RegisterNPC(oNpc);
+
+        if (GetIsObjectValid(oArea))
+        {
+            int iSlotCount = GetLocalInt(oArea, "al_player_count");
+            if (iSlotCount > 0)
+            {
+                if (GetScriptHidden(oNpc))
+                {
+                    SetScriptHidden(oNpc, FALSE, FALSE);
+                }
+                SignalEvent(oNpc, EventUserDefined(AL_EVT_RESYNC));
+            }
+            else
+            {
+                SetScriptHidden(oNpc, TRUE, TRUE);
+            }
+        }
     }
     else if (GetIsObjectValid(oArea) && GetLocalInt(oArea, "al_debug") == 1)
     {
@@ -268,23 +287,6 @@ void main()
                 SendMessageToPC(oPc, "AL: OnSpawn ignored non-participant NPC '" + sTag + "'.");
             }
             oPc = GetNextPC(FALSE);
-        }
-    }
-
-    if (GetIsObjectValid(oArea))
-    {
-        int iSlotCount = GetLocalInt(oArea, "al_player_count");
-        if (iSlotCount > 0)
-        {
-            if (GetScriptHidden(oNpc))
-            {
-                SetScriptHidden(oNpc, FALSE, FALSE);
-            }
-            SignalEvent(oNpc, EventUserDefined(AL_EVT_RESYNC));
-        }
-        else
-        {
-            SetScriptHidden(oNpc, TRUE, TRUE);
         }
     }
 }
