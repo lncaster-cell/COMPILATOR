@@ -8,7 +8,7 @@
 
 #include "al_constants_inc"
 #include "al_npc_reg_inc"
-#include "al_area_tick_inc"
+#include "al_route_cache_inc"
 
 void AL_RouteDebugLog(object oNpc, string sMessage)
 {
@@ -23,16 +23,7 @@ void AL_RouteDebugLog(object oNpc, string sMessage)
         return;
     }
 
-    object oPc = GetFirstPC();
-    while (GetIsObjectValid(oPc))
-    {
-        if (GetArea(oPc) == oArea)
-        {
-            SendMessageToPC(oPc, sMessage);
-        }
-
-        oPc = GetNextPC();
-    }
+    AL_SendDebugMessageToAreaPCs(oArea, sMessage);
 }
 
 string AL_GetRoutePrefix(int nSlot)

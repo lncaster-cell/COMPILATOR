@@ -1,6 +1,5 @@
 // Area OnEnter: attach to the Area OnEnter event in the toolset.
 
-#include "al_constants_inc"
 #include "al_area_tick_inc"
 #include "al_npc_reg_inc"
 #include "al_player_count_inc"

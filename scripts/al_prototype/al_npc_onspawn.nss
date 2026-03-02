@@ -1,8 +1,6 @@
 // NPC OnSpawn: attach to NPC OnSpawn in the toolset.
 
-#include "al_constants_inc"
 #include "al_npc_acts_inc"
-#include "al_npc_reg_inc"
 
 void AL_InitTrainingPartner(object oNpc)
 {
@@ -109,15 +107,7 @@ void AL_InitTrainingPartner(object oNpc)
 
         if (!bHasRestoredPair && GetLocalInt(oArea, "al_debug") == 1)
         {
-            object oPc = GetFirstPC(FALSE);
-            while (GetIsObjectValid(oPc))
-            {
-                if (GetArea(oPc) == oArea)
-                {
-                    SendMessageToPC(oPc, "AL: training partner cache reset; pair restore failed.");
-                }
-                oPc = GetNextPC(FALSE);
-            }
+            AL_SendDebugMessageToAreaPCs(oArea, "AL: training partner cache reset; pair restore failed.");
         }
     }
 
@@ -158,15 +148,7 @@ void AL_InitBarPair(object oNpc)
 
             if (GetLocalInt(oArea, "al_debug") == 1)
             {
-                object oPc = GetFirstPC(FALSE);
-                while (GetIsObjectValid(oPc))
-                {
-                    if (GetArea(oPc) == oArea)
-                    {
-                        SendMessageToPC(oPc, "AL: asymmetric bar pair repaired for " + GetName(oNpc) + ".");
-                    }
-                    oPc = GetNextPC(FALSE);
-                }
+                AL_SendDebugMessageToAreaPCs(oArea, "AL: asymmetric bar pair repaired for " + GetName(oNpc) + ".");
             }
         }
         else
@@ -175,15 +157,7 @@ void AL_InitBarPair(object oNpc)
 
             if (GetLocalInt(oArea, "al_debug") == 1)
             {
-                object oPc = GetFirstPC(FALSE);
-                while (GetIsObjectValid(oPc))
-                {
-                    if (GetArea(oPc) == oArea)
-                    {
-                        SendMessageToPC(oPc, "AL: stale bar pair reset for " + GetName(oNpc) + ".");
-                    }
-                    oPc = GetNextPC(FALSE);
-                }
+                AL_SendDebugMessageToAreaPCs(oArea, "AL: stale bar pair reset for " + GetName(oNpc) + ".");
             }
         }
     }
@@ -298,14 +272,6 @@ void main()
             sTag = "<no-tag>";
         }
 
-        object oPc = GetFirstPC(FALSE);
-        while (GetIsObjectValid(oPc))
-        {
-            if (GetArea(oPc) == oArea)
-            {
-                SendMessageToPC(oPc, "AL: OnSpawn ignored non-participant NPC '" + sTag + "'.");
-            }
-            oPc = GetNextPC(FALSE);
-        }
+        AL_SendDebugMessageToAreaPCs(oArea, "AL: OnSpawn ignored non-participant NPC '" + sTag + "'.");
     }
 }

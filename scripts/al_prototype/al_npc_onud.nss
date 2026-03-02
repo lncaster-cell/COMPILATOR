@@ -1,6 +1,5 @@
 // NPC OnUserDefined: attach to NPC OnUserDefined in the toolset.
 
-#include "al_constants_inc"
 #include "al_npc_acts_inc"
 #include "al_debug_inc"
 
