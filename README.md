@@ -29,6 +29,62 @@
 - на waypoint: `al_activity` — активность в конкретной точке;
 - `al_debug` (опционально, для отладки).
 
+### Полный список активностей (`al_activity`)
+Ниже перечислены все активности, которые поддерживаются в `Ambient Life`.
+
+#### NPC-активности
+- `0` — `AL_ACT_NPC_HIDDEN`
+- `1` — `AL_ACT_NPC_ACT_ONE`
+- `2` — `AL_ACT_NPC_ACT_TWO`
+- `3` — `AL_ACT_NPC_DINNER`
+- `4` — `AL_ACT_NPC_MIDNIGHT_BED`
+- `5` — `AL_ACT_NPC_SLEEP_BED`
+- `6` — `AL_ACT_NPC_WAKE`
+- `7` — `AL_ACT_NPC_AGREE`
+- `8` — `AL_ACT_NPC_ANGRY`
+- `9` — `AL_ACT_NPC_SAD`
+- `10` — `AL_ACT_NPC_COOK`
+- `11` — `AL_ACT_NPC_DANCE_FEMALE`
+- `12` — `AL_ACT_NPC_DANCE_MALE`
+- `13` — `AL_ACT_NPC_DRUM`
+- `14` — `AL_ACT_NPC_FLUTE`
+- `15` — `AL_ACT_NPC_FORGE`
+- `16` — `AL_ACT_NPC_GUITAR`
+- `17` — `AL_ACT_NPC_WOODSMAN`
+- `18` — `AL_ACT_NPC_MEDITATE`
+- `19` — `AL_ACT_NPC_POST`
+- `20` — `AL_ACT_NPC_READ`
+- `21` — `AL_ACT_NPC_SIT`
+- `22` — `AL_ACT_NPC_SIT_DINNER`
+- `23` — `AL_ACT_NPC_STAND_CHAT`
+- `24` — `AL_ACT_NPC_TRAINING_ONE`
+- `25` — `AL_ACT_NPC_TRAINING_TWO`
+- `26` — `AL_ACT_NPC_TRAINER_PACE`
+- `27` — `AL_ACT_NPC_WWP`
+- `28` — `AL_ACT_NPC_CHEER`
+- `29` — `AL_ACT_NPC_COOK_MULTI`
+- `30` — `AL_ACT_NPC_FORGE_MULTI`
+- `31` — `AL_ACT_NPC_MIDNIGHT_90`
+- `32` — `AL_ACT_NPC_SLEEP_90`
+- `33` — `AL_ACT_NPC_THIEF`
+- `36` — `AL_ACT_NPC_THIEF2`
+- `37` — `AL_ACT_NPC_ASSASSIN`
+- `38` — `AL_ACT_NPC_MERCHANT_MULTI`
+- `39` — `AL_ACT_NPC_KNEEL_TALK`
+- `41` — `AL_ACT_NPC_BARMAID`
+- `42` — `AL_ACT_NPC_BARTENDER`
+- `43` — `AL_ACT_NPC_GUARD`
+
+#### Wrapper-активности `locate` (диапазон `91..98`)
+- `91` — `AL_ACT_LOCATE_LOOK`
+- `92` — `AL_ACT_LOCATE_IDLE`
+- `93` — `AL_ACT_LOCATE_SIT`
+- `94` — `AL_ACT_LOCATE_KNEEL`
+- `95` — `AL_ACT_LOCATE_TALK`
+- `96` — `AL_ACT_LOCATE_CRAFT`
+- `97` — `AL_ACT_LOCATE_MEDITATE`
+- `98` — `AL_ACT_LOCATE_STEALTH`
+
 ### Базовые требования к waypoint
 Для корректной навигации и переходов у waypoint должны быть настроены:
 - теги маршрутов (используемые маршрутной логикой AL);
