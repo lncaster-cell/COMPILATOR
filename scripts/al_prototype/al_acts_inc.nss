@@ -4,11 +4,8 @@
 // any runtime tag searches.
 //
 // Animation source policy:
-// - AL_GetActivityCustomAnims / AL_GetLocateWrapperCustomAnims are the primary
-//   source for activities listed there.
-// - AL_GetActivityNumericAnims is only for activities that do not have custom
-//   mappings.
-// - Do not duplicate the same activity in both custom and numeric tables.
+// - AL_GetActivityCustomAnims / AL_GetLocateWrapperCustomAnims are the only
+//   runtime animation sources for activities listed there.
 
 const int AL_ACT_NPC_HIDDEN = 0;
 const int AL_ACT_NPC_ACT_ONE = 1;
@@ -134,15 +131,6 @@ string AL_GetActivityCustomAnims(int nActivity)
         case AL_ACT_NPC_BARMAID: return "gettable, lookright, openlock, yawn";
         case AL_ACT_NPC_BARTENDER: return "gettable, lookright, openlock, yawn";
         case AL_ACT_NPC_GUARD: return "bored, lookleft, lookright, sigh";
-    }
-
-    return "";
-}
-
-string AL_GetActivityNumericAnims(int nActivity)
-{
-    switch (nActivity)
-    {
     }
 
     return "";
