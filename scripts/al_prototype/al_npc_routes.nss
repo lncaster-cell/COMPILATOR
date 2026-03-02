@@ -8,8 +8,7 @@
 
 #include "al_constants_inc"
 #include "al_npc_reg_inc"
-#include "al_area_tick_inc"
-#include "al_debug_inc"
+#include "al_route_cache_inc"
 
 void AL_RouteDebugLog(object oNpc, string sMessage)
 {
