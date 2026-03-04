@@ -2,6 +2,7 @@
 
 #include "al_acts_inc"
 #include "al_constants_inc"
+#include "al_debug_inc"
 #include "al_npc_routes"
 
 void AL_PlayCustomAnimation(object oNpc, string sAnimation, int bLooping);
@@ -145,6 +146,12 @@ void AL_StopSleepAtBed(object oNpc)
 // - al_bed_pose_wp
 object AL_FindSleepWaypointForSlot(object oNpc, int nSlot)
 {
+    int nCount = AL_GetRouteCount(oNpc, nSlot);
+    if (nCount <= 0)
+    {
+        return OBJECT_INVALID;
+    }
+
     object oArea = GetArea(oNpc);
     if (!GetIsObjectValid(oArea))
     {
@@ -158,8 +165,14 @@ object AL_FindSleepWaypointForSlot(object oNpc, int nSlot)
     }
 
     int nIndex = GetLocalInt(oNpc, "r_idx");
-    if (nIndex < 0)
+    if (nIndex < 0 || nIndex >= nCount)
     {
+        if (GetLocalInt(oArea, "al_debug") == 1)
+        {
+            AL_SendDebugMessageToAreaPCs(oArea, "AL: corrected invalid r_idx " + IntToString(nIndex)
+                + " to 0 for sleep waypoint lookup.");
+        }
+
         nIndex = 0;
     }
 
