@@ -36,6 +36,9 @@ void AL_QueueSleepAnimationLoop(object oNpc)
 
 int AL_StartSleepAtBed(object oNpc, object oSleepWp)
 {
+    // Contract: this helper only performs bed docking + sleep loop when docking
+    // is possible. Fallback sleep animation is owned by the caller
+    // (AL_ApplyActivityForSlot in al_npc_onud.nss).
     if (!GetIsObjectValid(oNpc))
     {
         return FALSE;
@@ -44,7 +47,6 @@ int AL_StartSleepAtBed(object oNpc, object oSleepWp)
     object oArea = GetArea(oNpc);
     if (!GetIsObjectValid(oArea) || !GetIsObjectValid(oSleepWp))
     {
-        AL_QueueSleepAnimationLoop(oNpc);
         DeleteLocalInt(oNpc, "al_sleep_docked");
         DeleteLocalString(oNpc, "al_sleep_approach_tag");
         return FALSE;
@@ -74,7 +76,6 @@ int AL_StartSleepAtBed(object oNpc, object oSleepWp)
 
     if (!GetIsObjectValid(oApproachWp))
     {
-        AL_QueueSleepAnimationLoop(oNpc);
         DeleteLocalInt(oNpc, "al_sleep_docked");
         DeleteLocalString(oNpc, "al_sleep_approach_tag");
         return FALSE;

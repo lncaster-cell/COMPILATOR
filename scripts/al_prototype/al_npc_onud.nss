@@ -199,6 +199,9 @@ void main()
         if (bSleepActivity)
         {
             object oSleepWp = AL_FindSleepWaypointForSlot(oNpc, nSlot);
+            // Source of truth for sleep animation fallback:
+            // AL_StartSleepAtBed only docks + starts sleep when bed config is valid.
+            // If docking fails, we run a single fallback via AL_ApplyActivityForSlot here.
             if (!AL_StartSleepAtBed(oNpc, oSleepWp))
             {
                 AL_ApplyActivityForSlot(oNpc, nSlot);
