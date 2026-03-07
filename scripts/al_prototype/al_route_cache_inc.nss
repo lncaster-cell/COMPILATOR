@@ -9,6 +9,25 @@
 
 const int AL_AREA_ROUTE_INDEX_MAX = 1023;
 
+int AL_HasRouteIndex(object oWp)
+{
+    // Backward-compat: legacy content may still set al_route_index_set.
+    // New contract relies on al_route_index only.
+    int nIndex = GetLocalInt(oWp, "al_route_index");
+    return GetLocalInt(oWp, "al_route_index_set") || nIndex != 0;
+}
+
+int AL_HasValidRouteIndex(object oWp)
+{
+    if (!AL_HasRouteIndex(oWp))
+    {
+        return FALSE;
+    }
+
+    int nIndex = GetLocalInt(oWp, "al_route_index");
+    return nIndex >= 0 && nIndex <= AL_AREA_ROUTE_INDEX_MAX;
+}
+
 void AL_AreaDebugLog(object oArea, int nLevel, string sMessage)
 {
     AL_DebugLog(oArea, OBJECT_INVALID, nLevel, sMessage);
@@ -114,7 +133,7 @@ void AL_CacheAreaRoutes(object oArea)
                 SetLocalObject(oArea, sTmpPrefix + IntToString(nTmpCount), oObj);
                 SetLocalInt(oArea, sTmpPrefix + "n", nTmpCount + 1);
 
-                if (GetLocalInt(oObj, "al_route_index_set"))
+                if (AL_HasValidRouteIndex(oObj))
                 {
                     SetLocalInt(oArea, "al_route_" + sTag + "_has_index", TRUE);
                 }
@@ -150,12 +169,12 @@ void AL_CacheAreaRoutes(object oArea)
                     continue;
                 }
 
-                if (bRequiresIndex && !GetLocalInt(oWp, "al_route_index_set"))
+                if (bRequiresIndex && !AL_HasValidRouteIndex(oWp))
                 {
                     string sMissingIndexLoggedKey = sAreaPrefix + "missing_index_logged";
                     if (!GetLocalInt(oArea, sMissingIndexLoggedKey))
                     {
-                        AL_AreaDebugLog(oArea, AL_DEBUG_LEVEL_L1, "AL: waypoint " + sTag + " missing al_route_index; skipped.");
+                        AL_AreaDebugLog(oArea, AL_DEBUG_LEVEL_L1, "AL: waypoint " + sTag + " has missing/invalid al_route_index; skipped.");
                         SetLocalInt(oArea, sMissingIndexLoggedKey, TRUE);
                     }
                     continue;
