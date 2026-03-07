@@ -1,6 +1,7 @@
 // Area OnEnter: attach to the Area OnEnter event in the toolset.
 
 #include "al_area_tick_inc"
+#include "al_area_mode_contract_inc"
 #include "al_npc_reg_inc"
 #include "al_player_count_inc"
 
@@ -67,9 +68,14 @@ void main()
 
     int iToken = GetLocalInt(oArea, "al_tick_token") + 1;
     SetLocalInt(oArea, "al_tick_token", iToken);
+    SetLocalInt(oArea, AL_AREA_MODE_LOCAL_KEY, AL_AREA_MODE_HOT);
 
     SetLocalInt(oArea, "al_slot", AL_ComputeTimeSlot());
     SetLocalInt(oArea, "al_tick_warm_left", AL_TICK_WARM_REPEATS);
+
+    // Soft one-hop neighborhood activation (no scheduler cascade):
+    // direct neighbors may be lifted up to WARM only.
+    AL_SoftActivateAdjacentAreas(oArea);
 
     AL_CacheTrainingPartners(oArea);
     AL_SyncAreaNPCRegistry(oArea);
