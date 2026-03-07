@@ -244,8 +244,9 @@ void AL_CacheAreaRoutes(object oArea)
 
             if (bRequiresIndex)
             {
-                // Indexed mode: build dense traversal in al_route_index order,
-                // while keeping sparse source indices in idx_*.
+                // Indexed routes must expose idx_* in ascending al_route_index order.
+                // Keep sparse indexes (for example, 0/10/20) and build a dense map
+                // by scanning set markers in index order.
                 int iIndex = 0;
                 while (iIndex <= AL_AREA_ROUTE_INDEX_MAX)
                 {
@@ -255,13 +256,12 @@ void AL_CacheAreaRoutes(object oArea)
                         SetLocalInt(oArea, sAreaPrefix + "idx_" + IntToString(nDenseCount), iIndex);
                         nDenseCount++;
                     }
-
                     iIndex++;
                 }
             }
             else
             {
-                // Legacy fallback: preserve waypoint discovery order.
+                // Legacy fallback: keep discovery order for non-indexed routes.
                 int iSeen = 0;
                 while (iSeen < nSeenCount)
                 {
