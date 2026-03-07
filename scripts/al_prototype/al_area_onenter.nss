@@ -144,19 +144,20 @@ void main()
 
     int iToken = GetLocalInt(oArea, "al_tick_token") + 1;
     SetLocalInt(oArea, "al_tick_token", iToken);
-    int iWakeEpoch = GetLocalInt(oArea, "al_wake_epoch") + 1;
-    SetLocalInt(oArea, "al_wake_epoch", iWakeEpoch);
-    AL_LogWakeTransition(oArea, iFromMode, iTargetMode, iWakeEpoch);
+    SetLocalInt(oArea, AL_AREA_MODE_LOCAL_KEY, AL_AREA_MODE_HOT);
 
     SetLocalInt(oArea, AL_AREA_MODE_LOCAL_KEY, AL_AREA_MODE_HOT);
     SetLocalInt(oArea, "al_slot", AL_ComputeTimeSlot());
     SetLocalInt(oArea, "al_tick_warm_left", AL_TICK_WARM_REPEATS);
 
-    if (iFromMode == AL_AREA_MODE_COLD)
-    {
-        AL_RunColdWakeFastPath(oArea, iToken);
-        return;
-    }
+    // Soft one-hop neighborhood activation (no scheduler cascade):
+    // direct neighbors may be lifted up to WARM only.
+    AL_SoftActivateAdjacentAreas(oArea);
 
-    AL_RunDefaultWakePath(oArea, iToken);
+    AL_CacheTrainingPartners(oArea);
+    AL_SyncAreaNPCRegistry(oArea);
+    DeleteLocalInt(oArea, "al_routes_cached");
+    AL_CacheAreaRoutes(oArea);
+    AL_UnhideAndResyncRegisteredNPCs(oArea);
+    AL_ScheduleNextAreaTick(oArea, iToken);
 }

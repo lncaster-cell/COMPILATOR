@@ -2,6 +2,7 @@
 // Registry synchronization runs only at the area level (see AreaTick).
 
 #include "al_constants_inc"
+#include "al_area_constants_inc"
 #include "al_debug_inc"
 #include "al_area_mode_contract_inc"
 
@@ -475,6 +476,7 @@ void AL_HandleAreaBecameEmpty(object oArea)
 {
     SetLocalInt(oArea, AL_AREA_MODE_LOCAL_KEY, AL_AREA_MODE_COLD);
     SetLocalInt(oArea, "al_tick_token", GetLocalInt(oArea, "al_tick_token") + 1);
+    SetLocalInt(oArea, AL_AREA_MODE_LOCAL_KEY, AL_AREA_MODE_COLD);
     DeleteLocalInt(oArea, "al_tick_scheduled_token");
     DeleteLocalInt(oArea, "al_tick_warm_left");
     DeleteLocalInt(oArea, "al_routes_cached");
