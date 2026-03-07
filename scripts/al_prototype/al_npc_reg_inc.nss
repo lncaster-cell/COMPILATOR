@@ -98,7 +98,18 @@ int AL_IsParticipantNPC(object oNpc)
         return TRUE;
     }
 
-    return GetLocalString(oNpc, "alwp0") != "" || GetLocalString(oNpc, "alwp5") != "";
+    int iSlot = 0;
+    while (iSlot <= 5)
+    {
+        if (GetLocalString(oNpc, "alwp" + IntToString(iSlot)) != "")
+        {
+            return TRUE;
+        }
+
+        iSlot++;
+    }
+
+    return FALSE;
 }
 
 void AL_RegisterNPC(object oNpc)
@@ -118,7 +129,7 @@ void AL_RegisterNPC(object oNpc)
 
     if (!AL_IsParticipantNPC(oNpc))
     {
-        AL_LogRegistrationSkip(oNpc, oArea, "missing AL marker (set al_enabled=1 or route locals alwp0/alwp5)");
+        AL_LogRegistrationSkip(oNpc, oArea, "missing AL marker (set al_enabled=1 or route locals alwp0..alwp5)");
         return;
     }
 
