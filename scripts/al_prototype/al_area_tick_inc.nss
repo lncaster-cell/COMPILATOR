@@ -1,4 +1,5 @@
 #include "al_area_constants_inc"
+#include "al_area_mode_contract_inc"
 #include "al_npc_reg_inc"
 #include "al_route_cache_inc"
 #include "al_area_mode_contract_inc"
