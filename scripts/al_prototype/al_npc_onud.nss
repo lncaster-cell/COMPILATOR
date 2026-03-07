@@ -147,7 +147,7 @@ void AL_LogPairFallbackOnResync(object oNpc, int nEvent, int nActivity)
     }
 
     object oArea = GetArea(oNpc);
-    if (!GetIsObjectValid(oArea) || GetLocalInt(oArea, "al_debug") != 1)
+    if (!GetIsObjectValid(oArea) || !AL_IsDebugLevelEnabled(oArea, OBJECT_INVALID, AL_DEBUG_LEVEL_L1))
     {
         return;
     }
@@ -169,7 +169,7 @@ void AL_LogPairFallbackOnResync(object oNpc, int nEvent, int nActivity)
     if ((bNeedsTrainingPartner && !bTrainingPartnerValid)
         || (bNeedsBarPair && !bBarPairValid))
     {
-        AL_SendDebugMessageToAreaPCs(oArea,
+        AL_DebugLogL1(oArea, oNpc,
             "AL: resync fallback to ACT_ONE for " + GetName(oNpc)
             + " (invalid training/bar pair after wake)."
         );
@@ -194,11 +194,13 @@ void main()
         int nRouteActive = GetLocalInt(oNpc, "r_active");
         if (nRouteActive == FALSE || AL_GetRouteCount(oNpc, nSlot) <= 0)
         {
+            AL_DebugLogL2(GetArea(oNpc), oNpc, "AL: repeat ignored (inactive route). slot=" + IntToString(nSlot) + ".");
             return;
         }
 
         if (GetLocalInt(oNpc, "al_last_slot") != nSlot)
         {
+            AL_DebugLogL2(GetArea(oNpc), oNpc, "AL: repeat ignored (stale slot). slot=" + IntToString(nSlot) + ".");
             return;
         }
     }
@@ -209,6 +211,7 @@ void main()
 
     if (nEvent == AL_EVT_RESYNC)
     {
+        AL_DebugLogL1(GetArea(oNpc), oNpc, "AL: RESYNC started for " + GetName(oNpc) + ".");
         // Wake/resync contract: pair subsystem must be validated before
         // evaluating route/activity requirements for this slot.
         AL_InitTrainingPartner(oNpc);
@@ -271,6 +274,7 @@ void main()
         {
             if (!bRepeatRequeueWarmCooldown)
             {
+                AL_DebugLogL2(GetArea(oNpc), oNpc, "AL: repeat requeue in warm area.");
                 int nRepeatDelaySeconds = 5 + Random(8);
                 float fRepeatDelay = IntToFloat(nRepeatDelaySeconds);
 
@@ -284,6 +288,10 @@ void main()
                 }
 
                 AL_MarkRepeatRequeueScheduled(oNpc, nWarmDelay);
+            }
+            else
+            {
+                AL_DebugLogL2(GetArea(oNpc), oNpc, "AL: repeat requeue suppressed by cooldown.");
             }
         }
         else

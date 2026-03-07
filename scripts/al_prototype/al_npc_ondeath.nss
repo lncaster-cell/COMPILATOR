@@ -41,18 +41,7 @@ void main()
         {
             SetLocalInt(oArea, "al_training_partner_cached", FALSE);
 
-            if (GetLocalInt(oArea, "al_debug") == 1)
-            {
-                object oPc = GetFirstPC(FALSE);
-                while (GetIsObjectValid(oPc))
-                {
-                    if (GetArea(oPc) == oArea)
-                    {
-                        SendMessageToPC(oPc, "AL: training partner cache reset on death of " + GetName(oNpc) + ".");
-                    }
-                    oPc = GetNextPC(FALSE);
-                }
-            }
+            AL_DebugLogL1(oArea, oNpc, "AL: training partner cache reset on death of " + GetName(oNpc) + ".");
         }
     }
 

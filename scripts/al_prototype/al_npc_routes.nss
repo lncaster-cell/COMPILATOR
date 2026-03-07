@@ -10,20 +10,10 @@
 #include "al_npc_reg_inc"
 #include "al_route_cache_inc"
 
-void AL_RouteDebugLog(object oNpc, string sMessage)
+void AL_RouteDebugLog(object oNpc, int nLevel, string sMessage)
 {
     object oArea = GetArea(oNpc);
-    if (!GetIsObjectValid(oArea))
-    {
-        return;
-    }
-
-    if (GetLocalInt(oNpc, "al_debug") != 1 && GetLocalInt(oArea, "al_debug") != 1)
-    {
-        return;
-    }
-
-    AL_SendDebugMessageToAreaPCs(oArea, sMessage);
+    AL_DebugLog(oArea, oNpc, nLevel, sMessage);
 }
 
 string AL_GetRoutePrefix(int nSlot)
@@ -124,11 +114,8 @@ void AL_OnRouteStep(object oNpc, int nIdx, location lPoint)
 
     SetLocalInt(oNpc, "al_last_route_recover_tick", nTickToken);
 
-    if (GetLocalInt(oNpc, "al_debug") == 1 || GetLocalInt(oNpcArea, "al_debug") == 1)
-    {
-        AL_RouteDebugLog(oNpc, "AL: route step failed, idx=" + IntToString(nIdx)
-            + ", dist=" + FloatToString(fDist) + ", resync.");
-    }
+    AL_RouteDebugLog(oNpc, AL_DEBUG_LEVEL_L1, "AL: route step failed, idx=" + IntToString(nIdx)
+        + ", dist=" + FloatToString(fDist) + ", resync.");
 
     AssignCommand(oNpc, ClearAllActions());
     SignalEvent(oNpc, EventUserDefined(AL_EVT_RESYNC));
@@ -195,7 +182,7 @@ int AL_CacheRouteFromTag(object oNpc, int nSlot, string sTag)
     if (iAreaCount > AL_ROUTE_MAX_POINTS)
     {
         iAreaCount = AL_ROUTE_MAX_POINTS;
-        AL_RouteDebugLog(oNpc, "AL: route tag " + sTag + " truncated to "
+        AL_RouteDebugLog(oNpc, AL_DEBUG_LEVEL_L2, "AL: route tag " + sTag + " truncated to "
             + IntToString(AL_ROUTE_MAX_POINTS) + " points (was "
             + IntToString(iAreaCountOriginal) + ").");
     }
@@ -238,7 +225,7 @@ int AL_CacheRouteFromTag(object oNpc, int nSlot, string sTag)
         }
         else if (GetIsObjectValid(oPointArea) && oPointArea != oArea)
         {
-            AL_RouteDebugLog(oNpc, "AL: route tag " + sTag + " skipped point "
+            AL_RouteDebugLog(oNpc, AL_DEBUG_LEVEL_L2, "AL: route tag " + sTag + " skipped point "
                 + IntToString(iSourceIndex) + " due to area mismatch.");
         }
 
@@ -336,12 +323,16 @@ void AL_QueueRoute(object oNpc, int nSlot, int bClearActions)
             continue;
         }
         bMoveQueued = TRUE;
+        AL_RouteDebugLog(oNpc, AL_DEBUG_LEVEL_L2, "AL: route queue slot=" + IntToString(nSlot)
+            + ", idx=" + IntToString(i) + ", move.");
         AssignCommand(oNpc, ActionMoveToLocation(lPoint));
         AssignCommand(oNpc, ActionDoCommand(AL_OnRouteStep(oNpc, i, lPoint)));
         location lJump = GetLocalLocation(oNpc, sIndex + "_jump");
         object oJumpArea = GetAreaFromLocation(lJump);
         if (GetIsObjectValid(oJumpArea))
         {
+            AL_RouteDebugLog(oNpc, AL_DEBUG_LEVEL_L2, "AL: route transition slot=" + IntToString(nSlot)
+                + ", idx=" + IntToString(i) + ", jump queued.");
             AssignCommand(oNpc, ActionJumpToLocation(lJump));
             AssignCommand(oNpc, ActionDoCommand(AL_HandleRouteAreaTransition()));
             bTransitionQueued = TRUE;
@@ -359,6 +350,8 @@ void AL_QueueRoute(object oNpc, int nSlot, int bClearActions)
         }
 
         float fRepeatDelay = 5.0 + IntToFloat(Random(8));
+        AL_RouteDebugLog(oNpc, AL_DEBUG_LEVEL_L2, "AL: route repeat queued, slot=" + IntToString(nSlot)
+            + ", delay=" + FloatToString(fRepeatDelay) + ".");
 
         AssignCommand(oNpc, ActionWait(fRepeatDelay));
         AssignCommand(oNpc, ActionDoCommand(SignalEvent(oNpc, EventUserDefined(AL_EVT_ROUTE_REPEAT))));
