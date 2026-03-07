@@ -18,22 +18,7 @@ void main()
         return;
     }
 
-    if (GetLocalInt(oExiting, "al_exit_counted") == 1)
-    {
-        return;
-    }
-
-    SetLocalInt(oExiting, "al_exit_counted", 1);
-
-    int iPlayers = GetLocalInt(oArea, "al_player_count") - 1;
-    if (iPlayers < 0)
-    {
-        iPlayers = 0;
-    }
-
-    SetLocalInt(oArea, "al_player_count", iPlayers);
-
-    if (iPlayers != 0)
+    if (!AL_OnPlayerExitCount(oExiting, oArea))
     {
         return;
     }

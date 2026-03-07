@@ -17,11 +17,6 @@ void main()
         return;
     }
 
-    if (GetLocalInt(oLeaving, "al_exit_counted") == 1)
-    {
-        return;
-    }
-
     object oArea = GetArea(oLeaving);
 
     if (!GetIsObjectValid(oArea))
@@ -34,22 +29,10 @@ void main()
         }
     }
 
-    SetLocalInt(oLeaving, "al_exit_counted", 1);
-
-    int iPlayers = GetLocalInt(oArea, "al_player_count") - 1;
-    if (iPlayers < 0)
+    if (AL_OnPlayerExitCount(oLeaving, oArea))
     {
-        iPlayers = 0;
+        AL_HandleAreaBecameEmpty(oArea);
     }
 
-    SetLocalInt(oArea, "al_player_count", iPlayers);
-
-    if (iPlayers != 0)
-    {
-        DeleteLocalObject(oLeaving, "al_last_area");
-        return;
-    }
-
-    AL_HandleAreaBecameEmpty(oArea);
     DeleteLocalObject(oLeaving, "al_last_area");
 }
