@@ -72,15 +72,39 @@ Domain includes
 
 ## 2) Жизненный цикл
 
-### 2.1 Вход первого игрока -> запуск `AreaTick`
+### 2.1 Вход первого игрока -> wake-контур и запуск `AreaTick`
 1. `al_area_onenter.nss` обрабатывает только PC, сбрасывает anti-double-exit флаг на игроке (`al_exit_counted`).
 2. Увеличивает `al_player_count`.
 3. Если это **первый** игрок (`al_player_count == 1`):
-   - увеличивает `al_tick_token` (новая «эпоха» тиков),
-   - вычисляет и сохраняет `al_slot = AL_ComputeTimeSlot()`,
-   - синхронизирует registry,
-   - делает unhide NPC и отправляет им `AL_EVT_RESYNC`,
+   - выполняет wake-цепочку в фиксированном порядке (см. §2.1.1),
    - планирует первый `AreaTick(area, token)` через `AL_TICK_PERIOD`.
+
+#### 2.1.1 Wake-порядок (контракт)
+
+Wake всегда описывается как единый канонический порядок шагов:
+
+1. **Bump token** — инкремент `al_tick_token` (новая wake-эпоха).
+2. **Slot compute** — вычисление и запись `al_slot = AL_ComputeTimeSlot()`.
+3. **Registry sync** — `AL_SyncAreaNPCRegistry()`.
+4. **Route cache readiness** — подготовка route cache для area (`AL_CacheAreaRoutes`/эквивалентная гарантия готовности кэша).
+5. **Unhide + RESYNC** — `AL_UnhideAndResyncRegisteredNPCs`.
+6. **Schedule tick** — первый `DelayCommand(... AreaTick(area, token))`.
+
+#### 2.1.2 Обязательность шагов (COLD/WARM)
+
+- **COLD wake (первый запуск после empty-area / сброшенного состояния):** шаги 1–6 обязательны.
+- **WARM wake (повторный wake без полного teardown):**
+  - **обязательные:** 1, 2, 3, 5, 6;
+  - **опциональный:** 4 (можно пропустить только если есть валидный признак, что area route-cache уже готов и актуален для текущей wake-эпохи).
+
+#### 2.1.3 Диагностический маркер wake-эпохи (area)
+
+Для дебага в контракте фиксируется area-level маркер wake-эпохи:
+
+- `al_wake_epoch` — монотонный локал-счётчик (инкремент на каждом wake),
+- опционально: `al_wake_epoch_ts` — timestamp последнего wake.
+
+Маркер используется только для диагностики/трассировки и не заменяет `al_tick_token` как runtime-guard актуальности тика.
 
 ### 2.2 Смена слота времени (`AL_ComputeTimeSlot`) -> broadcast `AL_EVT_SLOT_*`
 1. `AreaTick` выполняется циклически только если:
@@ -99,6 +123,7 @@ Domain includes
 3. Если после декремента игроков не осталось (`al_player_count == 0`), оба события вызывают единый helper `AL_HandleAreaBecameEmpty(oArea)`.
 4. `AL_HandleAreaBecameEmpty` централизованно выполняет:
    - инкремент `al_tick_token` (инвалидация ранее запланированных `AreaTick`),
+   - `DeleteLocalInt(oArea, "al_tick_scheduled_token")` (reset дедупликации планировщика тиков),
    - `DeleteLocalInt(oArea, "al_routes_cached")` (форс полной пересборки route-cache при следующем запуске),
    - `AL_HideRegisteredNPCs` (freeze NPC), где перед hide применяется правило sleep-reset: очистка action queue + возврат collision/state в безопасный baseline (`al_sleep_*` сброшены).
 
@@ -128,6 +153,23 @@ Domain includes
 | `r_active` | int/bool | Флаг, что route-loop активен и может принимать `AL_EVT_ROUTE_REPEAT`. |
 | `al_last_slot` | int | Последний применённый слот активности; защита от лишних повторных применений. |
 | `al_last_area` | object | Последняя area NPC для корректного unregister/register при переходах. |
+| `al_anim_next` | int | Антиспам-маркер времени для повторной анимации на `AL_EVT_ROUTE_REPEAT`. |
+| `al_sleep_docked` | int/bool | Флаг, что NPC сейчас припаркован в sleep docking-позиции. |
+| `al_sleep_approach_tag` | string | Tag `approach`-waypoint для возврата из docked sleep. |
+
+### 3.3 Freeze side effects (ключевые local-поля)
+
+| Local key | Где меняется при freeze | Что происходит в freeze | Что происходит после wake (`AL_EVT_RESYNC`) |
+|---|---|---|---|
+| `al_tick_token` (area) | area-level | Инкрементируется для инвалидации старых `AreaTick(area, token)` | На новом onenter снова инкрементируется и используется для планирования нового валидного тика. |
+| `al_tick_scheduled_token` (area) | area-level | Удаляется, чтобы сбросить dedupe «тик уже запланирован» | Выставляется заново при первом `AL_ScheduleNextTick` в новом цикле. |
+| `al_routes_cached` (area) | area-level | Удаляется, forcing full recache маршрутов | Ставится обратно в `1` после `AL_CacheAreaRoutes` в новом рабочем цикле. |
+| `r_active` (NPC) | freeze не трогает напрямую | Значение сохраняется как есть; NPC скрыт и без очереди действий | На `AL_EVT_RESYNC` route пересобирается заново; активность route определяется текущим слотом/данными маршрута. |
+| `r_slot` (NPC) | freeze не трогает напрямую | Сохраняется последнее значение слота | На `AL_EVT_RESYNC` вычисляется актуальный slot от area и runtime route-state выравнивается под него. |
+| `r_idx` (NPC) | freeze не трогает напрямую | Сохраняется последний индекс точки | На `AL_EVT_RESYNC` маршрут стартует заново (индекс пересчитывается от новой сборки route-loop). |
+| `al_anim_next` (NPC) | freeze не трогает | Сохраняется throttle-маркер анимации | Используется как есть; повторная анимация допускается только когда наступит окно по anti-spam логике. |
+| `al_sleep_docked` (NPC) | freeze не трогает | Состояние docking сохраняется | При следующем применении активности sleep логика корректно делает undock/dock по текущей точке и тегам. |
+| `al_sleep_approach_tag` (NPC) | freeze не трогает | Сохраняется tag последнего docking approach | На wake используется sleep-логикой как опорная точка для корректного возврата/перепривязки. |
 
 ---
 
@@ -252,3 +294,17 @@ Domain includes
    - `onenter (1-й игрок)` -> `slot switch` -> `route repeat` -> `empty area` -> `resync`.
 3. Для парных ролей (training/bar) добавить в контент-процесс обязательный шаг ревизии `*_ref`-локалов после замены blueprint/респауна ключевых NPC.
 4. Для особо загруженных area держать маршруты короткими и валидными по индексации, чтобы уменьшить шум `AL_EVT_ROUTE_REPEAT` и лишние clear/requeue.
+
+## 8) Smoke-checklist по wake
+
+1. **Стартовое условие:** в area `al_player_count=0`, NPC скрыты, `AreaTick` не активен.
+2. **OnEnter первого игрока:** проверить, что wake-порядок выполнен строго как `token++ -> slot compute -> registry sync -> route cache readiness -> unhide+RESYNC -> schedule tick`.
+3. **Контракт COLD/WARM:**
+   - для COLD подтверждены все шаги 1–6;
+   - для WARM подтверждены обязательные 1/2/3/5/6;
+   - шаг 4 пропущен только при валидном признаке уже-готового route cache.
+4. **Wake-эпоха debug:** `al_wake_epoch` увеличился на 1 относительно предыдущего wake; при наличии `al_wake_epoch_ts` обновлён timestamp.
+5. **Tick guard:** первый `AreaTick` запущен с актуальным token и не отбрасывается проверкой `al_tick_token`.
+6. **Негативный сценарий:** устаревший/отложенный тик от предыдущей эпохи корректно игнорируется по token mismatch.
+7. **Переход в empty-area:** после выхода последнего игрока вызван `AL_HandleAreaBecameEmpty`, старый тик инвалидирован.
+8. **Повторный wake:** на следующем входе первого игрока формируется новая wake-эпоха, NPC снова проходят unhide+RESYNC и цикл тиков восстанавливается.
