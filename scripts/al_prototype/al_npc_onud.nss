@@ -128,7 +128,6 @@ void main()
     SetLocalInt(oNpc, "al_last_slot", nSlot);
     int nActivity = AL_GetWaypointActivityForSlot(oNpc, nSlot);
     int bUsesRoute = AL_ActivityUsesRoute(nSlot);
-    int bRequiresRouteTag = AL_GetActivityWaypointTag(nActivity) != "";
     int bHasRequiredRoute = AL_ActivityHasRequiredRoute(oNpc, nSlot, nActivity);
     int bCanUseRoute = bUsesRoute && bHasRequiredRoute;
     if (nActivity == AL_ACT_NPC_HIDDEN)
