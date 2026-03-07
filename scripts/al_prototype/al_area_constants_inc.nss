@@ -1,7 +1,6 @@
 // Shared constants for Area tick pipeline.
 
-const string AL_AREA_MODE_LOCAL_KEY = "al_area_heat";
-
+// Canonical area heat/mode enum.
 const int AL_AREA_MODE_COLD = 0;
 const int AL_AREA_MODE_WARM = 1;
 const int AL_AREA_MODE_HOT = 2;
@@ -13,12 +12,6 @@ const float AL_TICK_PERIOD = 45.0;
 const float AL_TICK_PERIOD_HOT = 15.0;
 const int AL_SYNC_TICK_INTERVAL = 4;
 const int AL_TICK_WARM_REPEATS = 2;
-
-// Area heat/mode states.
-const int AL_AREA_MODE_COLD = 0;
-const int AL_AREA_MODE_WARM = 1;
-const int AL_AREA_MODE_HOT = 2;
-const int AL_AREA_MODE_OFF = 3;
 
 // Canonical local keys for the minimal quarter/adjacency model.
 const string AL_AREA_MODE_LOCAL_KEY = "al_area_heat";

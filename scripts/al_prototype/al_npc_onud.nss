@@ -210,7 +210,6 @@ void main()
         return;
     }
 
-    object oArea = GetArea(oNpc);
     if (!GetIsObjectValid(oArea) || AL_IsAreaModeOff(oArea))
     {
         return;

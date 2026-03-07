@@ -4,7 +4,6 @@
 #include "al_area_mode_contract_inc"
 #include "al_npc_reg_inc"
 #include "al_player_count_inc"
-#include "al_area_mode_contract_inc"
 
 string AL_GetAreaModeName(int iMode)
 {
@@ -144,8 +143,6 @@ void main()
 
     int iToken = GetLocalInt(oArea, "al_tick_token") + 1;
     SetLocalInt(oArea, "al_tick_token", iToken);
-    SetLocalInt(oArea, AL_AREA_MODE_LOCAL_KEY, AL_AREA_MODE_HOT);
-
     SetLocalInt(oArea, AL_AREA_MODE_LOCAL_KEY, AL_AREA_MODE_HOT);
     SetLocalInt(oArea, "al_slot", AL_ComputeTimeSlot());
     SetLocalInt(oArea, "al_tick_warm_left", AL_TICK_WARM_REPEATS);
