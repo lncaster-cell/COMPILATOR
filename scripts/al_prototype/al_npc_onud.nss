@@ -155,20 +155,55 @@ void AL_ClearRouteAndRepeatState(object oNpc, int bStopSleep)
 void AL_QueueRepeatRequeue(object oNpc, object oArea)
 {
     AL_DebugLogL2(oArea, oNpc, "AL: repeat requeue in warm area.");
-    int nRepeatDelaySeconds = 5 + Random(8);
+    int nQueuedDelaySeconds = 5 + Random(8);
 
     int nModeMinGap = AL_GetRepeatRequeueMinGapSeconds(oNpc);
-    if (nModeMinGap > nRepeatDelaySeconds)
+    if (nModeMinGap > nQueuedDelaySeconds)
     {
-        nRepeatDelaySeconds = nModeMinGap;
+        nQueuedDelaySeconds = nModeMinGap;
     }
 
-    float fRepeatDelay = IntToFloat(nRepeatDelaySeconds);
+    float fRepeatDelay = IntToFloat(nQueuedDelaySeconds);
 
     AssignCommand(oNpc, ActionWait(fRepeatDelay));
     AssignCommand(oNpc, ActionDoCommand(SignalEvent(oNpc, EventUserDefined(AL_EVT_ROUTE_REPEAT))));
 
-    AL_MarkRepeatRequeueScheduled(oNpc, nRepeatDelaySeconds);
+    // Keep queued ActionWait delay and stored cooldown strictly identical.
+    AL_MarkRepeatRequeueScheduled(oNpc, nQueuedDelaySeconds);
+}
+
+int AL_ShouldIgnoreRepeatEvent(object oNpc, object oArea, int nSlot)
+{
+    if (GetLocalInt(oNpc, "r_active") == FALSE || AL_GetRouteCount(oNpc, nSlot) <= 0)
+    {
+        AL_DebugLogL2(oArea, oNpc, "AL: repeat ignored (inactive route). slot=" + IntToString(nSlot) + ".");
+        return TRUE;
+    }
+
+    if (GetLocalInt(oNpc, "al_last_slot") != nSlot)
+    {
+        AL_DebugLogL2(oArea, oNpc, "AL: repeat ignored (stale slot). slot=" + IntToString(nSlot) + ".");
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+int AL_ShouldStopAfterGuardCleanup(object oNpc, int nEvent, int bCanUseRoute, int nActivity)
+{
+    if (nActivity == AL_ACT_NPC_HIDDEN)
+    {
+        AL_ClearRouteAndRepeatState(oNpc, TRUE);
+        return TRUE;
+    }
+
+    if (nEvent == AL_EVT_ROUTE_REPEAT && !bCanUseRoute)
+    {
+        AL_ClearRouteAndRepeatState(oNpc, TRUE);
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 
@@ -228,16 +263,8 @@ void main()
 
     if (nEvent == AL_EVT_ROUTE_REPEAT)
     {
-        int nRouteActive = GetLocalInt(oNpc, "r_active");
-        if (nRouteActive == FALSE || AL_GetRouteCount(oNpc, nSlot) <= 0)
+        if (AL_ShouldIgnoreRepeatEvent(oNpc, oArea, nSlot))
         {
-            AL_DebugLogL2(oArea, oNpc, "AL: repeat ignored (inactive route). slot=" + IntToString(nSlot) + ".");
-            return;
-        }
-
-        if (GetLocalInt(oNpc, "al_last_slot") != nSlot)
-        {
-            AL_DebugLogL2(oArea, oNpc, "AL: repeat ignored (stale slot). slot=" + IntToString(nSlot) + ".");
             return;
         }
     }
@@ -274,14 +301,8 @@ void main()
     int bHasRequiredRoute = AL_ActivityHasRequiredRoute(oNpc, nSlot, nActivity);
     int bCanUseRoute = bUsesRoute && bHasRequiredRoute;
     AL_LogPairFallbackOnResync(oNpc, nEvent, nActivity);
-    if (nActivity == AL_ACT_NPC_HIDDEN)
+    if (AL_ShouldStopAfterGuardCleanup(oNpc, nEvent, bCanUseRoute, nActivity))
     {
-        AL_ClearRouteAndRepeatState(oNpc, TRUE);
-        return;
-    }
-    if (nEvent == AL_EVT_ROUTE_REPEAT && !bCanUseRoute)
-    {
-        AL_ClearRouteAndRepeatState(oNpc, TRUE);
         return;
     }
 
@@ -296,11 +317,9 @@ void main()
         AL_ClearRouteAndRepeatState(oNpc, FALSE);
     }
 
-    int bSkipMoveRepeat = FALSE;
-    if (bCanUseRoute && nEvent == AL_EVT_ROUTE_REPEAT && AL_GetRouteCount(oNpc, nSlot) == 1)
-    {
-        bSkipMoveRepeat = TRUE;
-    }
+    int bSkipMoveRepeat = bCanUseRoute
+        && nEvent == AL_EVT_ROUTE_REPEAT
+        && AL_GetRouteCount(oNpc, nSlot) == 1;
 
     int bRepeatRequeueWarmCooldown = FALSE;
     if (bSkipMoveRepeat)
@@ -333,14 +352,7 @@ void main()
         AL_ClearRouteAndRepeatState(oNpc, FALSE);
     }
 
-    int bAllowAnimation = TRUE;
-    if (nEvent == AL_EVT_ROUTE_REPEAT)
-    {
-        if (AL_IsRepeatAnimCoolingDown(oNpc))
-        {
-            bAllowAnimation = FALSE;
-        }
-    }
+    int bAllowAnimation = nEvent != AL_EVT_ROUTE_REPEAT || !AL_IsRepeatAnimCoolingDown(oNpc);
 
     int bShouldPlay = bAllowAnimation && (bSleepActivity || !(bCanUseRoute && nEvent != AL_EVT_ROUTE_REPEAT));
 
