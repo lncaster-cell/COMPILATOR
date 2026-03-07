@@ -112,6 +112,8 @@ Domain includes
 | `al_slot` | int (0..5) | Текущий 4-часовой слот времени. |
 | `al_npc_count` | int | Размер плотного массива registry NPC в area. |
 | `al_npc_<idx>` | object | Ссылка на зарегистрированного NPC по индексу 0..`al_npc_count-1`. |
+| `al_event_noise_total` | int | Счётчик всех обработанных AL-событий на area (для runtime-профилирования шума). |
+| `al_event_noise_route_repeat` | int | Счётчик обработок `AL_EVT_ROUTE_REPEAT` на area (целевая метрика шумной переочереди). |
 
 Дополнительно (по контексту маршрутов): `al_routes_cached`, `al_route_*` используются для area-level кэша waypoint/tag данных.
 `al_route_index` на waypoint (если используется) должен быть в диапазоне `0..1023`; значения вне диапазона игнорируются при построении area-cache и логируются в debug.
@@ -134,7 +136,7 @@ Domain includes
 |---|---|---|---|
 | `AL_EVT_SLOT_0 .. AL_EVT_SLOT_5` | `AreaTick` через `AL_BroadcastUserEvent` | Зафиксирована смена `al_slot` в area | NPC переключает поведение на слот, обновляет route/activity, при необходимости запускает новый route-loop. |
 | `AL_EVT_RESYNC` | `al_area_onenter`, `AL_UnhideAndResyncRegisteredNPCs`, `al_npc_onspawn`, `AL_HandleRouteAreaTransition` | Нужна полная пересинхронизация NPC с текущим состоянием area | Берёт `nSlot` из `area.al_slot`, сбрасывает `al_last_slot=-1`, пересобирает route/activity с нуля. |
-| `AL_EVT_ROUTE_REPEAT` | сам NPC (через `ActionDoCommand(SignalEvent(...))`) | Завершён проход по route без межзонового transition, либо запланирован repeat-пульс | Продолжает route-loop в текущем `r_slot`; игнорируется если `r_active==FALSE`, route пустой или слот устарел. |
+| `AL_EVT_ROUTE_REPEAT` | сам NPC (через `ActionDoCommand(SignalEvent(...))`) | Завершён проход по route без межзонового transition, либо запланирован repeat-пульс | Продолжает route-loop в текущем `r_slot`; игнорируется если `r_active==FALSE`, route пустой или слот устарел. Для single-point route повторная переочередь ограничивается только в WARM-состоянии area (`al_player_count > 0`). |
 
 ---
 
