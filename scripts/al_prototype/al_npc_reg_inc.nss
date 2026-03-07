@@ -38,6 +38,53 @@ void AL_MarkRegistryFullMessageSent(object oArea)
     SetLocalInt(oArea, "al_npc_full_msg_next", nNext + 1);
 }
 
+
+object AL_FindWaypointByTagInAreaForReset(object oArea, string sTag)
+{
+    if (!GetIsObjectValid(oArea) || sTag == "")
+    {
+        return OBJECT_INVALID;
+    }
+
+    object oObj = GetFirstObjectInArea(oArea);
+    while (GetIsObjectValid(oObj))
+    {
+        if (GetObjectType(oObj) == OBJECT_TYPE_WAYPOINT && GetTag(oObj) == sTag)
+        {
+            return oObj;
+        }
+
+        oObj = GetNextObjectInArea(oArea);
+    }
+
+    return OBJECT_INVALID;
+}
+
+void AL_ResetNpcSleepStateForFreeze(object oNpc)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    if (GetLocalInt(oNpc, "al_sleep_docked"))
+    {
+        object oArea = GetArea(oNpc);
+        string sApproachTag = GetLocalString(oNpc, "al_sleep_approach_tag");
+        object oApproach = AL_FindWaypointByTagInAreaForReset(oArea, sApproachTag);
+
+        if (GetIsObjectValid(oApproach))
+        {
+            location lApproach = GetLocation(oApproach);
+            AssignCommand(oNpc, SetFacingPoint(GetPosition(oApproach)));
+            AssignCommand(oNpc, JumpToLocation(lApproach));
+        }
+    }
+
+    SetCollision(oNpc, TRUE);
+    DeleteLocalInt(oNpc, "al_sleep_docked");
+    DeleteLocalString(oNpc, "al_sleep_approach_tag");
+}
 int AL_PruneRegistrySlot(object oArea, int iIndex, int iCount)
 {
     int iLastIndex = iCount - 1;
@@ -252,6 +299,7 @@ void AL_HideRegisteredNPCs(object oArea)
 
         AL_ResetNPCFreezeState(oNpc);
         AssignCommand(oNpc, ClearAllActions());
+        AL_ResetNpcSleepStateForFreeze(oNpc);
         SetScriptHidden(oNpc, TRUE, TRUE);
         i++;
     }
