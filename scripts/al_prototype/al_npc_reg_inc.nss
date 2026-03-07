@@ -476,7 +476,6 @@ void AL_HandleAreaBecameEmpty(object oArea)
 {
     SetLocalInt(oArea, AL_AREA_MODE_LOCAL_KEY, AL_AREA_MODE_COLD);
     SetLocalInt(oArea, "al_tick_token", GetLocalInt(oArea, "al_tick_token") + 1);
-    SetLocalInt(oArea, AL_AREA_MODE_LOCAL_KEY, AL_AREA_MODE_COLD);
     DeleteLocalInt(oArea, "al_tick_scheduled_token");
     DeleteLocalInt(oArea, "al_tick_warm_left");
     DeleteLocalInt(oArea, "al_routes_cached");

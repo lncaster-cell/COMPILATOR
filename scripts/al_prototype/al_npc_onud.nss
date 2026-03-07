@@ -210,6 +210,11 @@ void main()
         return;
     }
 
+    if (!GetIsObjectValid(oArea) || AL_IsAreaModeOff(oArea))
+    {
+        return;
+    }
+
     AL_RecordEventNoise(oNpc, nEvent);
 
     if (nEvent == AL_EVT_ROUTE_REPEAT)

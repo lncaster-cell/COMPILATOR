@@ -5,6 +5,71 @@
 #include "al_npc_reg_inc"
 #include "al_player_count_inc"
 
+string AL_GetAreaModeName(int iMode)
+{
+    if (iMode == AL_AREA_MODE_HOT)
+    {
+        return "HOT";
+    }
+
+    if (iMode == AL_AREA_MODE_WARM)
+    {
+        return "WARM";
+    }
+
+    if (iMode == AL_AREA_MODE_COLD)
+    {
+        return "COLD";
+    }
+
+    if (iMode == AL_AREA_MODE_OFF)
+    {
+        return "OFF";
+    }
+
+    return "UNKNOWN";
+}
+
+void AL_LogWakeTransition(object oArea, int iFromMode, int iTargetMode, int iWakeEpoch)
+{
+    if (!GetIsObjectValid(oArea) || GetLocalInt(oArea, "al_debug") != 1)
+    {
+        return;
+    }
+
+    AL_SendDebugMessageToAreaPCs(
+        oArea,
+        "AL: wake transition "
+            + AL_GetAreaModeName(iFromMode)
+            + " -> "
+            + AL_GetAreaModeName(iTargetMode)
+            + " (epoch="
+            + IntToString(iWakeEpoch)
+            + ")."
+    );
+}
+
+void AL_RunColdWakeFastPath(object oArea, int iToken)
+{
+    SetLocalInt(oArea, "al_slot", AL_ComputeTimeSlot());
+    AL_SyncAreaNPCRegistry(oArea);
+    DeleteLocalInt(oArea, "al_routes_cached");
+    AL_CacheAreaRoutes(oArea);
+    AL_UnhideAndResyncRegisteredNPCs(oArea);
+    AL_ScheduleNextAreaTick(oArea, iToken);
+}
+
+void AL_RunDefaultWakePath(object oArea, int iToken)
+{
+    SetLocalInt(oArea, "al_slot", AL_ComputeTimeSlot());
+    AL_CacheTrainingPartners(oArea);
+    AL_SyncAreaNPCRegistry(oArea);
+    DeleteLocalInt(oArea, "al_routes_cached");
+    AL_CacheAreaRoutes(oArea);
+    AL_UnhideAndResyncRegisteredNPCs(oArea);
+    AL_ScheduleNextAreaTick(oArea, iToken);
+}
+
 void AL_CacheTrainingPartners(object oArea)
 {
     if (!GetIsObjectValid(oArea))

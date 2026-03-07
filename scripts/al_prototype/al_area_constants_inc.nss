@@ -1,7 +1,6 @@
 // Shared constants for Area tick pipeline.
 
-const string AL_AREA_MODE_LOCAL_KEY = "al_area_heat";
-
+// Canonical area heat/mode enum.
 const int AL_AREA_MODE_COLD = 0;
 const int AL_AREA_MODE_WARM = 1;
 const int AL_AREA_MODE_HOT = 2;
