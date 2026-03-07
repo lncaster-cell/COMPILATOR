@@ -88,8 +88,19 @@ int AL_GetAreaModeLegacyDefault(object oArea)
     return AL_AREA_MODE_COLD;
 }
 
+int AL_IsAreaModeFlagsEnabled(object oArea)
+{
+    return GetLocalInt(oArea, AL_AREA_MODE_FLAGS_ENABLED_LOCAL_KEY) == TRUE;
+}
+
 int AL_GetAreaModeOrLegacy(object oArea)
 {
+    // Legacy behavior remains default until per-area mode flags are enabled.
+    if (!AL_IsAreaModeFlagsEnabled(oArea))
+    {
+        return AL_GetAreaModeLegacyDefault(oArea);
+    }
+
     int iMode = GetLocalInt(oArea, AL_AREA_MODE_LOCAL_KEY);
     if (iMode == AL_AREA_MODE_HOT
         || iMode == AL_AREA_MODE_WARM
