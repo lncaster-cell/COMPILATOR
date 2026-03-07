@@ -149,7 +149,27 @@ void AL_SoftActivateAdjacentAreas(object oSourceArea)
 
             if (sAreaTag != "")
             {
-                object oAdjacent = GetObjectByTag(sAreaTag, 0);
+                object oAdjacent = OBJECT_INVALID;
+                int iTagIndex = 0;
+
+                while (TRUE)
+                {
+                    object oTagCandidate = GetObjectByTag(sAreaTag, iTagIndex);
+                    if (!GetIsObjectValid(oTagCandidate))
+                    {
+                        break;
+                    }
+
+                    if (GetObjectType(oTagCandidate) == OBJECT_TYPE_AREA)
+                    {
+                        oAdjacent = oTagCandidate;
+                        break;
+                    }
+
+                    AL_LogAreaAdjFallbackDebug(oSourceArea, "adjacent tag '" + sAreaTag + "' resolved to non-area object; skipped candidate");
+                    iTagIndex++;
+                }
+
                 if (!GetIsObjectValid(oAdjacent))
                 {
                     AL_LogAreaAdjFallbackDebug(oSourceArea, "unknown adjacent area tag '" + sAreaTag + "'; skipped");
