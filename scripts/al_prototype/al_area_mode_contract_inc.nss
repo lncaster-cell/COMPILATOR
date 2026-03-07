@@ -8,6 +8,21 @@
 int AL_GetAreaModeOrLegacy(object oArea);
 int AL_IsAreaInteriorByContract(object oArea);
 
+int AL_TrimContractToken(string sValue)
+{
+    while (GetStringLength(sValue) > 0 && GetSubString(sValue, 0, 1) == " ")
+    {
+        sValue = GetSubString(sValue, 1, GetStringLength(sValue) - 1);
+    }
+
+    while (GetStringLength(sValue) > 0 && GetSubString(sValue, GetStringLength(sValue) - 1, 1) == " ")
+    {
+        sValue = GetSubString(sValue, 0, GetStringLength(sValue) - 1);
+    }
+
+    return sValue;
+}
+
 int AL_GetAreaModeLegacyDefault(object oArea)
 {
     if (AL_IsAreaInteriorByContract(oArea))
@@ -55,14 +70,7 @@ int AL_IsAreaInInteriorAdjWhitelist(object oSourceArea, string sAreaTag)
         if (i == iLen || GetSubString(sList, i, 1) == ",")
         {
             string sToken = GetSubString(sList, iStart, i - iStart);
-            while (GetStringLength(sToken) > 0 && GetSubString(sToken, 0, 1) == " ")
-            {
-                sToken = GetSubString(sToken, 1, GetStringLength(sToken) - 1);
-            }
-            while (GetStringLength(sToken) > 0 && GetSubString(sToken, GetStringLength(sToken) - 1, 1) == " ")
-            {
-                sToken = GetSubString(sToken, 0, GetStringLength(sToken) - 1);
-            }
+            sToken = AL_TrimContractToken(sToken);
 
             if (sToken == sAreaTag)
             {
@@ -137,14 +145,7 @@ void AL_SoftActivateAdjacentAreas(object oSourceArea)
         if (i == iLen || GetSubString(sAdjacency, i, 1) == ",")
         {
             string sAreaTag = GetSubString(sAdjacency, iStart, i - iStart);
-            while (GetStringLength(sAreaTag) > 0 && GetSubString(sAreaTag, 0, 1) == " ")
-            {
-                sAreaTag = GetSubString(sAreaTag, 1, GetStringLength(sAreaTag) - 1);
-            }
-            while (GetStringLength(sAreaTag) > 0 && GetSubString(sAreaTag, GetStringLength(sAreaTag) - 1, 1) == " ")
-            {
-                sAreaTag = GetSubString(sAreaTag, 0, GetStringLength(sAreaTag) - 1);
-            }
+            sAreaTag = AL_TrimContractToken(sAreaTag);
 
             if (sAreaTag != "")
             {
