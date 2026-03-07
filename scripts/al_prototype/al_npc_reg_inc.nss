@@ -3,6 +3,7 @@
 
 #include "al_constants_inc"
 #include "al_debug_inc"
+#include "al_area_mode_contract_inc"
 
 const int AL_REGISTRY_FULL_MSG_THROTTLE_SECONDS = 60;
 
@@ -169,6 +170,12 @@ void AL_RegisterNPC(object oNpc)
         return;
     }
 
+    if (AL_IsAreaModeOff(oArea))
+    {
+        AL_LogRegistrationSkip(oNpc, oArea, "area mode is OFF");
+        return;
+    }
+
     SetLocalObject(oNpc, "al_last_area", oArea);
 
     int iCount = GetLocalInt(oArea, "al_npc_count");
@@ -330,6 +337,7 @@ void AL_ResetNPCFreezeState(object oNpc)
 
 void AL_HandleAreaBecameEmpty(object oArea)
 {
+    SetLocalInt(oArea, AL_AREA_MODE_LOCAL_KEY, AL_AREA_MODE_COLD);
     SetLocalInt(oArea, "al_tick_token", GetLocalInt(oArea, "al_tick_token") + 1);
     DeleteLocalInt(oArea, "al_tick_scheduled_token");
     DeleteLocalInt(oArea, "al_tick_warm_left");
@@ -339,6 +347,11 @@ void AL_HandleAreaBecameEmpty(object oArea)
 
 void AL_UnhideAndResyncRegisteredNPCs(object oArea)
 {
+    if (AL_IsAreaModeOff(oArea) || AL_IsAreaModeCold(oArea))
+    {
+        return;
+    }
+
     int iCount = GetLocalInt(oArea, "al_npc_count");
     int i = 0;
 
