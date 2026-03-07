@@ -8,7 +8,7 @@
 int AL_GetAreaModeOrLegacy(object oArea);
 int AL_IsAreaInteriorByContract(object oArea);
 
-string AL_TrimContractToken(string sValue)
+int AL_TrimContractToken(string sValue)
 {
     while (GetStringLength(sValue) > 0 && GetSubString(sValue, 0, 1) == " ")
     {
@@ -36,11 +36,6 @@ int AL_GetAreaModeLegacyDefault(object oArea)
     }
 
     return AL_AREA_MODE_COLD;
-}
-
-string AL_GetAreaQuarterId(object oArea)
-{
-    return GetLocalString(oArea, AL_AREA_QUARTER_LOCAL_KEY);
 }
 
 string AL_GetAreaAdjacencyList(object oArea)
@@ -75,14 +70,7 @@ int AL_IsAreaInInteriorAdjWhitelist(object oSourceArea, string sAreaTag)
         if (i == iLen || GetSubString(sList, i, 1) == ",")
         {
             string sToken = GetSubString(sList, iStart, i - iStart);
-            while (GetStringLength(sToken) > 0 && GetSubString(sToken, 0, 1) == " ")
-            {
-                sToken = GetSubString(sToken, 1, GetStringLength(sToken) - 1);
-            }
-            while (GetStringLength(sToken) > 0 && GetSubString(sToken, GetStringLength(sToken) - 1, 1) == " ")
-            {
-                sToken = GetSubString(sToken, 0, GetStringLength(sToken) - 1);
-            }
+            sToken = AL_TrimContractToken(sToken);
 
             if (sToken == sAreaTag)
             {
@@ -157,14 +145,7 @@ void AL_SoftActivateAdjacentAreas(object oSourceArea)
         if (i == iLen || GetSubString(sAdjacency, i, 1) == ",")
         {
             string sAreaTag = GetSubString(sAdjacency, iStart, i - iStart);
-            while (GetStringLength(sAreaTag) > 0 && GetSubString(sAreaTag, 0, 1) == " ")
-            {
-                sAreaTag = GetSubString(sAreaTag, 1, GetStringLength(sAreaTag) - 1);
-            }
-            while (GetStringLength(sAreaTag) > 0 && GetSubString(sAreaTag, GetStringLength(sAreaTag) - 1, 1) == " ")
-            {
-                sAreaTag = GetSubString(sAreaTag, 0, GetStringLength(sAreaTag) - 1);
-            }
+            sAreaTag = AL_TrimContractToken(sAreaTag);
 
             if (sAreaTag != "")
             {
@@ -233,91 +214,4 @@ int AL_IsAreaModeCold(object oArea)
 int AL_IsAreaModeOff(object oArea)
 {
     return AL_GetAreaModeOrLegacy(oArea) == AL_AREA_MODE_OFF;
-}
-
-int AL_GetAreaAdjacencyCount(object oArea)
-{
-    string sRaw = AL_GetAreaAdjacencyList(oArea);
-    if (sRaw == "")
-    {
-        AL_LogAreaAdjFallbackDebug(oArea, "empty '" + AL_AREA_ADJ_LIST_LOCAL_KEY + "'; no neighbors");
-        return 0;
-    }
-
-    int nCount = 0;
-    while (sRaw != "")
-    {
-        int nComma = FindSubString(sRaw, ",");
-        string sToken = sRaw;
-
-        if (nComma >= 0)
-        {
-            sToken = GetSubString(sRaw, 0, nComma);
-            sRaw = GetSubString(sRaw, nComma + 1, GetStringLength(sRaw) - (nComma + 1));
-        }
-        else
-        {
-            sRaw = "";
-        }
-
-        sToken = AL_TrimContractToken(sToken);
-        if (sToken != "")
-        {
-            nCount++;
-        }
-    }
-
-    if (nCount <= 0)
-    {
-        AL_LogAreaAdjFallbackDebug(oArea, "'" + AL_AREA_ADJ_LIST_LOCAL_KEY + "' has no valid area tags");
-        return 0;
-    }
-
-    return nCount;
-}
-
-string AL_GetAreaAdjacentTagByIndex(object oArea, int nIndex)
-{
-    if (nIndex < 0)
-    {
-        return "";
-    }
-
-    string sRaw = AL_GetAreaAdjacencyList(oArea);
-    if (sRaw == "")
-    {
-        return "";
-    }
-
-    int nCurrent = 0;
-    while (sRaw != "")
-    {
-        int nComma = FindSubString(sRaw, ",");
-        string sToken = sRaw;
-
-        if (nComma >= 0)
-        {
-            sToken = GetSubString(sRaw, 0, nComma);
-            sRaw = GetSubString(sRaw, nComma + 1, GetStringLength(sRaw) - (nComma + 1));
-        }
-        else
-        {
-            sRaw = "";
-        }
-
-        sToken = AL_TrimContractToken(sToken);
-        if (sToken == "")
-        {
-            continue;
-        }
-
-        if (nCurrent == nIndex)
-        {
-            return sToken;
-        }
-
-        nCurrent++;
-    }
-
-    return "";
 }
