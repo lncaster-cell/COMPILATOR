@@ -331,19 +331,119 @@ int AL_ActivityHasRequiredRoute(object oNpc, int nSlot, int nActivity)
     return AL_GetRouteTag(oNpc, nSlot) == sWaypointTag;
 }
 
-string AL_AppendDegradeReasonCode(string sCodes, string sCode)
+void AL_RevalidateAreaPairLinksForWake(object oNpc)
 {
-    if (sCode == "")
+    if (!GetIsObjectValid(oNpc))
     {
-        return sCodes;
+        return;
     }
 
-    if (sCodes == "")
+    object oArea = GetArea(oNpc);
+    if (!GetIsObjectValid(oArea))
     {
-        return sCode;
+        DeleteLocalObject(oNpc, "al_training_partner");
+        DeleteLocalObject(oNpc, "al_bar_pair");
+        return;
     }
 
-    return sCodes + "," + sCode;
+    int bDebug = GetLocalInt(oArea, "al_debug") == 1;
+    int bClearedTraining = FALSE;
+    int bClearedBar = FALSE;
+
+    object oTrainingPartner = GetLocalObject(oNpc, "al_training_partner");
+    if (GetIsObjectValid(oTrainingPartner))
+    {
+        if (GetArea(oTrainingPartner) != oArea
+            || GetLocalObject(oTrainingPartner, "al_training_partner") != oNpc)
+        {
+            DeleteLocalObject(oNpc, "al_training_partner");
+            bClearedTraining = TRUE;
+        }
+    }
+
+    object oBarPair = GetLocalObject(oNpc, "al_bar_pair");
+    if (GetIsObjectValid(oBarPair))
+    {
+        if (GetArea(oBarPair) != oArea
+            || GetLocalObject(oBarPair, "al_bar_pair") != oNpc)
+        {
+            DeleteLocalObject(oNpc, "al_bar_pair");
+            bClearedBar = TRUE;
+        }
+    }
+
+    // Keep area-level runtime pair cache clean so slot wake/resync never reuses stale links.
+    string sAreaKey = "";
+    object oAreaPair = OBJECT_INVALID;
+
+    sAreaKey = "al_training_npc1";
+    oAreaPair = GetLocalObject(oArea, sAreaKey);
+    if (GetIsObjectValid(oAreaPair) && GetArea(oAreaPair) != oArea)
+    {
+        DeleteLocalObject(oArea, sAreaKey);
+    }
+
+    sAreaKey = "al_training_npc2";
+    oAreaPair = GetLocalObject(oArea, sAreaKey);
+    if (GetIsObjectValid(oAreaPair) && GetArea(oAreaPair) != oArea)
+    {
+        DeleteLocalObject(oArea, sAreaKey);
+    }
+
+    sAreaKey = "al_bar_bartender";
+    oAreaPair = GetLocalObject(oArea, sAreaKey);
+    if (GetIsObjectValid(oAreaPair) && GetArea(oAreaPair) != oArea)
+    {
+        DeleteLocalObject(oArea, sAreaKey);
+    }
+
+    sAreaKey = "al_bar_barmaid";
+    oAreaPair = GetLocalObject(oArea, sAreaKey);
+    if (GetIsObjectValid(oAreaPair) && GetArea(oAreaPair) != oArea)
+    {
+        DeleteLocalObject(oArea, sAreaKey);
+    }
+
+    sAreaKey = "al_training_npc1_ref";
+    oAreaPair = GetLocalObject(oArea, sAreaKey);
+    if (GetIsObjectValid(oAreaPair) && GetArea(oAreaPair) != oArea)
+    {
+        DeleteLocalObject(oArea, sAreaKey);
+    }
+
+    sAreaKey = "al_training_npc2_ref";
+    oAreaPair = GetLocalObject(oArea, sAreaKey);
+    if (GetIsObjectValid(oAreaPair) && GetArea(oAreaPair) != oArea)
+    {
+        DeleteLocalObject(oArea, sAreaKey);
+    }
+
+    sAreaKey = "al_bar_bartender_ref";
+    oAreaPair = GetLocalObject(oArea, sAreaKey);
+    if (GetIsObjectValid(oAreaPair) && GetArea(oAreaPair) != oArea)
+    {
+        DeleteLocalObject(oArea, sAreaKey);
+    }
+
+    sAreaKey = "al_bar_barmaid_ref";
+    oAreaPair = GetLocalObject(oArea, sAreaKey);
+    if (GetIsObjectValid(oAreaPair) && GetArea(oAreaPair) != oArea)
+    {
+        DeleteLocalObject(oArea, sAreaKey);
+    }
+
+    if (bDebug)
+    {
+        if (bClearedTraining)
+        {
+            AL_SendDebugMessageToAreaPCs(oArea, "AL: wake revalidation cleared stale training link for " + GetName(oNpc) + ".");
+        }
+
+        if (bClearedBar)
+        {
+            AL_SendDebugMessageToAreaPCs(oArea, "AL: wake revalidation cleared stale bar link for " + GetName(oNpc) + ".");
+        }
+    }
 }
 
 void AL_ApplyActivityForSlot(object oNpc, int nSlot)

@@ -216,6 +216,8 @@ void main()
         SetLocalInt(oNpc, "al_last_slot", -1);
     }
 
+    AL_RevalidateAreaPairLinksForWake(oNpc);
+
     if (nEvent != AL_EVT_ROUTE_REPEAT)
     {
         AL_SyncRouteForSlot(oNpc, nSlot);
