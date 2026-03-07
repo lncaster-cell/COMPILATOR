@@ -96,8 +96,20 @@ Domain includes
 3. Если после декремента игроков не осталось (`al_player_count == 0`), оба события вызывают единый helper `AL_HandleAreaBecameEmpty(oArea)`.
 4. `AL_HandleAreaBecameEmpty` централизованно выполняет:
    - инкремент `al_tick_token` (инвалидация ранее запланированных `AreaTick`),
+   - `DeleteLocalInt(oArea, "al_tick_scheduled_token")` (reset дедупликации планировщика тиков),
    - `DeleteLocalInt(oArea, "al_routes_cached")` (форс полной пересборки route-cache при следующем запуске),
-   - `AL_HideRegisteredNPCs` (скрытие NPC, и очистка action queue при включённом флаге).
+   - `AL_HideRegisteredNPCs` (скрытие NPC и `ClearAllActions` для очистки action queue).
+5. Обязательный минимум freeze на уровне area считается выполненным только если присутствуют **все** четыре шага: инвалидация token, reset schedule-dedupe, route-cache reset, hide+clear actions.
+
+### 2.4 Freeze vs wake: что делается на area, а что на NPC
+1. **Freeze (когда area пустеет) выполняется только на area-уровне** через `AL_HandleAreaBecameEmpty`:
+   - останавливается тиковый цикл (`al_tick_token`, `al_tick_scheduled_token`),
+   - сбрасывается флаг кэша маршрутов (`al_routes_cached`),
+   - все зарегистрированные NPC скрываются и получают пустую action queue.
+2. **Wake (когда снова появляется игрок) выполняется в два этапа**:
+   - area-этап (`al_area_onenter`): sync registry, unhide NPC, отправка `AL_EVT_RESYNC`;
+   - NPC-этап (`al_npc_onud` по `AL_EVT_RESYNC`): восстановление runtime-state через уже существующий RESYNC-механизм.
+3. Freeze не делает point-by-point нормализацию NPC locals. Это сознательно оставлено на `AL_EVT_RESYNC`, чтобы не дублировать state machine в area-скриптах.
 
 ---
 
@@ -125,6 +137,23 @@ Domain includes
 | `r_active` | int/bool | Флаг, что route-loop активен и может принимать `AL_EVT_ROUTE_REPEAT`. |
 | `al_last_slot` | int | Последний применённый слот активности; защита от лишних повторных применений. |
 | `al_last_area` | object | Последняя area NPC для корректного unregister/register при переходах. |
+| `al_anim_next` | int | Антиспам-маркер времени для повторной анимации на `AL_EVT_ROUTE_REPEAT`. |
+| `al_sleep_docked` | int/bool | Флаг, что NPC сейчас припаркован в sleep docking-позиции. |
+| `al_sleep_approach_tag` | string | Tag `approach`-waypoint для возврата из docked sleep. |
+
+### 3.3 Freeze side effects (ключевые local-поля)
+
+| Local key | Где меняется при freeze | Что происходит в freeze | Что происходит после wake (`AL_EVT_RESYNC`) |
+|---|---|---|---|
+| `al_tick_token` (area) | area-level | Инкрементируется для инвалидации старых `AreaTick(area, token)` | На новом onenter снова инкрементируется и используется для планирования нового валидного тика. |
+| `al_tick_scheduled_token` (area) | area-level | Удаляется, чтобы сбросить dedupe «тик уже запланирован» | Выставляется заново при первом `AL_ScheduleNextTick` в новом цикле. |
+| `al_routes_cached` (area) | area-level | Удаляется, forcing full recache маршрутов | Ставится обратно в `1` после `AL_CacheAreaRoutes` в новом рабочем цикле. |
+| `r_active` (NPC) | freeze не трогает напрямую | Значение сохраняется как есть; NPC скрыт и без очереди действий | На `AL_EVT_RESYNC` route пересобирается заново; активность route определяется текущим слотом/данными маршрута. |
+| `r_slot` (NPC) | freeze не трогает напрямую | Сохраняется последнее значение слота | На `AL_EVT_RESYNC` вычисляется актуальный slot от area и runtime route-state выравнивается под него. |
+| `r_idx` (NPC) | freeze не трогает напрямую | Сохраняется последний индекс точки | На `AL_EVT_RESYNC` маршрут стартует заново (индекс пересчитывается от новой сборки route-loop). |
+| `al_anim_next` (NPC) | freeze не трогает | Сохраняется throttle-маркер анимации | Используется как есть; повторная анимация допускается только когда наступит окно по anti-spam логике. |
+| `al_sleep_docked` (NPC) | freeze не трогает | Состояние docking сохраняется | При следующем применении активности sleep логика корректно делает undock/dock по текущей точке и тегам. |
+| `al_sleep_approach_tag` (NPC) | freeze не трогает | Сохраняется tag последнего docking approach | На wake используется sleep-логикой как опорная точка для корректного возврата/перепривязки. |
 
 ---
 
