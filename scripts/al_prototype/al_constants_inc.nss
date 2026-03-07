@@ -10,3 +10,6 @@ const int AL_EVT_SLOT_0 = AL_EVT_SLOT_BASE;
 const int AL_EVT_SLOT_5 = 3005;
 const int AL_EVT_RESYNC = 3006;
 const int AL_EVT_ROUTE_REPEAT = 3007;
+
+// Warm-area limiter for repeat requeue pulses (AL_EVT_ROUTE_REPEAT).
+const int AL_EVT_ROUTE_REPEAT_WARM_MIN_GAP_SECONDS = 2;
