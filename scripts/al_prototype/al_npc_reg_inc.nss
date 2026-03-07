@@ -303,7 +303,7 @@ void AL_RegisterNPC(object oNpc)
 
     if (AL_IsAreaModeOff(oArea))
     {
-        AL_LogRegistrationSkip(oNpc, oArea, "area mode OFF");
+        AL_LogRegistrationSkip(oNpc, oArea, "area mode is OFF");
         return;
     }
 
@@ -473,12 +473,17 @@ void AL_ResetNPCFreezeState(object oNpc)
 
 void AL_HandleAreaBecameEmpty(object oArea)
 {
-    AL_FreezeArea(oArea, AL_FREEZE_REASON_EMPTY);
+    SetLocalInt(oArea, AL_AREA_MODE_LOCAL_KEY, AL_AREA_MODE_COLD);
+    SetLocalInt(oArea, "al_tick_token", GetLocalInt(oArea, "al_tick_token") + 1);
+    DeleteLocalInt(oArea, "al_tick_scheduled_token");
+    DeleteLocalInt(oArea, "al_tick_warm_left");
+    DeleteLocalInt(oArea, "al_routes_cached");
+    AL_HideRegisteredNPCs(oArea);
 }
 
 void AL_UnhideAndResyncRegisteredNPCs(object oArea)
 {
-    if (AL_IsAreaModeOff(oArea))
+    if (AL_IsAreaModeOff(oArea) || AL_IsAreaModeCold(oArea))
     {
         return;
     }
