@@ -243,17 +243,38 @@ void AL_CacheAreaRoutes(object oArea)
             }
             DeleteLocalInt(oArea, sTmpPrefix + "n");
 
-            int iSeen = 0;
-            while (iSeen < nSeenCount)
+            if (bRequiresIndex)
             {
-                int iIndex = GetLocalInt(oArea, sAreaPrefix + "seen_" + IntToString(iSeen));
-                string sIndex = sAreaPrefix + IntToString(iIndex);
-                if (GetLocalInt(oArea, sIndex + "_set"))
+                // Indexed routes must expose idx_* in ascending al_route_index order.
+                // Keep sparse indexes (for example, 0/10/20) and build a dense map
+                // by scanning set markers in index order.
+                int iIndex = 0;
+                while (iIndex <= AL_AREA_ROUTE_INDEX_MAX)
                 {
-                    SetLocalInt(oArea, sAreaPrefix + "idx_" + IntToString(nDenseCount), iIndex);
-                    nDenseCount++;
+                    string sIndex = sAreaPrefix + IntToString(iIndex);
+                    if (GetLocalInt(oArea, sIndex + "_set"))
+                    {
+                        SetLocalInt(oArea, sAreaPrefix + "idx_" + IntToString(nDenseCount), iIndex);
+                        nDenseCount++;
+                    }
+                    iIndex++;
                 }
-                iSeen++;
+            }
+            else
+            {
+                // Legacy fallback: keep discovery order for non-indexed routes.
+                int iSeen = 0;
+                while (iSeen < nSeenCount)
+                {
+                    int iIndex = GetLocalInt(oArea, sAreaPrefix + "seen_" + IntToString(iSeen));
+                    string sIndex = sAreaPrefix + IntToString(iIndex);
+                    if (GetLocalInt(oArea, sIndex + "_set"))
+                    {
+                        SetLocalInt(oArea, sAreaPrefix + "idx_" + IntToString(nDenseCount), iIndex);
+                        nDenseCount++;
+                    }
+                    iSeen++;
+                }
             }
 
             // Keep only runtime keys:
