@@ -182,8 +182,7 @@ void ALV_ValidateNpc(object oModule, object oArea, object oNpc)
         return;
     }
 
-    ALV_Report(oModule, ALV_SEV_INFO, ALV_AreaTag(oArea), ALV_ObjectTag(oNpc),
-        "AL-NPC marker check passed (alwp*/al_enabled contract satisfied)");
+    // Pass-case intentionally stays silent to avoid inflating info summary counters.
 }
 
 void ALV_ValidateWaypoint(object oModule, object oArea, object oWaypoint)
