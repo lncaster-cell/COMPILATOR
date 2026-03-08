@@ -64,7 +64,11 @@
 
 ### 2.4 Area locals (рекомендуется)
 
-- `al_area_mode` — режим area: `0=COLD`, `1=WARM`, `2=HOT`, `3=OFF`.
+- Для explicit-режима area нужно выставлять **оба** local:
+  - `al_area_mode=<0..3>` — режим area: `0=COLD`, `1=WARM`, `2=HOT`, `3=OFF`.
+  - `al_area_mode_is_set=1` — флаг, что `al_area_mode` задан явно.
+- Короткий пример для OFF: `al_area_mode=3` + `al_area_mode_is_set=1`.
+- Если `al_area_mode_is_set` отсутствует, используется legacy fallback (по `al_is_interior` / player_count), а не значение `al_area_mode`.
 - `al_is_interior=1` — пометка интерьерной area.
 - `al_adjacent_areas` — CSV тегов соседних area для soft-activation.
 - `al_adj_interior_whitelist` — CSV интерьерных соседей, которых можно прогревать.
