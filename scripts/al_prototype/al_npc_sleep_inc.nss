@@ -95,6 +95,17 @@ int AL_StartSleepAtBed(object oNpc, object oSleepWp)
     object oArea = GetArea(oNpc);
     if (!GetIsObjectValid(oArea))
     {
+        AL_SleepDebugLogL1(oArea, oNpc, "AL: invalid sleep waypoint; docking aborted.");
+        AL_ResetSleepDockState(oNpc);
+        return FALSE;
+    }
+
+    string sExpectedRouteTag = GetLocalString(oNpc, AL_GetRouteTagKey(GetLocalInt(oNpc, AL_L_LAST_SLOT)));
+    string sSleepTag = GetTag(oSleepWp);
+    if (sExpectedRouteTag != "" && sSleepTag != sExpectedRouteTag)
+    {
+        AL_SleepDebugLogL1(oArea, oNpc,
+            "AL: sleep route tag mismatch; expected=" + sExpectedRouteTag + ", got=" + sSleepTag + ".");
         AL_ResetSleepDockState(oNpc);
         return FALSE;
     }
