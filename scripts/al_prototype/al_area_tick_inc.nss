@@ -93,7 +93,7 @@ void AreaTick(object oArea, int nToken)
             DeleteLocalInt(oArea, AL_L_TICK_WARM_LEFT);
             if (AL_IsAreaModeHot(oArea))
             {
-                SetLocalInt(oArea, AL_AREA_MODE_LOCAL_KEY, AL_AREA_MODE_WARM);
+                AL_SetAreaMode(oArea, AL_AREA_MODE_WARM);
             }
         }
     }
