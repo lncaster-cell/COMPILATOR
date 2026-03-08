@@ -53,12 +53,17 @@
 
 На sleep-route waypoint укажите:
 
-- `al_bed_tag=<bed_id>`
+- `al_activity` (sleep-активность) + `al_bed_tag=<bed_id>`
 
-И создайте в той же area две waypoint-точки по шаблону тегов:
+И создайте в той же area waypoint-точку:
 
-- `<bed_id>_approach` — точка подхода к кровати,
 - `<bed_id>_pose` — точка укладки (поза сна).
+
+Дополнительно (опционально) можно создать:
+
+- `<bed_id>_approach` — override-точка подхода к кровати.
+
+Если `<bed_id>_approach` отсутствует, точка подхода по умолчанию берётся из самого sleep route waypoint.
 
 Если `al_bed_tag`/bed-точки не заданы, bed-docking не сработает, и NPC уйдёт в fallback-проигрывание сна без корректной привязки к кровати.
 
@@ -95,9 +100,9 @@
 2. На waypoint с тегом `<tag_sleep_wp>` поставьте:
    - `al_activity = 5` (обычный сон в кровати)
    - `al_bed_tag = <bed_id>`
-3. В той же area создайте 2 waypoint:
-   - `<bed_id>_approach`
+3. В той же area создайте waypoint:
    - `<bed_id>_pose`
+   - (опционально) `<bed_id>_approach` как override-точку подхода
 4. Проверьте, что у NPC назначен `OnSpawn -> al_npc_onspawn`.
 
 Готово: в ночные слоты (`alwp0/alwp1`, примерно 00:00–08:00) НПЦ пойдёт спать.
@@ -170,7 +175,7 @@
 1. Скрипты назначены на события Area/NPC/Module.
 2. У каждого AL-NPC есть `alwp*` (минимум sleep-слоты).
 3. На route-waypoint заполнен `al_activity`.
-4. Для сна настроены `al_bed_tag`, `<bed_id>_approach`, `<bed_id>_pose`.
+4. Для сна настроены `al_activity` + `al_bed_tag` на sleep route waypoint и `<bed_id>_pose` (опционально `<bed_id>_approach`).
 5. Area не в `OFF`, и корректно считаются вход/выход игроков.
 
 ---
