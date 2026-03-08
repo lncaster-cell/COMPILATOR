@@ -163,14 +163,20 @@ Legacy fallback:
 
 ### 8.1 Что смотреть в locals
 
-- Area: `al_player_count`, `al_area_mode`, `al_area_mode_is_set`, `al_tick_token`, `al_tick_scheduled_token`, `al_slot`, `al_npc_count`.
-- NPC: `r_active`, `r_slot`, `r_idx`, `al_last_area`, sleep locals.
+- Area: `al_player_count`, `al_area_mode`, `al_area_mode_is_set`, `al_tick_token`, `al_tick_scheduled_token`, `al_slot`, `al_npc_count`, `al_metric_route_truncated_count`.
+- NPC: `r_active`, `r_slot`, `r_idx`, `al_last_area`, sleep locals, `al_metric_route_resync_count`, `al_metric_activity_fallback_count`.
 
 ### 8.2 Типовые симптомы
 
 - NPC «мертв» после wake: обычно broken `alwp*`/route-tag или invalid waypoint metadata.
 - Area не охлаждается: чаще всего некорректный player counting.
 - Сосед не прогревается: ошибка в `al_adjacent_areas` или interior не в whitelist.
+
+### 8.3 Интерпретация метрик
+
+- `al_metric_route_resync_count` (NPC local): растёт на каждом `AL_EVT_RESYNC`. Стабильный медленный рост допустим; быстрый рост без смены ситуации указывает на частые принудительные пересинхронизации.
+- `al_metric_activity_fallback_count` (NPC local): растёт, когда NPC уходит в fallback-активность из-за невалидного маршрута или из-за невалидной training/bar пары после wake/resync. Если счётчик растёт вместе с `route_resync_count`, вероятен системный сбой входных данных слота/пары.
+- `al_metric_route_truncated_count` (Area local): растёт при усечении кэша маршрутов (пропуски waypoint с missing/invalid index, duplicate index, невалидные временные ссылки на waypoint). Постоянный рост после каждого rebuild — признак проблем в waypoint-данных конкретной area/tag-группы.
 
 ## 9. Связанные документы
 

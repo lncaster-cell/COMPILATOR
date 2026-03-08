@@ -46,6 +46,13 @@ void AL_AreaDebugLog(object oArea, int nLevel, string sMessage)
     AL_DebugLog(oArea, OBJECT_INVALID, nLevel, sMessage);
 }
 
+
+void AL_IncrementAreaRouteTruncatedMetric(object oArea)
+{
+    SetLocalInt(oArea, AL_L_METRIC_ROUTE_TRUNCATED_COUNT,
+        GetLocalInt(oArea, AL_L_METRIC_ROUTE_TRUNCATED_COUNT) + 1);
+}
+
 object AL_FindWaypointInAreaByTag(object oArea, string sTag)
 {
     if (!GetIsObjectValid(oArea) || sTag == "")
@@ -202,6 +209,7 @@ void AL_CacheAreaRoutes(object oArea)
 
                 if (!GetIsObjectValid(oWp))
                 {
+                    AL_IncrementAreaRouteTruncatedMetric(oArea);
                     continue;
                 }
 
@@ -213,6 +221,7 @@ void AL_CacheAreaRoutes(object oArea)
                         AL_AreaDebugLog(oArea, AL_DEBUG_LEVEL_L1, "AL: waypoint " + sTag + " has missing/invalid al_route_index; skipped.");
                         SetLocalInt(oArea, sMissingIndexLoggedKey, TRUE);
                     }
+                    AL_IncrementAreaRouteTruncatedMetric(oArea);
                     continue;
                 }
 
@@ -223,6 +232,7 @@ void AL_CacheAreaRoutes(object oArea)
                     if (nIndex < 0 || nIndex > AL_AREA_ROUTE_INDEX_MAX)
                     {
                         AL_AreaDebugLog(oArea, AL_DEBUG_LEVEL_L1, "AL: waypoint " + sTag + " has invalid al_route_index " + IntToString(nIndex) + " (allowed 0.." + IntToString(AL_AREA_ROUTE_INDEX_MAX) + "); skipped.");
+                        AL_IncrementAreaRouteTruncatedMetric(oArea);
                         continue;
                     }
                 }
@@ -232,6 +242,7 @@ void AL_CacheAreaRoutes(object oArea)
                 if (GetLocalInt(oArea, sIndexMarker))
                 {
                     AL_AreaDebugLog(oArea, AL_DEBUG_LEVEL_L1, "AL: duplicate route index " + IntToString(nIndex) + " for tag " + sTag + "; skipped.");
+                    AL_IncrementAreaRouteTruncatedMetric(oArea);
                     continue;
                 }
 
