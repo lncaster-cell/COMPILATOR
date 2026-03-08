@@ -181,6 +181,27 @@ void AL_QueueRepeatRequeue(object oNpc, object oArea)
     AL_MarkRepeatRequeueScheduled(oNpc, nQueuedDelaySeconds);
 }
 
+
+int AL_IsResyncRetryCoolingDown(object oNpc)
+{
+    return AL_IsDaySecondsCooldownActive(oNpc, "al_resync_retry_next");
+}
+
+void AL_MarkResyncRetryScheduled(object oNpc, int nDelaySeconds)
+{
+    AL_MarkDaySecondsCooldown(oNpc, "al_resync_retry_next", nDelaySeconds);
+}
+
+void AL_QueueResyncRetry(object oNpc, object oArea)
+{
+    int nDelaySeconds = 2 + Random(3);
+    float fDelay = IntToFloat(nDelaySeconds);
+    AL_DebugLogL2(oArea, oNpc, "AL: sleep RESYNC retry queued.");
+    AssignCommand(oNpc, ActionWait(fDelay));
+    AssignCommand(oNpc, ActionDoCommand(SignalEvent(oNpc, EventUserDefined(AL_EVT_RESYNC))));
+    AL_MarkResyncRetryScheduled(oNpc, nDelaySeconds);
+}
+
 int AL_ShouldIgnoreRepeatEvent(object oNpc, object oArea, int nSlot)
 {
     if (GetLocalInt(oNpc, AL_L_ROUTE_ACTIVE) == FALSE || AL_GetRouteCount(oNpc, nSlot) <= 0)
@@ -313,8 +334,11 @@ void AL_ProcessSlotEvent(object oNpc, object oArea, int nSlot, int nEvent)
     if (bSleepResyncNeedsRouteRetry)
     {
         // On first wake/resync in sleep slots route cache may still be rebuilding.
-        // Avoid immediate fallback sleep animation at spawn point; retry shortly.
-        AL_QueueRepeatRequeue(oNpc, oArea);
+        // Avoid immediate fallback sleep animation at spawn point; retry RESYNC.
+        if (!AL_IsResyncRetryCoolingDown(oNpc))
+        {
+            AL_QueueResyncRetry(oNpc, oArea);
+        }
         return;
     }
 
