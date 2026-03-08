@@ -148,7 +148,9 @@ string AL_GetActivityWaypointTag(int nActivity)
     return "";
 }
 
-// Training activities require partner NPCs in FACTION_NPC1 / FACTION_NPC2.
+// Training activities require a partner pair resolved via area refs
+// `al_training_npc1_ref` / `al_training_npc2_ref`.
+// Runtime source of truth for role resolution: al_npc_pair_inc.nss.
 int AL_ActivityRequiresTrainingPartner(int nActivity)
 {
     if (nActivity == AL_ACT_NPC_TRAINING_ONE || nActivity == AL_ACT_NPC_TRAINING_TWO)
