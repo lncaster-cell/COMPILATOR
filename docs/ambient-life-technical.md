@@ -143,13 +143,18 @@ Legacy fallback:
   - `al_training_npc2_ref` для роли `npc2`.
 - Tag-based определение ролей (`FACTION_NPC1/FACTION_NPC2`) не является частью актуального контракта.
 - Если NPC не совпадает ни с одним training ref, runtime-пара для него не связывается.
+- Допускается tag-backed восстановление runtime refs через существующие helper'ы:
+  - `AL_AreaRefTagKey`;
+  - `AL_RestoreAreaRefByRuntimeAndTag`.
 
 ## 6. Safety и fallback-поведение
 
 1. При freeze у NPC очищается runtime route-state (`r_active`, `r_slot`, `r_idx`).
 2. Перед/после sleep-docking принудительно нормализуется collision.
-3. При невалидном route/activity NPC переходит в безопасное поведение.
-4. При заполнении registry новые NPC не добавляются; debug-сообщения троттлятся.
+3. Validation для training/bar пары на `AL_EVT_RESYNC` выполняется условно (по текущей активности и необходимости repair), а не безусловно на каждом RESYNC.
+4. При невалидном route/activity или при невалидной паре после условной revalidate NPC переходит в безопасное поведение.
+5. Для NPC вне training refs нормальный путь — без chat spam.
+6. При заполнении registry новые NPC не добавляются; debug-сообщения троттлятся.
 
 ## 7. Производительность
 
