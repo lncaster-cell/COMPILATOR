@@ -117,15 +117,11 @@ Ambient Life (AL) управляет «фоновым» поведением NPC
   - waypoint без валидного индекса в indexed-режиме отбрасываются;
   - при полном отсутствии индексов маршрут строится в dense/fallback-режиме;
   - `al_route_index_set` считается legacy-совместимостью и не является частью актуального контракта данных.
-- для межзонового перехода поддерживаются два контрактных режима:
-  - **bootstrap/runtime:** скрипт проставляет waypoint locals
-    `al_transition_location` (тип location) или legacy-вариант
-    `al_transition_area` (тип object) + `al_transition_x/y/z/facing` (float);
-    вручную в toolset эти object/location locals не задаются;
-  - **manual/toolset:** `al_transition_area_tag` (тип string, tag area)
-    + `al_transition_x/y/z/facing` (float).
-- порядок резолва в route cache: `al_transition_location` ->
-  `al_transition_area` (backward compatibility) -> `al_transition_area_tag`.
+- для межзонового перехода используется waypoint-based контракт:
+  - на source-waypoint задаётся `al_transition_area_tag` (тип string, tag area назначения);
+  - опционально задаётся `al_transition_waypoint_tag` (тип string, tag waypoint в target area);
+  - если `al_transition_waypoint_tag` не задан, используется tag текущего source-waypoint.
+- route cache резолвит переход как `area tag -> waypoint tag -> location` без координатных locals.
 
 ### 5.3 Area
 

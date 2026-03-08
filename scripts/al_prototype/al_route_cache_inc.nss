@@ -46,6 +46,29 @@ void AL_AreaDebugLog(object oArea, int nLevel, string sMessage)
     AL_DebugLog(oArea, OBJECT_INVALID, nLevel, sMessage);
 }
 
+object AL_FindWaypointInAreaByTag(object oArea, string sTag)
+{
+    if (!GetIsObjectValid(oArea) || sTag == "")
+    {
+        return OBJECT_INVALID;
+    }
+
+    int iNth = 0;
+    object oCandidate = GetObjectByTag(sTag, iNth);
+    while (GetIsObjectValid(oCandidate))
+    {
+        if (GetObjectType(oCandidate) == OBJECT_TYPE_WAYPOINT && GetArea(oCandidate) == oArea)
+        {
+            return oCandidate;
+        }
+
+        iNth++;
+        oCandidate = GetObjectByTag(sTag, iNth);
+    }
+
+    return OBJECT_INVALID;
+}
+
 void AL_ClearAreaRouteCacheByTag(object oArea, string sTag)
 {
     if (!GetIsObjectValid(oArea) || sTag == "")
@@ -230,47 +253,38 @@ void AL_CacheAreaRoutes(object oArea)
                 }
 
                 DeleteLocalLocation(oArea, sIndex + "_jump");
-                // Transition setup contract:
-                // - Runtime/bootstrap path: script pre-seeds waypoint locals
-                //   "al_transition_location" (location) or legacy
-                //   "al_transition_area" (object) + x/y/z/facing floats.
-                // - Manual toolset path: set string local "al_transition_area_tag"
-                //   + x/y/z/facing floats.
-                // - Backward compatibility for object local is preserved.
-                location lJump = GetLocalLocation(oWp, "al_transition_location");
-                object oJumpArea = GetAreaFromLocation(lJump);
-                if (GetIsObjectValid(oJumpArea))
+                // Transition setup contract (simplified):
+                // - source waypoint local "al_transition_area_tag" points to target area tag.
+                // - optional source waypoint local "al_transition_waypoint_tag" points to
+                //   destination waypoint tag in target area.
+                // - when "al_transition_waypoint_tag" is missing, current waypoint tag is used.
+                string sTargetAreaTag = GetLocalString(oWp, "al_transition_area_tag");
+                if (sTargetAreaTag != "")
                 {
-                    SetLocalLocation(oArea, sIndex + "_jump", lJump);
-                }
-                else
-                {
-                    object oTargetArea = GetLocalObject(oWp, "al_transition_area");
-                    if (GetIsObjectValid(oTargetArea))
+                    object oTargetArea = GetObjectByTag(sTargetAreaTag);
+                    if (GetIsObjectValid(oTargetArea) && GetObjectType(oTargetArea) == OBJECT_TYPE_AREA)
                     {
-                        float fX = GetLocalFloat(oWp, "al_transition_x");
-                        float fY = GetLocalFloat(oWp, "al_transition_y");
-                        float fZ = GetLocalFloat(oWp, "al_transition_z");
-                        float fFacing = GetLocalFloat(oWp, "al_transition_facing");
-                        location lResolvedJump = Location(oTargetArea, Vector(fX, fY, fZ), fFacing);
-                        SetLocalLocation(oArea, sIndex + "_jump", lResolvedJump);
+                        string sTargetWpTag = GetLocalString(oWp, "al_transition_waypoint_tag");
+                        if (sTargetWpTag == "")
+                        {
+                            sTargetWpTag = sTag;
+                        }
+
+                        object oTargetWp = AL_FindWaypointInAreaByTag(oTargetArea, sTargetWpTag);
+                        if (GetIsObjectValid(oTargetWp))
+                        {
+                            SetLocalLocation(oArea, sIndex + "_jump", GetLocation(oTargetWp));
+                        }
+                        else
+                        {
+                            AL_AreaDebugLog(oArea, AL_DEBUG_LEVEL_L1, "AL: transition target waypoint '" + sTargetWpTag
+                                + "' not found in area '" + sTargetAreaTag + "' for source waypoint '" + sTag + "'.");
+                        }
                     }
                     else
                     {
-                        string sTargetAreaTag = GetLocalString(oWp, "al_transition_area_tag");
-                        if (sTargetAreaTag != "")
-                        {
-                            object oTaggedArea = GetObjectByTag(sTargetAreaTag);
-                            if (GetIsObjectValid(oTaggedArea) && GetObjectType(oTaggedArea) == OBJECT_TYPE_AREA)
-                            {
-                                float fX = GetLocalFloat(oWp, "al_transition_x");
-                                float fY = GetLocalFloat(oWp, "al_transition_y");
-                                float fZ = GetLocalFloat(oWp, "al_transition_z");
-                                float fFacing = GetLocalFloat(oWp, "al_transition_facing");
-                                location lResolvedJump = Location(oTaggedArea, Vector(fX, fY, fZ), fFacing);
-                                SetLocalLocation(oArea, sIndex + "_jump", lResolvedJump);
-                            }
-                        }
+                        AL_AreaDebugLog(oArea, AL_DEBUG_LEVEL_L1, "AL: transition area tag '" + sTargetAreaTag
+                            + "' is missing or invalid for source waypoint '" + sTag + "'.");
                     }
                 }
             }
