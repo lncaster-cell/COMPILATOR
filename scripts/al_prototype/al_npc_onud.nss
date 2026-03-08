@@ -305,6 +305,19 @@ void AL_ProcessSlotEvent(object oNpc, object oArea, int nSlot, int nEvent)
         AL_StopSleepAtBed(oNpc);
     }
 
+    int bSleepResyncNeedsRouteRetry = bSleepActivity
+        && nEvent == AL_EVT_RESYNC
+        && !bCanUseRoute
+        && AL_GetDesiredRouteTag(oNpc, nSlot) != "";
+
+    if (bSleepResyncNeedsRouteRetry)
+    {
+        // On first wake/resync in sleep slots route cache may still be rebuilding.
+        // Avoid immediate fallback sleep animation at spawn point; retry shortly.
+        AL_QueueRepeatRequeue(oNpc, oArea);
+        return;
+    }
+
     if (!bCanUseRoute)
     {
         AL_IncrementLocalMetric(oNpc, AL_L_METRIC_ACTIVITY_FALLBACK_COUNT);
@@ -363,7 +376,7 @@ void AL_ProcessSlotEvent(object oNpc, object oArea, int nSlot, int nEvent)
                 // the sleep route instead of forcing lie-down at the current point.
                 AL_QueueRoute(oNpc, nSlot, nEvent != AL_EVT_ROUTE_REPEAT);
             }
-            else
+            else if (nEvent != AL_EVT_RESYNC)
             {
                 AL_ApplyActivityForSlot(oNpc, nSlot);
             }
