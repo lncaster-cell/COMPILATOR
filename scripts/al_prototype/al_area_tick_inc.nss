@@ -9,7 +9,26 @@
 // scheduling always goes through AL_ScheduleNextAreaTick().
 // NPC registry synchronization is handled here at the area level only.
 
+const int AL_METRIC_SUMMARY_INTERVAL_TICKS = 20;
+
 void AreaTick(object oArea, int nToken);
+
+void AL_LogAreaMetricSummary(object oArea)
+{
+    if (!AL_IsDebugLevelEnabled(oArea, OBJECT_INVALID, AL_DEBUG_LEVEL_L1))
+    {
+        return;
+    }
+
+    AL_DebugLogL1(oArea, OBJECT_INVALID,
+        "AL: area metric summary: ticks="
+        + IntToString(GetLocalInt(oArea, AL_L_METRIC_SUMMARY_TICK))
+        + ", route_resync=" + IntToString(GetLocalInt(oArea, AL_L_METRIC_ROUTE_RESYNC_COUNT))
+        + ", activity_fallback=" + IntToString(GetLocalInt(oArea, AL_L_METRIC_ACTIVITY_FALLBACK_COUNT))
+        + ", route_truncated=" + IntToString(GetLocalInt(oArea, AL_L_METRIC_ROUTE_TRUNCATED_COUNT))
+        + "."
+    );
+}
 
 int AL_ComputeTimeSlot()
 {
@@ -69,6 +88,13 @@ void AreaTick(object oArea, int nToken)
     }
 
     DeleteLocalInt(oArea, AL_L_TICK_SCHEDULED_TOKEN);
+
+    int iSummaryTick = GetLocalInt(oArea, AL_L_METRIC_SUMMARY_TICK) + 1;
+    SetLocalInt(oArea, AL_L_METRIC_SUMMARY_TICK, iSummaryTick);
+    if (iSummaryTick % AL_METRIC_SUMMARY_INTERVAL_TICKS == 0)
+    {
+        AL_LogAreaMetricSummary(oArea);
+    }
 
     int iSyncTick = GetLocalInt(oArea, AL_L_SYNC_TICK) + 1;
     int bSynced = FALSE;

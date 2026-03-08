@@ -26,6 +26,7 @@
 2. При warm-tail (`al_tick_warm_left`) происходит переход `HOT -> WARM`.
 3. В `COLD/OFF` тик не продолжает планирование.
 4. При stale token отложенный тик безопасно прерывается.
+5. При `al_debug>=1` каждые 20 тиков появляется summary-лог `AL: area metric summary` с текущими счётчиками area.
 
 ## 3) Smoke: adjacency / interior
 
@@ -47,6 +48,10 @@
 1. Невалидный route/activity должен уводить NPC в безопасный fallback.
 2. `AL_EVT_ROUTE_REPEAT` игнорируется, если route неактивен или слот устарел.
 3. Для парных ролей (training/bar) при разрыве пары обе стороны переходят в fallback-активность.
+4. После fallback-сценариев проверить, что в summary корректно отражаются счётчики:
+   - `al_metric_summary_tick` монотонно растёт на каждом area tick;
+   - `al_metric_activity_fallback_count` увеличивается после fallback активностей;
+   - `al_metric_route_resync_count` и `al_metric_route_truncated_count` не уменьшаются и меняются только при соответствующих кейсах.
 
 ## 6) Regression notes
 
