@@ -261,8 +261,28 @@ void AL_CacheAreaRoutes(object oArea)
                 string sTargetAreaTag = GetLocalString(oWp, "al_transition_area_tag");
                 if (sTargetAreaTag != "")
                 {
-                    object oTargetArea = GetObjectByTag(sTargetAreaTag);
-                    if (GetIsObjectValid(oTargetArea) && GetObjectType(oTargetArea) == OBJECT_TYPE_AREA)
+                    object oTargetArea = OBJECT_INVALID;
+                    int iTagIndex = 0;
+                    while (TRUE)
+                    {
+                        object oTagCandidate = GetObjectByTag(sTargetAreaTag, iTagIndex);
+                        if (!GetIsObjectValid(oTagCandidate))
+                        {
+                            break;
+                        }
+
+                        if (GetObjectType(oTagCandidate) == OBJECT_TYPE_AREA)
+                        {
+                            oTargetArea = oTagCandidate;
+                            break;
+                        }
+
+                        AL_AreaDebugLog(oArea, AL_DEBUG_LEVEL_L2, "AL: transition area tag '" + sTargetAreaTag
+                            + "' resolved to non-area object; skipped candidate.");
+                        iTagIndex++;
+                    }
+
+                    if (GetIsObjectValid(oTargetArea))
                     {
                         string sTargetWpTag = GetLocalString(oWp, "al_transition_waypoint_tag");
                         if (sTargetWpTag == "")
