@@ -12,6 +12,12 @@ void AL_ResetRouteIndex(object oNpc)
     SetLocalInt(oNpc, AL_L_ROUTE_INDEX, 0);
 }
 
+
+void AL_IncrementLocalMetric(object oObj, string sKey)
+{
+    SetLocalInt(oObj, sKey, GetLocalInt(oObj, sKey) + 1);
+}
+
 int AL_ActivityUsesRoute(int nSlot)
 {
     return AL_GetRouteCount(OBJECT_SELF, nSlot) > 0;
@@ -240,6 +246,7 @@ void AL_LogPairFallbackOnResync(object oNpc, int nEvent, int nActivity)
     if ((bNeedsTrainingPartner && !bTrainingPartnerValid)
         || (bNeedsBarPair && !bBarPairValid))
     {
+        AL_IncrementLocalMetric(oNpc, AL_L_METRIC_ACTIVITY_FALLBACK_COUNT);
         AL_DebugLogL1(oArea, oNpc,
             "AL: resync fallback to ACT_ONE for " + GetName(oNpc)
             + " (invalid training/bar pair after wake)."
@@ -275,6 +282,7 @@ void AL_ProcessSlotEvent(object oNpc, object oArea, int nSlot, int nEvent)
 
     if (!bCanUseRoute)
     {
+        AL_IncrementLocalMetric(oNpc, AL_L_METRIC_ACTIVITY_FALLBACK_COUNT);
         AL_ClearRouteAndRepeatState(oNpc, FALSE);
     }
 
@@ -342,6 +350,7 @@ void AL_ProcessSlotEvent(object oNpc, object oArea, int nSlot, int nEvent)
 void AL_HandleResyncEvent(object oNpc, object oArea, int nSlot)
 {
     AL_ResetRepeatRequeueCooldown(oNpc);
+    AL_IncrementLocalMetric(oNpc, AL_L_METRIC_ROUTE_RESYNC_COUNT);
     AL_DebugLogL1(oArea, oNpc, "AL: RESYNC started for " + GetName(oNpc) + ".");
     // Wake/resync contract: pair subsystem must be validated before
     // evaluating route/activity requirements for this slot.
