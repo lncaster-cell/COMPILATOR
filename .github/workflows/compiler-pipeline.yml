@@ -1,0 +1,118 @@
+name: Compiler pipeline
+
+on:
+  push:
+    paths:
+      - 'scripts/**/*.nss'
+      - 'tools/nwn2_compiler/**'
+      - '.github/workflows/compiler-pipeline.yml'
+  pull_request:
+    paths:
+      - 'scripts/**/*.nss'
+      - 'tools/nwn2_compiler/**'
+      - '.github/workflows/compiler-pipeline.yml'
+  workflow_dispatch:
+
+jobs:
+  compile:
+    runs-on: windows-latest
+    env:
+      COMPILER_PATH: tools/nwn2_compiler/bin/NWNScriptCompiler.exe
+      SCRIPTS_GLOB: scripts/*.nss
+      OUTPUT_DIR: artifacts/ncc
+      # При необходимости можно переопределить через Variables/Env на уровне репозитория.
+      CHECK_ARGS: '--mode check'
+      BUGFIND_ARGS: '--mode bugfind'
+      OPTIMIZE_ARGS: '--mode optimize'
+      BUILD_ARGS: '--mode build'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run compiler modes (check -> bugfind -> optimize -> build)
+        id: compile
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          if (-not (Test-Path $env:COMPILER_PATH)) {
+            throw "Compiler not found: $env:COMPILER_PATH"
+          }
+
+          New-Item -ItemType Directory -Force -Path logs | Out-Null
+          New-Item -ItemType Directory -Force -Path $env:OUTPUT_DIR | Out-Null
+
+          $modes = @(
+            @{ Name = 'check';    Args = $env:CHECK_ARGS },
+            @{ Name = 'bugfind';  Args = $env:BUGFIND_ARGS },
+            @{ Name = 'optimize'; Args = $env:OPTIMIZE_ARGS },
+            @{ Name = 'build';    Args = $env:BUILD_ARGS }
+          )
+
+          function Invoke-Mode {
+            param(
+              [string]$ModeName,
+              [string]$ModeArgs
+            )
+
+            $logFile = "logs/$ModeName.log"
+            $args = @()
+            if ($ModeArgs) {
+              $args += [Management.Automation.PSParser]::Tokenize($ModeArgs, [ref]$null) |
+                Where-Object { $_.Type -eq 'CommandArgument' } |
+                ForEach-Object { $_.Content }
+            }
+            $args += @('--output', $env:OUTPUT_DIR, $env:SCRIPTS_GLOB)
+
+            "Running mode '$ModeName': $env:COMPILER_PATH $($args -join ' ')" | Tee-Object -FilePath $logFile -Append
+            & $env:COMPILER_PATH @args 2>&1 | Tee-Object -FilePath $logFile -Append
+            $exitCode = $LASTEXITCODE
+
+            if ($exitCode -ne 0) {
+              $errorLines = Select-String -Path $logFile -Pattern '(?i)\berror\b' |
+                Select-Object -First 20 |
+                ForEach-Object { "- $($_.Line.Trim())" }
+
+              Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "## ❌ Compiler failed on mode: $ModeName"
+              Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ""
+              Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "First 20 errors:"
+
+              if ($errorLines.Count -gt 0) {
+                $errorLines | ForEach-Object { Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value $_ }
+              } else {
+                Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- No explicit error lines found, check the attached logs artifact."
+              }
+
+              throw "Compilation failed in mode '$ModeName' with exit code $exitCode"
+            }
+          }
+
+          foreach ($mode in $modes) {
+            Invoke-Mode -ModeName $mode.Name -ModeArgs $mode.Args
+          }
+
+          if (-not (Get-ChildItem -Path $env:OUTPUT_DIR -Filter '*.ncs' -Recurse -ErrorAction SilentlyContinue)) {
+            Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "## ⚠️ Build finished but no *.ncs files were found in '$env:OUTPUT_DIR'."
+            throw "No compiled scripts found (*.ncs)."
+          }
+
+          Compress-Archive -Path "$env:OUTPUT_DIR/*" -DestinationPath compiled-ncc-scripts.zip -Force
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "## ✅ Compilation succeeded"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "Packed artifact: compiled-ncc-scripts.zip"
+
+      - name: Upload compiler logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiler-logs
+          path: logs/
+          if-no-files-found: warn
+
+      - name: Upload compiled ncc archive
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-ncc-scripts
+          path: compiled-ncc-scripts.zip
+          if-no-files-found: error
