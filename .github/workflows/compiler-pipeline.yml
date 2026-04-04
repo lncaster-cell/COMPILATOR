@@ -11,16 +11,17 @@ jobs:
       SOURCE_DIR: scripts/src
       OUTPUT_DIR: artifacts/ncc
       # При необходимости можно переопределить через Variables/Env на уровне репозитория.
-      CHECK_ARGS: '--mode check'
-      DEBUG_ARGS: '--mode debug'
-      OPTIMIZE_ARGS: '--mode optimize'
-      BUILD_ARGS: '--mode build'
+      # Реальные флаги NWNScriptCompiler (см. `NWNScriptCompiler -?`).
+      CHECK_ARGS: '-c -a'
+      OPTIMIZATION_ARGS: '-c -o'
+      BUGFIND_ARGS: '-c -a -j'
+      BUILD_ARGS: '-c'
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run compiler modes (check -> debug -> optimize -> build)
+      - name: Run compiler modes (check -> optimization -> bugfind -> build)
         id: compile
         shell: pwsh
         run: |
@@ -45,8 +46,8 @@ jobs:
 
           $modes = @(
             @{ Name = 'check';    Args = $env:CHECK_ARGS },
-            @{ Name = 'debug';    Args = $env:DEBUG_ARGS },
-            @{ Name = 'optimize'; Args = $env:OPTIMIZE_ARGS },
+            @{ Name = 'optimization'; Args = $env:OPTIMIZATION_ARGS },
+            @{ Name = 'bugfind';      Args = $env:BUGFIND_ARGS },
             @{ Name = 'build';    Args = $env:BUILD_ARGS }
           )
 
@@ -63,7 +64,7 @@ jobs:
                 Where-Object { $_.Type -eq 'CommandArgument' } |
                 ForEach-Object { $_.Content }
             }
-            $args += @('--output', $env:OUTPUT_DIR)
+            $args += @('-b', $env:OUTPUT_DIR)
             $args += $script:sourceFiles.FullName
 
             "Running mode '$ModeName': $env:COMPILER_PATH $($args -join ' ')" | Tee-Object -FilePath $logFile -Append
@@ -80,9 +81,16 @@ jobs:
               Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "First 20 errors:"
 
               if ($errorLines.Count -gt 0) {
-                $errorLines | ForEach-Object { Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value $_ }
+                Write-Host "Top 20 errors for mode '$ModeName':"
+                $errorLines | ForEach-Object {
+                  Write-Host $_
+                  Write-Host "::error::$_"
+                  Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value $_
+                }
               } else {
-                Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- No explicit error lines found, check the attached logs artifact."
+                $fallback = "- No explicit error lines found, check the attached logs artifact."
+                Write-Host $fallback
+                Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value $fallback
               }
 
               throw "Compilation failed in mode '$ModeName' with exit code $exitCode"
