@@ -1,3 +1,6 @@
+#ifndef DL_ACTIVITY_INC_NSS
+#define DL_ACTIVITY_INC_NSS
+
 #include "daily_life/dl_const_inc"
 
 int DL_ResolveActivityKind(object oNPC, int nDirective, int nAnchorGroup)
@@ -44,3 +47,4 @@ void DL_ApplyActivityAndMove(object oNPC, int nActivityKind, object oPoint)
     }
 }
 
+#endif // DL_ACTIVITY_INC_NSS
