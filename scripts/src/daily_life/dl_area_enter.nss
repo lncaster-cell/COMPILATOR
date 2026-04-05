@@ -1,5 +1,5 @@
-#include "dl_area_inc"
-#include "dl_resync_inc"
+#include "daily_life/dl_area_inc"
+#include "daily_life/dl_resync_inc"
 
 void main()
 {

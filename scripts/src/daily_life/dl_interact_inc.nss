@@ -1,9 +1,6 @@
-#ifndef DL_INTERACT_INC_NSS
-#define DL_INTERACT_INC_NSS
-
-#include "dl_const_inc"
-#include "dl_override_inc"
-#include "dl_resolver_inc"
+#include "daily_life/dl_const_inc"
+#include "daily_life/dl_override_inc"
+#include "daily_life/dl_resolver_inc"
 
 void DL_SetDialogueMode(object oNPC, int nDialogueMode)
 {
@@ -37,4 +34,3 @@ void DL_SetInteractionStateExplicit(object oNPC, int nDirective, int nDialogueMo
     SetLocalInt(oNPC, DL_L_ANCHOR_GROUP, DL_ResolveAnchorGroup(oNPC, nDirective));
 }
 
-#endif
