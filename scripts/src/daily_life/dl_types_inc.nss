@@ -1,3 +1,6 @@
+#ifndef DL_TYPES_INC_NSS
+#define DL_TYPES_INC_NSS
+
 #include "daily_life/dl_const_inc"
 #include "daily_life/dl_util_inc"
 
@@ -192,3 +195,4 @@ int DL_SupportsDirective(object oNPC, int nDirective)
     return (nMask & (1 << nDirective)) != 0;
 }
 
+#endif // DL_TYPES_INC_NSS
