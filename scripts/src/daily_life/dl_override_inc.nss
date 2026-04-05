@@ -1,6 +1,3 @@
-#ifndef DL_OVERRIDE_INC_NSS
-#define DL_OVERRIDE_INC_NSS
-
 #include "daily_life/dl_const_inc"
 #include "daily_life/dl_types_inc"
 
@@ -58,4 +55,3 @@ int DL_ShouldDisableService(object oNPC, int nOverrideKind)
     return FALSE;
 }
 
-#endif // DL_OVERRIDE_INC_NSS

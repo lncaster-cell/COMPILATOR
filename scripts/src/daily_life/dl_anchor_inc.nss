@@ -1,6 +1,3 @@
-#ifndef DL_ANCHOR_INC_NSS
-#define DL_ANCHOR_INC_NSS
-
 #include "daily_life/dl_const_inc"
 #include "daily_life/dl_util_inc"
 #include "daily_life/dl_types_inc"
@@ -174,4 +171,3 @@ object DL_FindAnchorPointIgnoringPolicy(object oNPC, object oArea, int nAnchorGr
     return DL_FindFallbackAnchorPointIgnoringPolicy(oNPC, oArea, nAnchorGroup);
 }
 
-#endif // DL_ANCHOR_INC_NSS

@@ -1,6 +1,3 @@
-#ifndef DL_LOG_INC_NSS
-#define DL_LOG_INC_NSS
-
 #include "daily_life/dl_const_inc"
 
 void DL_Log(int nLevel, string sMessage)
@@ -23,4 +20,3 @@ void DL_LogNpc(object oNPC, int nLevel, string sMessage)
     DL_Log(nLevel, sTag + ": " + sMessage);
 }
 
-#endif // DL_LOG_INC_NSS

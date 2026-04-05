@@ -1,6 +1,3 @@
-#ifndef DL_SLOT_HANDOFF_INC_NSS
-#define DL_SLOT_HANDOFF_INC_NSS
-
 #include "daily_life/dl_const_inc"
 #include "daily_life/dl_log_inc"
 
@@ -294,5 +291,3 @@ void DL_OnFunctionSlotAssigned(string sFunctionSlotId, object oNPC)
     }
     DL_LogNpc(oNPC, DL_DEBUG_BASIC, "Slot assigned: " + sFunctionSlotId);
 }
-
-#endif // DL_SLOT_HANDOFF_INC_NSS

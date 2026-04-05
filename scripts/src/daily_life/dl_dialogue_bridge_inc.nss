@@ -1,6 +1,3 @@
-#ifndef DL_DIALOGUE_BRIDGE_INC_NSS
-#define DL_DIALOGUE_BRIDGE_INC_NSS
-
 #include "daily_life/dl_const_inc"
 #include "daily_life/dl_util_inc"
 #include "daily_life/dl_types_inc"
@@ -316,4 +313,3 @@ int DL_OpenConversationStore(object oNPC, object oPC)
     return TRUE;
 }
 
-#endif // DL_DIALOGUE_BRIDGE_INC_NSS

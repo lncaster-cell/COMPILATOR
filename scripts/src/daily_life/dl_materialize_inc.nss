@@ -1,6 +1,3 @@
-#ifndef DL_MATERIALIZE_INC_NSS
-#define DL_MATERIALIZE_INC_NSS
-
 #include "daily_life/dl_const_inc"
 #include "daily_life/dl_log_inc"
 #include "daily_life/dl_util_inc"
@@ -318,4 +315,3 @@ void DL_MaterializeNpc(object oNPC, object oArea)
     DL_RefreshInteractionState(oNPC, oArea);
 }
 
-#endif // DL_MATERIALIZE_INC_NSS
