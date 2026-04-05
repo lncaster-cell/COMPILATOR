@@ -46,10 +46,11 @@ jobs:
             throw "Stock scripts directory not found: $env:STOCK_SCRIPTS_DIR"
           }
 
-          $script:sourceFiles = Get-ChildItem -Path $env:SOURCE_DIR -Filter '*.nss' -File -Recurse
+          $script:sourceFiles = Get-ChildItem -Path $env:SOURCE_DIR -Filter '*.nss' -File -Recurse |
+            Where-Object { $_.Name -notlike '*_inc.nss' }
 
           if (-not $script:sourceFiles -or $script:sourceFiles.Count -eq 0) {
-            throw "No source scripts (*.nss) found in '$env:SOURCE_DIR'"
+            throw "No source scripts (*.nss, excluding *_inc.nss) found in '$env:SOURCE_DIR'"
           }
 
           $modes = @(
