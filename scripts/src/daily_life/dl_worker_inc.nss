@@ -1,3 +1,6 @@
+#ifndef DL_WORKER_INC_NSS
+#define DL_WORKER_INC_NSS
+
 #include "daily_life/dl_const_inc"
 #include "daily_life/dl_area_inc"
 #include "daily_life/dl_resync_inc"
@@ -265,3 +268,4 @@ void DL_AreaWorkerTick(object oArea)
     DL_DispatchDueJobs(oArea, DL_GetWorkerBudget(oArea));
 }
 
+#endif // DL_WORKER_INC_NSS

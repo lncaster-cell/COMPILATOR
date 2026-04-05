@@ -1,3 +1,6 @@
+#ifndef DL_UTIL_INC_NSS
+#define DL_UTIL_INC_NSS
+
 #include "daily_life/dl_const_inc"
 
 int DL_IsValidCreature(object oNPC)
@@ -219,3 +222,4 @@ string DL_GetAreaAnchorTagCandidate(object oNPC, object oArea, int nAnchorGroup,
     return GetTag(oArea) + "_" + DL_GetSubtypeAnchorToken(oNPC, nAnchorGroup) + "_" + IntToString(nIndex);
 }
 
+#endif // DL_UTIL_INC_NSS
