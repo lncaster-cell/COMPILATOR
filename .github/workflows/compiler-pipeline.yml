@@ -58,18 +58,26 @@ jobs:
             )
 
             $logFile = "logs/$ModeName.log"
-            $args = @()
+            $baseArgs = @()
             if ($ModeArgs) {
-              $args += [Management.Automation.PSParser]::Tokenize($ModeArgs, [ref]$null) |
+              $baseArgs += [Management.Automation.PSParser]::Tokenize($ModeArgs, [ref]$null) |
                 Where-Object { $_.Type -eq 'CommandArgument' } |
                 ForEach-Object { $_.Content }
             }
-            $args += @('-b', $env:OUTPUT_DIR)
-            $args += $script:sourceFiles.FullName
+            $baseArgs += @('-b', $env:OUTPUT_DIR)
+            $exitCode = 0
 
-            "Running mode '$ModeName': $env:COMPILER_PATH $($args -join ' ')" | Tee-Object -FilePath $logFile -Append
-            & $env:COMPILER_PATH @args 2>&1 | Tee-Object -FilePath $logFile -Append
-            $exitCode = $LASTEXITCODE
+            foreach ($sourceFile in $script:sourceFiles) {
+              $args = @()
+              $args += $baseArgs
+              $args += $sourceFile.FullName
+
+              "Running mode '$ModeName' for '$($sourceFile.FullName)': $env:COMPILER_PATH $($args -join ' ')" | Tee-Object -FilePath $logFile -Append
+              & $env:COMPILER_PATH @args 2>&1 | Tee-Object -FilePath $logFile -Append
+              if ($LASTEXITCODE -ne 0) {
+                $exitCode = $LASTEXITCODE
+              }
+            }
 
             if ($exitCode -ne 0) {
               $errorPattern = '(?i)(\berror\b|\bfatal\b|\bexception\b|ошибк|failed|\.nss\(\d+\))'
