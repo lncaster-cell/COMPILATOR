@@ -1,3 +1,6 @@
+#ifndef DL_SCHEDULE_INC_NSS
+#define DL_SCHEDULE_INC_NSS
+
 #include "daily_life/dl_const_inc"
 #include "daily_life/dl_types_inc"
 
@@ -216,3 +219,5 @@ int DL_DetermineScheduleWindow(int nTemplate, int nDayType, int nMinuteOfDay, in
     }
     return DL_WIN_SLEEP;
 }
+
+#endif // DL_SCHEDULE_INC_NSS
