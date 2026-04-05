@@ -1,5 +1,5 @@
-#include "dl_const_inc"
-#include "dl_types_inc"
+#include "daily_life/dl_const_inc"
+#include "daily_life/dl_types_inc"
 
 int DL_GetDaysInMonth(int nYear, int nMonth)
 {

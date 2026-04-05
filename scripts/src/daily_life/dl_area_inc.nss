@@ -1,9 +1,6 @@
-#ifndef DL_AREA_INC_NSS
-#define DL_AREA_INC_NSS
-
-#include "dl_const_inc"
-#include "dl_log_inc"
-#include "dl_util_inc"
+#include "daily_life/dl_const_inc"
+#include "daily_life/dl_log_inc"
+#include "daily_life/dl_util_inc"
 
 int DL_GetAreaTier(object oArea)
 {
@@ -43,4 +40,3 @@ void DL_OnAreaBecameFrozen(object oArea)
     DL_Log(DL_DEBUG_BASIC, "Area FROZEN: " + GetTag(oArea));
 }
 
-#endif

@@ -1,15 +1,12 @@
-#ifndef DL_MATERIALIZE_INC_NSS
-#define DL_MATERIALIZE_INC_NSS
-
-#include "dl_const_inc"
-#include "dl_log_inc"
-#include "dl_util_inc"
-#include "dl_override_inc"
-#include "dl_resolver_inc"
-#include "dl_anchor_inc"
-#include "dl_activity_inc"
-#include "dl_interact_inc"
-#include "dl_slot_handoff_inc"
+#include "daily_life/dl_const_inc"
+#include "daily_life/dl_log_inc"
+#include "daily_life/dl_util_inc"
+#include "daily_life/dl_override_inc"
+#include "daily_life/dl_resolver_inc"
+#include "daily_life/dl_anchor_inc"
+#include "daily_life/dl_activity_inc"
+#include "daily_life/dl_interact_inc"
+#include "daily_life/dl_slot_handoff_inc"
 
 int DL_ShouldInstantPlace(object oNPC, object oArea, object oPoint)
 {
@@ -318,4 +315,3 @@ void DL_MaterializeNpc(object oNPC, object oArea)
     DL_RefreshInteractionState(oNPC, oArea);
 }
 
-#endif

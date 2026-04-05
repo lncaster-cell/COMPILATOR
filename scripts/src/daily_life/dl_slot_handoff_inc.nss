@@ -1,5 +1,5 @@
-#include "dl_const_inc"
-#include "dl_log_inc"
+#include "daily_life/dl_const_inc"
+#include "daily_life/dl_log_inc"
 
 const int DL_SLOT_REVIEW_TTL_SECONDS = 60;
 

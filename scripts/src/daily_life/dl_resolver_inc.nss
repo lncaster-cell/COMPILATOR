@@ -1,7 +1,7 @@
-#include "dl_const_inc"
-#include "dl_types_inc"
-#include "dl_schedule_inc"
-#include "dl_override_inc"
+#include "daily_life/dl_const_inc"
+#include "daily_life/dl_types_inc"
+#include "daily_life/dl_schedule_inc"
+#include "daily_life/dl_override_inc"
 
 int DL_ResolveDirectiveFromSchedule(object oNPC, int nScheduleWindow, int nDayType)
 {

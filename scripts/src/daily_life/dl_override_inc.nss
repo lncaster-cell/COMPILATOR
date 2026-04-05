@@ -1,8 +1,5 @@
-#ifndef DL_OVERRIDE_INC_NSS
-#define DL_OVERRIDE_INC_NSS
-
-#include "dl_const_inc"
-#include "dl_types_inc"
+#include "daily_life/dl_const_inc"
+#include "daily_life/dl_types_inc"
 
 int DL_GetTopOverride(object oNPC, object oArea)
 {
@@ -58,4 +55,3 @@ int DL_ShouldDisableService(object oNPC, int nOverrideKind)
     return FALSE;
 }
 
-#endif

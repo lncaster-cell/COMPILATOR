@@ -1,11 +1,8 @@
-#ifndef DL_DIALOGUE_BRIDGE_INC_NSS
-#define DL_DIALOGUE_BRIDGE_INC_NSS
-
-#include "dl_const_inc"
-#include "dl_util_inc"
-#include "dl_types_inc"
-#include "dl_interact_inc"
-#include "dl_log_inc"
+#include "daily_life/dl_const_inc"
+#include "daily_life/dl_util_inc"
+#include "daily_life/dl_types_inc"
+#include "daily_life/dl_interact_inc"
+#include "daily_life/dl_log_inc"
 
 const string DL_L_CONV_STORE_OBJECT = "dl_conv_store_object";
 const string DL_L_CONV_STORE_TAG = "dl_conv_store_tag";
@@ -316,4 +313,3 @@ int DL_OpenConversationStore(object oNPC, object oPC)
     return TRUE;
 }
 
-#endif

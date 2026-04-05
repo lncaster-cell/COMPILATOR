@@ -1,7 +1,7 @@
-#include "dl_const_inc"
-#include "dl_types_inc"
-#include "dl_materialize_inc"
-#include "dl_interact_inc"
+#include "daily_life/dl_const_inc"
+#include "daily_life/dl_types_inc"
+#include "daily_life/dl_materialize_inc"
+#include "daily_life/dl_interact_inc"
 
 int DL_ShouldResync(object oNPC, int nReason)
 {

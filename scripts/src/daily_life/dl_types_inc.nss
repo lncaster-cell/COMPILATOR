@@ -1,8 +1,5 @@
-#ifndef DL_TYPES_INC_NSS
-#define DL_TYPES_INC_NSS
-
-#include "dl_const_inc"
-#include "dl_util_inc"
+#include "daily_life/dl_const_inc"
+#include "daily_life/dl_util_inc"
 
 int DL_IsFamilyInFirstPlayableSlice(int nFamily)
 {
@@ -195,4 +192,3 @@ int DL_SupportsDirective(object oNPC, int nDirective)
     return (nMask & (1 << nDirective)) != 0;
 }
 
-#endif
