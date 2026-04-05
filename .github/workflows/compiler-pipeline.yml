@@ -30,9 +30,12 @@ jobs:
           if (-not (Test-Path $env:COMPILER_PATH)) {
             throw "Compiler not found: $env:COMPILER_PATH"
           }
+          $compilerFullPath = (Resolve-Path $env:COMPILER_PATH).Path
+          $compilerWorkingDir = Split-Path -Parent $compilerFullPath
 
           New-Item -ItemType Directory -Force -Path logs | Out-Null
           New-Item -ItemType Directory -Force -Path $env:OUTPUT_DIR | Out-Null
+          $outputFullPath = (Resolve-Path $env:OUTPUT_DIR).Path
 
           if (-not (Test-Path $env:SOURCE_DIR)) {
             throw "Source directory not found: $env:SOURCE_DIR"
@@ -62,7 +65,7 @@ jobs:
             if ($ModeArgs) {
               $baseArgs += ($ModeArgs -split '\s+' | Where-Object { $_ -and $_.Trim() -ne '' })
             }
-            $baseArgs += @('-b', $env:OUTPUT_DIR)
+            $baseArgs += @('-b', $outputFullPath)
             $exitCode = 0
 
             foreach ($sourceFile in $script:sourceFiles) {
@@ -70,8 +73,13 @@ jobs:
               $args += $baseArgs
               $args += $sourceFile.FullName
 
-              "Running mode '$ModeName' for '$($sourceFile.FullName)': $env:COMPILER_PATH $($args -join ' ')" | Tee-Object -FilePath $logFile -Append
-              & $env:COMPILER_PATH @args 2>&1 | Tee-Object -FilePath $logFile -Append
+              "Running mode '$ModeName' for '$($sourceFile.FullName)' from '$compilerWorkingDir': $compilerFullPath $($args -join ' ')" | Tee-Object -FilePath $logFile -Append
+              Push-Location $compilerWorkingDir
+              try {
+                & $compilerFullPath @args 2>&1 | Tee-Object -FilePath $logFile -Append
+              } finally {
+                Pop-Location
+              }
               if ($LASTEXITCODE -ne 0) {
                 $exitCode = $LASTEXITCODE
               }
