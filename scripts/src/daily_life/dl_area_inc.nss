@@ -1,7 +1,3 @@
-#include "daily_life/dl_const_inc"
-#include "daily_life/dl_log_inc"
-#include "daily_life/dl_util_inc"
-
 int DL_GetAreaTier(object oArea)
 {
     return GetLocalInt(oArea, DL_L_AREA_TIER);
@@ -39,4 +35,3 @@ void DL_OnAreaBecameFrozen(object oArea)
     DL_SetAreaTier(oArea, DL_AREA_FROZEN);
     DL_Log(DL_DEBUG_BASIC, "Area FROZEN: " + GetTag(oArea));
 }
-

@@ -1,9 +1,3 @@
-#pragma once
-
-#include "daily_life/dl_const_inc"
-#include "daily_life/dl_override_inc"
-#include "daily_life/dl_resolver_inc"
-
 void DL_SetDialogueMode(object oNPC, int nDialogueMode)
 {
     SetLocalInt(oNPC, DL_L_DIALOGUE_MODE, nDialogueMode);

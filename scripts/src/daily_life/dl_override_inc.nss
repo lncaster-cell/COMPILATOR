@@ -1,8 +1,3 @@
-#pragma once
-
-#include "daily_life/dl_const_inc"
-#include "daily_life/dl_types_inc"
-
 int DL_GetTopOverride(object oNPC, object oArea)
 {
     int nOverride = GetLocalInt(oNPC, DL_L_OVERRIDE_KIND);

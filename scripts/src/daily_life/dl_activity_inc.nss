@@ -1,7 +1,3 @@
-#pragma once
-
-#include "daily_life/dl_const_inc"
-
 int DL_ResolveActivityKind(object oNPC, int nDirective, int nAnchorGroup)
 {
     if (nDirective == DL_DIR_SLEEP)

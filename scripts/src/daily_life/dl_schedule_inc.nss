@@ -1,8 +1,3 @@
-#pragma once
-
-#include "daily_life/dl_const_inc"
-#include "daily_life/dl_types_inc"
-
 int DL_GetDaysInMonth(int nYear, int nMonth)
 {
     if (nYear < 0 || nMonth < 1 || nMonth > 12)
