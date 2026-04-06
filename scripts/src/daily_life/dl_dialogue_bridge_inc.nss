@@ -232,23 +232,20 @@ object DL_GetConversationStore(object oNPC)
                 continue;
             }
 
-            if (GetObjectType(oArea) == OBJECT_TYPE_AREA)
+            nAreaMatches = DL_CountConversationStoresInArea(oArea, sStoreTag);
+            if (nAreaMatches > 1)
             {
-                nAreaMatches = DL_CountConversationStoresInArea(oArea, sStoreTag);
-                if (nAreaMatches > 1)
-                {
-                    DL_LogNpc(
-                        oNPC,
-                        DL_DEBUG_BASIC,
-                        "conversation store tag conflict in area: area_tag=" + GetTag(oArea) + ", store_tag=" + sStoreTag
-                    );
-                    return OBJECT_INVALID;
-                }
-                if (nAreaMatches == 1)
-                {
-                    oCandidate = DL_FindConversationStoreInArea(oArea, sStoreTag);
-                    nTotalMatches += 1;
-                }
+                DL_LogNpc(
+                    oNPC,
+                    DL_DEBUG_BASIC,
+                    "conversation store tag conflict in area: area_tag=" + GetTag(oArea) + ", store_tag=" + sStoreTag
+                );
+                return OBJECT_INVALID;
+            }
+            if (nAreaMatches == 1)
+            {
+                oCandidate = DL_FindConversationStoreInArea(oArea, sStoreTag);
+                nTotalMatches += 1;
             }
 
             nAreaIndex += 1;
