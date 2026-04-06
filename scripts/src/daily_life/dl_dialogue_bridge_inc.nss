@@ -1,9 +1,3 @@
-#include "daily_life/dl_const_inc"
-#include "daily_life/dl_util_inc"
-#include "daily_life/dl_types_inc"
-#include "daily_life/dl_interact_inc"
-#include "daily_life/dl_log_inc"
-
 const string DL_L_CONV_STORE_OBJECT = "dl_conv_store_object";
 const string DL_L_CONV_STORE_TAG = "dl_conv_store_tag";
 const string DL_L_CONV_STORE_AREA_TAGS = "dl_conv_store_area_tags";
@@ -312,4 +306,3 @@ int DL_OpenConversationStore(object oNPC, object oPC)
     OpenStore(oStore, oPC, nMarkup, nMarkdown);
     return TRUE;
 }
-

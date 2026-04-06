@@ -1,13 +1,3 @@
-#include "daily_life/dl_const_inc"
-#include "daily_life/dl_log_inc"
-#include "daily_life/dl_util_inc"
-#include "daily_life/dl_override_inc"
-#include "daily_life/dl_resolver_inc"
-#include "daily_life/dl_anchor_inc"
-#include "daily_life/dl_activity_inc"
-#include "daily_life/dl_interact_inc"
-#include "daily_life/dl_slot_handoff_inc"
-
 int DL_ShouldInstantPlace(object oNPC, object oArea, object oPoint)
 {
     if (!GetIsObjectValid(oPoint))
@@ -314,4 +304,3 @@ void DL_MaterializeNpc(object oNPC, object oArea)
     DL_ApplyActivity(oNPC, DL_ResolveActivityKind(oNPC, nDirective, nAnchorGroup));
     DL_RefreshInteractionState(oNPC, oArea);
 }
-

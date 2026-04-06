@@ -1,10 +1,3 @@
-#include "daily_life/dl_const_inc"
-#include "daily_life/dl_area_inc"
-#include "daily_life/dl_resync_inc"
-#include "daily_life/dl_override_inc"
-#include "daily_life/dl_slot_handoff_inc"
-#include "daily_life/dl_types_inc"
-
 const string DL_L_WORKER_CURSOR = "dl_worker_cursor";
 const string DL_L_WORKER_CANDIDATE_IDX = "dl_worker_candidate_idx";
 const string DL_L_WORKER_IS_CANDIDATE = "dl_worker_is_candidate";
@@ -264,4 +257,3 @@ void DL_AreaWorkerTick(object oArea)
     }
     DL_DispatchDueJobs(oArea, DL_GetWorkerBudget(oArea));
 }
-
