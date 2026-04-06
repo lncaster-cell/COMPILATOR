@@ -1,9 +1,3 @@
-#pragma once
-
-#include "daily_life/dl_const_inc"
-#include "daily_life/dl_util_inc"
-#include "daily_life/dl_types_inc"
-
 int DL_IsAnchorContextAllowed(object oNPC, object oPoint)
 {
     if (!GetIsObjectValid(oPoint))
@@ -102,16 +96,28 @@ object DL_FindAnchorPoint(object oNPC, object oArea, int nAnchorGroup)
     while (i <= 4)
     {
         oPoint = DL_FindAnchorByTag(oArea, DL_GetAnchorTagCandidate(oNPC, nAnchorGroup, i));
-        if (GetIsObjectValid(oPoint) && DL_IsAnchorContextAllowed(oNPC, oPoint)) return oPoint;
+        if (GetIsObjectValid(oPoint) && DL_IsAnchorContextAllowed(oNPC, oPoint))
+        {
+            return oPoint;
+        }
 
         oPoint = DL_FindAnchorByTag(oArea, DL_GetBaseAnchorTagCandidate(oNPC, nAnchorGroup, i));
-        if (GetIsObjectValid(oPoint) && DL_IsAnchorContextAllowed(oNPC, oPoint)) return oPoint;
+        if (GetIsObjectValid(oPoint) && DL_IsAnchorContextAllowed(oNPC, oPoint))
+        {
+            return oPoint;
+        }
 
         oPoint = DL_FindAnchorByTag(oArea, DL_GetSpecializedAnchorTagCandidate(oNPC, nAnchorGroup, i));
-        if (GetIsObjectValid(oPoint) && DL_IsAnchorContextAllowed(oNPC, oPoint)) return oPoint;
+        if (GetIsObjectValid(oPoint) && DL_IsAnchorContextAllowed(oNPC, oPoint))
+        {
+            return oPoint;
+        }
 
         oPoint = DL_FindAnchorByTag(oArea, DL_GetAreaAnchorTagCandidate(oNPC, oArea, nAnchorGroup, i));
-        if (GetIsObjectValid(oPoint) && DL_IsAnchorContextAllowed(oNPC, oPoint)) return oPoint;
+        if (GetIsObjectValid(oPoint) && DL_IsAnchorContextAllowed(oNPC, oPoint))
+        {
+            return oPoint;
+        }
         i += 1;
     }
 
@@ -126,16 +132,28 @@ object DL_FindAnchorPointIgnoringPolicy(object oNPC, object oArea, int nAnchorGr
     while (i <= 4)
     {
         oPoint = DL_FindAnchorByTag(oArea, DL_GetAnchorTagCandidate(oNPC, nAnchorGroup, i));
-        if (GetIsObjectValid(oPoint)) return oPoint;
+        if (GetIsObjectValid(oPoint))
+        {
+            return oPoint;
+        }
 
         oPoint = DL_FindAnchorByTag(oArea, DL_GetBaseAnchorTagCandidate(oNPC, nAnchorGroup, i));
-        if (GetIsObjectValid(oPoint)) return oPoint;
+        if (GetIsObjectValid(oPoint))
+        {
+            return oPoint;
+        }
 
         oPoint = DL_FindAnchorByTag(oArea, DL_GetSpecializedAnchorTagCandidate(oNPC, nAnchorGroup, i));
-        if (GetIsObjectValid(oPoint)) return oPoint;
+        if (GetIsObjectValid(oPoint))
+        {
+            return oPoint;
+        }
 
         oPoint = DL_FindAnchorByTag(oArea, DL_GetAreaAnchorTagCandidate(oNPC, oArea, nAnchorGroup, i));
-        if (GetIsObjectValid(oPoint)) return oPoint;
+        if (GetIsObjectValid(oPoint))
+        {
+            return oPoint;
+        }
         i += 1;
     }
 
