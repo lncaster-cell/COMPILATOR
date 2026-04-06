@@ -1,7 +1,4 @@
-#include "daily_life/dl_const_inc"
-#include "daily_life/dl_log_inc"
-#include "daily_life/dl_types_inc"
-#include "daily_life/dl_resync_inc"
+#include "daily_life/dl_all_inc"
 
 string DL_SmokeDescribeDirective(int nDirective)
 {

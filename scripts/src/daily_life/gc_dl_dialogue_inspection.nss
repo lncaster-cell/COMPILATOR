@@ -1,4 +1,4 @@
-#include "daily_life/dl_dialogue_bridge_inc"
+#include "daily_life/dl_all_inc"
 
 int StartingConditional()
 {

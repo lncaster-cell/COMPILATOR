@@ -1,5 +1,4 @@
-#include "daily_life/dl_area_inc"
-#include "daily_life/dl_util_inc"
+#include "daily_life/dl_all_inc"
 
 void main()
 {

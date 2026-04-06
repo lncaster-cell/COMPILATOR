@@ -1,4 +1,4 @@
-#include "daily_life/dl_worker_inc"
+#include "daily_life/dl_all_inc"
 
 void main()
 {
