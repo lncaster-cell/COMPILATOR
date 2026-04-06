@@ -1,8 +1,3 @@
-#pragma once
-
-#include "daily_life/dl_const_inc"
-#include "daily_life/dl_util_inc"
-
 int DL_IsFamilyInFirstPlayableSlice(int nFamily)
 {
     return nFamily == DL_FAMILY_LAW

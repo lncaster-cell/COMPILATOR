@@ -1,7 +1,3 @@
-#pragma once
-
-#include "daily_life/dl_const_inc"
-
 int DL_IsValidCreature(object oNPC)
 {
     return GetIsObjectValid(oNPC) && GetObjectType(oNPC) == OBJECT_TYPE_CREATURE;

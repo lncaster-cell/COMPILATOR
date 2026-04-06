@@ -1,7 +1,3 @@
-#pragma once
-
-#include "daily_life/dl_const_inc"
-
 void DL_Log(int nLevel, string sMessage)
 {
     if (nLevel > DL_DEBUG_LEVEL)
