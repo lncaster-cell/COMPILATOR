@@ -8,7 +8,7 @@ jobs:
     runs-on: windows-latest
     env:
       COMPILER_PATH: tools/nwn2_compiler/bin/NWNScriptCompiler.exe
-      SOURCE_DIR: scripts/src
+      SOURCE_DIR: daily_life
       STOCK_SCRIPTS_DIR: tools/nwn2_compiler/stock_scripts
       OUTPUT_DIR: artifacts/ncc
       # При необходимости можно переопределить через Variables/Env на уровне репозитория.
