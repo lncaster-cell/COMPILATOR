@@ -444,6 +444,31 @@ object DL_GetNpcBase(object oNPC)
     return GetLocalObject(oNPC, DL_L_NPC_BASE);
 }
 
+int DL_GetNpcBaseKind(object oNPC)
+{
+    int nKind = GetLocalInt(oNPC, "dl_npc_base_kind");
+    int nFamily;
+    int nSubtype;
+    if (nKind >= DL_BASE_HOME && nKind <= DL_BASE_OFFICE) return nKind;
+
+    if (!GetIsObjectValid(DL_GetNpcBase(oNPC))) return DL_BASE_NONE;
+
+    nFamily = DL_GetNpcFamily(oNPC);
+    nSubtype = DL_GetNpcSubtype(oNPC);
+
+    if (nSubtype == DL_SUBTYPE_INNKEEPER) return DL_BASE_TAVERN;
+    if (nSubtype == DL_SUBTYPE_SHOPKEEPER || nSubtype == DL_SUBTYPE_WANDERING_VENDOR) return DL_BASE_SHOP;
+    if (nSubtype == DL_SUBTYPE_PRIEST) return DL_BASE_TEMPLE;
+    if (nSubtype == DL_SUBTYPE_OFFICIAL || nSubtype == DL_SUBTYPE_SCRIBE) return DL_BASE_OFFICE;
+
+    if (nFamily == DL_FAMILY_LAW) return DL_BASE_BARRACKS;
+    if (nFamily == DL_FAMILY_CRAFT) return DL_BASE_WORKSHOP;
+    if (nFamily == DL_FAMILY_CLERGY) return DL_BASE_TEMPLE;
+    if (nFamily == DL_FAMILY_ELITE_ADMIN) return DL_BASE_OFFICE;
+    if (nFamily == DL_FAMILY_TRADE_SERVICE) return DL_BASE_SHOP;
+    return DL_BASE_HOME;
+}
+
 string DL_GetFunctionSlotId(object oNPC)
 {
     return GetLocalString(oNPC, DL_L_FUNCTION_SLOT_ID);
@@ -995,6 +1020,10 @@ void DL_ApplyActivityAndMove(object oNPC, int nActivityKind, object oPoint)
 
 const int DL_SLOT_REVIEW_TTL_SECONDS = 60;
 
+// Forward declarations required by the legacy NWNScriptCompiler parser.
+int DL_NormalizeResyncReason(int nReason);
+int DL_SelectStrongerResyncReason(int nCurrentReason, int nRequestedReason);
+
 string DL_MakeSlotProfileKey(string sFunctionSlotId, string sField)
 {
     return "dl_slot_profile_" + sFunctionSlotId + "_" + sField;
@@ -1411,7 +1440,8 @@ int DL_IsConversationStoreCandidate(object oStore, string sStoreTag)
 
 int DL_IsConversationStoreSearchArea(object oArea)
 {
-    return GetIsObjectValid(oArea) && GetObjectType(oArea) == OBJECT_TYPE_AREA;
+    // NWN2 script constants do not include OBJECT_TYPE_AREA.
+    return GetIsObjectValid(oArea);
 }
 
 void DL_LogConversationStoreAreaConflict(object oNPC, object oArea, string sStoreTag)
