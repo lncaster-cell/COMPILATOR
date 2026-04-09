@@ -1,6 +1,3 @@
-#ifndef DL_CORE_INC_NSS
-#define DL_CORE_INC_NSS
-
 #include "dl_res_inc"
 
 // Daily Life core event ingress (clean-room).
@@ -63,6 +60,9 @@ const int DL_WORKER_BUDGET_WARM = 2;
 const int DL_WORKER_BUDGET_HOT = 4;
 const int DL_WORKER_BUDGET_MAX = 12;
 const int DL_WORKER_SCAN_CAP = 128;
+
+// Forward declaration for runtimes where function order matters during include parse.
+int DL_IsPipelineNpc(object oNpc);
 
 int DL_IsRuntimeEnabled()
 {
@@ -176,7 +176,7 @@ void DL_SetAreaWorkerCursor(object oArea, int nCursor)
 
 void DL_BootstrapAreaTier(object oArea)
 {
-    if (!GetIsObjectValid(oArea) || GetObjectType(oArea) != OBJECT_TYPE_AREA)
+    if (!GetIsObjectValid(oArea))
     {
         return;
     }
@@ -373,7 +373,7 @@ void DL_WorkerTouchNpc(object oNpc)
 
 void DL_RunAreaWorkerTick(object oArea)
 {
-    if (!GetIsObjectValid(oArea) || GetObjectType(oArea) != OBJECT_TYPE_AREA)
+    if (!GetIsObjectValid(oArea))
     {
         return;
     }
@@ -541,4 +541,3 @@ void DL_HandleNpcUserDefined(object oNpc, int nUserDefined)
     }
 }
 
-#endif

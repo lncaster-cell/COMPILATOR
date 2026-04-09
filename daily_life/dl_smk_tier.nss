@@ -4,8 +4,12 @@
 
 void main()
 {
-    object oArea = OBJECT_SELF;
-    if (GetObjectType(oArea) != OBJECT_TYPE_AREA)
+    object oArea = GetArea(OBJECT_SELF);
+    if (!GetIsObjectValid(oArea))
+    {
+        oArea = OBJECT_SELF;
+    }
+    if (!GetIsObjectValid(oArea))
     {
         oArea = GetArea(GetFirstPC());
     }

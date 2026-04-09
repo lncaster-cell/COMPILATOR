@@ -4,13 +4,17 @@
 
 void main()
 {
-    object oArea = OBJECT_SELF;
-    object oModule = GetModule();
-
-    if (GetObjectType(oArea) != OBJECT_TYPE_AREA)
+    object oArea = GetArea(OBJECT_SELF);
+    if (!GetIsObjectValid(oArea))
+    {
+        oArea = OBJECT_SELF;
+    }
+    if (!GetIsObjectValid(oArea))
     {
         oArea = GetArea(GetFirstPC());
     }
+
+    object oModule = GetModule();
 
     if (!GetIsObjectValid(oArea))
     {
