@@ -8,8 +8,15 @@ void main()
     DL_OnAreaEnterBootstrap(oArea, oEnter);
 
     object oPC = GetFirstPC();
+    string sActor = GetIsObjectValid(oEnter) ? GetName(oEnter) : "<invalid>";
+    string sLog = "[DL][AREA_ENTER] area=" + GetName(oArea) +
+                  " actor=" + sActor +
+                  " tier=" + IntToString(DL_GetAreaTier(oArea)) +
+                  " reg=" + IntToString(GetLocalInt(oArea, DL_L_AREA_REG_COUNT));
+
     if (GetIsObjectValid(oPC))
     {
-        SendMessageToPC(oPC, "[DL] area enter: area=" + GetName(oArea) + " actor=" + GetName(oEnter) + " tier=" + IntToString(DL_GetAreaTier(oArea)));
+        SendMessageToPC(oPC, sLog);
     }
+    PrintString(sLog);
 }

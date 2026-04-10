@@ -6,8 +6,13 @@ void main()
 
     object oModule = GetModule();
     object oPC = GetFirstPC();
+    string sLog = "[DL][LOAD] runtime=" + IntToString(DL_IsRuntimeEnabled()) +
+                  " enabled=" + IntToString(GetLocalInt(oModule, DL_L_MODULE_ENABLED)) +
+                  " contract=" + GetLocalString(oModule, DL_L_MODULE_CONTRACT_VERSION);
+
     if (GetIsObjectValid(oPC))
     {
-        SendMessageToPC(oPC, "[DL] load: runtime=" + IntToString(DL_IsRuntimeEnabled()) + " contract=" + GetLocalString(oModule, DL_L_MODULE_CONTRACT_VERSION));
+        SendMessageToPC(oPC, sLog);
     }
+    PrintString(sLog);
 }

@@ -8,8 +8,15 @@ void main()
     DL_OnAreaExitBootstrap(oArea, oExit);
 
     object oPC = GetFirstPC();
+    string sActor = GetIsObjectValid(oExit) ? GetName(oExit) : "<invalid>";
+    string sLog = "[DL][AREA_EXIT] area=" + GetName(oArea) +
+                  " actor=" + sActor +
+                  " tier=" + IntToString(DL_GetAreaTier(oArea)) +
+                  " reg=" + IntToString(GetLocalInt(oArea, DL_L_AREA_REG_COUNT));
+
     if (GetIsObjectValid(oPC))
     {
-        SendMessageToPC(oPC, "[DL] area exit: area=" + GetName(oArea) + " actor=" + GetName(oExit) + " tier=" + IntToString(DL_GetAreaTier(oArea)));
+        SendMessageToPC(oPC, sLog);
     }
+    PrintString(sLog);
 }

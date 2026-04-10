@@ -8,8 +8,17 @@ void main()
     DL_RunAreaWorkerTick(oArea);
 
     object oPC = GetFirstPC();
+    string sLog = "[DL][HB] area=" + GetName(oArea) +
+                  " tier=" + IntToString(DL_GetAreaTier(oArea)) +
+                  " tick=" + IntToString(GetLocalInt(oArea, DL_L_AREA_WORKER_TICK)) +
+                  " worker=" + IntToString(GetLocalInt(oModule, DL_L_MODULE_WORKER_TICKS)) +
+                  " reg=" + IntToString(GetLocalInt(oArea, DL_L_AREA_REG_COUNT)) +
+                  " cur=" + IntToString(DL_GetAreaWorkerCursor(oArea)) +
+                  " budget=" + IntToString(DL_GetAreaWorkerBudget(oArea));
+
     if (GetIsObjectValid(oPC))
     {
-        SendMessageToPC(oPC, "[DL] area heartbeat: area=" + GetName(oArea) + " tier=" + IntToString(DL_GetAreaTier(oArea)) + " tick=" + IntToString(GetLocalInt(oArea, DL_L_AREA_WORKER_TICK)) + " worker_ticks=" + IntToString(GetLocalInt(oModule, DL_L_MODULE_WORKER_TICKS)));
+        SendMessageToPC(oPC, sLog);
     }
+    PrintString(sLog);
 }
