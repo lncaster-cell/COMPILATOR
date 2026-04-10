@@ -44,6 +44,7 @@ const string DL_L_NPC_REG_ON = "dl_reg_on";
 const string DL_L_NPC_PROFILE_ID = "dl_profile_id";
 const string DL_L_NPC_STATE = "dl_state";
 const string DL_L_NPC_WORKER_SEQ = "dl_npc_worker_seq";
+const string DL_L_NPC_REG_AREA = "dl_npc_reg_area";
 
 const string DL_L_MODULE_WORKER_SEQ = "dl_module_worker_seq";
 const string DL_L_MODULE_WORKER_TICKS = "dl_module_worker_ticks";
@@ -311,6 +312,7 @@ void DL_RegisterNpc(object oNpc)
     object oArea = GetArea(oNpc);
     if (GetIsObjectValid(oArea))
     {
+        SetLocalObject(oNpc, DL_L_NPC_REG_AREA, oArea);
         SetLocalInt(oArea, DL_L_AREA_REG_COUNT, GetLocalInt(oArea, DL_L_AREA_REG_COUNT) + 1);
         SetLocalInt(oArea, DL_L_AREA_REG_SEQ, GetLocalInt(oArea, DL_L_AREA_REG_SEQ) + 1);
     }
@@ -331,6 +333,11 @@ void DL_UnregisterNpc(object oNpc)
     DeleteLocalInt(oNpc, DL_L_NPC_REG_ON);
 
     object oArea = GetArea(oNpc);
+    if (!GetIsObjectValid(oArea))
+    {
+        oArea = GetLocalObject(oNpc, DL_L_NPC_REG_AREA);
+    }
+
     if (GetIsObjectValid(oArea))
     {
         int nCount = GetLocalInt(oArea, DL_L_AREA_REG_COUNT);
@@ -340,6 +347,8 @@ void DL_UnregisterNpc(object oNpc)
         }
         SetLocalInt(oArea, DL_L_AREA_REG_SEQ, GetLocalInt(oArea, DL_L_AREA_REG_SEQ) + 1);
     }
+
+    DeleteLocalObject(oNpc, DL_L_NPC_REG_AREA);
 }
 
 void DL_ProcessResync(object oNpc)
