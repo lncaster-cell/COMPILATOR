@@ -86,6 +86,35 @@ void DL_InitModuleContract()
     }
 }
 
+int DL_IsAreaObject(object oObject)
+{
+    if (!GetIsObjectValid(oObject))
+    {
+        return FALSE;
+    }
+
+    return GetArea(oObject) == oObject;
+}
+
+int DL_IsPipelineNpc(object oNpc)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return FALSE;
+    }
+
+    if (GetObjectType(oNpc) != OBJECT_TYPE_CREATURE)
+    {
+        return FALSE;
+    }
+
+    if (GetIsDM(oNpc))
+    {
+        return FALSE;
+    }
+
+    return TRUE;
+}
 
 int DL_AreaHasPlayer(object oArea)
 {
@@ -173,7 +202,7 @@ void DL_SetAreaWorkerCursor(object oArea, int nCursor)
 
 void DL_BootstrapAreaTier(object oArea)
 {
-    if (!GetIsObjectValid(oArea) || GetObjectType(oArea) != OBJECT_TYPE_AREA)
+    if (!DL_IsAreaObject(oArea))
     {
         return;
     }
@@ -370,7 +399,7 @@ void DL_WorkerTouchNpc(object oNpc)
 
 void DL_RunAreaWorkerTick(object oArea)
 {
-    if (!GetIsObjectValid(oArea) || GetObjectType(oArea) != OBJECT_TYPE_AREA)
+    if (!DL_IsAreaObject(oArea))
     {
         return;
     }
@@ -442,26 +471,6 @@ void DL_RunAreaWorkerTick(object oArea)
     SetLocalInt(oArea, DL_L_AREA_WORKER_TICK, GetLocalInt(oArea, DL_L_AREA_WORKER_TICK) + 1);
     object oModule = GetModule();
     SetLocalInt(oModule, DL_L_MODULE_WORKER_TICKS, GetLocalInt(oModule, DL_L_MODULE_WORKER_TICKS) + 1);
-}
-
-int DL_IsPipelineNpc(object oNpc)
-{
-    if (!GetIsObjectValid(oNpc))
-    {
-        return FALSE;
-    }
-
-    if (GetObjectType(oNpc) != OBJECT_TYPE_CREATURE)
-    {
-        return FALSE;
-    }
-
-    if (GetIsDM(oNpc))
-    {
-        return FALSE;
-    }
-
-    return TRUE;
 }
 
 void DL_RequestNpcLifecycleSignal(object oNpc, int nEventKind)
@@ -537,4 +546,3 @@ void DL_HandleNpcUserDefined(object oNpc, int nUserDefined)
         DL_CleanupNpcRuntimeState(oNpc);
     }
 }
-
