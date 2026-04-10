@@ -109,6 +109,11 @@ int DL_IsPipelineNpc(object oNpc)
         return FALSE;
     }
 
+    if (GetIsDead(oNpc))
+    {
+        return FALSE;
+    }
+
     if (GetIsPC(oNpc))
     {
         return FALSE;
@@ -373,7 +378,7 @@ void DL_ProcessResync(object oNpc)
 
 void DL_CleanupNpcRuntimeState(object oNpc)
 {
-    if (!DL_IsPipelineNpc(oNpc))
+    if (!GetIsObjectValid(oNpc))
     {
         return;
     }
@@ -528,7 +533,7 @@ void DL_HandleNpcUserDefined(object oNpc, int nUserDefined)
         return;
     }
 
-    if (!DL_IsPipelineNpc(oNpc))
+    if (!GetIsObjectValid(oNpc))
     {
         return;
     }
@@ -548,6 +553,11 @@ void DL_HandleNpcUserDefined(object oNpc, int nUserDefined)
 
     if (nEventKind == DL_NPC_EVENT_SPAWN)
     {
+        if (!DL_IsPipelineNpc(oNpc))
+        {
+            return;
+        }
+
         DL_RegisterNpc(oNpc);
         DL_RequestResync(oNpc, DL_RESYNC_SPAWN);
         DL_ProcessResync(oNpc);
@@ -556,7 +566,6 @@ void DL_HandleNpcUserDefined(object oNpc, int nUserDefined)
 
     if (nEventKind == DL_NPC_EVENT_DEATH)
     {
-        DL_RequestResync(oNpc, DL_RESYNC_DEATH);
         DL_CleanupNpcRuntimeState(oNpc);
     }
 }
