@@ -2,6 +2,7 @@
 #include "dl_transition_inc"
 
 // Step 05+: resolver/materialization skeleton.
+string DL_GetNpcProblemSummary(object oNpc);
 // Scope: basic BLACKSMITH/GATE_POST/TRADER WORK/SLEEP window split.
 
 const string DL_L_NPC_DIRECTIVE = "dl_npc_directive";

@@ -26,17 +26,39 @@ object DL_ResolveSocialPartnerObject(object oNpc, string sPartnerTag)
         return oCached;
     }
 
-    object oPartner = GetObjectByTag(sPartnerTag);
-    if (oPartner == oNpc)
+    int bTagFound = FALSE;
+    int bTagFoundOutsideArea = FALSE;
+    object oPartner = OBJECT_INVALID;
+    int nTagIndex = 0;
+    object oCandidate = GetObjectByTag(sPartnerTag, nTagIndex);
+    while (GetIsObjectValid(oCandidate) && nTagIndex < DL_SOCIAL_PARTNER_TAG_SEARCH_CAP)
     {
-        SetLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC, "social_partner_self");
-        DL_LogChatDebugEvent(oNpc, "fallback_social_public", "fallback social->public reason=social_partner_self");
-        DeleteLocalObject(oNpc, DL_L_NPC_CACHE_SOCIAL_PARTNER_OBJ);
-        return OBJECT_INVALID;
+        bTagFound = TRUE;
+
+        if (oCandidate == oNpc)
+        {
+            SetLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC, "social_partner_self");
+            DL_LogChatDebugEvent(oNpc, "fallback_social_public", "fallback social->public reason=social_partner_self");
+        }
+        else if (!DL_IsActivePipelineNpc(oCandidate))
+        {
+            // Keep scanning for a suitable active pipeline NPC.
+        }
+        else if (GetArea(oCandidate) == GetArea(oNpc))
+        {
+            oPartner = oCandidate;
+            break;
+        }
+        else
+        {
+            bTagFoundOutsideArea = TRUE;
+        }
+
+        nTagIndex = nTagIndex + 1;
+        oCandidate = GetObjectByTag(sPartnerTag, nTagIndex);
     }
 
-    if (!DL_IsActivePipelineNpc(oPartner) ||
-        GetArea(oPartner) != GetArea(oNpc))
+    if (!GetIsObjectValid(oPartner))
     {
         DeleteLocalObject(oNpc, DL_L_NPC_CACHE_SOCIAL_PARTNER_OBJ);
         if (bTagFoundOutsideArea)
