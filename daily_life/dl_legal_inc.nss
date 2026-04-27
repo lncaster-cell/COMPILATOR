@@ -1,3 +1,5 @@
+void DL_CR_ClearPursuitState(object oPc);
+
 const string DL_L_PC_LG_CASE_STATE = "dl_lg_case_state";
 const string DL_L_PC_LG_CASE_KIND = "dl_lg_case_kind";
 const string DL_L_PC_LG_CASE_SEVERITY = "dl_lg_case_severity";
