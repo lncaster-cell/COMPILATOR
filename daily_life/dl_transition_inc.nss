@@ -32,6 +32,11 @@ const float DL_TRANSITION_ENTRY_RADIUS = 1.60;
 const int DL_TRANSITION_DRIVER_LOOKUP_CAP = 4;
 const int DL_TRANSITION_DRIVER_LOOKUP_CAP_MIN = 1;
 const int DL_TRANSITION_DRIVER_LOOKUP_CAP_MAX = 16;
+const string DL_L_TRANSITION_DRIVER_LOOKUP_CAP = "dl_transition_driver_lookup_cap";
+
+// Forward declarations for helpers provided by other include units.
+int DL_ClampInt(int nValue, int nMin, int nMax);
+int DL_GetAreaTick(object oArea);
 
 object DL_GetTransitionWaypointByTag(string sTag)
 {
@@ -265,7 +270,7 @@ int DL_IsTransitionDriverTypeMatch(string sDriverKind, object oDriver)
 
 int DL_GetTransitionDriverLookupCap()
 {
-    int nCap = GetLocalInt(GetModule(), DL_L_MODULE_TRANSITION_DRIVER_LOOKUP_CAP);
+    int nCap = GetLocalInt(GetModule(), DL_L_TRANSITION_DRIVER_LOOKUP_CAP);
     if (nCap <= 0)
     {
         return DL_TRANSITION_DRIVER_LOOKUP_CAP;

@@ -63,6 +63,10 @@ const int DL_MODULE_BUDGET_RELIEF_TRIGGER = 4;
 const int DL_MODULE_WORKER_PRESSURE_CAP = 3;
 const int DL_MODULE_RESYNC_PRESSURE_CAP = 1;
 
+// Forward declarations for mutually-recursive registration helpers.
+void DL_ReconcileNpcAreaRegistration(object oNpc);
+void DL_UnregisterNpc(object oNpc);
+
 int DL_CountPlayersInArea(object oArea)
 {
     int nCount = 0;

@@ -237,7 +237,7 @@ int DL_ShouldFallbackSocialToPublic(object oNpc)
         SetLocalString(oNpc, DL_L_NPC_STATE, DL_STATE_PUBLIC);
         SetLocalString(oNpc, DL_L_NPC_DIALOGUE_MODE, DL_DIALOGUE_IDLE);
         DL_ExecutePublicDirective(oNpc);
-        return;
+        return TRUE;
     }
 
     if (!GetIsObjectValid(oPartner) || GetLocalInt(oPartner, DL_L_NPC_DIRECTIVE) != DL_DIR_SOCIAL)
