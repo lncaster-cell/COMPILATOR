@@ -3,6 +3,7 @@
 // Intended for builder/runtime smoke tests only.
 
 #include "dl_runtime_contract_inc"
+#include "dl_diag_inc"
 
 const float DL_DBG_NPC_SCAN_RADIUS = 30.0;
 
