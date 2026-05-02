@@ -1,4 +1,3 @@
-#include "dl_res_inc"
 
 const string DL_L_MODULE_ENABLED = "dl_enabled";
 const string DL_L_MODULE_CONTRACT_VERSION = "dl_contract_version";
