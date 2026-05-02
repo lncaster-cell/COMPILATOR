@@ -8,6 +8,19 @@ const string DL_L_MODULE_RUNTIME_LOG = "dl_runtime_log";
 
 const int OBJECT_TYPE_AREA = 4;
 
+// NWScript has no stock LOCATION_INVALID constant in this compiler/toolchain.
+// Keep a global zero-initialized location only as an unused placeholder for
+// orchestration calls whose action kind does not consume lTarget.
+location LOCATION_INVALID;
+
+// Cross-include declarations used by this base contract layer.
+int DL_IsAreaObject(object oObject);
+int DL_GetAreaTier(object oArea);
+void DL_LogChatDebugEvent(object oNpc, string sKind, string sPayload);
+
+const int DL_RUNTIME_TIER_WARM = 1;
+const int DL_RUNTIME_TIER_HOT = 2;
+
 // Runtime local keys schema (single source of truth).
 // Format:
 // KEY | TYPE | OWNER | LIFECYCLE | RESET POLICY
@@ -254,7 +267,7 @@ int DL_CanRunWorkerForArea(object oArea)
     }
 
     int nTier = DL_GetAreaTier(oArea);
-    return nTier == DL_TIER_HOT || nTier == DL_TIER_WARM;
+    return nTier == DL_RUNTIME_TIER_HOT || nTier == DL_RUNTIME_TIER_WARM;
 }
 
 int DL_CanRunWarmMaintenanceForArea(object oArea)
@@ -264,7 +277,7 @@ int DL_CanRunWarmMaintenanceForArea(object oArea)
         return FALSE;
     }
 
-    return DL_GetAreaTier(oArea) == DL_TIER_WARM;
+    return DL_GetAreaTier(oArea) == DL_RUNTIME_TIER_WARM;
 }
 
 int DL_CanRunResyncForArea(object oArea)
@@ -274,7 +287,7 @@ int DL_CanRunResyncForArea(object oArea)
         return FALSE;
     }
 
-    return DL_GetAreaTier(oArea) == DL_TIER_HOT;
+    return DL_GetAreaTier(oArea) == DL_RUNTIME_TIER_HOT;
 }
 
 int DL_CanRunCityResponseForArea(object oArea)
@@ -323,6 +336,11 @@ const int DL_ORCH_ACT_JUMP_LOCATION = 3;
 const int DL_ORCH_ACT_START_CONVERSATION = 4;
 const int DL_ORCH_ACT_ATTACK = 5;
 
+void DL_CommandMoveToObject(object oActor, object oTarget, int bRun, float fRange);
+void DL_CommandMoveToLocation(object oActor, location lTarget, int bRun);
+void DL_CommandJumpToLocation(object oActor, location lTarget);
+void DL_CommandStartConversation(object oActor, object oListener, string sDialogResRef, int bPrivateConversation, int bPlayHello);
+void DL_CommandAttack(object oActor, object oTarget);
 
 void DL_OnNpcActionDispatched(
     object oActor,
