@@ -1,10 +1,12 @@
 // Daily Life interzone transition helper layer.
 // Backward compatible modes:
-// 1) simple mode: entry waypoint stores explicit exit tag in `dl_transition_exit_tag`
-// 2) legacy mode: entry waypoint stores `dl_transition_kind` + `dl_transition_id`
-// Entry waypoint tag can stay arbitrary in both cases.
+// 1) simple explicit mode: entry waypoint stores explicit exit tag in `dl_transition_exit_tag`
+// 2) builder-friendly nav mode: waypoint tag is `dl_nav_<from_zone>_to_<to_zone>`;
+//    the reverse waypoint is resolved in the same area as `dl_nav_<to_zone>_to_<from_zone>`
+// 3) legacy mode: entry waypoint stores `dl_transition_kind` + `dl_transition_id`
+// Entry waypoint tag can stay arbitrary in explicit/legacy modes.
 // Bidirectional 2-waypoint same-area portal pairs are supported when each waypoint
-// points to the other via `dl_transition_exit_tag`.
+// points to the other via `dl_transition_exit_tag` or when both use matching `dl_nav_*_to_*` tags.
 
 const string DL_L_WP_TRANSITION_KIND = "dl_transition_kind";
 const string DL_L_WP_TRANSITION_ID = "dl_transition_id";
@@ -40,7 +42,13 @@ const string DL_L_AREA_NAV_READY = "dl_area_nav_ready";
 const string DL_L_AREA_NAV_COUNT = "dl_area_nav_count";
 const string DL_L_AREA_NAV_SLOT_PREFIX = "dl_area_nav_";
 const int DL_AREA_NAV_ROUTE_CAP = 32;
+const int DL_TRANSITION_TAG_SEARCH_CAP = 64;
 const float DL_AREA_NAV_SIDE_BIAS = 0.50;
+
+const string DL_NAV_TAG_PREFIX = "dl_nav_";
+const int DL_NAV_TAG_PREFIX_LENGTH = 7;
+const string DL_NAV_TAG_SEPARATOR = "_to_";
+const int DL_NAV_TAG_SEPARATOR_LENGTH = 4;
 
 // Forward declarations for helpers provided by other include units.
 int DL_ClampInt(int nValue, int nMin, int nMax);
@@ -53,6 +61,66 @@ string DL_GetAreaNavigationSlotKey(int nSlot)
         nSlot = 0;
     }
     return DL_L_AREA_NAV_SLOT_PREFIX + IntToString(nSlot);
+}
+
+int DL_IsAutoNavTag(string sTag)
+{
+    if (GetStringLength(sTag) <= (DL_NAV_TAG_PREFIX_LENGTH + DL_NAV_TAG_SEPARATOR_LENGTH + 1))
+    {
+        return FALSE;
+    }
+
+    if (GetStringLowerCase(GetSubString(sTag, 0, DL_NAV_TAG_PREFIX_LENGTH)) != DL_NAV_TAG_PREFIX)
+    {
+        return FALSE;
+    }
+
+    string sTail = GetSubString(sTag, DL_NAV_TAG_PREFIX_LENGTH, GetStringLength(sTag) - DL_NAV_TAG_PREFIX_LENGTH);
+    int nSep = FindSubString(sTail, DL_NAV_TAG_SEPARATOR);
+    if (nSep <= 0)
+    {
+        return FALSE;
+    }
+
+    string sFrom = GetSubString(sTail, 0, nSep);
+    string sTo = GetSubString(sTail, nSep + DL_NAV_TAG_SEPARATOR_LENGTH, GetStringLength(sTail) - nSep - DL_NAV_TAG_SEPARATOR_LENGTH);
+    return sFrom != "" && sTo != "";
+}
+
+string DL_GetAutoNavFromZoneFromTag(string sTag)
+{
+    if (!DL_IsAutoNavTag(sTag))
+    {
+        return "";
+    }
+
+    string sTail = GetSubString(sTag, DL_NAV_TAG_PREFIX_LENGTH, GetStringLength(sTag) - DL_NAV_TAG_PREFIX_LENGTH);
+    int nSep = FindSubString(sTail, DL_NAV_TAG_SEPARATOR);
+    return GetSubString(sTail, 0, nSep);
+}
+
+string DL_GetAutoNavToZoneFromTag(string sTag)
+{
+    if (!DL_IsAutoNavTag(sTag))
+    {
+        return "";
+    }
+
+    string sTail = GetSubString(sTag, DL_NAV_TAG_PREFIX_LENGTH, GetStringLength(sTag) - DL_NAV_TAG_PREFIX_LENGTH);
+    int nSep = FindSubString(sTail, DL_NAV_TAG_SEPARATOR);
+    return GetSubString(sTail, nSep + DL_NAV_TAG_SEPARATOR_LENGTH, GetStringLength(sTail) - nSep - DL_NAV_TAG_SEPARATOR_LENGTH);
+}
+
+string DL_GetAutoNavReverseTag(string sTag)
+{
+    string sFrom = DL_GetAutoNavFromZoneFromTag(sTag);
+    string sTo = DL_GetAutoNavToZoneFromTag(sTag);
+    if (sFrom == "" || sTo == "")
+    {
+        return "";
+    }
+
+    return DL_NAV_TAG_PREFIX + sTo + DL_NAV_TAG_SEPARATOR + sFrom;
 }
 
 object DL_GetTransitionWaypointByTag(string sTag)
@@ -69,6 +137,33 @@ object DL_GetTransitionWaypointByTag(string sTag)
     }
 
     return oWp;
+}
+
+object DL_GetTransitionWaypointByTagInArea(string sTag, object oArea)
+{
+    if (sTag == "" || !GetIsObjectValid(oArea))
+    {
+        return OBJECT_INVALID;
+    }
+
+    int nNth = 0;
+    while (nNth < DL_TRANSITION_TAG_SEARCH_CAP)
+    {
+        object oCandidate = GetObjectByTag(sTag, nNth);
+        if (!GetIsObjectValid(oCandidate))
+        {
+            break;
+        }
+
+        if (GetObjectType(oCandidate) == OBJECT_TYPE_WAYPOINT && GetArea(oCandidate) == oArea)
+        {
+            return oCandidate;
+        }
+
+        nNth = nNth + 1;
+    }
+
+    return OBJECT_INVALID;
 }
 
 string DL_GetWaypointTransitionKind(object oWp)
@@ -128,7 +223,13 @@ string DL_GetWaypointNavZone(object oWp)
         return "";
     }
 
-    return GetLocalString(oWp, DL_L_WP_NAV_ZONE);
+    string sZone = GetLocalString(oWp, DL_L_WP_NAV_ZONE);
+    if (sZone != "")
+    {
+        return sZone;
+    }
+
+    return DL_GetAutoNavFromZoneFromTag(GetTag(oWp));
 }
 
 void DL_SetNpcNavZone(object oNpc, string sZone)
@@ -163,6 +264,12 @@ string DL_GetResolvedTransitionExitTag(object oEntryWp)
         return sExitTag;
     }
 
+    string sAutoReverse = DL_GetAutoNavReverseTag(GetTag(oEntryWp));
+    if (sAutoReverse != "")
+    {
+        return sAutoReverse;
+    }
+
     string sKind = DL_GetWaypointTransitionKind(oEntryWp);
     string sTransitionId = DL_GetWaypointTransitionId(oEntryWp);
     if (sKind == DL_TRANSITION_KIND_AREA_LINK)
@@ -195,6 +302,11 @@ int DL_WaypointHasTransition(object oWp)
     }
 
     if (DL_GetWaypointTransitionExitTag(oWp) != "")
+    {
+        return TRUE;
+    }
+
+    if (DL_IsAutoNavTag(GetTag(oWp)))
     {
         return TRUE;
     }
@@ -356,7 +468,21 @@ object DL_ResolveTransitionExitWaypointFromEntry(object oEntryWp)
     }
     DeleteLocalObject(oEntryWp, DL_L_WP_TRANSITION_EXIT_OBJ);
 
-    object oExit = DL_GetTransitionWaypointByTag(sResolvedTag);
+    object oExit = OBJECT_INVALID;
+    object oEntryArea = GetArea(oEntryWp);
+    if (DL_IsAutoNavTag(GetTag(oEntryWp)))
+    {
+        oExit = DL_GetTransitionWaypointByTagInArea(sResolvedTag, oEntryArea);
+    }
+    else
+    {
+        oExit = DL_GetTransitionWaypointByTagInArea(sResolvedTag, oEntryArea);
+        if (!GetIsObjectValid(oExit))
+        {
+            oExit = DL_GetTransitionWaypointByTag(sResolvedTag);
+        }
+    }
+
     if (GetIsObjectValid(oExit) && GetObjectType(oExit) == OBJECT_TYPE_WAYPOINT)
     {
         SetLocalObject(oEntryWp, DL_L_WP_TRANSITION_EXIT_OBJ, oExit);
@@ -529,7 +655,7 @@ int DL_TryExecuteTransitionEntryWaypoint(object oNpc, object oEntryWp)
     string sExitTag = DL_GetWaypointTransitionExitTag(oEntryWp);
     string sDriver = DL_GetWaypointTransitionDriver(oEntryWp);
 
-    if (sExitTag == "" && sKind == "" && sTransitionId == "")
+    if (!DL_WaypointHasTransition(oEntryWp))
     {
         DL_ClearTransitionExecutionState(oNpc);
         return FALSE;
@@ -539,7 +665,7 @@ int DL_TryExecuteTransitionEntryWaypoint(object oNpc, object oEntryWp)
     SetLocalString(oNpc, DL_L_NPC_TRANSITION_ID, sTransitionId);
     SetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET, GetTag(oEntryWp));
 
-    if (sExitTag == "" && (sKind == "" || sTransitionId == ""))
+    if (sExitTag == "" && (sKind == "" || sTransitionId == "") && !DL_IsAutoNavTag(GetTag(oEntryWp)))
     {
         SetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS, "metadata_missing");
         SetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC, "need_transition_exit_tag_or_kind_id_on_entry_waypoint");
