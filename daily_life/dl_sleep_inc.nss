@@ -69,21 +69,30 @@ object DL_ResolveSleepBedWaypoint(object oNpc)
         "dl_sleep_bed_" + IntToString(nSlot)
     );
 }
-void DL_StopSleepPresentationIfActive(object oNpc)
+int DL_HasActiveSleepExecutionState(object oNpc)
 {
     if (!GetIsObjectValid(oNpc))
     {
-        return;
+        return FALSE;
     }
 
-    if (GetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE) <= 0 &&
-        GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) == "" &&
-        GetLocalString(oNpc, DL_L_NPC_SLEEP_TARGET) == "")
+    return GetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE) > 0 ||
+           GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) != "" ||
+           GetLocalString(oNpc, DL_L_NPC_SLEEP_TARGET) != "";
+}
+void DL_StopSleepPresentationIfActive(object oNpc)
+{
+    if (!DL_HasActiveSleepExecutionState(oNpc))
     {
         return;
     }
 
+    object oApproach = DL_ResolveSleepApproachWaypoint(oNpc);
     AssignCommand(oNpc, ClearAllActions(TRUE));
+    if (GetIsObjectValid(oApproach))
+    {
+        AssignCommand(oNpc, JumpToLocation(GetLocation(oApproach)));
+    }
     AssignCommand(oNpc, ActionPlayAnimation(ANIMATION_LOOPING_PAUSE, 1.0, 0.1));
 }
 void DL_ClearSleepExecutionState(object oNpc)
