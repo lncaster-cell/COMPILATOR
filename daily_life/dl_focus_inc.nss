@@ -11,6 +11,7 @@ const string DL_CHILL_ANIM_SIT_IDLE = "sitidle";
 
 void DL_ClearFocusExecutionState(object oNpc)
 {
+    DL_ClearNpcSocialReservation(oNpc);
     DeleteLocalString(oNpc, DL_L_NPC_FOCUS_STATUS);
     DeleteLocalString(oNpc, DL_L_NPC_FOCUS_TARGET);
     DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
@@ -502,6 +503,12 @@ void DL_ExecutePublicDirective(object oNpc)
 }
 int DL_ShouldFallbackSocialToPublic(object oNpc)
 {
+    string sKind = DL_GetNpcSocialKind(oNpc);
+    if (DL_IsStandaloneSocialKind(sKind))
+    {
+        return FALSE;
+    }
+
     object oMe = DL_ResolveSocialWaypoint(oNpc);
     string sPartnerTag = GetLocalString(oNpc, DL_L_NPC_SOCIAL_PARTNER_TAG);
     if (!GetIsObjectValid(oMe) || sPartnerTag == "")
@@ -528,6 +535,26 @@ int DL_ShouldFallbackSocialToPublic(object oNpc)
 }
 void DL_ExecuteSocialDirective(object oNpc)
 {
+    string sKind = DL_GetNpcSocialKind(oNpc);
+    if (DL_IsStandaloneSocialKind(sKind))
+    {
+        object oSocial = DL_ResolveStandaloneSocialWaypoint(oNpc, sKind);
+        if (!GetIsObjectValid(oSocial))
+        {
+            SetLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC, "missing_social_pool_" + sKind);
+            return;
+        }
+
+        string sAnim = DL_GetStandaloneSocialAnimation(sKind);
+        DL_LogChatDebugEvent(
+            oNpc,
+            "target_social_" + sKind,
+            "target dir=SOCIAL kind=" + sKind + " area=" + GetTag(GetArea(oSocial)) + " anchor=" + GetTag(oSocial)
+        );
+        DL_ProgressFocusAtTarget(oNpc, oSocial, "on_social_" + sKind, sAnim);
+        return;
+    }
+
     object oMe = DL_ResolveSocialWaypoint(oNpc);
     string sPartnerTag = GetLocalString(oNpc, DL_L_NPC_SOCIAL_PARTNER_TAG);
     object oPartner = DL_ResolveSocialPartnerObject(oNpc, sPartnerTag);
