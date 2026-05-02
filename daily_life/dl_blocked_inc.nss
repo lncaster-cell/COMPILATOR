@@ -6,6 +6,16 @@ const string DL_L_NPC_BLOCKED_BUSY = "dl_npc_blocked_busy";
 const float DL_BLOCKED_OPEN_COOLDOWN = 3.0;
 const float DL_BLOCKED_REISSUE_DELAY = 2.2;
 
+int DL_IsBlockedReissueDirective(int nDirective)
+{
+    return nDirective == DL_DIR_SLEEP ||
+           nDirective == DL_DIR_WORK ||
+           nDirective == DL_DIR_MEAL ||
+           nDirective == DL_DIR_CHILL ||
+           nDirective == DL_DIR_SOCIAL ||
+           nDirective == DL_DIR_PUBLIC;
+}
+
 void DL_ClearNpcBlockedSignal(object oNpc)
 {
     DeleteLocalObject(oNpc, DL_L_NPC_BLOCKED_OBJ);
@@ -31,17 +41,14 @@ void DL_ReissueNpcDirectiveAfterBlocked(object oNpc)
     }
 
     int nDirective = GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE);
-    if (nDirective == DL_DIR_WORK)
+    if (!DL_IsBlockedReissueDirective(nDirective))
     {
-        DL_ApplyDirectiveSkeleton(oNpc, nDirective);
+        SetLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC, "blocked_reissue_skipped_no_active_route_directive");
         return;
     }
 
-    if (nDirective == DL_DIR_SLEEP)
-    {
-        DL_ApplyDirectiveSkeleton(oNpc, nDirective);
-        return;
-    }
+    DeleteLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC);
+    DL_ApplyDirectiveSkeleton(oNpc, nDirective);
 }
 
 void DL_RequestNpcBlockedSignal(object oNpc, object oBlocker)
@@ -100,15 +107,15 @@ void DL_HandleNpcBlocked(object oNpc)
 
     if (GetObjectType(oBlocker) != OBJECT_TYPE_DOOR)
     {
-        SetLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC, "blocked_by_creature");
+        SetLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC, "blocked_by_non_door");
         DL_ClearNpcBlockedSignal(oNpc);
         return;
     }
 
     int nDirective = GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE);
-    if (nDirective != DL_DIR_WORK && nDirective != DL_DIR_SLEEP)
+    if (!DL_IsBlockedReissueDirective(nDirective))
     {
-        SetLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC, "blocked_outside_route_directive");
+        SetLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC, "blocked_without_active_route_directive");
         DL_ClearNpcBlockedSignal(oNpc);
         return;
     }
