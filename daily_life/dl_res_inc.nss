@@ -9,7 +9,7 @@ const string DL_L_NPC_DIRECTIVE = "dl_npc_directive";
 const string DL_L_NPC_MAT_REQ = "dl_npc_mat_req";
 const string DL_L_NPC_MAT_TAG = "dl_npc_mat_tag";
 const string DL_L_NPC_DIALOGUE_MODE = "dl_npc_dialogue_mode";
-const string DL_L_NPC_SERVICE_MODE = "dl_npc_service_mode";
+const string DL_L_NPC_SERVICE_MODE = "dl_service_mode";
 const string DL_L_NPC_PROFILE_ID = "dl_profile_id";
 const string DL_L_NPC_STATE = "dl_state";
 const string DL_L_NPC_SLEEP_PHASE = "dl_npc_sleep_phase";
@@ -368,6 +368,7 @@ void DL_ApplyMaterializationSkeleton(object oNpc, int nDirective)
 }
 
 #include "dl_anchor_cache_inc"
+#include "dl_social_pool_inc"
 #include "dl_presentation_inc"
 #include "dl_sleep_inc"
 #include "dl_work_inc"
@@ -452,6 +453,7 @@ void DL_ClearNpcWaypointCaches(object oNpc)
     DeleteLocalObject(oNpc, DL_L_NPC_CACHE_CHILL_SEAT);
     DeleteLocalInt(oNpc, DL_L_NPC_CACHE_CHILL_SEAT_MISSING_UNTIL);
     DeleteLocalObject(oNpc, DL_L_NPC_CACHE_SOCIAL_PARTNER_OBJ);
+    DL_ClearNpcSocialReservation(oNpc);
 }
 void DL_ClearNpcAreaCaches(object oNpc)
 {
@@ -518,6 +520,7 @@ void DL_ApplyIdleLikeDirectiveState(object oNpc, int bSocial)
     DL_ClearSleepExecutionState(oNpc);
     DL_ClearWorkExecutionState(oNpc);
     DL_ClearFocusExecutionState(oNpc);
+    DL_ClearNpcSocialReservation(oNpc);
     DL_ClearActivityPresentation(oNpc);
 }
 int DL_ResolveEffectiveDirective(object oNpc, int nDirective)
@@ -581,6 +584,11 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
 
     int nEffectiveDirective = DL_ResolveEffectiveDirective(oNpc, nDirective);
     int nPrevDirective = GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE);
+
+    if (nPrevDirective != nEffectiveDirective)
+    {
+        DL_ClearNpcSocialReservation(oNpc);
+    }
 
     if (nPrevDirective == nEffectiveDirective && DL_ShouldUseDirectiveFastPath(oNpc, nEffectiveDirective))
     {
