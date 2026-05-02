@@ -1,7 +1,7 @@
 // Unified deterministic selection/scoring helpers.
 // Domain adapters provide score and stable tie keys.
 
-const int DL_SELECTION_SCORE_INF = 2147483000;
+const int DL_SELECTION_SCORE_INF = 214748300;
 
 int DL_SelectionCompare(int nCandidateScore, int nBestScore, string sCandidateTieKey, string sBestTieKey)
 {
@@ -25,7 +25,14 @@ int DL_SelectionCompare(int nCandidateScore, int nBestScore, string sCandidateTi
         return FALSE;
     }
 
-    return GetStringLowerCase(sCandidateTieKey) < GetStringLowerCase(sBestTieKey);
+    string sCandidateNorm = GetStringLowerCase(sCandidateTieKey);
+    string sBestNorm = GetStringLowerCase(sBestTieKey);
+    if (sCandidateNorm == sBestNorm)
+    {
+        return FALSE;
+    }
+
+    return GetStringLength(sCandidateNorm) < GetStringLength(sBestNorm);
 }
 
 string DL_SelectionBuildTieKey(object oPrimary, object oSecondary, int nOrdinal)

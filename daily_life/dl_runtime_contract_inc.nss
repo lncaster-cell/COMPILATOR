@@ -6,6 +6,8 @@ const string DL_L_MODULE_CHAT_LOG = "dl_chat_log";
 const string DL_L_MODULE_CHAT_LOG_INIT = "dl_chat_log_init";
 const string DL_L_MODULE_RUNTIME_LOG = "dl_runtime_log";
 
+const int OBJECT_TYPE_AREA = 4;
+
 // Runtime local keys schema (single source of truth).
 // Format:
 // KEY | TYPE | OWNER | LIFECYCLE | RESET POLICY
