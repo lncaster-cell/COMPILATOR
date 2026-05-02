@@ -93,7 +93,10 @@ void DL_StopSleepPresentationIfActive(object oNpc)
     {
         AssignCommand(oNpc, JumpToLocation(GetLocation(oApproach)));
     }
-    AssignCommand(oNpc, ActionPlayAnimation(ANIMATION_LOOPING_PAUSE, 1.0, 0.1));
+
+    // NWN2 stock script documentation for PlayCustomAnimation says "%"
+    // resets the creature to idle / clears the current custom animation.
+    PlayCustomAnimation(oNpc, "%", FALSE);
 }
 void DL_ClearSleepExecutionState(object oNpc)
 {
