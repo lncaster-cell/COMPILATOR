@@ -11,7 +11,7 @@ const string DL_CHILL_ANIM_SIT_IDLE = "sitidle";
 
 const string DL_EVT_FOCUS_FALLBACK_SOCIAL_PUBLIC = "fallback_social_public";
 const string DL_EVT_FOCUS_SOCIAL_PARTNER_LOOKUP = "social_partner_lookup";
-const string DL_FOCUS_STATUS_MOVING_TO_ANCHOR = DL_STATUS_MOVING_TO_ANCHOR;
+const string DL_FOCUS_STATUS_MOVING_TO_ANCHOR = "moving_to_anchor";
 
 void DL_ClearFocusExecutionState(object oNpc)
 {
@@ -443,6 +443,7 @@ int DL_ProgressChillAtSeat(object oNpc, object oSeat)
         return TRUE;
     }
 
+    int nNowAbs = DL_GetAbsoluteMinute();
     DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
     DL_SetRuntimeState(oNpc, DL_L_NPC_FOCUS_STATUS, DL_STATUS_SITTING_CHILL_ATTEMPT, "", "");
     SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oSeat));
@@ -561,16 +562,16 @@ void DL_ExecuteSocialDirective(object oNpc)
         return;
     }
 
+    string sPartnerTag = GetLocalString(oNpc, DL_L_NPC_SOCIAL_PARTNER_TAG);
+    object oPartner = DL_ResolveSocialPartnerObject(oNpc, sPartnerTag);
     object oPartnerWp = DL_ResolveSocialWaypoint(oPartner);
     if (!GetIsObjectValid(oPartnerWp))
     {
         DL_PipelineUpdateDiagnostic(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC, DL_DIAG_FOCUS_SOCIAL_FALLBACK_TO_PUBLIC);
         return;
     }
+
     object oMe = DL_ResolveSocialWaypoint(oNpc);
-    string sPartnerTag = GetLocalString(oNpc, DL_L_NPC_SOCIAL_PARTNER_TAG);
-    object oPartner = DL_ResolveSocialPartnerObject(oNpc, sPartnerTag);
-    object oPartnerWp = DL_ResolveSocialWaypoint(oPartner);
 
     int bMeOnAnchor = GetDistanceBetween(oNpc, oMe) <= DL_WORK_ANCHOR_RADIUS;
     int bPartnerOnAnchor = GetDistanceBetween(oPartner, oPartnerWp) <= DL_WORK_ANCHOR_RADIUS;

@@ -1,4 +1,3 @@
-#include "dl_res_inc"
 
 const string DL_L_MODULE_ENABLED = "dl_enabled";
 const string DL_L_MODULE_CONTRACT_VERSION = "dl_contract_version";
@@ -6,6 +5,8 @@ const string DL_CONTRACT_VERSION_A0 = "a0";
 const string DL_L_MODULE_CHAT_LOG = "dl_chat_log";
 const string DL_L_MODULE_CHAT_LOG_INIT = "dl_chat_log_init";
 const string DL_L_MODULE_RUNTIME_LOG = "dl_runtime_log";
+
+const int OBJECT_TYPE_AREA = 4;
 
 // Runtime local keys schema (single source of truth).
 // Format:
