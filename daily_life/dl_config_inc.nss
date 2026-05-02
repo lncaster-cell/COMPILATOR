@@ -53,9 +53,10 @@ float DL_GetConfigFloat(string sKey, float fDefault, float fMinExclusive = 0.0, 
     }
 
     int nLegacyRaw = GetLocalInt(GetModule(), sKey);
-    if (nLegacyRaw > fMinExclusive && IntToFloat(nLegacyRaw) <= fMax)
+    float fLegacyRaw = IntToFloat(nLegacyRaw);
+    if (fLegacyRaw > fMinExclusive && fLegacyRaw <= fMax)
     {
-        return IntToFloat(nLegacyRaw);
+        return fLegacyRaw;
     }
 
     DL_RecordConfigFallback(sKey, "empty_or_invalid_float");
