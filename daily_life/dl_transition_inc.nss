@@ -14,12 +14,14 @@ const string DL_L_WP_TRANSITION_DRIVER_TAG = "dl_transition_driver_tag";
 const string DL_L_WP_TRANSITION_EXIT_OBJ = "dl_transition_exit_obj";
 const string DL_L_WP_TRANSITION_DRIVER_OBJ = "dl_transition_driver_obj";
 const string DL_L_WP_TRANSITION_DRIVER_MISS_TICK = "dl_transition_driver_miss_tick";
+const string DL_L_WP_NAV_ZONE = "dl_nav_zone";
 
 const string DL_L_NPC_TRANSITION_KIND = "dl_npc_transition_kind";
 const string DL_L_NPC_TRANSITION_ID = "dl_npc_transition_id";
 const string DL_L_NPC_TRANSITION_TARGET = "dl_npc_transition_target";
 const string DL_L_NPC_TRANSITION_STATUS = "dl_npc_transition_status";
 const string DL_L_NPC_TRANSITION_DIAGNOSTIC = "dl_npc_transition_diagnostic";
+const string DL_L_NPC_NAV_ZONE = "dl_npc_nav_zone";
 
 const string DL_TRANSITION_KIND_AREA_LINK = "area_link";
 const string DL_TRANSITION_KIND_LOCAL_JUMP = "local_jump";
@@ -117,6 +119,35 @@ string DL_GetWaypointTransitionDriverTag(object oWp)
     }
 
     return GetLocalString(oWp, DL_L_WP_TRANSITION_DRIVER_TAG);
+}
+
+string DL_GetWaypointNavZone(object oWp)
+{
+    if (!GetIsObjectValid(oWp))
+    {
+        return "";
+    }
+
+    return GetLocalString(oWp, DL_L_WP_NAV_ZONE);
+}
+
+void DL_SetNpcNavZone(object oNpc, string sZone)
+{
+    if (!GetIsObjectValid(oNpc) || sZone == "")
+    {
+        return;
+    }
+
+    SetLocalString(oNpc, DL_L_NPC_NAV_ZONE, sZone);
+}
+
+void DL_SetNpcNavZoneFromWaypoint(object oNpc, object oWp)
+{
+    string sZone = DL_GetWaypointNavZone(oWp);
+    if (sZone != "")
+    {
+        DL_SetNpcNavZone(oNpc, sZone);
+    }
 }
 
 string DL_GetResolvedTransitionExitTag(object oEntryWp)
@@ -232,6 +263,55 @@ object DL_GetAreaNavigationRouteAtSlot(object oArea, int nSlot)
 
     DL_BuildAreaNavigationRouteCache(oArea);
     return GetLocalObject(oArea, DL_GetAreaNavigationSlotKey(nSlot));
+}
+
+string DL_InferNpcNavZoneFromAreaRoutes(object oNpc)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return "";
+    }
+
+    string sCached = GetLocalString(oNpc, DL_L_NPC_NAV_ZONE);
+    if (sCached != "")
+    {
+        return sCached;
+    }
+
+    object oArea = GetArea(oNpc);
+    if (!GetIsObjectValid(oArea))
+    {
+        return "";
+    }
+
+    int nCount = DL_GetAreaNavigationRouteCount(oArea);
+    object oBest = OBJECT_INVALID;
+    float fBestDistance = 100000.0;
+    int i = 0;
+    while (i < nCount)
+    {
+        object oEntry = DL_GetAreaNavigationRouteAtSlot(oArea, i);
+        string sZone = DL_GetWaypointNavZone(oEntry);
+        if (GetIsObjectValid(oEntry) && sZone != "")
+        {
+            float fDistance = GetDistanceBetween(oNpc, oEntry);
+            if (!GetIsObjectValid(oBest) || fDistance < fBestDistance)
+            {
+                oBest = oEntry;
+                fBestDistance = fDistance;
+            }
+        }
+        i = i + 1;
+    }
+
+    if (GetIsObjectValid(oBest))
+    {
+        string sBestZone = DL_GetWaypointNavZone(oBest);
+        DL_SetNpcNavZone(oNpc, sBestZone);
+        return sBestZone;
+    }
+
+    return "";
 }
 
 int DL_IsValidTransitionWaypointForTag(object oWp, string sExpectedTag)
@@ -492,6 +572,7 @@ int DL_TryExecuteTransitionEntryWaypoint(object oNpc, object oEntryWp)
 
     if (sDriver == "" || sDriver == DL_TRANSITION_DRIVER_NONE || sDriver == DL_TRANSITION_DRIVER_TRIGGER)
     {
+        DL_SetNpcNavZoneFromWaypoint(oNpc, oExitWp);
         DL_JumpNpcToTransitionExit(oNpc, lExit);
         return TRUE;
     }
@@ -506,6 +587,7 @@ int DL_TryExecuteTransitionEntryWaypoint(object oNpc, object oEntryWp)
             return TRUE;
         }
 
+        DL_SetNpcNavZoneFromWaypoint(oNpc, oExitWp);
         AssignCommand(oNpc, ClearAllActions(TRUE));
         if (GetIsDoorActionPossible(oDoor, DOOR_ACTION_OPEN))
         {
@@ -598,6 +680,132 @@ int DL_ShouldUseNavigationEntryForTarget(object oNpc, object oTarget, object oEn
     return bNpcOnEntrySide && bTargetOnExitSide;
 }
 
+int DL_TransitionConnectsNavZones(object oEntry, object oExit, string sFromZone, string sToZone)
+{
+    if (!GetIsObjectValid(oEntry) || !GetIsObjectValid(oExit) || sFromZone == "" || sToZone == "")
+    {
+        return FALSE;
+    }
+
+    return DL_GetWaypointNavZone(oEntry) == sFromZone && DL_GetWaypointNavZone(oExit) == sToZone;
+}
+
+object DL_FindDirectNavZoneEntry(object oNpc, object oTarget, string sFromZone, string sToZone)
+{
+    object oNpcArea = GetArea(oNpc);
+    if (!GetIsObjectValid(oNpcArea))
+    {
+        return OBJECT_INVALID;
+    }
+
+    int nCount = DL_GetAreaNavigationRouteCount(oNpcArea);
+    object oBestEntry = OBJECT_INVALID;
+    int nBestScore = 1000000;
+    int i = 0;
+    while (i < nCount)
+    {
+        object oEntry = DL_GetAreaNavigationRouteAtSlot(oNpcArea, i);
+        object oExit = DL_ResolveTransitionExitWaypointFromEntry(oEntry);
+        if (DL_TransitionConnectsNavZones(oEntry, oExit, sFromZone, sToZone))
+        {
+            int nScore = FloatToInt(GetDistanceBetween(oNpc, oEntry) * 100.0);
+            if (GetArea(oExit) == GetArea(oTarget))
+            {
+                nScore = nScore + FloatToInt(GetDistanceBetween(oExit, oTarget) * 100.0);
+            }
+            if (!GetIsObjectValid(oBestEntry) || nScore < nBestScore)
+            {
+                oBestEntry = oEntry;
+                nBestScore = nScore;
+            }
+        }
+        i = i + 1;
+    }
+
+    return oBestEntry;
+}
+
+object DL_FindTwoHopNavZoneEntry(object oNpc, object oTarget, string sFromZone, string sToZone)
+{
+    object oNpcArea = GetArea(oNpc);
+    if (!GetIsObjectValid(oNpcArea))
+    {
+        return OBJECT_INVALID;
+    }
+
+    int nCount = DL_GetAreaNavigationRouteCount(oNpcArea);
+    object oBestEntry = OBJECT_INVALID;
+    int nBestScore = 1000000;
+    int i = 0;
+    while (i < nCount)
+    {
+        object oEntryA = DL_GetAreaNavigationRouteAtSlot(oNpcArea, i);
+        object oExitA = DL_ResolveTransitionExitWaypointFromEntry(oEntryA);
+        string sMidZone = DL_GetWaypointNavZone(oExitA);
+        if (DL_TransitionConnectsNavZones(oEntryA, oExitA, sFromZone, sMidZone) &&
+            sMidZone != "" && sMidZone != sFromZone && sMidZone != sToZone)
+        {
+            int j = 0;
+            while (j < nCount)
+            {
+                object oEntryB = DL_GetAreaNavigationRouteAtSlot(oNpcArea, j);
+                object oExitB = DL_ResolveTransitionExitWaypointFromEntry(oEntryB);
+                if (DL_TransitionConnectsNavZones(oEntryB, oExitB, sMidZone, sToZone))
+                {
+                    int nScore = FloatToInt(GetDistanceBetween(oNpc, oEntryA) * 100.0) +
+                                 FloatToInt(GetDistanceBetween(oExitA, oEntryB) * 100.0);
+                    if (GetArea(oExitB) == GetArea(oTarget))
+                    {
+                        nScore = nScore + FloatToInt(GetDistanceBetween(oExitB, oTarget) * 100.0);
+                    }
+                    if (!GetIsObjectValid(oBestEntry) || nScore < nBestScore)
+                    {
+                        oBestEntry = oEntryA;
+                        nBestScore = nScore;
+                    }
+                }
+                j = j + 1;
+            }
+        }
+        i = i + 1;
+    }
+
+    return oBestEntry;
+}
+
+int DL_TryUseNavZoneRouteToTarget(object oNpc, object oTarget)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
+    {
+        return FALSE;
+    }
+
+    string sTargetZone = DL_GetWaypointNavZone(oTarget);
+    if (sTargetZone == "")
+    {
+        return FALSE;
+    }
+
+    string sCurrentZone = DL_InferNpcNavZoneFromAreaRoutes(oNpc);
+    if (sCurrentZone == "" || sCurrentZone == sTargetZone)
+    {
+        return FALSE;
+    }
+
+    object oEntry = DL_FindDirectNavZoneEntry(oNpc, oTarget, sCurrentZone, sTargetZone);
+    if (!GetIsObjectValid(oEntry))
+    {
+        oEntry = DL_FindTwoHopNavZoneEntry(oNpc, oTarget, sCurrentZone, sTargetZone);
+    }
+
+    if (!GetIsObjectValid(oEntry))
+    {
+        return FALSE;
+    }
+
+    return DL_TryExecuteTransitionEntryWaypoint(oNpc, oEntry);
+}
+
 int DL_TryUseNavigationRouteToTarget(object oNpc, object oTarget)
 {
     if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
@@ -609,6 +817,11 @@ int DL_TryUseNavigationRouteToTarget(object oNpc, object oTarget)
     if (!GetIsObjectValid(oNpcArea))
     {
         return FALSE;
+    }
+
+    if (DL_TryUseNavZoneRouteToTarget(oNpc, oTarget))
+    {
+        return TRUE;
     }
 
     int nCount = DL_GetAreaNavigationRouteCount(oNpcArea);
