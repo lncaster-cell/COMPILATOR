@@ -114,7 +114,12 @@ object DL_FindSocialPoolWaypointByTagInArea(string sTag, object oArea)
         return OBJECT_INVALID;
     }
 
-    object oResolved = DL_FindObjectByTagInAreaDeterministic(sTag, OBJECT_TYPE_WAYPOINT, oArea, DL_WAYPOINT_TAG_SEARCH_CAP);
+    object oResolved = DL_IndexGetWaypointByTag(oArea, sTag);
+    if (!GetIsObjectValid(oResolved))
+    {
+        oResolved = DL_FindObjectByTagInAreaDeterministic(sTag, OBJECT_TYPE_WAYPOINT, oArea, DL_WAYPOINT_TAG_SEARCH_CAP);
+    }
+    DL_RecordCacheMetricBatch(oArea, "index_fallback", GetIsObjectValid(oResolved), !GetIsObjectValid(oResolved));
     DL_RecordCacheMetric(oArea, "social", GetIsObjectValid(oResolved));
     return oResolved;
 }

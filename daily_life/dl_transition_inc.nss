@@ -309,13 +309,21 @@ object DL_GetTransitionWaypointByTagInArea(string sTag, object oArea)
         return OBJECT_INVALID;
     }
 
-    object oResolved = DL_ResolveObjectByTagWithPolicy(
+    object oResolved = DL_IndexGetWaypointByTag(oArea, sTag);
+    if (GetIsObjectValid(oResolved))
+    {
+        return oResolved;
+    }
+
+    DL_RecordCacheMetricBatch(oArea, "index_fallback", 0, 1);
+    oResolved = DL_ResolveObjectByTagWithPolicy(
         sTag,
         OBJECT_TYPE_WAYPOINT,
         oArea,
         DL_TRANSITION_TAG_SEARCH_CAP,
         DL_TAG_FALLBACK_NONE
     );
+    DL_RecordCacheMetricBatch(oArea, "index_fallback", GetIsObjectValid(oResolved), !GetIsObjectValid(oResolved));
     DL_RecordCacheMetric(oArea, "nav", GetIsObjectValid(oResolved));
     return oResolved;
 }
