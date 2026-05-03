@@ -645,6 +645,11 @@ object DL_ResolveTransitionExitWaypointFromEntry(object oEntryWp)
 
 object DL_TryGetTransitionExitWaypoint(object oEntryWp)
 {
+    if (!DL_IsValidWaypointObject(oEntryWp))
+    {
+        return OBJECT_INVALID;
+    }
+
     if (!DL_WaypointHasTransition(oEntryWp))
     {
         return OBJECT_INVALID;
