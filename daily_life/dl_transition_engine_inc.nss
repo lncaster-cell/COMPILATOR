@@ -121,5 +121,11 @@ int DL_ExecuteTransitionEngine(object oNpc, object oEntryWp, string sDiagPrefix)
 
     location lExit = GetLocation(oExitWp);
     DL_SetTransitionState(oNpc, DL_TRANSITION_STATUS_TRANSITIONING, DL_TRANSITION_DIAG_IN_PROGRESS, sDiagPrefix);
-    return DL_EngineExecuteTransitionDriver(oNpc, oEntryWp, lExit, oExitWp, sDiagPrefix + "_" + DL_TRANSITION_DIAG_IN_PROGRESS);
+    return DL_EngineExecuteTransitionDriver(
+        oNpc,
+        oEntryWp,
+        lExit,
+        oExitWp,
+        DL_BuildTransitionDiagnostic(DL_TRANSITION_DIAG_IN_PROGRESS, sDiagPrefix)
+    );
 }

@@ -84,6 +84,21 @@ int DL_EngineJumpNpcToTransitionExit(object oNpc, location lExit, string sStatus
 int DL_EngineExecuteTransitionDriver(object oNpc, object oEntryWp, location lExit, object oExitWp, string sJumpDiagnostic = DL_TRANSITION_DIAG_IN_PROGRESS);
 int DL_ExecuteTransitionEngine(object oNpc, object oEntryWp, string sDiagPrefix);
 
+string DL_BuildTransitionDiagnostic(string sDiagnostic, string sDiagContext)
+{
+    if (sDiagnostic == "")
+    {
+        return "";
+    }
+
+    if (sDiagContext == "")
+    {
+        return sDiagnostic;
+    }
+
+    return sDiagContext + "_" + sDiagnostic;
+}
+
 string DL_GetAreaNavigationSlotKey(int nSlot)
 {
     if (nSlot < 0)
@@ -291,12 +306,13 @@ void DL_SetTransitionState(object oNpc, string sStatus, string sDiagnostic, stri
         return;
     }
 
-    string sDiagnosticValue = sDiagnostic;
-    if (sDiagContext != "")
-    {
-        sDiagnosticValue = sDiagContext + "_" + sDiagnostic;
-    }
-    DL_SetRuntimeState(oNpc, DL_L_NPC_TRANSITION_STATUS, sStatus, DL_L_NPC_TRANSITION_DIAGNOSTIC, sDiagnosticValue);
+    DL_SetRuntimeState(
+        oNpc,
+        DL_L_NPC_TRANSITION_STATUS,
+        sStatus,
+        DL_L_NPC_TRANSITION_DIAGNOSTIC,
+        DL_BuildTransitionDiagnostic(sDiagnostic, sDiagContext)
+    );
 }
 
 string DL_GetResolvedTransitionExitTag(object oEntryWp)
