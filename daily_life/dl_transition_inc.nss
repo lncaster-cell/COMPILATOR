@@ -947,6 +947,51 @@ object DL_FindTwoHopNavZoneEntry(object oNpc, object oTarget, string sFromZone, 
     return oBestEntry;
 }
 
+
+// Contract: navigation helpers only perform navigation attempts and must not mutate
+// domain-specific runtime/status state outside transition execution internals.
+int DL_IsTransitionNavigableTarget(object oNpc, object oTargetWp)
+{
+    if (!GetIsObjectValid(oNpc) || !DL_IsValidWaypointObject(oTargetWp))
+    {
+        return FALSE;
+    }
+
+    if (!DL_WaypointHasTransition(oTargetWp))
+    {
+        return FALSE;
+    }
+
+    object oNpcArea = GetArea(oNpc);
+    object oTargetArea = GetArea(oTargetWp);
+    if (!GetIsObjectValid(oNpcArea) || !GetIsObjectValid(oTargetArea))
+    {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+int DL_TryNavigateToTargetViaTransition(object oNpc, object oTargetWp, int bAllowRouterFallback)
+{
+    if (!DL_IsTransitionNavigableTarget(oNpc, oTargetWp))
+    {
+        return FALSE;
+    }
+
+    if (DL_ExecuteTransitionViaEntryWaypoint(oNpc, oTargetWp, DL_DIAG_CTX_ROUTED))
+    {
+        return TRUE;
+    }
+
+    if (bAllowRouterFallback && DL_TryRouteToTarget(oNpc, oTargetWp))
+    {
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
 int DL_TryUseNavigationRouteToTarget(object oNpc, object oTarget)
 {
     if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
