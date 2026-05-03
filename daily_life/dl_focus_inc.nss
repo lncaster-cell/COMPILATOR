@@ -187,46 +187,21 @@ string DL_ResolveMealKind(object oNpc)
 }
 object DL_ResolveMealWaypoint(object oNpc, string sMealKind)
 {
-    object oTargetArea = OBJECT_INVALID;
-    if (sMealKind == DL_MEAL_KIND_LUNCH)
+    object oTargetArea = DL_ResolvePreferredAreaWithFallbacks(oNpc, DL_AREA_PURPOSE_MEAL);
+    if (sMealKind == DL_MEAL_KIND_LUNCH && GetLocalString(oNpc, DL_L_NPC_MEAL_AREA_TAG) == "")
     {
-        oTargetArea = DL_GetMealArea(oNpc);
-        if (!GetIsObjectValid(oTargetArea))
+        string sReason = DL_FB_REASON_FOCUS_MISSING_MEAL_AREA;
+        if (!GetIsObjectValid(DL_GetWorkArea(oNpc)))
         {
-            oTargetArea = DL_GetWorkArea(oNpc);
-            if (GetIsObjectValid(oTargetArea))
-            {
-                DL_LogSocialEvent(
-                    oNpc,
-                    DL_STATUS_FALLBACK_MEAL_WORK,
-                    "reason=" + DL_FB_REASON_FOCUS_MISSING_MEAL_AREA + " kind=" + sMealKind + " area=" + GetTag(oTargetArea)
-                );
-            }
+            sReason = DL_FB_REASON_FOCUS_MISSING_MEAL_AND_WORK_AREA;
         }
+        DL_LogSocialEvent(oNpc, "fallback_meal_policy", "reason=" + sReason + " kind=" + sMealKind + " area=" + GetTag(oTargetArea));
     }
-
-    if (!GetIsObjectValid(oTargetArea))
-    {
-        oTargetArea = DL_GetHomeArea(oNpc);
-        if (GetIsObjectValid(oTargetArea) && sMealKind == DL_MEAL_KIND_LUNCH)
-        {
-            DL_LogSocialEvent(
-                oNpc,
-                DL_STATUS_FALLBACK_MEAL_HOME,
-                "reason=" + DL_FB_REASON_FOCUS_MISSING_MEAL_AND_WORK_AREA + " kind=" + sMealKind + " area=" + GetTag(oTargetArea)
-            );
-        }
-    }
-
     return DL_ResolveEffectiveWaypointForNpc(oNpc, DL_GetAreaAnchorWaypoint(oNpc, oTargetArea, "dl_anchor_meal", DL_L_NPC_CACHE_MEAL, TRUE));
 }
 object DL_ResolveSocialWaypoint(object oNpc)
 {
-    object oArea = DL_GetSocialArea(oNpc);
-    if (!GetIsObjectValid(oArea))
-    {
-        oArea = DL_GetWorkArea(oNpc);
-    }
+    object oArea = DL_ResolvePreferredAreaWithFallbacks(oNpc, DL_AREA_PURPOSE_SOCIAL);
 
     string sSlot = GetLocalString(oNpc, DL_L_NPC_SOCIAL_SLOT);
     string sAnchor = sSlot == "b" ? "dl_anchor_social_b" : "dl_anchor_social_a";
@@ -235,11 +210,7 @@ object DL_ResolveSocialWaypoint(object oNpc)
 }
 object DL_ResolvePublicWaypoint(object oNpc)
 {
-    object oArea = DL_GetPublicArea(oNpc);
-    if (!GetIsObjectValid(oArea))
-    {
-        oArea = DL_GetSocialArea(oNpc);
-    }
+    object oArea = DL_ResolvePreferredAreaWithFallbacks(oNpc, DL_AREA_PURPOSE_PUBLIC);
     if (!GetIsObjectValid(oArea))
     {
         DL_LogMarkupIssueOnce(

@@ -249,6 +249,7 @@ int DL_IsActivePipelineNpc(object oNpc);
 int DL_IsAreaObject(object oObject);
 object DL_GetHomeArea(object oNpc);
 object DL_GetWorkArea(object oNpc);
+object DL_ResolvePreferredAreaWithFallbacks(object oNpc, int nPurpose);
 object DL_ResolveChillWaypoint(object oNpc);
 void DL_MaybeRefreshNpcCachesForEpoch(object oNpc);
 void DL_MaybeRefreshAreaCachesForEpoch(object oArea);
