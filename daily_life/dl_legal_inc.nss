@@ -4,7 +4,6 @@ const string DL_L_PC_LG_CASE_STATE = "dl_lg_case_state";
 const string DL_L_PC_LG_CASE_KIND = "dl_lg_case_kind";
 const string DL_L_PC_LG_CASE_SEVERITY = "dl_lg_case_severity";
 const string DL_L_PC_LG_CASE_OPEN_ABS_MIN = "dl_lg_case_open_abs_min";
-const string DL_L_PC_LG_CASE_LAST_UPDATE_ABS_MIN = "dl_lg_case_last_update_abs_min";
 const string DL_L_PC_LG_CASE_RESOLUTION = "dl_lg_case_resolution";
 const string DL_L_PC_LG_CASE_FINE = "dl_lg_case_fine";
 
