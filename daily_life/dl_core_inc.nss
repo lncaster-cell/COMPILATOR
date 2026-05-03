@@ -1,3 +1,4 @@
+#include "dl_compile_order_inc"
 #include "dl_res_inc"
 #include "dl_config_inc"
 #include "dl_registry_inc"
