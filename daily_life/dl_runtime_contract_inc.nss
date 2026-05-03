@@ -238,6 +238,13 @@ const string DL_L_MODULE_RESET_POLICY = "dl_reset_policy";
 const int DL_RESET_POLICY_TRANSITION_ONLY = 1;
 const int DL_RESET_POLICY_LEGACY_ALWAYS = 2;
 const string DL_L_NPC_LAST_RESET_TICK = "dl_npc_last_reset_tick";
+const string DL_L_NPC_RESET_COUNTER_PREFIX = "dl_npc_reset_count_";
+const int DL_RESET_REASON_ROUTINE = 1;
+const int DL_RESET_REASON_BLOCKED = 2;
+const int DL_RESET_REASON_RECOVERY = 3;
+const int DL_RESET_REASON_RESYNC = 4;
+const int DL_RESET_REASON_COMBAT = 5;
+const int DL_RESET_REASON_TRANSITION = 6;
 const string DL_L_NPC_DIRECTIVE_RESET_ALLOWED = "dl_npc_directive_reset_allowed";
 const string DL_L_NPC_LAST_HARD_RESET_TICK = "dl_npc_last_hard_reset_tick";
 const string DL_L_NPC_RESET_REASON_LAST = "dl_npc_reset_reason_last";
@@ -280,9 +287,9 @@ void DL_QueueMoveAction(object oNpc, location lTarget, int bRun)
 void DL_CommandStartConversation(object oActor, object oListener, string sDialogResRef, int bPrivateConversation = TRUE, int bPlayHello = TRUE);
 void DL_CommandAttack(object oActor, object oTarget);
 int DL_GetResetPolicyMode();
-int DL_TryResetActionQueue(object oActor, int bForce = FALSE);
-int DL_ShouldResetQueueNow(object oActor, string sReason, int nTick);
-int DL_TryHardResetActionQueue(object oActor, string sReason);
+int DL_ShouldResetQueueNow(object oActor, int nReason, int nTickStamp);
+string DL_GetResetReasonCounterKey(int nReason);
+int DL_TryResetActionQueue(object oActor, int bForce = FALSE, int nReason = DL_RESET_REASON_ROUTINE);
 void DL_MarkDirectiveTransitionResetAllowed(object oActor, int bAllowed = TRUE);
 
 int DL_GetResetPolicyMode()
@@ -299,54 +306,52 @@ void DL_MarkDirectiveTransitionResetAllowed(object oActor, int bAllowed = TRUE)
     SetLocalInt(oActor, DL_L_NPC_DIRECTIVE_RESET_ALLOWED, bAllowed == TRUE ? TRUE : FALSE);
 }
 
-int DL_TryResetActionQueue(object oActor, int bForce = FALSE)
+string DL_GetResetReasonCounterKey(int nReason)
 {
-    if (!GetIsObjectValid(oActor)) return FALSE;
-    int nTick = GetTimeMillisecond();
-    string sReason = bForce == TRUE ? "recovery" : "directive_transition";
-    if (!DL_ShouldResetQueueNow(oActor, sReason, nTick)) return FALSE;
-
-    AssignCommand(oActor, ClearAllActions(TRUE));
-    SetLocalInt(oActor, DL_L_NPC_LAST_RESET_TICK, nTick);
-    SetLocalInt(oActor, DL_L_NPC_LAST_HARD_RESET_TICK, nTick);
-    return TRUE;
+    return DL_L_NPC_RESET_COUNTER_PREFIX + IntToString(nReason);
 }
 
-int DL_ShouldResetQueueNow(object oActor, string sReason, int nTick)
+int DL_ShouldResetQueueNow(object oActor, int nReason, int nTickStamp)
 {
     if (!GetIsObjectValid(oActor)) return FALSE;
-    if (nTick < 0) nTick = GetTimeMillisecond();
+    if (GetLocalInt(oActor, DL_L_NPC_LAST_RESET_TICK) == nTickStamp) return FALSE;
 
-    int bDirectiveTransition = sReason == "directive_transition";
-    int bEmergencyRecovery = sReason == "recovery" || sReason == "blocked" || sReason == "resync" || sReason == "combat_override";
-    if (!bDirectiveTransition && !bEmergencyRecovery) return FALSE;
-
-    if (GetLocalInt(oActor, DL_L_NPC_LAST_HARD_RESET_TICK) == nTick) return FALSE;
-
-    if (bDirectiveTransition && DL_GetResetPolicyMode() == DL_RESET_POLICY_TRANSITION_ONLY)
+    if (nReason == DL_RESET_REASON_BLOCKED ||
+        nReason == DL_RESET_REASON_RECOVERY ||
+        nReason == DL_RESET_REASON_RESYNC ||
+        nReason == DL_RESET_REASON_COMBAT ||
+        nReason == DL_RESET_REASON_TRANSITION)
     {
-        if (GetLocalInt(oActor, DL_L_NPC_DIRECTIVE_RESET_ALLOWED) != TRUE) return FALSE;
-        DeleteLocalInt(oActor, DL_L_NPC_DIRECTIVE_RESET_ALLOWED);
+        return TRUE;
     }
 
-    SetLocalString(oActor, DL_L_NPC_RESET_REASON_LAST, sReason);
-    if (bDirectiveTransition) SetLocalInt(oActor, DL_L_NPC_RESET_REASON_DIRECTIVE_COUNT, GetLocalInt(oActor, DL_L_NPC_RESET_REASON_DIRECTIVE_COUNT) + 1);
-    else if (sReason == "recovery") SetLocalInt(oActor, DL_L_NPC_RESET_REASON_RECOVERY_COUNT, GetLocalInt(oActor, DL_L_NPC_RESET_REASON_RECOVERY_COUNT) + 1);
-    else if (sReason == "blocked") SetLocalInt(oActor, DL_L_NPC_RESET_REASON_BLOCKED_COUNT, GetLocalInt(oActor, DL_L_NPC_RESET_REASON_BLOCKED_COUNT) + 1);
-    else if (sReason == "resync") SetLocalInt(oActor, DL_L_NPC_RESET_REASON_RESYNC_COUNT, GetLocalInt(oActor, DL_L_NPC_RESET_REASON_RESYNC_COUNT) + 1);
-    else if (sReason == "combat_override") SetLocalInt(oActor, DL_L_NPC_RESET_REASON_COMBAT_OVERRIDE_COUNT, GetLocalInt(oActor, DL_L_NPC_RESET_REASON_COMBAT_OVERRIDE_COUNT) + 1);
+    if (DL_GetResetPolicyMode() != DL_RESET_POLICY_TRANSITION_ONLY)
+    {
+        return TRUE;
+    }
 
+    if (GetLocalInt(oActor, DL_L_NPC_DIRECTIVE_RESET_ALLOWED) != TRUE)
+    {
+        return FALSE;
+    }
+
+    DeleteLocalInt(oActor, DL_L_NPC_DIRECTIVE_RESET_ALLOWED);
     return TRUE;
 }
 
-int DL_TryHardResetActionQueue(object oActor, string sReason)
+int DL_TryResetActionQueue(object oActor, int bForce = FALSE, int nReason = DL_RESET_REASON_ROUTINE)
 {
     if (!GetIsObjectValid(oActor)) return FALSE;
     int nTick = GetTimeMillisecond();
-    if (!DL_ShouldResetQueueNow(oActor, sReason, nTick)) return FALSE;
+    int nEffectiveReason = nReason;
+    if (bForce == TRUE && nReason == DL_RESET_REASON_ROUTINE) nEffectiveReason = DL_RESET_REASON_TRANSITION;
+
+    if (!DL_ShouldResetQueueNow(oActor, nEffectiveReason, nTick)) return FALSE;
+
     AssignCommand(oActor, ClearAllActions(TRUE));
     SetLocalInt(oActor, DL_L_NPC_LAST_RESET_TICK, nTick);
-    SetLocalInt(oActor, DL_L_NPC_LAST_HARD_RESET_TICK, nTick);
+    string sCounterKey = DL_GetResetReasonCounterKey(nEffectiveReason);
+    SetLocalInt(oActor, sCounterKey, GetLocalInt(oActor, sCounterKey) + 1);
     return TRUE;
 }
 
@@ -387,19 +392,18 @@ int DL_OrchestrateRuntimeAction(object oActor, int nActionKind, object oTarget, 
 }
 
 void DL_CommandMoveToObject(object oActor, object oTarget, int bRun = TRUE, float fRange = 1.0) { AssignCommand(oActor, ActionMoveToObject(oTarget, bRun, fRange)); }
-void DL_CommandMoveToObjectResetQueue(object oActor, object oTarget, int bRun = TRUE, float fRange = 1.0) { DL_TryHardResetActionQueue(oActor, "recovery"); DL_CommandMoveToObject(oActor, oTarget, bRun, fRange); }
+void DL_CommandMoveToObjectResetQueue(object oActor, object oTarget, int bRun = TRUE, float fRange = 1.0) { DL_TryResetActionQueue(oActor, TRUE, DL_RESET_REASON_RECOVERY); DL_CommandMoveToObject(oActor, oTarget, bRun, fRange); }
 void DL_CommandMoveToLocation(object oActor, location lTarget, int bRun = TRUE) { AssignCommand(oActor, ActionMoveToLocation(lTarget, bRun)); }
-void DL_CommandMoveToLocationResetQueue(object oActor, location lTarget, int bRun = TRUE) { DL_TryHardResetActionQueue(oActor, "recovery"); DL_CommandMoveToLocation(oActor, lTarget, bRun); }
+void DL_CommandMoveToLocationResetQueue(object oActor, location lTarget, int bRun = TRUE) { DL_TryResetActionQueue(oActor, TRUE, DL_RESET_REASON_RECOVERY); DL_CommandMoveToLocation(oActor, lTarget, bRun); }
 void DL_DispatchMoveToLocation(object oActor, location lTarget, int bRun = TRUE) { DL_CommandMoveToLocation(oActor, lTarget, bRun); }
 void DL_CommandJumpToLocation(object oActor, location lTarget) { AssignCommand(oActor, ActionJumpToLocation(lTarget)); }
-void DL_CommandJumpToLocationResetQueue(object oActor, location lTarget) { DL_TryHardResetActionQueue(oActor, "recovery"); DL_CommandJumpToLocation(oActor, lTarget); }
+void DL_CommandJumpToLocationResetQueue(object oActor, location lTarget) { DL_TryResetActionQueue(oActor, TRUE, DL_RESET_REASON_RECOVERY); DL_CommandJumpToLocation(oActor, lTarget); }
 void DL_DispatchJumpToLocation(object oActor, location lTarget) { DL_CommandJumpToLocation(oActor, lTarget); }
 
 void DL_CommandStartConversation(object oActor, object oListener, string sDialogResRef, int bPrivateConversation = TRUE, int bPlayHello = TRUE) { AssignCommand(oActor, ActionStartConversation(oListener, sDialogResRef, bPrivateConversation, bPlayHello)); }
-void DL_CommandStartConversationResetQueue(object oActor, object oListener, string sDialogResRef, int bPrivateConversation = TRUE, int bPlayHello = TRUE) { DL_TryHardResetActionQueue(oActor, "recovery"); DL_CommandStartConversation(oActor, oListener, sDialogResRef, bPrivateConversation, bPlayHello); }
+void DL_CommandStartConversationResetQueue(object oActor, object oListener, string sDialogResRef, int bPrivateConversation = TRUE, int bPlayHello = TRUE) { DL_TryResetActionQueue(oActor, TRUE, DL_RESET_REASON_RECOVERY); DL_CommandStartConversation(oActor, oListener, sDialogResRef, bPrivateConversation, bPlayHello); }
 void DL_CommandAttack(object oActor, object oTarget) { AssignCommand(oActor, ActionAttack(oTarget)); }
-void DL_CommandAttackResetQueue(object oActor, object oTarget) { DL_TryHardResetActionQueue(oActor, "combat_override"); DL_CommandAttack(oActor, oTarget); }
-void DL_CommandSetFacing(object oActor, float fFacing) { AssignCommand(oActor, SetFacing(fFacing)); }
+void DL_CommandAttackResetQueue(object oActor, object oTarget) { DL_TryResetActionQueue(oActor, TRUE, DL_RESET_REASON_COMBAT); DL_CommandAttack(oActor, oTarget); }
 
 void DL_InitModuleContract()
 {

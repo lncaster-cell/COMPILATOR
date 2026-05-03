@@ -131,6 +131,7 @@ void DL_HandleNpcBlocked(object oNpc)
     SetLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC, "opening_blocking_door");
     DL_ClearNpcBlockedSignal(oNpc);
 
+    DL_TryResetActionQueue(oNpc, TRUE, DL_RESET_REASON_BLOCKED);
     AssignCommand(oNpc, DoDoorAction(oBlocker, DOOR_ACTION_OPEN));
     DelayCommand(DL_BLOCKED_REISSUE_DELAY, DL_ReissueNpcDirectiveAfterBlocked(oNpc));
     DelayCommand(DL_BLOCKED_OPEN_COOLDOWN, DL_ClearNpcBlockedBusy(oNpc));
