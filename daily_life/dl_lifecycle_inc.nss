@@ -21,33 +21,6 @@ const int DL_NPC_RESET_DOMAIN_WORK  = 2;
 const int DL_NPC_RESET_DOMAIN_FOCUS = 4;
 const int DL_NPC_RESET_DOMAIN_ALL   = 7;
 
-void DL_ClearTransitionExecutionState(object oNpc);
-void DL_UnregisterNpc(object oNpc);
-void DL_RegisterNpc(object oNpc);
-void DL_ReconcileNpcAreaRegistration(object oNpc);
-void DL_RequestResync(object oNpc, int nReason);
-void DL_ProcessResync(object oNpc);
-
-string DL_GetNpcResyncPendingLocal()
-{
-    return "dl_npc_resync_pending";
-}
-
-string DL_GetNpcResyncReasonLocal()
-{
-    return "dl_npc_resync_reason";
-}
-
-string DL_GetNpcWorkerSeqLocal()
-{
-    return "dl_npc_worker_seq";
-}
-
-string DL_GetNpcSocialReservedWpLocal()
-{
-    return "dl_social_reserved_wp";
-}
-
 #include "dl_blocked_inc"
 
 // Transition rule: every directive-to-directive switch must pass through this API.
