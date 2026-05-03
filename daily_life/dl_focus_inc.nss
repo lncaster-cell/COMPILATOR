@@ -164,7 +164,7 @@ int DL_ProgressFocusAtTarget(object oNpc, object oTarget, string sOnAnchorStatus
     {
         PlayCustomAnimation(oNpc, sAnim, TRUE);
     }
-    DL_LogSocialEvent(oNpc, sOnAnchorStatus, "anchor=" + GetTag(oTarget));
+    DL_LogSocialEvent(oNpc, sOnAnchorStatus, DL_BuildAnchorTelemetry(oNpc, oTarget, "", "focus"));
     return TRUE;
 }
 string DL_ResolveMealKind(object oNpc)
@@ -367,7 +367,7 @@ void DL_ExecuteMealDirective(object oNpc)
     DL_LogSocialEvent(
         oNpc,
         "target_meal",
-        "target dir=MEAL area=" + GetTag(GetArea(oMeal)) + " anchor=" + GetTag(oMeal) + " kind=" + sMealKind
+        DL_BuildAnchorTelemetry(oNpc, oMeal, "target dir=MEAL kind=" + sMealKind, "focus")
     );
     DL_ProgressFocusAtTarget(oNpc, oMeal, "on_meal_anchor_" + sMealKind, sAnim);
 }
@@ -465,7 +465,7 @@ void DL_ExecuteChillDirective(object oNpc)
     DL_LogSocialEvent(
         oNpc,
         "target_chill",
-        "target dir=CHILL area=" + GetTag(GetArea(oSeat)) + " anchor=" + GetTag(oSeat)
+        DL_BuildAnchorTelemetry(oNpc, oSeat, "target dir=CHILL", "focus")
     );
     DL_ProgressChillAtSeat(oNpc, oSeat);
 }
@@ -486,7 +486,7 @@ void DL_ExecutePublicDirective(object oNpc)
     DL_LogSocialEvent(
         oNpc,
         "target_public",
-        "target dir=PUBLIC area=" + GetTag(GetArea(oPublic)) + " anchor=" + GetTag(oPublic)
+        DL_BuildAnchorTelemetry(oNpc, oPublic, "target dir=PUBLIC", "focus")
     );
     DL_ProgressFocusAtTarget(oNpc, oPublic, "on_public_anchor", sAnim);
 }
@@ -548,7 +548,7 @@ void DL_ExecuteSocialDirective(object oNpc)
         DL_LogSocialEvent(
             oNpc,
             "target_social_" + sKind,
-            "target dir=SOCIAL kind=" + sKind + " area=" + GetTag(GetArea(oSocial)) + " anchor=" + GetTag(oSocial)
+            DL_BuildAnchorTelemetry(oNpc, oSocial, "target dir=SOCIAL kind=" + sKind, "focus")
         );
         DL_ProgressFocusAtTarget(oNpc, oSocial, "on_social_" + sKind, sAnim);
         return;
@@ -590,9 +590,7 @@ void DL_ExecuteSocialDirective(object oNpc)
     DL_LogSocialEvent(
         oNpc,
         "target_social",
-        "target dir=SOCIAL area=" + GetTag(GetArea(oMe)) + " anchor=" + GetTag(oMe) +
-            " slot=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_SLOT) +
-            " partner=" + sPartnerTag
+        DL_BuildAnchorTelemetry(oNpc, oMe, "target dir=SOCIAL slot=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_SLOT) + " partner=" + sPartnerTag, "focus")
     );
     // Execute
     DL_ProgressFocusAtTarget(oNpc, oMe, sStatus, sAnim);
