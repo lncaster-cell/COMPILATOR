@@ -1,4 +1,3 @@
-
 const string DL_L_MODULE_ENABLED = "dl_enabled";
 const string DL_L_MODULE_CONTRACT_VERSION = "dl_contract_version";
 const string DL_CONTRACT_VERSION_A0 = "a0";
@@ -7,13 +6,8 @@ const string DL_L_MODULE_CHAT_LOG_INIT = "dl_chat_log_init";
 const string DL_L_MODULE_RUNTIME_LOG = "dl_runtime_log";
 
 const int OBJECT_TYPE_AREA = 4;
-
-// NWScript has no stock LOCATION_INVALID constant in this compiler/toolchain.
-// Keep a global zero-initialized location only as an unused placeholder for
-// orchestration calls whose action kind does not consume lTarget.
 location LOCATION_INVALID;
 
-// Cross-include declarations used by this base contract layer.
 int DL_IsAreaObject(object oObject);
 int DL_GetAreaTier(object oArea);
 void DL_LogChatDebugEvent(object oNpc, string sKind, string sPayload);
@@ -21,36 +15,6 @@ void DL_LogChatDebugEvent(object oNpc, string sKind, string sPayload);
 const int DL_RUNTIME_TIER_WARM = 1;
 const int DL_RUNTIME_TIER_HOT = 2;
 
-// Runtime local keys schema (single source of truth).
-// Format:
-// KEY | TYPE | OWNER | LIFECYCLE | RESET POLICY
-// DL_L_MODULE_WORKER_SEQ | int | worker | module-runtime | monotonic, never reset
-// DL_L_MODULE_WORKER_TICKS | int | worker | module-runtime | monotonic, never reset
-// DL_L_MODULE_WORKER_LAST_PROCESSED | int | worker | heartbeat | overwrite each tick
-// DL_L_MODULE_RESYNC_LAST_PROCESSED | int | resync | heartbeat | overwrite each tick
-// DL_L_MODULE_RESYNC_REQ | int | resync | module-runtime | monotonic, never reset
-// DL_L_NPC_RESYNC_PENDING | int(bool) | resync | npc-runtime | set/clear via accessors only
-// DL_L_NPC_RESYNC_REASON | int(enum) | resync | npc-runtime | overwrite on request, clear on consume
-// DL_L_NPC_TRANSITION_KIND | string | transition | npc-runtime | clear on transition clear
-// DL_L_NPC_TRANSITION_ID | string | transition | npc-runtime | clear on transition clear
-// DL_L_NPC_TRANSITION_TARGET | string | transition | npc-runtime | clear on transition clear
-// DL_L_NPC_TRANSITION_STATUS | string | transition | npc-runtime | overwrite by status helper
-// DL_L_NPC_TRANSITION_DIAGNOSTIC | string | transition | npc-runtime | overwrite by status helper
-// DL_L_NPC_NAV_ZONE | string | transition | npc-runtime/cache | overwrite/clear on zone updates
-// DL_L_NPC_SOCIAL_RESERVED_WP | object | social | npc-runtime | set on reserve, clear on release
-// DL_L_WP_SOCIAL_RESERVED_BY | object | social | wp-runtime | set on reserve, clear on release/expiry
-// DL_L_WP_SOCIAL_RESERVED_UNTIL | int(abs_min) | social | wp-runtime | set on reserve, clear on release/expiry
-// DL_L_PC_CR_DETAIN_PENDING | int(bool) | crime/legal | pc-case-runtime | set/clear via detain API only
-// DL_L_PC_CR_DETAIN_PENDING_REASON | string | crime/legal | pc-case-runtime | set on pending, clear on resolve
-// DL_L_PC_CR_DETAIN_PENDING_RESOLUTION | string | crime/legal | pc-case-runtime | overwrite on resolve
-// DL_L_PC_CR_LAST_GUARD | object | crime/legal | pc-case-runtime | set on witness, clear on pursuit clear
-// DL_L_NPC_CR_OFFENDER_UNTIL | int(abs_min) | crime/legal | pc-case-runtime | set on pending, clear on resolve
-// DL_L_NPC_CR_INVESTIGATE_TARGET | object | crime | npc-runtime | set on dispatch, implicit overwrite
-// DL_L_NPC_CR_INVESTIGATE_UNTIL | int(abs_min) | crime | npc-runtime | set on dispatch, implicit overwrite
-
-// Focus diagnostics contract (stable machine codes + canonical human messages).
-
-// Canonical runtime status codes.
 const string DL_STATUS_MISSING_WAYPOINTS = "missing_waypoints";
 const string DL_STATUS_MOVING_TO_ANCHOR = "moving_to_anchor";
 const string DL_STATUS_ON_ANCHOR = "on_anchor";
@@ -59,7 +23,6 @@ const string DL_STATUS_ON_BED = "on_bed";
 const string DL_STATUS_ON_CHILL_ANCHOR = "on_chill_anchor";
 const string DL_STATUS_SITTING_CHILL_ATTEMPT = "sitting_chill_attempt";
 
-// Canonical runtime diagnostic codes.
 const string DL_DIAG_SLEEP_WAYPOINTS_MISSING = "sleep_waypoints_missing";
 const string DL_DIAG_SLEEP_JUMP_INVALID_TARGET_LOCATION = "sleep_jump_invalid_target_location";
 const string DL_DIAG_WORK_NEED_FORGE_AND_CRAFT_WAYPOINTS = "need_forge_and_craft_waypoints";
@@ -81,6 +44,7 @@ void DL_SetRuntimeState(object oNpc, string sStatusKey, string sStatus, string s
         SetLocalString(oNpc, sDiagKey, sDiagnostic);
     }
 }
+
 const string DL_DIAG_FOCUS_SOCIAL_PARTNER_SELF = "social_partner_self";
 const string DL_DIAG_FOCUS_MISSING_MEAL_ANCHOR = "missing_meal_anchor";
 const string DL_DIAG_FOCUS_MISSING_CHILL_CHAIR = "missing_chill_chair";
@@ -98,7 +62,6 @@ const string DL_MSG_FOCUS_MISSING_PUBLIC_AREA = "has no public/social area for P
 const string DL_MSG_RESULT_FOUND_OUTSIDE_AREA = "found_outside_area";
 const string DL_MSG_RESULT_TAG_NOT_FOUND = "tag_not_found";
 
-// Shared City Response / Legal v1 contract locals (cross-include canonical symbols).
 const string DL_L_MODULE_CR_DETAIN_DIALOG = "dl_cr_detain_dialog";
 const string DL_L_MODULE_TRANSITION_DRIVER_LOOKUP_CAP = "dl_transition_driver_lookup_cap";
 const string DL_L_PC_CR_DETAIN_PENDING = "dl_cr_detain_pending";
@@ -109,28 +72,14 @@ const string DL_L_NPC_CR_OFFENDER_UNTIL = "dl_cr_offender_until";
 const string DL_L_NPC_CR_INVESTIGATE_TARGET = "dl_cr_investigate_target";
 const string DL_L_NPC_CR_INVESTIGATE_UNTIL = "dl_cr_investigate_until";
 
-// Canonical API (crime/legal detain handoff):
-// - DL_CR_SetDetainPending(oPc, nUntilAbsMin, sReason)
-// - DL_CR_ClearDetainPending(oPc, sResolution)
-// - DL_CR_IsDetainPending(oPc)
-// Do not mutate DL_L_PC_CR_DETAIN_PENDING directly outside these helpers.
-
 const string DL_L_NPC_EVENT_KIND = "dl_npc_event_kind";
 const string DL_L_NPC_EVENT_SEQ = "dl_npc_event_seq";
-
 const string DL_L_MODULE_EVENT_SEQ = "dl_module_event_seq";
 const string DL_L_MODULE_LAST_EVENT_KIND = "dl_module_last_event_kind";
 const string DL_L_MODULE_LAST_EVENT_ACTOR = "dl_module_last_event_actor";
 const string DL_L_MODULE_SPAWN_COUNT = "dl_module_spawn_count";
 const string DL_L_MODULE_DEATH_COUNT = "dl_module_death_count";
 
-// Runtime local key taxonomy (canonical suffix policy):
-// - *_STATE: finite-state machine phase.
-// - *_PENDING/*_ACTIVE: boolean runtime flags.
-// - *_COUNT/*_SEQ: counters and monotonic sequence IDs.
-// - *_ABS_MIN/*_TICK: time stamps in absolute minutes or area/module ticks.
-
-// Canonical legal/crime contract values.
 const string DL_LG_CASE_KIND_KILL = "kill";
 const string DL_LG_CASE_KIND_ATTACK = "attack";
 const string DL_LG_CASE_KIND_DOOR_LOCKPICK = "door_lockpick";
@@ -148,7 +97,6 @@ const string DL_CR_DIAG_STATUS_DETAIN_ACCEPTED = "detain_accepted";
 const string DL_CR_DIAG_STATUS_DETAIN_REFUSED = "detain_refused";
 const string DL_CR_DIAG_STATUS_CRIME_WITNESSED = "crime_witnessed";
 
-// Unified fallback protocol contract.
 const string DL_L_NPC_FALLBACK_DOMAIN = "dl_npc_fallback_domain";
 const string DL_L_NPC_FALLBACK_REASON_CODE = "dl_npc_fallback_reason_code";
 const string DL_L_NPC_FALLBACK_SEVERITY = "dl_npc_fallback_severity";
@@ -204,20 +152,10 @@ void DL_ReportFallback(object oActor, string sDomain, string sReasonCode, string
     SetLocalString(oActor, DL_L_NPC_FALLBACK_NEXT_ACTION, sNextAction);
     SetLocalString(oActor, DL_L_NPC_FALLBACK_LAST_EVENT, sDomain + ":" + sReasonCode + ":" + sSeverity + ":" + sNextAction);
 
-    DL_LogChatDebugEvent(
-        oActor,
-        "fallback",
-        "fallback domain=" + sDomain + " reason_code=" + sReasonCode + " severity=" + sSeverity + " next_action=" + sNextAction
-    );
+    DL_LogChatDebugEvent(oActor, "fallback", "fallback domain=" + sDomain + " reason_code=" + sReasonCode + " severity=" + sSeverity + " next_action=" + sNextAction);
 }
 
-void DL_SetReasonAndDiagnostic(
-    object oActor,
-    string sDomain,
-    string sReasonCode,
-    string sDiagnosticLocal,
-    string sDiagnosticCode
-)
+void DL_SetReasonAndDiagnostic(object oActor, string sDomain, string sReasonCode, string sDiagnosticLocal, string sDiagnosticCode)
 {
     if (!GetIsObjectValid(oActor))
     {
@@ -243,19 +181,16 @@ int DL_IsRuntimeEnabled()
     return GetLocalString(oModule, DL_L_MODULE_CONTRACT_VERSION) == DL_CONTRACT_VERSION_A0;
 }
 
-
 int DL_CanRunRuntimeForArea(object oArea)
 {
     if (!DL_IsRuntimeEnabled())
     {
         return FALSE;
     }
-
     if (!GetIsObjectValid(oArea))
     {
         return FALSE;
     }
-
     return DL_IsAreaObject(oArea);
 }
 
@@ -265,7 +200,6 @@ int DL_CanRunWorkerForArea(object oArea)
     {
         return FALSE;
     }
-
     int nTier = DL_GetAreaTier(oArea);
     return nTier == DL_RUNTIME_TIER_HOT || nTier == DL_RUNTIME_TIER_WARM;
 }
@@ -276,7 +210,6 @@ int DL_CanRunWarmMaintenanceForArea(object oArea)
     {
         return FALSE;
     }
-
     return DL_GetAreaTier(oArea) == DL_RUNTIME_TIER_WARM;
 }
 
@@ -286,7 +219,6 @@ int DL_CanRunResyncForArea(object oArea)
     {
         return FALSE;
     }
-
     return DL_GetAreaTier(oArea) == DL_RUNTIME_TIER_HOT;
 }
 
@@ -296,13 +228,10 @@ int DL_CanRunCityResponseForArea(object oArea)
     {
         return FALSE;
     }
-
-    object oModule = GetModule();
-    if (GetLocalInt(oModule, "dl_city_response_enabled") != TRUE)
+    if (GetLocalInt(GetModule(), "dl_city_response_enabled") != TRUE)
     {
         return FALSE;
     }
-
     return GetLocalInt(oArea, "dl_city_response_enabled") == TRUE;
 }
 
@@ -310,6 +239,7 @@ int DL_CanRunTransitionForArea(object oArea)
 {
     return DL_CanRunRuntimeForArea(oArea);
 }
+
 int DL_IsRuntimeLogEnabled()
 {
     return GetLocalInt(GetModule(), DL_L_MODULE_RUNTIME_LOG) == TRUE;
@@ -321,10 +251,7 @@ void DL_LogRuntime(string sLog)
     {
         return;
     }
-
-    // Temporary: global runtime logging is disabled.
 }
-
 
 const string DL_L_NPC_ORCH_LAST_STATE = "dl_orch_last_state";
 const string DL_L_NPC_ORCH_LAST_WINDOW = "dl_orch_last_window";
@@ -336,23 +263,13 @@ const int DL_ORCH_ACT_JUMP_LOCATION = 3;
 const int DL_ORCH_ACT_START_CONVERSATION = 4;
 const int DL_ORCH_ACT_ATTACK = 5;
 
-void DL_CommandMoveToObject(object oActor, object oTarget, int bRun, float fRange);
-void DL_CommandMoveToLocation(object oActor, location lTarget, int bRun);
+void DL_CommandMoveToObject(object oActor, object oTarget, int bRun = TRUE, float fRange = 1.0);
+void DL_CommandMoveToLocation(object oActor, location lTarget, int bRun = TRUE);
 void DL_CommandJumpToLocation(object oActor, location lTarget);
-void DL_CommandStartConversation(object oActor, object oListener, string sDialogResRef, int bPrivateConversation, int bPlayHello);
+void DL_CommandStartConversation(object oActor, object oListener, string sDialogResRef, int bPrivateConversation = TRUE, int bPlayHello = TRUE);
 void DL_CommandAttack(object oActor, object oTarget);
 
-void DL_OnNpcActionDispatched(
-    object oActor,
-    string sStatusKey = "",
-    string sStatusValue = "",
-    string sDiagKey = "",
-    string sDiagValue = "",
-    string sTelemetryKey = "",
-    int nExecutionWindow = -1,
-    string sNoopStateKey = "",
-    string sNoopStateValue = ""
-)
+void DL_OnNpcActionDispatched(object oActor, string sStatusKey = "", string sStatusValue = "", string sDiagKey = "", string sDiagValue = "", string sTelemetryKey = "", int nExecutionWindow = -1, string sNoopStateKey = "", string sNoopStateValue = "")
 {
     if (!GetIsObjectValid(oActor))
     {
@@ -361,9 +278,7 @@ void DL_OnNpcActionDispatched(
 
     if (sNoopStateKey != "" && sNoopStateValue != "" && nExecutionWindow >= 0)
     {
-        if (GetLocalString(oActor, sNoopStateKey) == sNoopStateValue &&
-            GetLocalInt(oActor, DL_L_NPC_ORCH_LAST_WINDOW) == nExecutionWindow &&
-            GetLocalString(oActor, DL_L_NPC_ORCH_LAST_STATE) == sNoopStateValue)
+        if (GetLocalString(oActor, sNoopStateKey) == sNoopStateValue && GetLocalInt(oActor, DL_L_NPC_ORCH_LAST_WINDOW) == nExecutionWindow && GetLocalString(oActor, DL_L_NPC_ORCH_LAST_STATE) == sNoopStateValue)
         {
             return;
         }
@@ -374,7 +289,6 @@ void DL_OnNpcActionDispatched(
     {
         SetLocalInt(oActor, sTelemetryKey, GetLocalInt(oActor, sTelemetryKey) + 1);
     }
-
     if (nExecutionWindow >= 0)
     {
         SetLocalInt(oActor, DL_L_NPC_ORCH_LAST_WINDOW, nExecutionWindow);
@@ -382,29 +296,7 @@ void DL_OnNpcActionDispatched(
     }
 }
 
-int DL_OrchestrateRuntimeAction(
-    object oActor,
-    int nActionKind,
-    object oTarget = OBJECT_INVALID,
-    location lTarget = LOCATION_INVALID,
-    string sDialogResRef = "",
-    int bResetQueue = TRUE,
-    string sPreStatusKey = "",
-    string sPreStatus = "",
-    string sPreDiagKey = "",
-    string sPreDiag = "",
-    string sPostStatusKey = "",
-    string sPostStatus = "",
-    string sPostDiagKey = "",
-    string sPostDiag = "",
-    string sNoopStateKey = "",
-    string sNoopStateValue = "",
-    int nExecutionWindow = -1,
-    int bRun = TRUE,
-    float fRange = 1.0,
-    int bPrivateConversation = TRUE,
-    int bPlayHello = TRUE
-)
+int DL_OrchestrateRuntimeAction(object oActor, int nActionKind, object oTarget, location lTarget, string sDialogResRef = "", int bResetQueue = TRUE, string sPreStatusKey = "", string sPreStatus = "", string sPreDiagKey = "", string sPreDiag = "", string sPostStatusKey = "", string sPostStatus = "", string sPostDiagKey = "", string sPostDiag = "", string sNoopStateKey = "", string sNoopStateValue = "", int nExecutionWindow = -1, int bRun = TRUE, float fRange = 1.0, int bPrivateConversation = TRUE, int bPlayHello = TRUE)
 {
     if (!GetIsObjectValid(oActor))
     {
@@ -413,9 +305,7 @@ int DL_OrchestrateRuntimeAction(
 
     if (sNoopStateKey != "" && sNoopStateValue != "" && nExecutionWindow >= 0)
     {
-        if (GetLocalString(oActor, sNoopStateKey) == sNoopStateValue &&
-            GetLocalInt(oActor, DL_L_NPC_ORCH_LAST_WINDOW) == nExecutionWindow &&
-            GetLocalString(oActor, DL_L_NPC_ORCH_LAST_STATE) == sNoopStateValue)
+        if (GetLocalString(oActor, sNoopStateKey) == sNoopStateValue && GetLocalInt(oActor, DL_L_NPC_ORCH_LAST_WINDOW) == nExecutionWindow && GetLocalString(oActor, DL_L_NPC_ORCH_LAST_STATE) == sNoopStateValue)
         {
             return FALSE;
         }
@@ -429,7 +319,6 @@ int DL_OrchestrateRuntimeAction(
 
     if (nActionKind == DL_ORCH_ACT_NONE)
     {
-        // queue/state orchestration only
     }
     else if (nActionKind == DL_ORCH_ACT_MOVE_OBJECT)
     {
@@ -456,20 +345,10 @@ int DL_OrchestrateRuntimeAction(
         return FALSE;
     }
 
-    DL_OnNpcActionDispatched(
-        oActor,
-        sPostStatusKey,
-        sPostStatus,
-        sPostDiagKey,
-        sPostDiag,
-        "",
-        nExecutionWindow,
-        sNoopStateKey,
-        sNoopStateValue
-    );
-
+    DL_OnNpcActionDispatched(oActor, sPostStatusKey, sPostStatus, sPostDiagKey, sPostDiag, "", nExecutionWindow, sNoopStateKey, sNoopStateValue);
     return TRUE;
 }
+
 void DL_CommandMoveToObject(object oActor, object oTarget, int bRun = TRUE, float fRange = 1.0)
 {
     AssignCommand(oActor, ActionMoveToObject(oTarget, bRun, fRange));
@@ -529,15 +408,12 @@ void DL_InitModuleContract()
 {
     object oModule = GetModule();
     int nEnabled = GetLocalInt(oModule, DL_L_MODULE_ENABLED) == TRUE ? TRUE : FALSE;
-
     SetLocalString(oModule, DL_L_MODULE_CONTRACT_VERSION, DL_CONTRACT_VERSION_A0);
     SetLocalInt(oModule, DL_L_MODULE_ENABLED, nEnabled);
-
     if (GetLocalInt(oModule, DL_L_MODULE_EVENT_SEQ) < 0)
     {
         SetLocalInt(oModule, DL_L_MODULE_EVENT_SEQ, 0);
     }
-
     if (GetLocalInt(oModule, DL_L_MODULE_CHAT_LOG_INIT) != TRUE)
     {
         SetLocalInt(oModule, DL_L_MODULE_CHAT_LOG, TRUE);
@@ -545,11 +421,6 @@ void DL_InitModuleContract()
     }
 }
 
-
-// Canonical object validators for Daily Life modules.
-// NWScript object handles are typeless at compile time, so callers MUST validate
-// both handle validity (OBJECT_INVALID guard via GetIsObjectValid) and expected
-// runtime type before using type-specific APIs.
 int DL_IsValidDoorObject(object oObj)
 {
     return GetIsObjectValid(oObj) && GetObjectType(oObj) == OBJECT_TYPE_DOOR;
@@ -581,17 +452,14 @@ int DL_IsPipelineNpc(object oNpc)
     {
         return FALSE;
     }
-
     if (GetIsPC(oNpc))
     {
         return FALSE;
     }
-
     if (GetIsDM(oNpc))
     {
         return FALSE;
     }
-
     return TRUE;
 }
 
@@ -601,12 +469,10 @@ int DL_IsActivePipelineNpc(object oNpc)
     {
         return FALSE;
     }
-
     if (GetIsDead(oNpc))
     {
         return FALSE;
     }
-
     return TRUE;
 }
 
@@ -616,6 +482,5 @@ int DL_IsRuntimePlayer(object oCreature)
     {
         return FALSE;
     }
-
     return GetIsPC(oCreature) && !GetIsDM(oCreature);
 }
