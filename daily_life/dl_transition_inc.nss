@@ -80,9 +80,11 @@ int DL_GetAreaTick(object oArea);
 int DL_TryRouteToTarget(object oNpc, object oTarget);
 int DL_ExecuteTransitionViaEntryWaypoint(object oNpc, object oEntryWp, string sDiagPrefix);
 int DL_TryExecuteRoutedTransitionEntryWaypoint(object oNpc, object oEntryWp);
+int DL_TryAdvanceViaTransitionOrRoute(object oNpc, object oTargetWp, int bMarkDomainProgress, string sDomainTag);
 int DL_EngineJumpNpcToTransitionExit(object oNpc, location lExit, string sStatus = "", string sDiagnostic = "");
 int DL_EngineExecuteTransitionDriver(object oNpc, object oEntryWp, location lExit, object oExitWp, string sJumpDiagnostic = DL_TRANSITION_DIAG_IN_PROGRESS);
 int DL_ExecuteTransitionEngine(object oNpc, object oEntryWp, string sDiagPrefix);
+void DL_MarkSleepNavigationInProgress(object oNpc, string sTargetTag);
 
 string DL_BuildTransitionDiagnostic(string sDiagnostic, string sDiagContext)
 {
@@ -1019,45 +1021,28 @@ object DL_FindTwoHopNavZoneEntry(object oNpc, object oTarget, string sFromZone, 
     return oBestEntry;
 }
 
-
-// Contract: navigation helpers only perform navigation attempts and must not mutate
-// domain-specific runtime/status state outside transition execution internals.
-int DL_IsTransitionNavigableTarget(object oNpc, object oTargetWp)
+int DL_TryAdvanceViaTransitionOrRoute(object oNpc, object oTargetWp, int bMarkDomainProgress, string sDomainTag)
 {
-    if (!GetIsObjectValid(oNpc) || !DL_IsValidWaypointObject(oTargetWp))
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTargetWp))
     {
         return FALSE;
     }
 
-    if (!DL_WaypointHasTransition(oTargetWp))
+    if (DL_WaypointHasTransition(oTargetWp) && DL_TryExecuteRoutedTransitionEntryWaypoint(oNpc, oTargetWp))
     {
-        return FALSE;
-    }
-
-    object oNpcArea = GetArea(oNpc);
-    object oTargetArea = GetArea(oTargetWp);
-    if (!GetIsObjectValid(oNpcArea) || !GetIsObjectValid(oTargetArea))
-    {
-        return FALSE;
-    }
-
-    return TRUE;
-}
-
-int DL_TryNavigateToTargetViaTransition(object oNpc, object oTargetWp, int bAllowRouterFallback)
-{
-    if (!DL_IsTransitionNavigableTarget(oNpc, oTargetWp))
-    {
-        return FALSE;
-    }
-
-    if (DL_ExecuteTransitionViaEntryWaypoint(oNpc, oTargetWp, DL_DIAG_CTX_ROUTED))
-    {
+        if (bMarkDomainProgress)
+        {
+            DL_MarkSleepNavigationInProgress(oNpc, sDomainTag);
+        }
         return TRUE;
     }
 
-    if (bAllowRouterFallback && DL_TryRouteToTarget(oNpc, oTargetWp))
+    if (DL_TryRouteToTarget(oNpc, oTargetWp))
     {
+        if (bMarkDomainProgress)
+        {
+            DL_MarkSleepNavigationInProgress(oNpc, sDomainTag);
+        }
         return TRUE;
     }
 
