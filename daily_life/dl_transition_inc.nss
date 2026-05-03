@@ -171,15 +171,13 @@ string DL_GetAreaNavigationSlotKey(int nSlot)
 
 int DL_IsAutoNavTag(string sTag)
 {
-    string sFrom = "";
-    string sTo = "";
-    return DL_ParseAutoNavTag(sTag, sFrom, sTo);
+    return DL_ParseAutoNavTag(sTag, "dl_tmp_from", "dl_tmp_to");
 }
 
-int DL_ParseAutoNavTag(string sTag, string &sFromOut, string &sToOut)
+int DL_ParseAutoNavTag(string sTag, string sFromLocal, string sToLocal)
 {
-    sFromOut = "";
-    sToOut = "";
+    SetLocalString(GetModule(), sFromLocal, "");
+    SetLocalString(GetModule(), sToLocal, "");
 
     if (GetStringLength(sTag) <= (DL_NAV_TAG_PREFIX_LENGTH + DL_NAV_TAG_SEPARATOR_LENGTH + 1))
     {
@@ -198,45 +196,46 @@ int DL_ParseAutoNavTag(string sTag, string &sFromOut, string &sToOut)
         return FALSE;
     }
 
-    sFromOut = GetSubString(sTail, 0, nSep);
-    sToOut = GetSubString(sTail, nSep + DL_NAV_TAG_SEPARATOR_LENGTH, GetStringLength(sTail) - nSep - DL_NAV_TAG_SEPARATOR_LENGTH);
-    return sFromOut != "" && sToOut != "";
+    string sFromOut = GetSubString(sTail, 0, nSep);
+    string sToOut = GetSubString(sTail, nSep + DL_NAV_TAG_SEPARATOR_LENGTH, GetStringLength(sTail) - nSep - DL_NAV_TAG_SEPARATOR_LENGTH);
+    if (sFromOut != "" && sToOut != "") { SetLocalString(GetModule(), sFromLocal, sFromOut); SetLocalString(GetModule(), sToLocal, sToOut); return TRUE; }
+    return FALSE;
 }
 
 string DL_GetAutoNavFromZoneFromTag(string sTag)
 {
     string sFrom = "";
     string sTo = "";
-    if (!DL_ParseAutoNavTag(sTag, sFrom, sTo))
+    if (!DL_ParseAutoNavTag(sTag, "dl_tmp_from", "dl_tmp_to"))
     {
         return "";
     }
 
-    return sFrom;
+    return GetLocalString(GetModule(), "dl_tmp_from");
 }
 
 string DL_GetAutoNavToZoneFromTag(string sTag)
 {
     string sFrom = "";
     string sTo = "";
-    if (!DL_ParseAutoNavTag(sTag, sFrom, sTo))
+    if (!DL_ParseAutoNavTag(sTag, "dl_tmp_from", "dl_tmp_to"))
     {
         return "";
     }
 
-    return sTo;
+    return GetLocalString(GetModule(), "dl_tmp_to");
 }
 
 string DL_GetAutoNavReverseTag(string sTag)
 {
     string sFrom = "";
     string sTo = "";
-    if (!DL_ParseAutoNavTag(sTag, sFrom, sTo))
+    if (!DL_ParseAutoNavTag(sTag, "dl_tmp_from", "dl_tmp_to"))
     {
         return "";
     }
 
-    return DL_BuildAutoNavReverseTag(sFrom, sTo);
+    return DL_BuildAutoNavReverseTag(GetLocalString(GetModule(), "dl_tmp_to"), GetLocalString(GetModule(), "dl_tmp_from"));
 }
 
 object DL_GetTransitionWaypointByTag(string sTag)
@@ -842,12 +841,12 @@ object DL_GetCrossNavAreaByTag(string sAreaTag)
         return OBJECT_INVALID;
     }
 
-    int bMemoMiss = FALSE;
-    object oMemoized = DL_GetTickMemoizedLookup(GetModule(), OBJECT_SELF, DL_GetAbsoluteMinute(), sAreaTag, -1, OBJECT_INVALID, DL_LOOKUP_MODE_TRANSITION_CROSS_AREA, bMemoMiss);
+    object oMemoized = DL_GetTickMemoizedLookup(GetModule(), OBJECT_SELF, DL_GetAbsoluteMinute(), sAreaTag, -1, OBJECT_INVALID, DL_LOOKUP_MODE_TRANSITION_CROSS_AREA, "dl_tmp_memo_miss");
     if (GetIsObjectValid(oMemoized))
     {
         return oMemoized;
     }
+    int bMemoMiss = GetLocalInt(GetModule(), "dl_tmp_memo_miss");
     if (bMemoMiss)
     {
         return OBJECT_INVALID;
