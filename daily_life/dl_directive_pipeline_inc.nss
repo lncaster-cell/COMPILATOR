@@ -87,6 +87,6 @@ void DL_PipelineDispatchCommand(object oActor, int nCommandKind, object oTargetA
 
     if (nCommandKind == 4)
     {
-        DL_TryHardResetActionQueue(oActor, "blocked");
+        DL_TryResetActionQueue(oActor, TRUE, DL_RESET_REASON_BLOCKED);
     }
 }
