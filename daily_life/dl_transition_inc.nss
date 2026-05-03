@@ -119,20 +119,8 @@ string DL_BuildAutoNavReverseTag(string sFromZone, string sToZone)
 
 string DL_BuildTransitionLegacyExitTag(string sKind, string sTransitionId)
 {
-    if (sTransitionId == "")
-    {
-        return "";
-    }
-
-    if (sKind == DL_TRANSITION_KIND_AREA_LINK)
-    {
-        return "dl_xfer_" + sTransitionId + "_to";
-    }
-    if (sKind == DL_TRANSITION_KIND_LOCAL_JUMP)
-    {
-        return "dl_jump_" + sTransitionId + "_to";
-    }
-    return "";
+    // Compatibility wrapper only. Legacy branch logic is centralized in adapter.
+    return DL_LegacyAdapterResolveExitTagFromKindId(sKind, sTransitionId);
 }
 
 // Forward declarations for helpers provided by other include units.
@@ -493,7 +481,7 @@ string DL_GetResolvedTransitionExitTag(object oEntryWp)
 
     string sKind = DL_GetWaypointTransitionKind(oEntryWp);
     string sTransitionId = DL_GetWaypointTransitionId(oEntryWp);
-    return DL_BuildTransitionLegacyExitTag(sKind, sTransitionId);
+    return DL_LegacyAdapterResolveExitTagFromKindId(sKind, sTransitionId);
 }
 
 void DL_ClearTransitionExecutionState(object oNpc)
@@ -774,15 +762,7 @@ object DL_ResolveTransitionExitWaypointFromEntrySimple(object oEntryWp)
 
     if (!DL_IsAutoNavTag(GetTag(oEntryWp)) && !GetIsObjectValid(oExit))
     {
-        // Legacy compatibility: explicit/global fallback kept intentionally for
-        // pre-nav transition metadata, but routed through unified lookup policy.
-        oExit = DL_ResolveObjectByTagWithPolicy(
-            sResolvedTag,
-            OBJECT_TYPE_WAYPOINT,
-            OBJECT_INVALID,
-            DL_TRANSITION_TAG_SEARCH_CAP,
-            DL_TAG_FALLBACK_GLOBAL
-        );
+        oExit = DL_LegacyAdapterResolveGlobalTransitionWaypointByTag(sResolvedTag);
     }
 
     if (DL_IsValidWaypointObject(oExit))
@@ -911,8 +891,7 @@ int DL_IsTransitionDriverTypeMatch(string sDriverKind, object oDriver)
         return FALSE;
     }
 
-    // Legacy/empty kind: allow classic door/trigger drivers.
-    return nType == OBJECT_TYPE_DOOR || nType == OBJECT_TYPE_TRIGGER;
+    return DL_LegacyAdapterIsTransitionDriverTypeMatch(sDriverKind, oDriver);
 }
 
 int DL_GetTransitionDriverLookupCap()
