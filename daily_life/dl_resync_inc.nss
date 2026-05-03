@@ -1,5 +1,5 @@
-const string DL_L_NPC_RESYNC_PENDING = "dl_npc_resync_pending";
-const string DL_L_NPC_RESYNC_REASON = "dl_npc_resync_reason";
+string DL_L_NPC_RESYNC_PENDING = "dl_npc_resync_pending";
+string DL_L_NPC_RESYNC_REASON = "dl_npc_resync_reason";
 
 const string DL_L_MODULE_RESYNC_REQ = "dl_module_resync_req";
 
