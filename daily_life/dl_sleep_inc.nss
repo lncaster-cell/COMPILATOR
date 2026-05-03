@@ -180,7 +180,7 @@ void DL_ExecuteSleepDirective(object oNpc)
     int bCommittedToBed = nPhase == DL_SLEEP_PHASE_JUMPING || nPhase == DL_SLEEP_PHASE_ON_BED;
     int bMayUseNavigation = DL_ShouldAttemptSleepNavigation(oNpc);
 
-    if (!bCommittedToBed && bMayUseNavigation && DL_WaypointHasTransition(oApproach))
+    if (!bCommittedToBed && bMayUseNavigation && GetIsObjectValid(DL_TryGetTransitionExitWaypoint(oApproach)))
     {
         if (DL_TryExecuteRoutedTransitionEntryWaypoint(oNpc, oApproach))
         {
@@ -214,7 +214,7 @@ void DL_ExecuteSleepDirective(object oNpc)
         sStatus = "approach_reached";
     }
 
-    if (bMayUseNavigation && DL_WaypointHasTransition(oBed))
+    if (bMayUseNavigation && GetIsObjectValid(DL_TryGetTransitionExitWaypoint(oBed)))
     {
         if (DL_TryExecuteRoutedTransitionEntryWaypoint(oNpc, oBed))
         {
