@@ -77,7 +77,7 @@ int DL_ExecuteTransitionDriver(object oNpc, object oEntryWp, location lExit, obj
             return TRUE;
         }
 
-        DL_TryResetActionQueue(oNpc, TRUE);
+        DL_TryHardResetActionQueue(oNpc, "resync");
         if (GetIsDoorActionPossible(oDoor, DOOR_ACTION_OPEN))
         {
             AssignCommand(oNpc, DoDoorAction(oDoor, DOOR_ACTION_OPEN));
