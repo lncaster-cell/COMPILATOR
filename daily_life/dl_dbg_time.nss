@@ -2,8 +2,7 @@
 // Shows current module time and nearest Daily Life NPC runtime state.
 // Intended for builder/runtime smoke tests only.
 
-#include "dl_compile_order_inc"
-#include "dl_res_inc"
+#include "dl_core_inc"
 #include "dl_diag_inc"
 
 const float DL_DBG_NPC_SCAN_RADIUS = 30.0;
