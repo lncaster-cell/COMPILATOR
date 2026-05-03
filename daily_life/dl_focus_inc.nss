@@ -127,15 +127,8 @@ int DL_ProgressFocusAtTarget(object oNpc, object oTarget, string sOnAnchorStatus
         return TRUE;
     }
 
-    DL_ClearTransitionExecutionState(oNpc);
-    DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
-    SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, sOnAnchorStatus);
+    DL_OnNpcArrivedAtAnchor(oNpc, oTarget, DL_L_NPC_FOCUS_STATUS, sOnAnchorStatus, DL_L_NPC_FOCUS_DIAGNOSTIC, sAnim, TRUE);
     SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oTarget));
-    AssignCommand(oNpc, SetFacing(GetFacing(oTarget)));
-    if (sAnim != "")
-    {
-        PlayCustomAnimation(oNpc, sAnim, TRUE);
-    }
     DL_LogSocialEvent(oNpc, sOnAnchorStatus, "anchor=" + GetTag(oTarget));
     return TRUE;
 }
