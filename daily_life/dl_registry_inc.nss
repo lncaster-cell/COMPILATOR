@@ -48,6 +48,11 @@ const int DL_WARM_MAINTENANCE_INTERVAL_TICKS = 20;
 const int DL_WARM_TO_FROZEN_TIMEOUT_TICKS = 100;
 
 const string DL_L_AREA_PASS_LAST_SEEN = "dl_area_pass_last_seen";
+const string DL_L_AREA_PASS_SNAPSHOT_TICK = "dl_area_pass_snapshot_tick";
+const string DL_L_AREA_PASS_SNAPSHOT_MODE = "dl_area_pass_snapshot_mode";
+const string DL_L_AREA_PASS_SNAPSHOT_COUNT = "dl_area_pass_snapshot_count";
+const string DL_L_AREA_PASS_SNAPSHOT_SLOT_PREFIX = "dl_area_pass_snapshot_slot_";
+
 const string DL_L_MODULE_NPC_BUDGET_PER_MINUTE = "dl_module_npc_budget_per_minute";
 const string DL_L_MODULE_NPC_BUDGET_MINUTE_KEY = "dl_module_npc_budget_minute_key";
 const string DL_L_MODULE_NPC_BUDGET_LEFT = "dl_module_npc_budget_left";
@@ -293,6 +298,82 @@ void DL_SetAreaRegistryNpcAtSlot(object oArea, int nSlot, object oNpc)
 void DL_DeleteAreaRegistrySlot(object oArea, int nSlot)
 {
     DeleteLocalObject(oArea, DL_GetAreaRegistrySlotKey(nSlot));
+}
+
+string DL_GetAreaPassSnapshotSlotKey(int nSlot)
+{
+    if (nSlot < 0)
+    {
+        nSlot = 0;
+    }
+    return DL_L_AREA_PASS_SNAPSHOT_SLOT_PREFIX + IntToString(nSlot);
+}
+
+object DL_GetAreaPassSnapshotNpcAtSlot(object oArea, int nSlot)
+{
+    return GetLocalObject(oArea, DL_GetAreaPassSnapshotSlotKey(nSlot));
+}
+
+void DL_SetAreaPassSnapshotNpcAtSlot(object oArea, int nSlot, object oNpc)
+{
+    SetLocalObject(oArea, DL_GetAreaPassSnapshotSlotKey(nSlot), oNpc);
+}
+
+void DL_ClearAreaPassSnapshot(object oArea)
+{
+    int nCount = GetLocalInt(oArea, DL_L_AREA_PASS_SNAPSHOT_COUNT);
+    int i = 0;
+    while (i < nCount)
+    {
+        DeleteLocalObject(oArea, DL_GetAreaPassSnapshotSlotKey(i));
+        i = i + 1;
+    }
+
+    DeleteLocalInt(oArea, DL_L_AREA_PASS_SNAPSHOT_COUNT);
+    DeleteLocalInt(oArea, DL_L_AREA_PASS_SNAPSHOT_TICK);
+    DeleteLocalInt(oArea, DL_L_AREA_PASS_SNAPSHOT_MODE);
+}
+
+int DL_BuildAreaPassSnapshot(object oArea, int nTickStamp, int nPassMode)
+{
+    DL_ClearAreaPassSnapshot(oArea);
+
+    object oObj = GetFirstObjectInArea(oArea);
+    int nCount = 0;
+    while (GetIsObjectValid(oObj))
+    {
+        if (GetObjectType(oObj) == OBJECT_TYPE_CREATURE && DL_IsActivePipelineNpc(oObj))
+        {
+            DL_SetAreaPassSnapshotNpcAtSlot(oArea, nCount, oObj);
+            nCount = nCount + 1;
+        }
+
+        oObj = GetNextObjectInArea(oArea);
+    }
+
+    SetLocalInt(oArea, DL_L_AREA_PASS_SNAPSHOT_TICK, nTickStamp);
+    SetLocalInt(oArea, DL_L_AREA_PASS_SNAPSHOT_MODE, nPassMode);
+    SetLocalInt(oArea, DL_L_AREA_PASS_SNAPSHOT_COUNT, nCount);
+    return nCount;
+}
+
+int DL_EnsureAreaPassSnapshot(object oArea, int nTickStamp, int nPassMode)
+{
+    int nStoredTick = GetLocalInt(oArea, DL_L_AREA_PASS_SNAPSHOT_TICK);
+    int nStoredMode = GetLocalInt(oArea, DL_L_AREA_PASS_SNAPSHOT_MODE);
+    int nCount = GetLocalInt(oArea, DL_L_AREA_PASS_SNAPSHOT_COUNT);
+
+    if (nCount < 0)
+    {
+        nCount = 0;
+    }
+
+    if (nStoredTick != nTickStamp || nStoredMode != nPassMode)
+    {
+        return DL_BuildAreaPassSnapshot(oArea, nTickStamp, nPassMode);
+    }
+
+    return nCount;
 }
 
 void DL_EnsureModuleNpcBudgetWindow()

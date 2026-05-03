@@ -11,6 +11,7 @@ const string DL_L_AREA_WORKER_SKIP_RESYNC_TICK = "dl_area_worker_skip_resync_tic
 const int DL_AREA_PASS_MODE_WORKER = 1;
 const int DL_AREA_PASS_MODE_RESYNC = 2;
 const int DL_AREA_PASS_MODE_WARM = 3;
+const int DL_AREA_PASS_MODE_FALLBACK = 4;
 const string DL_L_AREA_PASS_LAST_CANDIDATES = "dl_area_pass_last_candidates";
 const string DL_L_AREA_PASS_FALLBACK_COUNT = "dl_area_pass_fallback_count";
 const string DL_L_MODULE_PASS_FALLBACK_COUNT = "dl_module_pass_fallback_count";
@@ -225,6 +226,40 @@ int DL_RunAreaRegistryFallbackCatchupScan(object oArea, int nTickStamp, int nSca
         nObjectHopBudget = nScanBudget;
     }
 
+    int nSnapshotCount = DL_EnsureAreaPassSnapshot(oArea, nTickStamp, DL_AREA_PASS_MODE_FALLBACK);
+    if (nSnapshotCount > 0)
+    {
+        if (nObjCursor >= nSnapshotCount)
+        {
+            nObjCursor = nObjCursor % nSnapshotCount;
+        }
+
+        int nScannedActive = 0;
+        while (nScannedActive < nScanBudget && nScannedActive < nObjectHopBudget && nScannedActive < nSnapshotCount)
+        {
+            int nSlot = (nObjCursor + nScannedActive) % nSnapshotCount;
+            object oObj = DL_GetAreaPassSnapshotNpcAtSlot(oArea, nSlot);
+            if (GetIsObjectValid(oObj) && GetLocalInt(oObj, DL_L_NPC_REG_ON) != TRUE)
+            {
+                DL_RegisterNpc(oObj);
+            }
+            nScannedActive = nScannedActive + 1;
+        }
+
+        int bReachedEnd = (nObjCursor + nScannedActive) >= nSnapshotCount;
+        if (bReachedEnd)
+        {
+            SetLocalInt(oArea, DL_L_AREA_REGISTRY_REBUILD_OBJ_CURSOR, 0);
+        }
+        else
+        {
+            SetLocalInt(oArea, DL_L_AREA_REGISTRY_REBUILD_OBJ_CURSOR, nObjCursor + nScannedActive);
+        }
+
+        return bReachedEnd;
+    }
+
+    // Fallback path: preserve legacy direct full-scan behavior when snapshot is unavailable.
     object oObj = GetFirstObjectInArea(oArea);
     int nSkipped = 0;
     while (GetIsObjectValid(oObj) && nSkipped < nObjCursor && nSkipped < nObjectHopBudget)
@@ -355,6 +390,9 @@ int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPas
     {
         nBudget = DL_WORKER_BUDGET_MIN;
     }
+
+    // One-pass snapshot keyed by (area, tick, pass mode), rebuilt automatically on tick change.
+    DL_EnsureAreaPassSnapshot(oArea, nTickStamp, nPassMode);
 
     int nNpcProcessed = 0;
     int nCandidates = 0;
