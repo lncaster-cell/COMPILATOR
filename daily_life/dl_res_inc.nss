@@ -304,6 +304,39 @@ string DL_GetDirectiveDebugLabel(int nDirective)
     }
     return "NONE";
 }
+string DL_BuildAnchorTelemetry(object oNpc, object oAnchor, string sExtra, string sDomain = "")
+{
+    string sPayload = "";
+    if (sDomain != "")
+    {
+        sPayload = "domain=" + sDomain;
+    }
+
+    string sAreaTag = "";
+    if (GetIsObjectValid(oAnchor))
+    {
+        object oArea = GetArea(oAnchor);
+        if (GetIsObjectValid(oArea))
+        {
+            sAreaTag = GetTag(oArea);
+        }
+    }
+
+    string sAnchorTag = GetIsObjectValid(oAnchor) ? GetTag(oAnchor) : "";
+    if (sPayload != "")
+    {
+        sPayload += " ";
+    }
+    sPayload += "area=" + sAreaTag + " anchor=" + sAnchorTag;
+
+    if (sExtra != "")
+    {
+        sPayload += " " + sExtra;
+    }
+
+    return sPayload;
+}
+
 void DL_LogDomainDebugEvent(object oNpc, string sDomain, string sEventCode, string sKeyContext)
 {
     if (!GetIsObjectValid(oNpc) || !DL_IsChatDebugEnabledForNpc(oNpc))

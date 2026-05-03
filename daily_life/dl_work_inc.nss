@@ -195,7 +195,7 @@ int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
     DL_OnNpcArrivedAtAnchor(oNpc, oTarget, DL_L_NPC_WORK_STATUS, DL_STATUS_ON_ANCHOR, DL_L_NPC_WORK_DIAGNOSTIC, "", TRUE);
     DL_ApplyArchiveActivityPresentation(oNpc, DL_DIR_WORK);
     DL_PlayWorkAnimation(oNpc);
-    DL_LogTransitionEvent(oNpc, DL_STATUS_ON_WORK_ANCHOR, "anchor=" + GetTag(oTarget));
+    DL_LogTransitionEvent(oNpc, "on_work_anchor", DL_BuildAnchorTelemetry(oNpc, oTarget, "", "work"));
     return TRUE;
 }
 void DL_ExecuteWorkDirective(object oNpc)
@@ -250,8 +250,8 @@ void DL_ExecuteWorkDirective(object oNpc)
         DL_SetWorkTargetState(oNpc, sKind, oTarget);
         DL_LogTransitionEvent(
             oNpc,
-            DL_STATUS_TARGET_WORK,
-            "target dir=WORK area=" + GetTag(GetArea(oTarget)) + " anchor=" + GetTag(oTarget) + " kind=" + sKind
+            "target_work",
+            DL_BuildAnchorTelemetry(oNpc, oTarget, "target dir=WORK kind=" + sKind, "work")
         );
         DL_ProgressWorkAtTarget(oNpc, oTarget);
         return;
@@ -270,8 +270,8 @@ void DL_ExecuteWorkDirective(object oNpc)
         DL_SetWorkTargetState(oNpc, DL_WORK_KIND_POST, oPost);
         DL_LogTransitionEvent(
             oNpc,
-            DL_STATUS_TARGET_WORK,
-            "target dir=WORK area=" + GetTag(GetArea(oPost)) + " anchor=" + GetTag(oPost) + " kind=" + DL_WORK_KIND_POST
+            "target_work",
+            DL_BuildAnchorTelemetry(oNpc, oPost, "target dir=WORK kind=" + DL_WORK_KIND_POST, "work")
         );
         DL_ProgressWorkAtTarget(oNpc, oPost);
         return;
@@ -304,8 +304,8 @@ void DL_ExecuteWorkDirective(object oNpc)
         DL_SetWorkTargetState(oNpc, sKind, oHomeWork);
         DL_LogTransitionEvent(
             oNpc,
-            DL_STATUS_TARGET_WORK,
-            "target dir=WORK area=" + GetTag(GetArea(oHomeWork)) + " anchor=" + GetTag(oHomeWork) + " kind=" + sKind
+            "target_work",
+            DL_BuildAnchorTelemetry(oNpc, oHomeWork, "target dir=WORK kind=" + sKind, "work")
         );
         DL_ProgressWorkAtTarget(oNpc, oHomeWork);
         return;
@@ -322,8 +322,8 @@ void DL_ExecuteWorkDirective(object oNpc)
     DL_SetWorkTargetState(oNpc, DL_WORK_KIND_TRADE, oTrade);
     DL_LogTransitionEvent(
         oNpc,
-        DL_STATUS_TARGET_WORK,
-        "target dir=WORK area=" + GetTag(GetArea(oTrade)) + " anchor=" + GetTag(oTrade) + " kind=" + DL_WORK_KIND_TRADE
+        "target_work",
+        DL_BuildAnchorTelemetry(oNpc, oTrade, "target dir=WORK kind=" + DL_WORK_KIND_TRADE, "work")
     );
     DL_ProgressWorkAtTarget(oNpc, oTrade);
 }

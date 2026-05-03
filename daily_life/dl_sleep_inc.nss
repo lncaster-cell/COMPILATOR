@@ -170,8 +170,8 @@ void DL_ExecuteSleepDirective(object oNpc)
     DL_SetSleepTargetState(oNpc, oBed);
     DL_LogTransitionEvent(
         oNpc,
-        DL_STATUS_TARGET_SLEEP,
-        "area=" + GetTag(GetArea(oBed)) + " anchor=" + GetTag(oBed)
+        "target_sleep",
+        DL_BuildAnchorTelemetry(oNpc, oBed, "", "sleep")
     );
 
     location lApproach = GetLocation(oApproach);
@@ -228,6 +228,8 @@ void DL_ExecuteSleepDirective(object oNpc)
         DL_PlaySleepAnimation(oNpc);
     }
 
-    DL_OnNpcArrivedAtSleepBed(oNpc, oBed);
-    DL_LogTransitionEvent(oNpc, DL_STATUS_ON_BED, "anchor=" + GetTag(oBed));
+    DL_ClearTransitionExecutionState(oNpc);
+    SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_ON_BED);
+    DL_SetRuntimeState(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_ON_BED, "", "");
+    DL_LogTransitionEvent(oNpc, "on_bed", DL_BuildAnchorTelemetry(oNpc, oBed, "", "sleep"));
 }
