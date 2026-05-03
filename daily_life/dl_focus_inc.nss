@@ -16,11 +16,8 @@ const string DL_FOCUS_STATUS_MOVING_TO_ANCHOR = "moving_to_anchor";
 void DL_ClearFocusExecutionState(object oNpc)
 {
     DL_ClearNpcSocialReservation(oNpc);
-    DeleteLocalString(oNpc, DL_L_NPC_FOCUS_STATUS);
-    DeleteLocalString(oNpc, DL_L_NPC_FOCUS_TARGET);
-    DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
+    DL_ResetNpcDirectiveState(oNpc, DL_NPC_RESET_DOMAIN_FOCUS);
     DeleteLocalInt(oNpc, DL_L_NPC_CHILL_SIT_RETRY_UNTIL);
-    DL_ClearTransitionExecutionState(oNpc);
 }
 object DL_ResolveSocialPartnerObject(object oNpc, string sPartnerTag)
 {
@@ -113,15 +110,7 @@ int DL_ProgressFocusAtTarget(object oNpc, object oTarget, string sOnAnchorStatus
         return FALSE;
     }
 
-    if (GetIsObjectValid(DL_TryGetTransitionExitWaypoint(oTarget)))
-    {
-        if (DL_ExecuteTransitionViaEntryWaypoint(oNpc, oTarget, DL_DIAG_CTX_ROUTED))
-        {
-            return TRUE;
-        }
-    }
-
-    if (DL_TryRouteToTarget(oNpc, oTarget))
+    if (DL_TryNavigateToTargetViaTransition(oNpc, oTarget, TRUE))
     {
         return TRUE;
     }
@@ -213,7 +202,7 @@ object DL_ResolveMealWaypoint(object oNpc, string sMealKind)
         }
     }
 
-    return DL_GetAreaAnchorWaypoint(oNpc, oTargetArea, "dl_anchor_meal", DL_L_NPC_CACHE_MEAL, TRUE);
+    return DL_ResolveEffectiveWaypointForNpc(oNpc, DL_GetAreaAnchorWaypoint(oNpc, oTargetArea, "dl_anchor_meal", DL_L_NPC_CACHE_MEAL, TRUE));
 }
 object DL_ResolveSocialWaypoint(object oNpc)
 {
@@ -226,7 +215,7 @@ object DL_ResolveSocialWaypoint(object oNpc)
     string sSlot = GetLocalString(oNpc, DL_L_NPC_SOCIAL_SLOT);
     string sAnchor = sSlot == "b" ? "dl_anchor_social_b" : "dl_anchor_social_a";
     string sCache = sSlot == "b" ? DL_L_NPC_CACHE_SOCIAL_B : DL_L_NPC_CACHE_SOCIAL_A;
-    return DL_GetAreaAnchorWaypoint(oNpc, oArea, sAnchor, sCache, FALSE);
+    return DL_ResolveEffectiveWaypointForNpc(oNpc, DL_GetAreaAnchorWaypoint(oNpc, oArea, sAnchor, sCache, FALSE));
 }
 object DL_ResolvePublicWaypoint(object oNpc)
 {
@@ -244,7 +233,7 @@ object DL_ResolvePublicWaypoint(object oNpc)
         );
         return OBJECT_INVALID;
     }
-    return DL_GetAreaAnchorWaypoint(oNpc, oArea, "dl_anchor_public", DL_L_NPC_CACHE_PUBLIC, TRUE);
+    return DL_ResolveEffectiveWaypointForNpc(oNpc, DL_GetAreaAnchorWaypoint(oNpc, oArea, "dl_anchor_public", DL_L_NPC_CACHE_PUBLIC, TRUE));
 }
 object DL_ResolveChillWaypoint(object oNpc)
 {
@@ -269,6 +258,7 @@ object DL_ResolveChillWaypoint(object oNpc)
         "dl_chill_seat_" + IntToString(nSlot)
     );
 
+    oSeat = DL_ResolveEffectiveWaypointForNpc(oNpc, oSeat);
     if (GetIsObjectValid(oSeat))
     {
         DeleteLocalInt(oNpc, DL_L_NPC_CACHE_CHILL_SEAT_MISSING_UNTIL);

@@ -43,6 +43,8 @@ object DL_ResolveEffectiveWaypointForNpc(object oNpc, object oWp)
         return oWp;
     }
 
+    // Backward-compatible transition handoff:
+    // a foreign transition entry may still be used if its exit lands in the NPC area.
     object oExitWp = DL_TryGetTransitionExitWaypoint(oWp);
     if (GetIsObjectValid(oExitWp) && GetArea(oExitWp) == GetArea(oNpc))
     {
@@ -141,11 +143,7 @@ object DL_GetNpcAreaByTagCached(object oNpc, string sAreaTagLocal, string sAreaC
 
     if (!GetIsObjectValid(oArea))
     {
-        DL_LogMarkupIssueOnce(
-            oNpc,
-            "invalid_area_" + sAreaTagLocal + "_" + sAreaTag,
-            "NPC " + GetTag(oNpc) + ": area tag '" + sAreaTag + "' is invalid for local '" + sAreaTagLocal + "'."
-        );
+        DL_LogInvalidAreaTagIssue(oNpc, sAreaTagLocal, sAreaTag, "invalid_area_tag");
         return OBJECT_INVALID;
     }
 
@@ -193,45 +191,32 @@ object DL_GetAreaAnchorWaypoint(object oNpc, object oArea, string sAnchorLocal, 
     {
         if (bRequired)
         {
-            DL_LogMarkupIssueOnce(
-                oNpc,
-                "missing_anchor_" + GetTag(oArea) + "_" + sAnchorLocal,
-                "Area " + GetTag(oArea) + " misses required anchor '" + sAnchorLocal + "' for NPC " + GetTag(oNpc) + "."
-            );
+            DL_LogMissingAnchorIssue(oNpc, oArea, sAnchorLocal, "missing_required_anchor");
         }
         return OBJECT_INVALID;
     }
 
     object oWp = DL_GetNpcCachedWaypointByTagInArea(oNpc, sCacheLocal, sWpTag, oArea);
+    oWp = DL_ResolveEffectiveWaypointForNpc(oNpc, oWp);
     if (GetIsObjectValid(oWp))
     {
         return oWp;
     }
 
-    // Backward-compatible transition handoff: an anchor may still point to an
-    // entry waypoint in another area when that entry's exit lands in the target area.
     object oLegacyWp = DL_GetNpcCachedWaypointByTag(oNpc, sCacheLocal, sWpTag);
-    object oExitWp = DL_TryGetTransitionExitWaypoint(oLegacyWp);
-    if (GetIsObjectValid(oExitWp) && GetArea(oExitWp) == oArea)
+    object oEffectiveLegacyWp = DL_ResolveEffectiveWaypointForNpc(oNpc, oLegacyWp);
+    if (GetIsObjectValid(oEffectiveLegacyWp) && GetArea(oEffectiveLegacyWp) == oArea)
     {
-        return oExitWp;
+        return oEffectiveLegacyWp;
     }
 
     if (!GetIsObjectValid(oLegacyWp))
     {
-        DL_LogMarkupIssueOnce(
-            oNpc,
-            "missing_wp_" + GetTag(oArea) + "_" + sAnchorLocal + "_" + sWpTag,
-            "Area " + GetTag(oArea) + " anchor '" + sAnchorLocal + "' points to missing waypoint '" + sWpTag + "'."
-        );
+        DL_LogForeignWaypointIssue(oNpc, oArea, sAnchorLocal, sWpTag, "missing_waypoint");
     }
     else
     {
-        DL_LogMarkupIssueOnce(
-            oNpc,
-            "foreign_wp_" + GetTag(oArea) + "_" + sAnchorLocal + "_" + sWpTag,
-            "Area " + GetTag(oArea) + " anchor '" + sAnchorLocal + "' points to foreign area waypoint '" + sWpTag + "'."
-        );
+        DL_LogForeignWaypointIssue(oNpc, oArea, sAnchorLocal, sWpTag, "foreign_waypoint_area");
     }
 
     return OBJECT_INVALID;

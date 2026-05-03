@@ -31,17 +31,17 @@ object DL_ResolveSleepApproachWaypoint(object oNpc)
     );
     if (GetIsObjectValid(oWp))
     {
-        return oWp;
+        return DL_ResolveEffectiveWaypointForNpc(oNpc, oWp);
     }
 
-    return DL_ResolveNpcWaypointWithFallbackTagInArea(
+    return DL_ResolveEffectiveWaypointForNpc(oNpc, DL_ResolveNpcWaypointWithFallbackTagInArea(
         oNpc,
         DL_L_NPC_CACHE_SLEEP_APPROACH,
         oHome,
         "dl_sleep_",
         "_approach",
         "dl_sleep_approach_" + IntToString(nSlot)
-    );
+    ));
 }
 object DL_ResolveSleepBedWaypoint(object oNpc)
 {
@@ -57,17 +57,17 @@ object DL_ResolveSleepBedWaypoint(object oNpc)
     );
     if (GetIsObjectValid(oWp))
     {
-        return oWp;
+        return DL_ResolveEffectiveWaypointForNpc(oNpc, oWp);
     }
 
-    return DL_ResolveNpcWaypointWithFallbackTagInArea(
+    return DL_ResolveEffectiveWaypointForNpc(oNpc, DL_ResolveNpcWaypointWithFallbackTagInArea(
         oNpc,
         DL_L_NPC_CACHE_SLEEP_BED,
         oHome,
         "dl_sleep_",
         "_bed",
         "dl_sleep_bed_" + IntToString(nSlot)
-    );
+    ));
 }
 int DL_HasActiveSleepExecutionState(object oNpc)
 {
@@ -101,11 +101,7 @@ void DL_StopSleepPresentationIfActive(object oNpc)
 void DL_ClearSleepExecutionState(object oNpc)
 {
     DL_StopSleepPresentationIfActive(oNpc);
-    DeleteLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE);
-    DeleteLocalString(oNpc, DL_L_NPC_SLEEP_STATUS);
-    DeleteLocalString(oNpc, DL_L_NPC_SLEEP_TARGET);
-    DeleteLocalString(oNpc, DL_L_NPC_SLEEP_DIAGNOSTIC);
-    DL_ClearTransitionExecutionState(oNpc);
+    DL_ResetNpcDirectiveState(oNpc, DL_NPC_RESET_DOMAIN_SLEEP);
 }
 void DL_SetSleepMissingState(object oNpc)
 {
@@ -180,16 +176,7 @@ void DL_ExecuteSleepDirective(object oNpc)
     int bCommittedToBed = nPhase == DL_SLEEP_PHASE_JUMPING || nPhase == DL_SLEEP_PHASE_ON_BED;
     int bMayUseNavigation = DL_ShouldAttemptSleepNavigation(oNpc);
 
-    if (!bCommittedToBed && bMayUseNavigation && GetIsObjectValid(DL_TryGetTransitionExitWaypoint(oApproach)))
-    {
-        if (DL_ExecuteTransitionViaEntryWaypoint(oNpc, oApproach, DL_DIAG_CTX_ROUTED))
-        {
-            DL_MarkSleepNavigationInProgress(oNpc, GetTag(oApproach));
-            return;
-        }
-    }
-
-    if (!bCommittedToBed && bMayUseNavigation && DL_TryRouteToTarget(oNpc, oApproach))
+    if (!bCommittedToBed && bMayUseNavigation && DL_TryNavigateToTargetViaTransition(oNpc, oApproach, TRUE))
     {
         DL_MarkSleepNavigationInProgress(oNpc, GetTag(oApproach));
         return;
@@ -214,16 +201,7 @@ void DL_ExecuteSleepDirective(object oNpc)
         sStatus = "approach_reached";
     }
 
-    if (bMayUseNavigation && GetIsObjectValid(DL_TryGetTransitionExitWaypoint(oBed)))
-    {
-        if (DL_ExecuteTransitionViaEntryWaypoint(oNpc, oBed, DL_DIAG_CTX_ROUTED))
-        {
-            DL_MarkSleepNavigationInProgress(oNpc, GetTag(oBed));
-            return;
-        }
-    }
-
-    if (bMayUseNavigation && DL_TryRouteToTarget(oNpc, oBed))
+    if (bMayUseNavigation && DL_TryNavigateToTargetViaTransition(oNpc, oBed, TRUE))
     {
         DL_MarkSleepNavigationInProgress(oNpc, GetTag(oBed));
         return;
