@@ -4,7 +4,7 @@
 // - oEntryWp: route-discovered transition entry waypoint
 // - sDiagPrefix: execution context prefix ("", "routed", "cross_area", ...)
 
-int DL_JumpNpcToTransitionExit(object oNpc, location lExit, string sStatus = "", string sDiagnostic = "")
+int DL_EngineJumpNpcToTransitionExit(object oNpc, location lExit, string sStatus = "", string sDiagnostic = "")
 {
     if (!GetIsObjectValid(oNpc))
     {
@@ -26,7 +26,7 @@ int DL_JumpNpcToTransitionExit(object oNpc, location lExit, string sStatus = "",
     return TRUE;
 }
 
-int DL_ExecuteTransitionDriver(object oNpc, object oEntryWp, location lExit, object oExitWp, string sJumpDiagnostic = DL_TRANSITION_DIAG_IN_PROGRESS)
+int DL_EngineExecuteTransitionDriver(object oNpc, object oEntryWp, location lExit, object oExitWp, string sJumpDiagnostic = DL_TRANSITION_DIAG_IN_PROGRESS)
 {
     if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oEntryWp))
     {
@@ -38,7 +38,7 @@ int DL_ExecuteTransitionDriver(object oNpc, object oEntryWp, location lExit, obj
     if (sDriver == "" || sDriver == DL_TRANSITION_DRIVER_NONE || sDriver == DL_TRANSITION_DRIVER_TRIGGER)
     {
         DL_SetNpcNavZoneFromWaypoint(oNpc, oExitWp);
-        DL_JumpNpcToTransitionExit(oNpc, lExit, DL_TRANSITION_STATUS_TRANSITIONING, sJumpDiagnostic);
+        DL_EngineJumpNpcToTransitionExit(oNpc, lExit, DL_TRANSITION_STATUS_TRANSITIONING, sJumpDiagnostic);
         return TRUE;
     }
 
@@ -57,7 +57,7 @@ int DL_ExecuteTransitionDriver(object oNpc, object oEntryWp, location lExit, obj
         {
             AssignCommand(oNpc, DoDoorAction(oDoor, DOOR_ACTION_OPEN));
         }
-        DL_JumpNpcToTransitionExit(oNpc, lExit, DL_TRANSITION_STATUS_TRANSITIONING, sJumpDiagnostic);
+        DL_EngineJumpNpcToTransitionExit(oNpc, lExit, DL_TRANSITION_STATUS_TRANSITIONING, sJumpDiagnostic);
         return TRUE;
     }
 
@@ -111,5 +111,5 @@ int DL_ExecuteTransitionEngine(object oNpc, object oEntryWp, string sDiagPrefix)
 
     location lExit = GetLocation(oExitWp);
     DL_SetTransitionState(oNpc, DL_TRANSITION_STATUS_TRANSITIONING, DL_TRANSITION_DIAG_IN_PROGRESS, sDiagPrefix);
-    return DL_ExecuteTransitionDriver(oNpc, oEntryWp, lExit, oExitWp, sDiagPrefix + "_" + DL_TRANSITION_DIAG_IN_PROGRESS);
+    return DL_EngineExecuteTransitionDriver(oNpc, oEntryWp, lExit, oExitWp, sDiagPrefix + "_" + DL_TRANSITION_DIAG_IN_PROGRESS);
 }
