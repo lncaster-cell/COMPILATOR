@@ -28,16 +28,23 @@ int DL_EngineJumpNpcToTransitionExit(object oNpc, location lExit, string sStatus
     return TRUE;
 }
 
-void DL_TransitionPrepareAndJump(object oNpc, object oExitWp, location lExit, string sStatus, string sDiag, string sDiagContext = "")
+int DL_TransitionPrepareAndJump(object oNpc, object oExitWp, location lExit, string sStatus, string sDiag, string sDiagContext = "")
 {
     if (!GetIsObjectValid(oNpc))
     {
-        return;
+        return FALSE;
     }
 
-    DL_SetNpcNavZoneFromWaypoint(oNpc, oExitWp);
     DL_SetTransitionState(oNpc, sStatus, sDiag, "");
-    DL_EngineJumpNpcToTransitionExit(oNpc, lExit, sStatus, sDiag);
+    int bDispatched = DL_EngineJumpNpcToTransitionExit(oNpc, lExit, sStatus, sDiag);
+    if (bDispatched)
+    {
+        // Consistency point: nav-zone is committed only after successful jump
+        // dispatch, so zone state matches the actual transition dispatch moment.
+        DL_ApplyTransitionNavZoneUpdate(oNpc, oExitWp, TRUE);
+    }
+
+    return bDispatched;
 }
 
 int DL_ExecuteTransitionDriver(object oNpc, object oEntryWp, location lExit, object oExitWp, string sDiagContext = "", string sJumpDiagnostic = DL_TRANSITION_DIAG_IN_PROGRESS)

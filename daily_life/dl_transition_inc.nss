@@ -405,6 +405,19 @@ void DL_SetNpcNavZoneFromWaypoint(object oNpc, object oWp)
     }
 }
 
+
+void DL_ApplyTransitionNavZoneUpdate(object oNpc, object oExitWp, int bOnSuccessfulDispatchOnly)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oExitWp))
+    {
+        return;
+    }
+
+    // When bOnSuccessfulDispatchOnly=TRUE this helper must be called strictly
+    // from the success branch of jump dispatch.
+    DL_SetNpcNavZoneFromWaypoint(oNpc, oExitWp);
+}
+
 // Canonical transition state setter contract.
 // Any new transition branches must set status/diagnostic only through this helper.
 string DL_BuildTransitionDiagnostic(string sDiagnostic, string sDiagContext)
