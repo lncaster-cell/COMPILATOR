@@ -115,14 +115,24 @@ object DL_FindSocialPoolWaypointByTagInArea(string sTag, object oArea)
         return OBJECT_INVALID;
     }
 
-    object oResolved = DL_IndexGetWaypointByTag(oArea, sTag);
-    if (!GetIsObjectValid(oResolved))
+    object oMemo = DL_MemoLookupObject(OBJECT_SELF, oArea, sTag, OBJECT_TYPE_WAYPOINT, 0);
+    if (GetIsObjectValid(oMemo))
     {
-        oResolved = DL_FindObjectByTagInAreaDeterministic(sTag, OBJECT_TYPE_WAYPOINT, oArea, DL_WAYPOINT_TAG_SEARCH_CAP);
+        DL_RecordCacheMetric(oArea, "social", TRUE);
+        return oMemo;
     }
-    DL_RecordCacheMetricBatch(oArea, "index_fallback", GetIsObjectValid(oResolved), !GetIsObjectValid(oResolved));
-    DL_RecordCacheMetric(oArea, "social", GetIsObjectValid(oResolved));
-    return oResolved;
+
+    object oResolved = DL_FindObjectByTagInAreaDeterministic(sTag, OBJECT_TYPE_WAYPOINT, oArea, DL_WAYPOINT_TAG_SEARCH_CAP);
+    if (GetIsObjectValid(oResolved))
+    {
+        DL_MemoStoreObject(OBJECT_SELF, oArea, sTag, OBJECT_TYPE_WAYPOINT, 0, oResolved);
+        DL_RecordCacheMetric(oArea, "social", TRUE);
+        return oResolved;
+    }
+
+    DL_MemoStoreMiss(OBJECT_SELF, oArea, sTag, OBJECT_TYPE_WAYPOINT, 0);
+    DL_RecordCacheMetric(oArea, "social", FALSE);
+    return OBJECT_INVALID;
 }
 
 string DL_GetSocialIndexCountLocal(string sKind)

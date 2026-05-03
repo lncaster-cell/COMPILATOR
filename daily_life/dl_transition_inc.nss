@@ -310,9 +310,14 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
         return OBJECT_INVALID;
     }
 
-    // NOTE: nDeterministicCap kept for API compatibility; cap policy is centralized by fallback mode.
-    int nCap = DL_TRANSITION_TAG_SEARCH_CAP_LOCAL_DETERMINISTIC;
-    if (nFallbackMode == DL_TAG_FALLBACK_NEAREST)
+    object oMemo = DL_MemoLookupObject(OBJECT_SELF, oPreferredArea, sTag, nObjectType, nFallbackMode);
+    if (GetIsObjectValid(oMemo))
+    {
+        return oMemo;
+    }
+
+    int nCap = nDeterministicCap;
+    if (nCap <= 0)
     {
         nCap = DL_TRANSITION_TAG_SEARCH_CAP_NEAREST_FALLBACK;
     }
@@ -326,33 +331,37 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
         nLocalCap = 1;
     }
 
-    int nTickStamp = GetIsObjectValid(oPreferredArea) ? DL_GetAreaTick(oPreferredArea) : 0;
-    int bMemoMiss = FALSE;
-    object oMemoized = DL_GetTickMemoizedLookup(GetModule(), OBJECT_SELF, nTickStamp, sTag, nObjectType, oPreferredArea, DL_LOOKUP_MODE_TRANSITION_POLICY + "_" + IntToString(nFallbackMode), bMemoMiss);
-    if (GetIsObjectValid(oMemoized))
-    {
-        return oMemoized;
-    }
-    if (bMemoMiss)
-    {
-        return OBJECT_INVALID;
-    }
+        object oAreaCached = DL_GetAreaScopedCachedObjectByTag(OBJECT_SELF, sTag, nObjectType, oPreferredArea);
+        if (GetIsObjectValid(oAreaCached))
+        {
+            DL_ClearTransitionTagMissSuppressedTick(sTag, nObjectType, oPreferredArea, nFallbackMode);
+            DL_MemoStoreObject(OBJECT_SELF, oPreferredArea, sTag, nObjectType, nFallbackMode, oAreaCached);
+            return oAreaCached;
+        }
 
     if (GetIsObjectValid(oPreferredArea))
     {
         object oLocal = DL_FindObjectByTagInAreaDeterministic(sTag, nObjectType, oPreferredArea, nLocalCap);
         if (GetIsObjectValid(oLocal))
         {
-            DL_SetTickMemoizedLookup(GetModule(), OBJECT_SELF, nTickStamp, sTag, nObjectType, oPreferredArea, DL_LOOKUP_MODE_TRANSITION_POLICY + "_" + IntToString(nFallbackMode), oLocal);
+            DL_ClearTransitionTagMissSuppressedTick(sTag, nObjectType, oPreferredArea, nFallbackMode);
+            DL_MemoStoreObject(OBJECT_SELF, oPreferredArea, sTag, nObjectType, nFallbackMode, oLocal);
             return oLocal;
         }
     }
 
     if (nFallbackMode == DL_TAG_FALLBACK_GLOBAL)
     {
-        if (nFallbackCapGlobal <= 0)
+        object oGlobal = GetObjectByTagAndType(sTag, nObjectType);
+        if (GetIsObjectValid(oGlobal) && GetIsObjectValid(oPreferredArea))
         {
-            return OBJECT_INVALID;
+            DL_ClearTransitionTagMissSuppressedTick(sTag, nObjectType, oPreferredArea, nFallbackMode);
+            DL_MemoStoreObject(OBJECT_SELF, oPreferredArea, sTag, nObjectType, nFallbackMode, oGlobal);
+        }
+        else if (!GetIsObjectValid(oGlobal) && GetIsObjectValid(oPreferredArea))
+        {
+            DL_MarkTransitionTagMissThisTick(sTag, nObjectType, oPreferredArea, nFallbackMode, nNowTick);
+            DL_MemoStoreMiss(OBJECT_SELF, oPreferredArea, sTag, nObjectType, nFallbackMode);
         }
         return GetObjectByTagAndType(sTag, nObjectType);
     }
@@ -392,14 +401,22 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
 
             if (GetObjectType(oNearest) == nObjectType)
             {
-                DL_SetTickMemoizedLookup(GetModule(), OBJECT_SELF, nTickStamp, sTag, nObjectType, oPreferredArea, DL_LOOKUP_MODE_TRANSITION_POLICY + "_" + IntToString(nFallbackMode), oNearest);
+                if (GetIsObjectValid(oPreferredArea))
+                {
+                    DL_ClearTransitionTagMissSuppressedTick(sTag, nObjectType, oPreferredArea, nFallbackMode);
+                    DL_MemoStoreObject(OBJECT_SELF, oPreferredArea, sTag, nObjectType, nFallbackMode, oNearest);
+                }
                 return oNearest;
             }
             nNth = nNth + 1;
         }
     }
 
-    DL_SetTickMemoizedLookup(GetModule(), OBJECT_SELF, nTickStamp, sTag, nObjectType, oPreferredArea, DL_LOOKUP_MODE_TRANSITION_POLICY + "_" + IntToString(nFallbackMode), OBJECT_INVALID);
+    if (GetIsObjectValid(oPreferredArea))
+    {
+        DL_MarkTransitionTagMissThisTick(sTag, nObjectType, oPreferredArea, nFallbackMode, nNowTick);
+        DL_MemoStoreMiss(OBJECT_SELF, oPreferredArea, sTag, nObjectType, nFallbackMode);
+    }
     return OBJECT_INVALID;
 }
 
