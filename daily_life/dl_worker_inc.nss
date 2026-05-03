@@ -1,11 +1,5 @@
 #include "dl_runtime_contract_inc"
 const string DL_L_MODULE_WORKER_SEQ = "dl_module_worker_seq";
-const string DL_L_MODULE_WORKER_TICK_COUNT = "dl_module_worker_tick_count";
-// Backward-compatible aliases mapped to runtime contract keys.
-#define DL_L_MODULE_WORKER_LAST_PROCESSED_TICK DL_L_MODULE_WORKER_LAST_PROCESSED
-#define DL_L_MODULE_RESYNC_LAST_PROCESSED_TICK DL_L_MODULE_RESYNC_LAST_PROCESSED
-#define DL_L_AREA_WORKER_LAST_PROCESSED_TICK DL_L_AREA_WORKER_LAST_PROCESSED
-#define DL_L_AREA_RESYNC_LAST_PROCESSED_TICK DL_L_AREA_RESYNC_LAST_PROCESSED
 const string DL_L_NPC_LAST_TOUCH_TICK = "dl_npc_last_touch_tick";
 const string DL_L_NPC_AREA_TICK_RESYNC_TOUCH = "dl_npc_area_tick_resync_touch";
 const string DL_L_AREA_WORKER_SKIP_RESYNC_TICK = "dl_area_worker_skip_resync_tick";
@@ -49,6 +43,9 @@ int DL_GetCursorAdvance(int nNpcProcessed, int nCandidatesSeen, int nNpcSeen)
     return nAdvance;
 }
 
+// external compatibility API
+// Minimal usage example:
+//   DL_WriteWorkerTelemetry(oArea, nNpcProcessed, FALSE, TRUE);
 // Telemetry contract:
 // - nProcessed: NPC count processed by the current pass in this tick.
 // - bNoBudget: TRUE when scheduler budget was exhausted before pass execution.
@@ -77,6 +74,9 @@ void DL_WriteWorkerTelemetry(object oArea, int nProcessed, int bNoBudget, int bC
     SetLocalInt(oModule, DL_L_MODULE_WORKER_LAST_PROCESSED, nValue);
 }
 
+// external compatibility API
+// Minimal usage example:
+//   DL_WriteResyncTelemetry(oArea, nNpcProcessed, FALSE);
 // Telemetry contract:
 // - nProcessed: NPC count processed by enter-resync pass in this tick.
 // - bNoBudget: TRUE when resync budget was exhausted before pass execution.
@@ -533,9 +533,7 @@ void DL_RunAreaEnterResyncTick(object oArea)
     nBudget = DL_ConsumeModuleNpcBudget(nBudget);
     if (nBudget <= 0)
     {
-        SetLocalInt(oArea, DL_L_AREA_RESYNC_LAST_PROCESSED_TICK, 0);
-        object oModuleNoBudget = GetModule();
-        SetLocalInt(oModuleNoBudget, DL_L_MODULE_RESYNC_LAST_PROCESSED_TICK, 0);
+        DL_WriteResyncTelemetry(oArea, 0, TRUE);
         return;
     }
 
@@ -543,10 +541,7 @@ void DL_RunAreaEnterResyncTick(object oArea)
     int nNpcProcessed = DL_RunAreaNpcRoundRobinPass(oArea, nCursor, nBudget, DL_AREA_PASS_MODE_RESYNC, nTickStamp, nSnapshotCount);
     int nNpcSeen = GetLocalInt(oArea, DL_L_AREA_PASS_LAST_SEEN);
 
-    SetLocalInt(oArea, DL_L_AREA_ENTER_RESYNC_TOUCHED, nNpcProcessed);
-    SetLocalInt(oArea, DL_L_AREA_RESYNC_LAST_PROCESSED_TICK, nNpcProcessed);
-    object oModule = GetModule();
-    SetLocalInt(oModule, DL_L_MODULE_RESYNC_LAST_PROCESSED_TICK, nNpcProcessed);
+    DL_WriteResyncTelemetry(oArea, nNpcProcessed, FALSE);
 
     if (nNpcSeen <= 0)
     {
@@ -592,9 +587,7 @@ void DL_RunAreaWarmMaintenanceTick(object oArea)
     nBudget = DL_ConsumeModuleNpcBudget(nBudget);
     if (nBudget <= 0)
     {
-        SetLocalInt(oArea, DL_L_AREA_WORKER_LAST_PROCESSED_TICK, 0);
-        object oModuleNoBudget = GetModule();
-        SetLocalInt(oModuleNoBudget, DL_L_MODULE_WORKER_LAST_PROCESSED_TICK, 0);
+        DL_WriteWorkerTelemetry(oArea, 0, TRUE, FALSE);
         return;
     }
 
@@ -613,9 +606,7 @@ void DL_RunAreaWarmMaintenanceTick(object oArea)
         DL_SetAreaWorkerCursor(oArea, (nCursor + nCursorAdvance) % nNpcSeen);
     }
 
-    SetLocalInt(oArea, DL_L_AREA_WORKER_LAST_PROCESSED_TICK, nNpcProcessed);
-    object oModule = GetModule();
-    SetLocalInt(oModule, DL_L_MODULE_WORKER_LAST_PROCESSED_TICK, nNpcProcessed);
+    DL_WriteWorkerTelemetry(oArea, nNpcProcessed, FALSE, FALSE);
 }
 
 void DL_RunAreaWorkerTick(object oArea)
@@ -653,11 +644,7 @@ void DL_RunAreaWorkerTick(object oArea)
     nBudget = DL_ConsumeModuleNpcBudget(nBudget);
     if (nBudget <= 0)
     {
-        object oModuleNoBudget = GetModule();
-        // Heartbeat-level tick counter for worker scheduler throughput and idle-budget diagnostics.
-        DL_IncLocalInt(oModuleNoBudget, DL_L_MODULE_WORKER_TICK_COUNT);
-        SetLocalInt(oArea, DL_L_AREA_WORKER_LAST_PROCESSED_TICK, 0);
-        SetLocalInt(oModuleNoBudget, DL_L_MODULE_WORKER_LAST_PROCESSED_TICK, 0);
+        DL_WriteWorkerTelemetry(oArea, 0, TRUE, TRUE);
         return;
     }
 
@@ -676,9 +663,5 @@ void DL_RunAreaWorkerTick(object oArea)
         DL_SetAreaWorkerCursor(oArea, (nCursor + nCursorAdvance) % nNpcSeen);
     }
 
-    object oModule = GetModule();
-    // Heartbeat-level tick counter for worker scheduler throughput and idle-budget diagnostics.
-    DL_IncLocalInt(oModule, DL_L_MODULE_WORKER_TICK_COUNT);
-    SetLocalInt(oArea, DL_L_AREA_WORKER_LAST_PROCESSED_TICK, nNpcProcessed);
-    SetLocalInt(oModule, DL_L_MODULE_WORKER_LAST_PROCESSED_TICK, nNpcProcessed);
+    DL_WriteWorkerTelemetry(oArea, nNpcProcessed, FALSE, TRUE);
 }
