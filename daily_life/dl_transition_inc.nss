@@ -73,6 +73,60 @@ const string DL_NAV_TAG_PREFIX = "dl_nav_";
 const int DL_NAV_TAG_PREFIX_LENGTH = 7;
 const string DL_NAV_TAG_SEPARATOR = "_to_";
 const int DL_NAV_TAG_SEPARATOR_LENGTH = 4;
+const string DL_TRANSITION_KEY_SEPARATOR = "|";
+
+// Runtime-state constructors (locals/cache keys used by gameplay state).
+string DL_BuildTransitionRuntimeKey2(string sPartA, string sPartB)
+{
+    return sPartA + DL_TRANSITION_KEY_SEPARATOR + sPartB;
+}
+
+string DL_BuildTransitionRuntimeKey3(string sPartA, string sPartB, string sPartC)
+{
+    return DL_BuildTransitionRuntimeKey2(sPartA, sPartB) + DL_TRANSITION_KEY_SEPARATOR + sPartC;
+}
+
+// Telemetry/log constructors (diagnostics/log payload fragments).
+string DL_BuildTransitionDiagnostic(string sDiagContext, string sDiagCode)
+{
+    if (sDiagCode == "")
+    {
+        return "";
+    }
+    if (sDiagContext == "")
+    {
+        return sDiagCode;
+    }
+    return sDiagContext + "_" + sDiagCode;
+}
+
+string DL_BuildAutoNavReverseTag(string sFromZone, string sToZone)
+{
+    if (sFromZone == "" || sToZone == "")
+    {
+        return "";
+    }
+
+    return DL_NAV_TAG_PREFIX + sToZone + DL_NAV_TAG_SEPARATOR + sFromZone;
+}
+
+string DL_BuildTransitionLegacyExitTag(string sKind, string sTransitionId)
+{
+    if (sTransitionId == "")
+    {
+        return "";
+    }
+
+    if (sKind == DL_TRANSITION_KIND_AREA_LINK)
+    {
+        return "dl_xfer_" + sTransitionId + "_to";
+    }
+    if (sKind == DL_TRANSITION_KIND_LOCAL_JUMP)
+    {
+        return "dl_jump_" + sTransitionId + "_to";
+    }
+    return "";
+}
 
 // Forward declarations for helpers provided by other include units.
 int DL_ClampInt(int nValue, int nMin, int nMax);
@@ -80,9 +134,26 @@ int DL_GetAreaTick(object oArea);
 int DL_TryRouteToTarget(object oNpc, object oTarget);
 int DL_ExecuteTransitionViaEntryWaypoint(object oNpc, object oEntryWp, string sDiagPrefix);
 int DL_TryExecuteRoutedTransitionEntryWaypoint(object oNpc, object oEntryWp);
+int DL_TryAdvanceViaTransitionOrRoute(object oNpc, object oTargetWp, int bMarkDomainProgress, string sDomainTag);
 int DL_EngineJumpNpcToTransitionExit(object oNpc, location lExit, string sStatus = "", string sDiagnostic = "");
 int DL_EngineExecuteTransitionDriver(object oNpc, object oEntryWp, location lExit, object oExitWp, string sJumpDiagnostic = DL_TRANSITION_DIAG_IN_PROGRESS);
 int DL_ExecuteTransitionEngine(object oNpc, object oEntryWp, string sDiagPrefix);
+void DL_MarkSleepNavigationInProgress(object oNpc, string sTargetTag);
+
+string DL_BuildTransitionDiagnostic(string sDiagnostic, string sDiagContext)
+{
+    if (sDiagnostic == "")
+    {
+        return "";
+    }
+
+    if (sDiagContext == "")
+    {
+        return sDiagnostic;
+    }
+
+    return sDiagContext + "_" + sDiagnostic;
+}
 
 string DL_GetAreaNavigationSlotKey(int nSlot)
 {
@@ -160,7 +231,7 @@ string DL_GetAutoNavReverseTag(string sTag)
         return "";
     }
 
-    return DL_NAV_TAG_PREFIX + sTo + DL_NAV_TAG_SEPARATOR + sFrom;
+    return DL_BuildAutoNavReverseTag(sFrom, sTo);
 }
 
 object DL_GetTransitionWaypointByTag(string sTag)
@@ -278,6 +349,21 @@ void DL_SetNpcNavZoneFromWaypoint(object oNpc, object oWp)
 
 // Canonical transition state setter contract.
 // Any new transition branches must set status/diagnostic only through this helper.
+string DL_BuildTransitionDiagnostic(string sDiagnostic, string sDiagContext)
+{
+    if (sDiagnostic == "")
+    {
+        return "";
+    }
+
+    if (sDiagContext == "")
+    {
+        return sDiagnostic;
+    }
+
+    return sDiagContext + "_" + sDiagnostic;
+}
+
 void DL_SetTransitionState(object oNpc, string sStatus, string sDiagnostic, string sDiagContext)
 {
     if (!DL_IsValidNpcObject(oNpc))
@@ -291,11 +377,7 @@ void DL_SetTransitionState(object oNpc, string sStatus, string sDiagnostic, stri
         return;
     }
 
-    string sDiagnosticValue = sDiagnostic;
-    if (sDiagContext != "")
-    {
-        sDiagnosticValue = sDiagContext + "_" + sDiagnostic;
-    }
+    string sDiagnosticValue = DL_BuildTransitionDiagnostic(sDiagContext, sDiagnostic);
     DL_SetRuntimeState(oNpc, DL_L_NPC_TRANSITION_STATUS, sStatus, DL_L_NPC_TRANSITION_DIAGNOSTIC, sDiagnosticValue);
 }
 
@@ -320,17 +402,7 @@ string DL_GetResolvedTransitionExitTag(object oEntryWp)
 
     string sKind = DL_GetWaypointTransitionKind(oEntryWp);
     string sTransitionId = DL_GetWaypointTransitionId(oEntryWp);
-    if (sKind == DL_TRANSITION_KIND_AREA_LINK)
-    {
-        return "dl_xfer_" + sTransitionId + "_to";
-    }
-
-    if (sKind == DL_TRANSITION_KIND_LOCAL_JUMP)
-    {
-        return "dl_jump_" + sTransitionId + "_to";
-    }
-
-    return "";
+    return DL_BuildTransitionLegacyExitTag(sKind, sTransitionId);
 }
 
 void DL_ClearTransitionExecutionState(object oNpc)
@@ -340,6 +412,35 @@ void DL_ClearTransitionExecutionState(object oNpc)
     DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET);
     DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS);
     DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC);
+}
+
+void DL_OnNpcArrivedAtAnchor(object oNpc, object oTarget, string sStatusLocal, string sStatusValue, string sDiagLocal, string sAnim, int bSetFacing)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
+    {
+        return;
+    }
+
+    DL_ClearTransitionExecutionState(oNpc);
+    if (sDiagLocal != "")
+    {
+        DeleteLocalString(oNpc, sDiagLocal);
+    }
+
+    if (sStatusLocal != "")
+    {
+        SetLocalString(oNpc, sStatusLocal, sStatusValue);
+    }
+
+    if (bSetFacing)
+    {
+        AssignCommand(oNpc, SetFacing(GetFacing(oTarget)));
+    }
+
+    if (sAnim != "")
+    {
+        PlayCustomAnimation(oNpc, sAnim, TRUE);
+    }
 }
 
 int DL_WaypointHasTransition(object oWp)
@@ -618,6 +719,11 @@ object DL_ResolveTransitionExitWaypointFromEntry(object oEntryWp)
 
 object DL_TryGetTransitionExitWaypoint(object oEntryWp)
 {
+    if (!DL_IsValidWaypointObject(oEntryWp))
+    {
+        return OBJECT_INVALID;
+    }
+
     if (!DL_WaypointHasTransition(oEntryWp))
     {
         return OBJECT_INVALID;
@@ -640,9 +746,16 @@ object DL_TryGetTransitionExitWaypointWithDiag(object oNpc, object oEntryWp, str
         return oExitWp;
     }
 
-    if (GetIsObjectValid(oNpc) && sDiagLocal != "" && sDiagCode != "")
+    if (GetIsObjectValid(oNpc) && sDiagCode != "")
     {
-        SetLocalString(oNpc, sDiagLocal, sDiagCode);
+        if (sDiagLocal == DL_L_NPC_TRANSITION_DIAGNOSTIC)
+        {
+            DL_SetTransitionState(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS), sDiagCode, "");
+        }
+        else if (sDiagLocal != "")
+        {
+            SetLocalString(oNpc, sDiagLocal, sDiagCode);
+        }
     }
 
     return OBJECT_INVALID;
@@ -961,6 +1074,34 @@ object DL_FindTwoHopNavZoneEntry(object oNpc, object oTarget, string sFromZone, 
     }
 
     return oBestEntry;
+}
+
+int DL_TryAdvanceViaTransitionOrRoute(object oNpc, object oTargetWp, int bMarkDomainProgress, string sDomainTag)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTargetWp))
+    {
+        return FALSE;
+    }
+
+    if (DL_WaypointHasTransition(oTargetWp) && DL_TryExecuteRoutedTransitionEntryWaypoint(oNpc, oTargetWp))
+    {
+        if (bMarkDomainProgress)
+        {
+            DL_MarkSleepNavigationInProgress(oNpc, sDomainTag);
+        }
+        return TRUE;
+    }
+
+    if (DL_TryRouteToTarget(oNpc, oTargetWp))
+    {
+        if (bMarkDomainProgress)
+        {
+            DL_MarkSleepNavigationInProgress(oNpc, sDomainTag);
+        }
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 int DL_TryUseNavigationRouteToTarget(object oNpc, object oTarget)

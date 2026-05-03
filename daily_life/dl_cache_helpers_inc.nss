@@ -2,6 +2,7 @@ const string DL_L_MODULE_CACHE_METRIC_PREFIX = "dl_metric_cache_";
 const string DL_L_CACHE_CTX_PREFIX = "dl_cache_ctx_";
 
 const int DL_TAG_ENUM_DEFAULT_CAP = 32;
+const int DL_WAYPOINT_TAG_SEARCH_CAP = 64;
 
 void DL_InvalidateCachedObject(object oOwner, string sCacheLocal);
 
