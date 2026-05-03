@@ -180,18 +180,8 @@ void DL_ExecuteSleepDirective(object oNpc)
     int bCommittedToBed = nPhase == DL_SLEEP_PHASE_JUMPING || nPhase == DL_SLEEP_PHASE_ON_BED;
     int bMayUseNavigation = DL_ShouldAttemptSleepNavigation(oNpc);
 
-    if (!bCommittedToBed && bMayUseNavigation && GetIsObjectValid(DL_TryGetTransitionExitWaypoint(oApproach)))
+    if (!bCommittedToBed && bMayUseNavigation && DL_TryAdvanceViaTransitionOrRouteEx(oNpc, oApproach, DL_DIAG_CTX_ROUTED, TRUE))
     {
-        if (DL_ExecuteTransitionViaEntryWaypoint(oNpc, oApproach, DL_DIAG_CTX_ROUTED))
-        {
-            DL_MarkSleepNavigationInProgress(oNpc, GetTag(oApproach));
-            return;
-        }
-    }
-
-    if (!bCommittedToBed && bMayUseNavigation && DL_TryRouteToTarget(oNpc, oApproach))
-    {
-        DL_MarkSleepNavigationInProgress(oNpc, GetTag(oApproach));
         return;
     }
 
@@ -214,18 +204,8 @@ void DL_ExecuteSleepDirective(object oNpc)
         sStatus = "approach_reached";
     }
 
-    if (bMayUseNavigation && GetIsObjectValid(DL_TryGetTransitionExitWaypoint(oBed)))
+    if (bMayUseNavigation && DL_TryAdvanceViaTransitionOrRouteEx(oNpc, oBed, DL_DIAG_CTX_ROUTED, TRUE))
     {
-        if (DL_ExecuteTransitionViaEntryWaypoint(oNpc, oBed, DL_DIAG_CTX_ROUTED))
-        {
-            DL_MarkSleepNavigationInProgress(oNpc, GetTag(oBed));
-            return;
-        }
-    }
-
-    if (bMayUseNavigation && DL_TryRouteToTarget(oNpc, oBed))
-    {
-        DL_MarkSleepNavigationInProgress(oNpc, GetTag(oBed));
         return;
     }
 

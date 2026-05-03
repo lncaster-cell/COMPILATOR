@@ -130,15 +130,7 @@ int DL_ProgressFocusAtTarget(object oNpc, object oTarget, string sOnAnchorStatus
         return FALSE;
     }
 
-    if (GetIsObjectValid(DL_TryGetTransitionExitWaypoint(oTarget)))
-    {
-        if (DL_ExecuteTransitionViaEntryWaypoint(oNpc, oTarget, DL_DIAG_CTX_ROUTED))
-        {
-            return TRUE;
-        }
-    }
-
-    if (DL_TryRouteToTarget(oNpc, oTarget))
+    if (DL_TryAdvanceViaTransitionOrRoute(oNpc, oTarget, DL_DIAG_CTX_ROUTED))
     {
         return TRUE;
     }
@@ -378,15 +370,7 @@ int DL_ProgressChillAtSeat(object oNpc, object oSeat)
         return FALSE;
     }
 
-    if (GetIsObjectValid(DL_TryGetTransitionExitWaypoint(oSeat)))
-    {
-        if (DL_ExecuteTransitionViaEntryWaypoint(oNpc, oSeat, DL_DIAG_CTX_ROUTED))
-        {
-            return TRUE;
-        }
-    }
-
-    if (DL_TryRouteToTarget(oNpc, oSeat))
+    if (DL_TryAdvanceViaTransitionOrRoute(oNpc, oSeat, DL_DIAG_CTX_ROUTED))
     {
         return TRUE;
     }

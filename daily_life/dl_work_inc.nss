@@ -189,15 +189,7 @@ int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
         return FALSE;
     }
 
-    if (DL_WaypointHasTransition(oTarget))
-    {
-        if (DL_ExecuteTransitionViaEntryWaypoint(oNpc, oTarget, DL_DIAG_CTX_ROUTED))
-        {
-            return TRUE;
-        }
-    }
-
-    if (DL_TryRouteToTarget(oNpc, oTarget))
+    if (DL_TryAdvanceViaTransitionOrRoute(oNpc, oTarget, DL_DIAG_CTX_ROUTED))
     {
         return TRUE;
     }
