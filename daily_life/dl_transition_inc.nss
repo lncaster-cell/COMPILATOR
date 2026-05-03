@@ -1,6 +1,11 @@
 // Daily Life interzone transition helper layer.
 // Adapter policy: add wrappers only for explicit API contract compatibility;
 // no new pass-through adapters when canonical implementation exists.
+// Transition business-logic contract:
+// - All transition execution business logic lives only in
+//   daily_life/dl_transition_engine_inc.nss::DL_ExecuteTransitionEngine.
+// - This include may keep only compatibility wrappers around that engine and
+//   shared metadata/resolve helpers.
 // Backward compatible modes:
 // 1) simple explicit mode: entry waypoint stores explicit exit tag in `dl_transition_exit_tag`
 // 2) builder-friendly nav mode: waypoint tag is `dl_nav_<from_zone>_to_<to_zone>`;

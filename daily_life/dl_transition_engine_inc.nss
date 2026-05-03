@@ -3,6 +3,9 @@
 // - oNpc: NPC being transitioned
 // - oEntryWp: route-discovered transition entry waypoint
 // - sDiagPrefix: execution context prefix ("", "routed", "cross_area", ...)
+// Maintenance contract:
+// - Any new transition behavior/change must be implemented in this file only.
+// - Wrapper includes may only delegate to DL_ExecuteTransitionEngine.
 
 int DL_EngineJumpNpcToTransitionExit(object oNpc, location lExit, string sStatus = "", string sDiagnostic = "")
 {
@@ -34,7 +37,7 @@ void DL_TransitionPrepareAndJump(object oNpc, object oExitWp, location lExit, st
     }
 
     DL_SetNpcNavZoneFromWaypoint(oNpc, oExitWp);
-    DL_SetTransitionState(oNpc, sStatus, sDiag, sDiagContext);
+    DL_SetTransitionState(oNpc, sStatus, sDiag, "");
     DL_EngineJumpNpcToTransitionExit(oNpc, lExit, sStatus, sDiag);
 }
 
@@ -91,6 +94,8 @@ int DL_ExecuteTransitionEngine(object oNpc, object oEntryWp, string sDiagPrefix)
     string sKind = DL_GetWaypointTransitionKind(oEntryWp);
     string sTransitionId = DL_GetWaypointTransitionId(oEntryWp);
     string sExitTag = DL_GetWaypointTransitionExitTag(oEntryWp);
+    // Transition context payload; status/diagnostics are always written via
+    // DL_SetTransitionState to keep a single diagnostics API.
     SetLocalString(oNpc, DL_L_NPC_TRANSITION_KIND, sKind);
     SetLocalString(oNpc, DL_L_NPC_TRANSITION_ID, sTransitionId);
     SetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET, GetTag(oEntryWp));
@@ -121,11 +126,5 @@ int DL_ExecuteTransitionEngine(object oNpc, object oEntryWp, string sDiagPrefix)
 
     location lExit = GetLocation(oExitWp);
     DL_SetTransitionState(oNpc, DL_TRANSITION_STATUS_TRANSITIONING, DL_TRANSITION_DIAG_IN_PROGRESS, sDiagPrefix);
-    return DL_EngineExecuteTransitionDriver(
-        oNpc,
-        oEntryWp,
-        lExit,
-        oExitWp,
-        DL_BuildTransitionDiagnostic(sDiagPrefix, DL_TRANSITION_DIAG_IN_PROGRESS)
-    );
+    return DL_ExecuteTransitionDriver(oNpc, oEntryWp, lExit, oExitWp, sDiagPrefix + "_" + DL_TRANSITION_DIAG_IN_PROGRESS);
 }
