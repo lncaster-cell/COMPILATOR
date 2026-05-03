@@ -187,7 +187,7 @@ void DL_ExecuteSleepDirective(object oNpc)
         return;
     }
 
-    if (!bCommittedToBed && GetDistanceBetween(oNpc, oApproach) > DL_SLEEP_APPROACH_RADIUS)
+    if (!bCommittedToBed && !DL_IsWithinAnchorRadius(oNpc, oApproach, DL_SLEEP_APPROACH_RADIUS))
     {
         if (nPhase != DL_SLEEP_PHASE_MOVING || sStatus != DL_STATUS_MOVING_TO_APPROACH)
         {
@@ -212,7 +212,7 @@ void DL_ExecuteSleepDirective(object oNpc)
         return;
     }
 
-    if (GetDistanceBetween(oNpc, oBed) > DL_SLEEP_BED_RADIUS)
+    if (!DL_IsWithinAnchorRadius(oNpc, oBed, DL_SLEEP_BED_RADIUS))
     {
         if (nPhase != DL_SLEEP_PHASE_JUMPING || sStatus != DL_STATUS_JUMPING_TO_BED)
         {

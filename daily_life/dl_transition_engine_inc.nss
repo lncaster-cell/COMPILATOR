@@ -101,7 +101,7 @@ int DL_ExecuteTransitionEngine(object oNpc, object oEntryWp, string sDiagPrefix)
         return TRUE;
     }
 
-    if (GetDistanceBetweenLocations(GetLocation(oNpc), GetLocation(oEntryWp)) > DL_TRANSITION_ENTRY_RADIUS)
+    if (!DL_IsWithinAnchorRadius(oNpc, oEntryWp, DL_TRANSITION_ENTRY_RADIUS))
     {
         if (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != DL_TRANSITION_STATUS_MOVING_TO_ENTRY)
         {
