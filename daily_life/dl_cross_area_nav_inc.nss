@@ -35,7 +35,7 @@ int DL_AreaCanReachTargetZoneWithinDepth(object oArea, string sFromZone, object 
         object oEntry = DL_GetAreaNavigationRouteAtSlot(oArea, i);
         if (DL_CrossNavEntryMatchesZone(oEntry, sFromZone))
         {
-            object oExit = DL_ResolveTransitionExitWaypointFromEntry(oEntry);
+            object oExit = DL_TryGetTransitionExitWaypoint(oEntry);
             if (GetIsObjectValid(oExit))
             {
                 object oExitArea = GetArea(oExit);
@@ -85,7 +85,7 @@ object DL_FindCrossAreaNavEntry(object oNpc, object oTarget, string sFromZone, s
         object oEntry = DL_GetAreaNavigationRouteAtSlot(oCurrentArea, i);
         if (DL_CrossNavEntryMatchesZone(oEntry, sFromZone))
         {
-            object oExit = DL_ResolveTransitionExitWaypointFromEntry(oEntry);
+            object oExit = DL_TryGetTransitionExitWaypoint(oEntry);
             if (GetIsObjectValid(oExit))
             {
                 object oExitArea = GetArea(oExit);

@@ -598,6 +598,39 @@ object DL_ResolveTransitionExitWaypointFromEntry(object oEntryWp)
     return DL_ResolveTransitionExitWaypointFromEntrySimple(oEntryWp);
 }
 
+
+object DL_TryGetTransitionExitWaypoint(object oEntryWp)
+{
+    if (!DL_WaypointHasTransition(oEntryWp))
+    {
+        return OBJECT_INVALID;
+    }
+
+    object oExitWp = DL_ResolveTransitionExitWaypointFromEntry(oEntryWp);
+    if (!DL_IsValidWaypointObject(oExitWp))
+    {
+        return OBJECT_INVALID;
+    }
+
+    return oExitWp;
+}
+
+object DL_TryGetTransitionExitWaypointWithDiag(object oNpc, object oEntryWp, string sDiagLocal, string sDiagCode)
+{
+    object oExitWp = DL_TryGetTransitionExitWaypoint(oEntryWp);
+    if (GetIsObjectValid(oExitWp))
+    {
+        return oExitWp;
+    }
+
+    if (GetIsObjectValid(oNpc) && sDiagLocal != "" && sDiagCode != "")
+    {
+        SetLocalString(oNpc, sDiagLocal, sDiagCode);
+    }
+
+    return OBJECT_INVALID;
+}
+
 int DL_IsBidirectionalTransitionPair(object oWpA, object oWpB)
 {
     if (!DL_IsValidWaypointObject(oWpA) || !DL_IsValidWaypointObject(oWpB))
