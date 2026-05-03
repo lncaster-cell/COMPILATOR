@@ -6,6 +6,10 @@
 // 4) state transition,
 // 5) telemetry/diagnostic.
 
+void DL_RequestNpcBlockedSignal(object oNpc, object oBlocker);
+
+const string DL_L_NPC_BLOCKED_DIAGNOSTIC = "dl_npc_blocked_diagnostic";
+
 const int DL_INGRESS_STAGE_VALIDATE       = 1;
 const int DL_INGRESS_STAGE_NORMALIZE      = 2;
 const int DL_INGRESS_STAGE_LIFECYCLE_SYNC = 3;
@@ -44,25 +48,20 @@ int DL_IngressValidateNpc(object oNpc, int bRequireActive, int bRequireRuntime)
 
 void DL_IngressOrchestrateLifecycleSignal(object oNpc, int nEventKind, string sTelemetryTag)
 {
-    // validate
     if (!DL_IngressValidateNpc(oNpc, FALSE, FALSE))
     {
         return;
     }
 
-    // normalize actor/context
     object oArea = GetArea(oNpc);
 
-    // lifecycle sync
     if (nEventKind == DL_NPC_EVENT_DEATH)
     {
         DL_CR_HandleNpcKilled(oNpc);
     }
 
-    // state transition
     DL_RequestNpcLifecycleSignal(oNpc, nEventKind);
 
-    // telemetry/diagnostic
     if (DL_IsRuntimeLogEnabled())
     {
         string sLog = "[DL][" + sTelemetryTag + "] npc=" + GetName(oNpc) +
@@ -76,25 +75,19 @@ void DL_IngressOrchestrateLifecycleSignal(object oNpc, int nEventKind, string sT
 
 void DL_IngressOrchestrateBlockedSignal(object oNpc, object oBlocker)
 {
-    // validate
     if (!DL_IngressValidateNpc(oNpc, TRUE, TRUE))
     {
         return;
     }
 
-    // normalize actor/context
     if (!GetIsObjectValid(oBlocker))
     {
         SetLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC, "blocked_invalid_object");
         return;
     }
 
-    // lifecycle sync (no-op: blocked does not require external lifecycle callback)
-
-    // state transition
     DL_RequestNpcBlockedSignal(oNpc, oBlocker);
 
-    // telemetry/diagnostic
     if (DL_IsRuntimeLogEnabled())
     {
         string sLog = "[DL][BLOCKED_SIGNAL] npc=" + GetName(oNpc) +
@@ -109,21 +102,14 @@ void DL_IngressOrchestrateBlockedSignal(object oNpc, object oBlocker)
 
 void DL_IngressOrchestrateAreaEnter(object oArea, object oEnter)
 {
-    // validate
     if (!GetIsObjectValid(oArea))
     {
         return;
     }
 
-    // normalize actor/context
     object oActor = oEnter;
-
-    // lifecycle sync
     DL_OnAreaEnterBootstrap(oArea, oActor);
 
-    // state transition (no explicit state signal for area enter)
-
-    // telemetry/diagnostic
     if (DL_IsRuntimeLogEnabled())
     {
         string sActor = GetIsObjectValid(oActor) ? GetName(oActor) : "<invalid>";
