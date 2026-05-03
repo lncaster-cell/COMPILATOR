@@ -249,6 +249,7 @@ int DL_IsActivePipelineNpc(object oNpc);
 int DL_IsAreaObject(object oObject);
 object DL_GetHomeArea(object oNpc);
 object DL_GetWorkArea(object oNpc);
+object DL_ResolvePreferredAreaWithFallbacks(object oNpc, int nPurpose);
 object DL_ResolveChillWaypoint(object oNpc);
 void DL_MaybeRefreshNpcCachesForEpoch(object oNpc);
 void DL_MaybeRefreshAreaCachesForEpoch(object oArea);
@@ -303,6 +304,39 @@ string DL_GetDirectiveDebugLabel(int nDirective)
     }
     return "NONE";
 }
+string DL_BuildAnchorTelemetry(object oNpc, object oAnchor, string sExtra, string sDomain = "")
+{
+    string sPayload = "";
+    if (sDomain != "")
+    {
+        sPayload = "domain=" + sDomain;
+    }
+
+    string sAreaTag = "";
+    if (GetIsObjectValid(oAnchor))
+    {
+        object oArea = GetArea(oAnchor);
+        if (GetIsObjectValid(oArea))
+        {
+            sAreaTag = GetTag(oArea);
+        }
+    }
+
+    string sAnchorTag = GetIsObjectValid(oAnchor) ? GetTag(oAnchor) : "";
+    if (sPayload != "")
+    {
+        sPayload += " ";
+    }
+    sPayload += "area=" + sAreaTag + " anchor=" + sAnchorTag;
+
+    if (sExtra != "")
+    {
+        sPayload += " " + sExtra;
+    }
+
+    return sPayload;
+}
+
 void DL_LogDomainDebugEvent(object oNpc, string sDomain, string sEventCode, string sKeyContext)
 {
     if (!GetIsObjectValid(oNpc) || !DL_IsChatDebugEnabledForNpc(oNpc))
@@ -521,19 +555,7 @@ void DL_ConsumeModuleCacheResetRequest()
 }
 void DL_ClearAreaNavigationCache(object oArea)
 {
-    if (!GetIsObjectValid(oArea))
-    {
-        return;
-    }
-
-    int i = 0;
-    while (i < DL_AREA_NAV_ROUTE_CAP)
-    {
-        DeleteLocalObject(oArea, DL_GetAreaNavigationSlotKey(i));
-        i = i + 1;
-    }
-    DeleteLocalInt(oArea, DL_L_AREA_NAV_READY);
-    DeleteLocalInt(oArea, DL_L_AREA_NAV_COUNT);
+    DL_InvalidateAreaNavigationRouteCache(oArea);
 }
 void DL_MaybeRefreshAreaCachesForEpoch(object oArea)
 {

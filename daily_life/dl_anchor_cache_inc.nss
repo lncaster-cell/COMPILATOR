@@ -1,5 +1,3 @@
-const int DL_WAYPOINT_TAG_SEARCH_CAP = 64;
-
 object DL_GetNpcCachedWaypointByTag(object oNpc, string sCacheLocal, string sTag)
 {
     if (!GetIsObjectValid(oNpc) || sTag == "")
@@ -22,6 +20,9 @@ object DL_GetNpcCachedWaypointByTag(object oNpc, string sCacheLocal, string sTag
     SetLocalObject(oNpc, sCacheLocal, oWp);
     return oWp;
 }
+// Public cache API: NPC-scoped anchor waypoint cache for (tag, area, tier, npc-event-seq).
+// Expected lifetime: one NPC lifecycle sequence within stable area/tier context.
+// Invalidation triggers: explicit invalidate, area tier change, or DL_L_NPC_EVENT_SEQ change.
 object DL_GetNpcCachedWaypointByTagInArea(object oNpc, string sCacheLocal, string sTag, object oArea)
 {
     if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oArea) || sTag == "")
@@ -31,6 +32,7 @@ object DL_GetNpcCachedWaypointByTagInArea(object oNpc, string sCacheLocal, strin
 
     int nTier = DL_GetAreaTier(oArea);
     int nLifecycleSeq = GetLocalInt(oNpc, DL_L_NPC_EVENT_SEQ);
+    int nNowTick = DL_GetAreaTick(oArea);
     object oCached = DL_GetCachedObject(oNpc, sCacheLocal, sTag, OBJECT_TYPE_WAYPOINT, oArea, nTier, nLifecycleSeq);
     if (GetIsObjectValid(oCached))
     {
@@ -39,14 +41,22 @@ object DL_GetNpcCachedWaypointByTagInArea(object oNpc, string sCacheLocal, strin
     }
 
     DL_InvalidateCachedObject(oNpc, sCacheLocal);
+    if (DL_IsCacheMissSuppressedThisTick(oNpc, sCacheLocal, nNowTick))
+    {
+        DL_RecordCacheMetric(oArea, "anchor", FALSE);
+        return OBJECT_INVALID;
+    }
+
     object oResolved = DL_FindObjectByTagInAreaDeterministic(sTag, OBJECT_TYPE_WAYPOINT, oArea, DL_WAYPOINT_TAG_SEARCH_CAP);
     if (GetIsObjectValid(oResolved))
     {
         DL_SetCachedObject(oNpc, sCacheLocal, oResolved, sTag, OBJECT_TYPE_WAYPOINT, oArea, nTier, nLifecycleSeq);
+        DL_ClearCacheMissSuppressedTick(oNpc, sCacheLocal);
         DL_RecordCacheMetric(oArea, "anchor", FALSE);
         return oResolved;
     }
 
+    DL_MarkCacheMissThisTick(oNpc, sCacheLocal, nNowTick);
     DL_RecordCacheMetric(oArea, "anchor", FALSE);
     return OBJECT_INVALID;
 }
@@ -62,6 +72,8 @@ object DL_ResolveEffectiveWaypointForNpc(object oNpc, object oWp)
         return oWp;
     }
 
+    // Backward-compatible transition handoff:
+    // a foreign transition entry may still be used if its exit lands in the NPC area.
     object oExitWp = DL_TryGetTransitionExitWaypoint(oWp);
     if (GetIsObjectValid(oExitWp) && GetArea(oExitWp) == GetArea(oNpc))
     {
@@ -160,11 +172,7 @@ object DL_GetNpcAreaByTagCached(object oNpc, string sAreaTagLocal, string sAreaC
 
     if (!GetIsObjectValid(oArea))
     {
-        DL_LogMarkupIssueOnce(
-            oNpc,
-            "invalid_area_" + sAreaTagLocal + "_" + sAreaTag,
-            "NPC " + GetTag(oNpc) + ": area tag '" + sAreaTag + "' is invalid for local '" + sAreaTagLocal + "'."
-        );
+        DL_LogInvalidAreaTagIssue(oNpc, sAreaTagLocal, sAreaTag, "invalid_area_tag");
         return OBJECT_INVALID;
     }
 
@@ -212,45 +220,32 @@ object DL_GetAreaAnchorWaypoint(object oNpc, object oArea, string sAnchorLocal, 
     {
         if (bRequired)
         {
-            DL_LogMarkupIssueOnce(
-                oNpc,
-                "missing_anchor_" + GetTag(oArea) + "_" + sAnchorLocal,
-                "Area " + GetTag(oArea) + " misses required anchor '" + sAnchorLocal + "' for NPC " + GetTag(oNpc) + "."
-            );
+            DL_LogMissingAnchorIssue(oNpc, oArea, sAnchorLocal, "missing_required_anchor");
         }
         return OBJECT_INVALID;
     }
 
     object oWp = DL_GetNpcCachedWaypointByTagInArea(oNpc, sCacheLocal, sWpTag, oArea);
+    oWp = DL_ResolveEffectiveWaypointForNpc(oNpc, oWp);
     if (GetIsObjectValid(oWp))
     {
         return oWp;
     }
 
-    // Backward-compatible transition handoff: an anchor may still point to an
-    // entry waypoint in another area when that entry's exit lands in the target area.
     object oLegacyWp = DL_GetNpcCachedWaypointByTag(oNpc, sCacheLocal, sWpTag);
-    object oExitWp = DL_TryGetTransitionExitWaypoint(oLegacyWp);
-    if (GetIsObjectValid(oExitWp) && GetArea(oExitWp) == oArea)
+    object oEffectiveLegacyWp = DL_ResolveEffectiveWaypointForNpc(oNpc, oLegacyWp);
+    if (GetIsObjectValid(oEffectiveLegacyWp) && GetArea(oEffectiveLegacyWp) == oArea)
     {
-        return oExitWp;
+        return oEffectiveLegacyWp;
     }
 
     if (!GetIsObjectValid(oLegacyWp))
     {
-        DL_LogMarkupIssueOnce(
-            oNpc,
-            "missing_wp_" + GetTag(oArea) + "_" + sAnchorLocal + "_" + sWpTag,
-            "Area " + GetTag(oArea) + " anchor '" + sAnchorLocal + "' points to missing waypoint '" + sWpTag + "'."
-        );
+        DL_LogForeignWaypointIssue(oNpc, oArea, sAnchorLocal, sWpTag, "missing_waypoint");
     }
     else
     {
-        DL_LogMarkupIssueOnce(
-            oNpc,
-            "foreign_wp_" + GetTag(oArea) + "_" + sAnchorLocal + "_" + sWpTag,
-            "Area " + GetTag(oArea) + " anchor '" + sAnchorLocal + "' points to foreign area waypoint '" + sWpTag + "'."
-        );
+        DL_LogForeignWaypointIssue(oNpc, oArea, sAnchorLocal, sWpTag, "foreign_waypoint_area");
     }
 
     return OBJECT_INVALID;
@@ -272,26 +267,65 @@ object DL_GetWorkArea(object oNpc)
 {
     return DL_GetNpcAreaOrCurrentFallback(oNpc, DL_L_NPC_WORK_AREA_TAG, DL_L_NPC_CACHE_WORK_AREA);
 }
+object DL_ResolvePreferredAreaWithFallbacks(object oNpc, int nPurpose)
+{
+    if (nPurpose == DL_AREA_PURPOSE_SLEEP)
+    {
+        return DL_GetHomeArea(oNpc);
+    }
+    if (nPurpose == DL_AREA_PURPOSE_WORK)
+    {
+        return DL_GetWorkArea(oNpc);
+    }
+    if (nPurpose == DL_AREA_PURPOSE_MEAL)
+    {
+        string sMealTag = GetLocalString(oNpc, DL_L_NPC_MEAL_AREA_TAG);
+        if (sMealTag != "")
+        {
+            object oMealArea = DL_GetNpcAreaByTagCached(oNpc, DL_L_NPC_MEAL_AREA_TAG, DL_L_NPC_CACHE_MEAL_AREA);
+            if (GetIsObjectValid(oMealArea))
+            {
+                return oMealArea;
+            }
+        }
+
+        object oHomeArea = DL_GetHomeArea(oNpc);
+        if (GetIsObjectValid(oHomeArea))
+        {
+            return oHomeArea;
+        }
+
+        object oWorkArea = DL_GetWorkArea(oNpc);
+        if (GetIsObjectValid(oWorkArea))
+        {
+            return oWorkArea;
+        }
+
+        return DL_GetNpcCurrentAreaFallback(oNpc);
+    }
+    if (nPurpose == DL_AREA_PURPOSE_SOCIAL)
+    {
+        object oSocialArea = DL_GetSocialArea(oNpc);
+        if (GetIsObjectValid(oSocialArea))
+        {
+            return oSocialArea;
+        }
+        return DL_GetWorkArea(oNpc);
+    }
+    if (nPurpose == DL_AREA_PURPOSE_PUBLIC)
+    {
+        object oPublicArea = DL_GetPublicArea(oNpc);
+        if (GetIsObjectValid(oPublicArea))
+        {
+            return oPublicArea;
+        }
+        return DL_GetSocialArea(oNpc);
+    }
+    return OBJECT_INVALID;
+}
 object DL_GetMealArea(object oNpc)
 {
-    if (GetLocalString(oNpc, DL_L_NPC_MEAL_AREA_TAG) != "")
-    {
-        return DL_GetNpcAreaByTagCached(oNpc, DL_L_NPC_MEAL_AREA_TAG, DL_L_NPC_CACHE_MEAL_AREA);
-    }
-
-    object oArea = DL_GetHomeArea(oNpc);
-    if (GetIsObjectValid(oArea))
-    {
-        return oArea;
-    }
-
-    oArea = DL_GetWorkArea(oNpc);
-    if (GetIsObjectValid(oArea))
-    {
-        return oArea;
-    }
-
-    return DL_GetNpcCurrentAreaFallback(oNpc);
+    return DL_ResolvePreferredAreaWithFallbacks(oNpc, DL_AREA_PURPOSE_MEAL);
 }
 object DL_GetSocialArea(object oNpc)
 {
@@ -301,3 +335,8 @@ object DL_GetPublicArea(object oNpc)
 {
     return DL_GetNpcAreaOrCurrentFallback(oNpc, DL_L_NPC_PUBLIC_AREA_TAG, DL_L_NPC_CACHE_PUBLIC_AREA);
 }
+const int DL_AREA_PURPOSE_SLEEP = 1;
+const int DL_AREA_PURPOSE_WORK = 2;
+const int DL_AREA_PURPOSE_MEAL = 3;
+const int DL_AREA_PURPOSE_SOCIAL = 4;
+const int DL_AREA_PURPOSE_PUBLIC = 5;
