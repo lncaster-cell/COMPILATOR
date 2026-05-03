@@ -77,6 +77,12 @@ const float DL_AREA_NAV_SIDE_BIAS = 0.50;
 const int DL_TAG_FALLBACK_NONE = 0;
 const int DL_TAG_FALLBACK_GLOBAL = 1;
 const int DL_TAG_FALLBACK_NEAREST = 2;
+const string DL_LOOKUP_MODE_TRANSITION_POLICY = "transition_policy";
+const string DL_LOOKUP_MODE_TRANSITION_CROSS_AREA = "transition_cross_area";
+
+const int DL_TRANSITION_TAG_NEAREST_CAP = 12;
+const float DL_TRANSITION_TAG_NEAREST_MAX_DISTANCE = 80.0;
+const string DL_L_TRANSITION_TAG_MISS_SUPPRESS_PREFIX = "dl_transition_tag_miss_";
 
 const string DL_NAV_TAG_PREFIX = "dl_nav_";
 const int DL_NAV_TAG_PREFIX_LENGTH = 7;
@@ -247,9 +253,48 @@ object DL_GetTransitionWaypointByTag(string sTag)
     return oWp;
 }
 
+string DL_GetTransitionTagMissSuppressKey(string sTag, int nObjectType, object oArea, int nFallbackMode)
+{
+    return DL_L_TRANSITION_TAG_MISS_SUPPRESS_PREFIX + IntToString(nObjectType) + "_" + IntToString(nFallbackMode) + "_" + ObjectToString(oArea) + "_" + sTag;
+}
+
+int DL_IsTransitionTagMissSuppressedThisTick(string sTag, int nObjectType, object oArea, int nFallbackMode, int nTick)
+{
+    if (sTag == "" || !GetIsObjectValid(oArea) || nTick < 0)
+    {
+        return FALSE;
+    }
+
+    string sKey = DL_GetTransitionTagMissSuppressKey(sTag, nObjectType, oArea, nFallbackMode);
+    return GetLocalInt(GetModule(), sKey) == nTick;
+}
+
+void DL_MarkTransitionTagMissThisTick(string sTag, int nObjectType, object oArea, int nFallbackMode, int nTick)
+{
+    if (sTag == "" || !GetIsObjectValid(oArea) || nTick < 0)
+    {
+        return;
+    }
+
+    string sKey = DL_GetTransitionTagMissSuppressKey(sTag, nObjectType, oArea, nFallbackMode);
+    SetLocalInt(GetModule(), sKey, nTick);
+}
+
+void DL_ClearTransitionTagMissSuppressedTick(string sTag, int nObjectType, object oArea, int nFallbackMode)
+{
+    if (sTag == "" || !GetIsObjectValid(oArea))
+    {
+        return;
+    }
+
+    string sKey = DL_GetTransitionTagMissSuppressKey(sTag, nObjectType, oArea, nFallbackMode);
+    DeleteLocalInt(GetModule(), sKey);
+}
+
 // Unified tag lookup policy for transition/nav entities.
 // Policy contract:
-// 1) Always try deterministic area-local lookup first when preferred area is valid.
+// 1) Always try area-preferred deterministic lookup first: module area-tag cache,
+//    then area-local deterministic scan when preferred area is valid.
 // 2) Fallback behavior is explicit and centralized:
 //    - DL_TAG_FALLBACK_NONE: area-local deterministic only.
 //    - DL_TAG_FALLBACK_GLOBAL: fallback to global typed lookup by tag.
@@ -268,11 +313,24 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
         nLocalCap = 1;
     }
 
+    int nTickStamp = GetIsObjectValid(oPreferredArea) ? DL_GetAreaTick(oPreferredArea) : 0;
+    int bMemoMiss = FALSE;
+    object oMemoized = DL_GetTickMemoizedLookup(GetModule(), OBJECT_SELF, nTickStamp, sTag, nObjectType, oPreferredArea, DL_LOOKUP_MODE_TRANSITION_POLICY + "_" + IntToString(nFallbackMode), bMemoMiss);
+    if (GetIsObjectValid(oMemoized))
+    {
+        return oMemoized;
+    }
+    if (bMemoMiss)
+    {
+        return OBJECT_INVALID;
+    }
+
     if (GetIsObjectValid(oPreferredArea))
     {
         object oLocal = DL_FindObjectByTagInAreaDeterministic(sTag, nObjectType, oPreferredArea, nLocalCap);
         if (GetIsObjectValid(oLocal))
         {
+            DL_SetTickMemoizedLookup(GetModule(), OBJECT_SELF, nTickStamp, sTag, nObjectType, oPreferredArea, DL_LOOKUP_MODE_TRANSITION_POLICY + "_" + IntToString(nFallbackMode), oLocal);
             return oLocal;
         }
     }
@@ -294,6 +352,12 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
             return OBJECT_INVALID;
         }
         object oNearestOrigin = GetIsObjectValid(oPreferredArea) ? oPreferredArea : OBJECT_SELF;
+        int nNearestCap = nCap;
+        if (nNearestCap > DL_TRANSITION_TAG_NEAREST_CAP)
+        {
+            nNearestCap = DL_TRANSITION_TAG_NEAREST_CAP;
+        }
+
         int nNth = 1;
         while (nNth <= nNearestCap)
         {
@@ -302,14 +366,27 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
             {
                 break;
             }
+
+            if (GetIsObjectValid(oPreferredArea) && GetArea(oNearest) != oPreferredArea)
+            {
+                break;
+            }
+
+            if (GetIsObjectValid(oPreferredArea) && GetDistanceBetween(oPreferredArea, oNearest) > DL_TRANSITION_TAG_NEAREST_MAX_DISTANCE)
+            {
+                break;
+            }
+
             if (GetObjectType(oNearest) == nObjectType)
             {
+                DL_SetTickMemoizedLookup(GetModule(), OBJECT_SELF, nTickStamp, sTag, nObjectType, oPreferredArea, DL_LOOKUP_MODE_TRANSITION_POLICY + "_" + IntToString(nFallbackMode), oNearest);
                 return oNearest;
             }
             nNth = nNth + 1;
         }
     }
 
+    DL_SetTickMemoizedLookup(GetModule(), OBJECT_SELF, nTickStamp, sTag, nObjectType, oPreferredArea, DL_LOOKUP_MODE_TRANSITION_POLICY + "_" + IntToString(nFallbackMode), OBJECT_INVALID);
     return OBJECT_INVALID;
 }
 
@@ -728,12 +805,25 @@ object DL_GetCrossNavAreaByTag(string sAreaTag)
         return OBJECT_INVALID;
     }
 
+    int bMemoMiss = FALSE;
+    object oMemoized = DL_GetTickMemoizedLookup(GetModule(), OBJECT_SELF, DL_GetAbsoluteMinute(), sAreaTag, -1, OBJECT_INVALID, DL_LOOKUP_MODE_TRANSITION_CROSS_AREA, bMemoMiss);
+    if (GetIsObjectValid(oMemoized))
+    {
+        return oMemoized;
+    }
+    if (bMemoMiss)
+    {
+        return OBJECT_INVALID;
+    }
+
     object oCandidate = DL_FindObjectByTagWithChecks(sAreaTag, DL_CROSS_AREA_TAG_SEARCH_CAP, -1, OBJECT_INVALID, OBJECT_INVALID, FALSE);
     if (GetIsObjectValid(oCandidate) && DL_IsAreaObject(oCandidate))
     {
+        DL_SetTickMemoizedLookup(GetModule(), OBJECT_SELF, DL_GetAbsoluteMinute(), sAreaTag, -1, OBJECT_INVALID, DL_LOOKUP_MODE_TRANSITION_CROSS_AREA, oCandidate);
         return oCandidate;
     }
 
+    DL_SetTickMemoizedLookup(GetModule(), OBJECT_SELF, DL_GetAbsoluteMinute(), sAreaTag, -1, OBJECT_INVALID, DL_LOOKUP_MODE_TRANSITION_CROSS_AREA, OBJECT_INVALID);
     return OBJECT_INVALID;
 }
 
