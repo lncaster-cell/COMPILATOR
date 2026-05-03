@@ -3,6 +3,8 @@ const string DL_L_CACHE_CTX_PREFIX = "dl_cache_ctx_";
 
 const int DL_TAG_ENUM_DEFAULT_CAP = 32;
 
+void DL_InvalidateCachedObject(object oOwner, string sCacheLocal);
+
 int DL_GetSafeTagSearchCap(int nRequestedCap)
 {
     if (nRequestedCap <= 0)
@@ -66,8 +68,6 @@ object DL_FindObjectByTagWithChecks(
 
     return OBJECT_INVALID;
 }
-
-
 
 string DL_GetCacheMetricKey(string sScope, string sMetric)
 {
