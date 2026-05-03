@@ -1,3 +1,8 @@
+const string DL_L_AREA_SOCIAL_INDEX_COUNT_PREFIX = "dl_area_social_index_count_";
+const string DL_L_AREA_SOCIAL_INDEX_SLOT_PREFIX = "dl_area_social_index_slot_";
+const string DL_L_AREA_SOCIAL_INDEX_BUILD_TICK = "dl_area_social_index_build_tick";
+const string DL_L_AREA_SOCIAL_INDEX_BUILD_MODE = "dl_area_social_index_build_mode";
+
 const string DL_L_NPC_SOCIAL_KIND = "dl_social_kind";
 const string DL_L_NPC_SOCIAL_RESERVED_WP = "dl_social_reserved_wp";
 const string DL_L_WP_SOCIAL_RESERVED_BY = "dl_social_reserved_by";
