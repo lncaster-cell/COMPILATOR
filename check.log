@@ -1,0 +1,3444 @@
+Running mode 'check' for 'D:\a\COMPILATOR\COMPILATOR\daily_life\dl_a_enter.nss' from 'D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin': D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin\NWNScriptCompiler.exe -c -a -i D:\a\COMPILATOR\COMPILATOR\daily_life -i D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\stock_scripts -b D:\a\COMPILATOR\COMPILATOR\artifacts\ncc D:\a\COMPILATOR\COMPILATOR\daily_life\dl_a_enter.nss
+NWNScriptCompiler - built Jan 29 2014 19:24:04
+Copyright (C) 2008-2014 Skywing.
+Portions copyright (C) 2002-2003, Edward T. Smith.
+Portions copyright (C) 2003, The Open Knights Consortium.
+Compiling: dl_a_enter.NSS
+
+dl_cache_helpers_inc.nss(584): Error: NSC1020: Undeclared identifier "DL_FindObjectByTagInAreaDeterministic"
+
+dl_blocked_inc.nss(51): Error: NSC1020: Undeclared identifier "DL_ApplyDirectiveSkeleton"
+
+dl_lifecycle_inc.nss(6): Error: NSC1051: Constant "DL_NPC_EVENT_BLOCKED" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(9): Error: NSC1051: Constant "DL_UD_PIPELINE_NPC_EVENT" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(37): Error: NSC1020: Undeclared identifier "DL_ClearTransitionExecutionState"
+
+dl_lifecycle_inc.nss(135): Error: NSC1020: Undeclared identifier "DL_UnregisterNpc"
+
+dl_lifecycle_inc.nss(240): Error: NSC1020: Undeclared identifier "DL_RegisterNpc"
+
+dl_lifecycle_inc.nss(241): Error: NSC1020: Undeclared identifier "DL_ReconcileNpcAreaRegistration"
+
+dl_lifecycle_inc.nss(242): Error: NSC1020: Undeclared identifier "DL_RequestResync"
+
+dl_lifecycle_inc.nss(243): Error: NSC1020: Undeclared identifier "DL_ProcessResync"
+
+dl_diag_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_BLOCKED_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(36): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_TARGET" must be initialized before it may be referenced
+
+dl_transition_inc.nss(37): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_STATUS" must be initialized before it may be referenced
+
+dl_transition_inc.nss(38): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(134): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(135): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(164): Error: NSC1020: Undeclared identifier "DL_ParseAutoNavTag"
+
+dl_transition_inc.nss(165): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(600): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(601): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(896): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveGlobalTransitionWaypointByTag"
+
+dl_transition_inc.nss(1025): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterIsTransitionDriverTypeMatch"
+
+dl_transition_inc.nss(1026): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(1164): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1201): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1266): Error: NSC1020: Undeclared identifier "DL_IsTransitionNavigableTarget"
+
+dl_transition_inc.nss(1305): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_legacy_adapter_inc.nss(61): Error: NSC1020: Undeclared identifier "DL_TRANSITION_TAG_SEARCH_CAP"
+
+dl_transition_legacy_adapter_inc.nss(63): Error: NSC1007: Required argument "nDeterministicCap" missing in call to "DL_ResolveObjectByTagWithPolicy"
+
+dl_transition_legacy_adapter_inc.nss(64): Error: NSC1039: Not all paths return a value
+
+dl_cross_area_nav_inc.nss(70): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cross_area_nav_inc.nss(114): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_exec_inc.nss(62): Error: NSC1062: Function "DL_TryAdvanceViaTransitionOrRoute" already has a body defined at dl_transition_contract_inc.nss(24)
+
+dl_directive_pipeline_inc.nss(7): Error: NSC1051: Constant "DL_PIPE_STEP_PREPARE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(9): Error: NSC1051: Constant "DL_PIPE_STEP_FINALIZE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(90): Error: NSC1020: Undeclared identifier "DL_TryHardResetActionQueue"
+
+dl_res_inc.nss(20): Error: NSC1051: Constant "DL_L_NPC_DIRECTIVE" must be initialized before it may be referenced
+
+dl_res_inc.nss(25): Error: NSC1051: Constant "DL_L_NPC_PROFILE_ID" must be initialized before it may be referenced
+
+dl_res_inc.nss(26): Error: NSC1051: Constant "DL_L_NPC_STATE" must be initialized before it may be referenced
+
+dl_res_inc.nss(27): Error: NSC1051: Constant "DL_L_NPC_SLEEP_PHASE" must be initialized before it may be referenced
+
+dl_res_inc.nss(28): Error: NSC1051: Constant "DL_L_NPC_SLEEP_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(29): Error: NSC1051: Constant "DL_L_NPC_SLEEP_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(30): Error: NSC1051: Constant "DL_L_NPC_SLEEP_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(31): Error: NSC1051: Constant "DL_L_NPC_WORK_KIND" must be initialized before it may be referenced
+
+dl_res_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORK_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(33): Error: NSC1051: Constant "DL_L_NPC_WORK_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(34): Error: NSC1051: Constant "DL_L_NPC_WORK_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(58): Error: NSC1051: Constant "DL_L_NPC_FOCUS_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(59): Error: NSC1051: Constant "DL_L_NPC_FOCUS_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(60): Error: NSC1051: Constant "DL_L_NPC_FOCUS_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(118): Error: NSC1051: Constant "DL_DIR_NONE" must be initialized before it may be referenced
+
+dl_res_inc.nss(119): Error: NSC1051: Constant "DL_DIR_SLEEP" must be initialized before it may be referenced
+
+dl_res_inc.nss(120): Error: NSC1051: Constant "DL_DIR_WORK" must be initialized before it may be referenced
+
+dl_res_inc.nss(121): Error: NSC1051: Constant "DL_DIR_SOCIAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(122): Error: NSC1051: Constant "DL_DIR_MEAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(123): Error: NSC1051: Constant "DL_DIR_PUBLIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(124): Error: NSC1051: Constant "DL_DIR_CHILL" must be initialized before it may be referenced
+
+dl_anchor_cache_inc.nss(151): Error: NSC1020: Undeclared identifier "DL_LogInvalidAreaTagIssue"
+
+dl_anchor_cache_inc.nss(199): Error: NSC1020: Undeclared identifier "DL_LogMissingAnchorIssue"
+
+dl_anchor_cache_inc.nss(220): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_anchor_cache_inc.nss(224): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_social_pool_inc.nss(7): Error: NSC1051: Constant "DL_L_NPC_SOCIAL_RESERVED_WP" must be initialized before it may be referenced
+
+dl_registry_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORKER_SEQ" must be initialized before it may be referenced
+
+dl_registry_inc.nss(51): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_TICK" must be initialized before it may be referenced
+
+dl_registry_inc.nss(52): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_MODE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_RESYNC_PENDING" must be initialized before it may be referenced
+
+dl_resync_inc.nss(2): Error: NSC1051: Constant "DL_L_NPC_RESYNC_REASON" must be initialized before it may be referenced
+
+dl_resync_inc.nss(6): Error: NSC1051: Constant "DL_RESYNC_NONE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(7): Error: NSC1051: Constant "DL_RESYNC_SPAWN" must be initialized before it may be referenced
+
+dl_cr_crime_inc.nss(317): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cr_crime_inc.nss(318): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+Compilation aborted with errors.
+
+Processing aborted.
+
+Total Execution time = 46ms
+
+Running mode 'check' for 'D:\a\COMPILATOR\COMPILATOR\daily_life\dl_a_exit.nss' from 'D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin': D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin\NWNScriptCompiler.exe -c -a -i D:\a\COMPILATOR\COMPILATOR\daily_life -i D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\stock_scripts -b D:\a\COMPILATOR\COMPILATOR\artifacts\ncc D:\a\COMPILATOR\COMPILATOR\daily_life\dl_a_exit.nss
+NWNScriptCompiler - built Jan 29 2014 19:24:04
+Copyright (C) 2008-2014 Skywing.
+Portions copyright (C) 2002-2003, Edward T. Smith.
+Portions copyright (C) 2003, The Open Knights Consortium.
+Compiling: dl_a_exit.NSS
+
+dl_cache_helpers_inc.nss(584): Error: NSC1020: Undeclared identifier "DL_FindObjectByTagInAreaDeterministic"
+
+dl_blocked_inc.nss(51): Error: NSC1020: Undeclared identifier "DL_ApplyDirectiveSkeleton"
+
+dl_lifecycle_inc.nss(6): Error: NSC1051: Constant "DL_NPC_EVENT_BLOCKED" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(9): Error: NSC1051: Constant "DL_UD_PIPELINE_NPC_EVENT" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(37): Error: NSC1020: Undeclared identifier "DL_ClearTransitionExecutionState"
+
+dl_lifecycle_inc.nss(135): Error: NSC1020: Undeclared identifier "DL_UnregisterNpc"
+
+dl_lifecycle_inc.nss(240): Error: NSC1020: Undeclared identifier "DL_RegisterNpc"
+
+dl_lifecycle_inc.nss(241): Error: NSC1020: Undeclared identifier "DL_ReconcileNpcAreaRegistration"
+
+dl_lifecycle_inc.nss(242): Error: NSC1020: Undeclared identifier "DL_RequestResync"
+
+dl_lifecycle_inc.nss(243): Error: NSC1020: Undeclared identifier "DL_ProcessResync"
+
+dl_diag_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_BLOCKED_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(36): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_TARGET" must be initialized before it may be referenced
+
+dl_transition_inc.nss(37): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_STATUS" must be initialized before it may be referenced
+
+dl_transition_inc.nss(38): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(134): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(135): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(164): Error: NSC1020: Undeclared identifier "DL_ParseAutoNavTag"
+
+dl_transition_inc.nss(165): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(600): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(601): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(896): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveGlobalTransitionWaypointByTag"
+
+dl_transition_inc.nss(1025): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterIsTransitionDriverTypeMatch"
+
+dl_transition_inc.nss(1026): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(1164): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1201): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1266): Error: NSC1020: Undeclared identifier "DL_IsTransitionNavigableTarget"
+
+dl_transition_inc.nss(1305): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_legacy_adapter_inc.nss(61): Error: NSC1020: Undeclared identifier "DL_TRANSITION_TAG_SEARCH_CAP"
+
+dl_transition_legacy_adapter_inc.nss(63): Error: NSC1007: Required argument "nDeterministicCap" missing in call to "DL_ResolveObjectByTagWithPolicy"
+
+dl_transition_legacy_adapter_inc.nss(64): Error: NSC1039: Not all paths return a value
+
+dl_cross_area_nav_inc.nss(70): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cross_area_nav_inc.nss(114): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_exec_inc.nss(62): Error: NSC1062: Function "DL_TryAdvanceViaTransitionOrRoute" already has a body defined at dl_transition_contract_inc.nss(24)
+
+dl_directive_pipeline_inc.nss(7): Error: NSC1051: Constant "DL_PIPE_STEP_PREPARE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(9): Error: NSC1051: Constant "DL_PIPE_STEP_FINALIZE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(90): Error: NSC1020: Undeclared identifier "DL_TryHardResetActionQueue"
+
+dl_res_inc.nss(20): Error: NSC1051: Constant "DL_L_NPC_DIRECTIVE" must be initialized before it may be referenced
+
+dl_res_inc.nss(25): Error: NSC1051: Constant "DL_L_NPC_PROFILE_ID" must be initialized before it may be referenced
+
+dl_res_inc.nss(26): Error: NSC1051: Constant "DL_L_NPC_STATE" must be initialized before it may be referenced
+
+dl_res_inc.nss(27): Error: NSC1051: Constant "DL_L_NPC_SLEEP_PHASE" must be initialized before it may be referenced
+
+dl_res_inc.nss(28): Error: NSC1051: Constant "DL_L_NPC_SLEEP_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(29): Error: NSC1051: Constant "DL_L_NPC_SLEEP_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(30): Error: NSC1051: Constant "DL_L_NPC_SLEEP_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(31): Error: NSC1051: Constant "DL_L_NPC_WORK_KIND" must be initialized before it may be referenced
+
+dl_res_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORK_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(33): Error: NSC1051: Constant "DL_L_NPC_WORK_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(34): Error: NSC1051: Constant "DL_L_NPC_WORK_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(58): Error: NSC1051: Constant "DL_L_NPC_FOCUS_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(59): Error: NSC1051: Constant "DL_L_NPC_FOCUS_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(60): Error: NSC1051: Constant "DL_L_NPC_FOCUS_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(118): Error: NSC1051: Constant "DL_DIR_NONE" must be initialized before it may be referenced
+
+dl_res_inc.nss(119): Error: NSC1051: Constant "DL_DIR_SLEEP" must be initialized before it may be referenced
+
+dl_res_inc.nss(120): Error: NSC1051: Constant "DL_DIR_WORK" must be initialized before it may be referenced
+
+dl_res_inc.nss(121): Error: NSC1051: Constant "DL_DIR_SOCIAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(122): Error: NSC1051: Constant "DL_DIR_MEAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(123): Error: NSC1051: Constant "DL_DIR_PUBLIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(124): Error: NSC1051: Constant "DL_DIR_CHILL" must be initialized before it may be referenced
+
+dl_anchor_cache_inc.nss(151): Error: NSC1020: Undeclared identifier "DL_LogInvalidAreaTagIssue"
+
+dl_anchor_cache_inc.nss(199): Error: NSC1020: Undeclared identifier "DL_LogMissingAnchorIssue"
+
+dl_anchor_cache_inc.nss(220): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_anchor_cache_inc.nss(224): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_social_pool_inc.nss(7): Error: NSC1051: Constant "DL_L_NPC_SOCIAL_RESERVED_WP" must be initialized before it may be referenced
+
+dl_registry_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORKER_SEQ" must be initialized before it may be referenced
+
+dl_registry_inc.nss(51): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_TICK" must be initialized before it may be referenced
+
+dl_registry_inc.nss(52): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_MODE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_RESYNC_PENDING" must be initialized before it may be referenced
+
+dl_resync_inc.nss(2): Error: NSC1051: Constant "DL_L_NPC_RESYNC_REASON" must be initialized before it may be referenced
+
+dl_resync_inc.nss(6): Error: NSC1051: Constant "DL_RESYNC_NONE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(7): Error: NSC1051: Constant "DL_RESYNC_SPAWN" must be initialized before it may be referenced
+
+dl_cr_crime_inc.nss(317): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cr_crime_inc.nss(318): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+Compilation aborted with errors.
+
+Processing aborted.
+
+Total Execution time = 47ms
+
+Running mode 'check' for 'D:\a\COMPILATOR\COMPILATOR\daily_life\dl_a_hb.nss' from 'D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin': D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin\NWNScriptCompiler.exe -c -a -i D:\a\COMPILATOR\COMPILATOR\daily_life -i D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\stock_scripts -b D:\a\COMPILATOR\COMPILATOR\artifacts\ncc D:\a\COMPILATOR\COMPILATOR\daily_life\dl_a_hb.nss
+NWNScriptCompiler - built Jan 29 2014 19:24:04
+Copyright (C) 2008-2014 Skywing.
+Portions copyright (C) 2002-2003, Edward T. Smith.
+Portions copyright (C) 2003, The Open Knights Consortium.
+Compiling: dl_a_hb.NSS
+
+dl_cache_helpers_inc.nss(584): Error: NSC1020: Undeclared identifier "DL_FindObjectByTagInAreaDeterministic"
+
+dl_blocked_inc.nss(51): Error: NSC1020: Undeclared identifier "DL_ApplyDirectiveSkeleton"
+
+dl_lifecycle_inc.nss(6): Error: NSC1051: Constant "DL_NPC_EVENT_BLOCKED" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(9): Error: NSC1051: Constant "DL_UD_PIPELINE_NPC_EVENT" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(37): Error: NSC1020: Undeclared identifier "DL_ClearTransitionExecutionState"
+
+dl_lifecycle_inc.nss(135): Error: NSC1020: Undeclared identifier "DL_UnregisterNpc"
+
+dl_lifecycle_inc.nss(240): Error: NSC1020: Undeclared identifier "DL_RegisterNpc"
+
+dl_lifecycle_inc.nss(241): Error: NSC1020: Undeclared identifier "DL_ReconcileNpcAreaRegistration"
+
+dl_lifecycle_inc.nss(242): Error: NSC1020: Undeclared identifier "DL_RequestResync"
+
+dl_lifecycle_inc.nss(243): Error: NSC1020: Undeclared identifier "DL_ProcessResync"
+
+dl_diag_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_BLOCKED_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(36): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_TARGET" must be initialized before it may be referenced
+
+dl_transition_inc.nss(37): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_STATUS" must be initialized before it may be referenced
+
+dl_transition_inc.nss(38): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(134): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(135): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(164): Error: NSC1020: Undeclared identifier "DL_ParseAutoNavTag"
+
+dl_transition_inc.nss(165): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(600): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(601): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(896): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveGlobalTransitionWaypointByTag"
+
+dl_transition_inc.nss(1025): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterIsTransitionDriverTypeMatch"
+
+dl_transition_inc.nss(1026): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(1164): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1201): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1266): Error: NSC1020: Undeclared identifier "DL_IsTransitionNavigableTarget"
+
+dl_transition_inc.nss(1305): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_legacy_adapter_inc.nss(61): Error: NSC1020: Undeclared identifier "DL_TRANSITION_TAG_SEARCH_CAP"
+
+dl_transition_legacy_adapter_inc.nss(63): Error: NSC1007: Required argument "nDeterministicCap" missing in call to "DL_ResolveObjectByTagWithPolicy"
+
+dl_transition_legacy_adapter_inc.nss(64): Error: NSC1039: Not all paths return a value
+
+dl_cross_area_nav_inc.nss(70): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cross_area_nav_inc.nss(114): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_exec_inc.nss(62): Error: NSC1062: Function "DL_TryAdvanceViaTransitionOrRoute" already has a body defined at dl_transition_contract_inc.nss(24)
+
+dl_directive_pipeline_inc.nss(7): Error: NSC1051: Constant "DL_PIPE_STEP_PREPARE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(9): Error: NSC1051: Constant "DL_PIPE_STEP_FINALIZE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(90): Error: NSC1020: Undeclared identifier "DL_TryHardResetActionQueue"
+
+dl_res_inc.nss(20): Error: NSC1051: Constant "DL_L_NPC_DIRECTIVE" must be initialized before it may be referenced
+
+dl_res_inc.nss(25): Error: NSC1051: Constant "DL_L_NPC_PROFILE_ID" must be initialized before it may be referenced
+
+dl_res_inc.nss(26): Error: NSC1051: Constant "DL_L_NPC_STATE" must be initialized before it may be referenced
+
+dl_res_inc.nss(27): Error: NSC1051: Constant "DL_L_NPC_SLEEP_PHASE" must be initialized before it may be referenced
+
+dl_res_inc.nss(28): Error: NSC1051: Constant "DL_L_NPC_SLEEP_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(29): Error: NSC1051: Constant "DL_L_NPC_SLEEP_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(30): Error: NSC1051: Constant "DL_L_NPC_SLEEP_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(31): Error: NSC1051: Constant "DL_L_NPC_WORK_KIND" must be initialized before it may be referenced
+
+dl_res_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORK_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(33): Error: NSC1051: Constant "DL_L_NPC_WORK_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(34): Error: NSC1051: Constant "DL_L_NPC_WORK_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(58): Error: NSC1051: Constant "DL_L_NPC_FOCUS_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(59): Error: NSC1051: Constant "DL_L_NPC_FOCUS_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(60): Error: NSC1051: Constant "DL_L_NPC_FOCUS_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(118): Error: NSC1051: Constant "DL_DIR_NONE" must be initialized before it may be referenced
+
+dl_res_inc.nss(119): Error: NSC1051: Constant "DL_DIR_SLEEP" must be initialized before it may be referenced
+
+dl_res_inc.nss(120): Error: NSC1051: Constant "DL_DIR_WORK" must be initialized before it may be referenced
+
+dl_res_inc.nss(121): Error: NSC1051: Constant "DL_DIR_SOCIAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(122): Error: NSC1051: Constant "DL_DIR_MEAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(123): Error: NSC1051: Constant "DL_DIR_PUBLIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(124): Error: NSC1051: Constant "DL_DIR_CHILL" must be initialized before it may be referenced
+
+dl_anchor_cache_inc.nss(151): Error: NSC1020: Undeclared identifier "DL_LogInvalidAreaTagIssue"
+
+dl_anchor_cache_inc.nss(199): Error: NSC1020: Undeclared identifier "DL_LogMissingAnchorIssue"
+
+dl_anchor_cache_inc.nss(220): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_anchor_cache_inc.nss(224): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_social_pool_inc.nss(7): Error: NSC1051: Constant "DL_L_NPC_SOCIAL_RESERVED_WP" must be initialized before it may be referenced
+
+dl_registry_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORKER_SEQ" must be initialized before it may be referenced
+
+dl_registry_inc.nss(51): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_TICK" must be initialized before it may be referenced
+
+dl_registry_inc.nss(52): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_MODE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_RESYNC_PENDING" must be initialized before it may be referenced
+
+dl_resync_inc.nss(2): Error: NSC1051: Constant "DL_L_NPC_RESYNC_REASON" must be initialized before it may be referenced
+
+dl_resync_inc.nss(6): Error: NSC1051: Constant "DL_RESYNC_NONE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(7): Error: NSC1051: Constant "DL_RESYNC_SPAWN" must be initialized before it may be referenced
+
+dl_cr_crime_inc.nss(317): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cr_crime_inc.nss(318): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+Compilation aborted with errors.
+
+Processing aborted.
+
+Total Execution time = 47ms
+
+Running mode 'check' for 'D:\a\COMPILATOR\COMPILATOR\daily_life\dl_blocked.nss' from 'D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin': D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin\NWNScriptCompiler.exe -c -a -i D:\a\COMPILATOR\COMPILATOR\daily_life -i D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\stock_scripts -b D:\a\COMPILATOR\COMPILATOR\artifacts\ncc D:\a\COMPILATOR\COMPILATOR\daily_life\dl_blocked.nss
+NWNScriptCompiler - built Jan 29 2014 19:24:04
+Copyright (C) 2008-2014 Skywing.
+Portions copyright (C) 2002-2003, Edward T. Smith.
+Portions copyright (C) 2003, The Open Knights Consortium.
+Compiling: dl_blocked.NSS
+
+dl_cache_helpers_inc.nss(584): Error: NSC1020: Undeclared identifier "DL_FindObjectByTagInAreaDeterministic"
+
+dl_blocked_inc.nss(51): Error: NSC1020: Undeclared identifier "DL_ApplyDirectiveSkeleton"
+
+dl_lifecycle_inc.nss(6): Error: NSC1051: Constant "DL_NPC_EVENT_BLOCKED" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(9): Error: NSC1051: Constant "DL_UD_PIPELINE_NPC_EVENT" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(37): Error: NSC1020: Undeclared identifier "DL_ClearTransitionExecutionState"
+
+dl_lifecycle_inc.nss(135): Error: NSC1020: Undeclared identifier "DL_UnregisterNpc"
+
+dl_lifecycle_inc.nss(240): Error: NSC1020: Undeclared identifier "DL_RegisterNpc"
+
+dl_lifecycle_inc.nss(241): Error: NSC1020: Undeclared identifier "DL_ReconcileNpcAreaRegistration"
+
+dl_lifecycle_inc.nss(242): Error: NSC1020: Undeclared identifier "DL_RequestResync"
+
+dl_lifecycle_inc.nss(243): Error: NSC1020: Undeclared identifier "DL_ProcessResync"
+
+dl_diag_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_BLOCKED_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(36): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_TARGET" must be initialized before it may be referenced
+
+dl_transition_inc.nss(37): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_STATUS" must be initialized before it may be referenced
+
+dl_transition_inc.nss(38): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(134): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(135): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(164): Error: NSC1020: Undeclared identifier "DL_ParseAutoNavTag"
+
+dl_transition_inc.nss(165): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(600): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(601): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(896): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveGlobalTransitionWaypointByTag"
+
+dl_transition_inc.nss(1025): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterIsTransitionDriverTypeMatch"
+
+dl_transition_inc.nss(1026): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(1164): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1201): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1266): Error: NSC1020: Undeclared identifier "DL_IsTransitionNavigableTarget"
+
+dl_transition_inc.nss(1305): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_legacy_adapter_inc.nss(61): Error: NSC1020: Undeclared identifier "DL_TRANSITION_TAG_SEARCH_CAP"
+
+dl_transition_legacy_adapter_inc.nss(63): Error: NSC1007: Required argument "nDeterministicCap" missing in call to "DL_ResolveObjectByTagWithPolicy"
+
+dl_transition_legacy_adapter_inc.nss(64): Error: NSC1039: Not all paths return a value
+
+dl_cross_area_nav_inc.nss(70): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cross_area_nav_inc.nss(114): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_exec_inc.nss(62): Error: NSC1062: Function "DL_TryAdvanceViaTransitionOrRoute" already has a body defined at dl_transition_contract_inc.nss(24)
+
+dl_directive_pipeline_inc.nss(7): Error: NSC1051: Constant "DL_PIPE_STEP_PREPARE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(9): Error: NSC1051: Constant "DL_PIPE_STEP_FINALIZE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(90): Error: NSC1020: Undeclared identifier "DL_TryHardResetActionQueue"
+
+dl_res_inc.nss(20): Error: NSC1051: Constant "DL_L_NPC_DIRECTIVE" must be initialized before it may be referenced
+
+dl_res_inc.nss(25): Error: NSC1051: Constant "DL_L_NPC_PROFILE_ID" must be initialized before it may be referenced
+
+dl_res_inc.nss(26): Error: NSC1051: Constant "DL_L_NPC_STATE" must be initialized before it may be referenced
+
+dl_res_inc.nss(27): Error: NSC1051: Constant "DL_L_NPC_SLEEP_PHASE" must be initialized before it may be referenced
+
+dl_res_inc.nss(28): Error: NSC1051: Constant "DL_L_NPC_SLEEP_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(29): Error: NSC1051: Constant "DL_L_NPC_SLEEP_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(30): Error: NSC1051: Constant "DL_L_NPC_SLEEP_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(31): Error: NSC1051: Constant "DL_L_NPC_WORK_KIND" must be initialized before it may be referenced
+
+dl_res_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORK_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(33): Error: NSC1051: Constant "DL_L_NPC_WORK_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(34): Error: NSC1051: Constant "DL_L_NPC_WORK_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(58): Error: NSC1051: Constant "DL_L_NPC_FOCUS_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(59): Error: NSC1051: Constant "DL_L_NPC_FOCUS_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(60): Error: NSC1051: Constant "DL_L_NPC_FOCUS_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(118): Error: NSC1051: Constant "DL_DIR_NONE" must be initialized before it may be referenced
+
+dl_res_inc.nss(119): Error: NSC1051: Constant "DL_DIR_SLEEP" must be initialized before it may be referenced
+
+dl_res_inc.nss(120): Error: NSC1051: Constant "DL_DIR_WORK" must be initialized before it may be referenced
+
+dl_res_inc.nss(121): Error: NSC1051: Constant "DL_DIR_SOCIAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(122): Error: NSC1051: Constant "DL_DIR_MEAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(123): Error: NSC1051: Constant "DL_DIR_PUBLIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(124): Error: NSC1051: Constant "DL_DIR_CHILL" must be initialized before it may be referenced
+
+dl_anchor_cache_inc.nss(151): Error: NSC1020: Undeclared identifier "DL_LogInvalidAreaTagIssue"
+
+dl_anchor_cache_inc.nss(199): Error: NSC1020: Undeclared identifier "DL_LogMissingAnchorIssue"
+
+dl_anchor_cache_inc.nss(220): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_anchor_cache_inc.nss(224): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_social_pool_inc.nss(7): Error: NSC1051: Constant "DL_L_NPC_SOCIAL_RESERVED_WP" must be initialized before it may be referenced
+
+dl_registry_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORKER_SEQ" must be initialized before it may be referenced
+
+dl_registry_inc.nss(51): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_TICK" must be initialized before it may be referenced
+
+dl_registry_inc.nss(52): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_MODE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_RESYNC_PENDING" must be initialized before it may be referenced
+
+dl_resync_inc.nss(2): Error: NSC1051: Constant "DL_L_NPC_RESYNC_REASON" must be initialized before it may be referenced
+
+dl_resync_inc.nss(6): Error: NSC1051: Constant "DL_RESYNC_NONE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(7): Error: NSC1051: Constant "DL_RESYNC_SPAWN" must be initialized before it may be referenced
+
+dl_cr_crime_inc.nss(317): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cr_crime_inc.nss(318): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+Compilation aborted with errors.
+
+Processing aborted.
+
+Total Execution time = 46ms
+
+Running mode 'check' for 'D:\a\COMPILATOR\COMPILATOR\daily_life\dl_cr_detain_accept.nss' from 'D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin': D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin\NWNScriptCompiler.exe -c -a -i D:\a\COMPILATOR\COMPILATOR\daily_life -i D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\stock_scripts -b D:\a\COMPILATOR\COMPILATOR\artifacts\ncc D:\a\COMPILATOR\COMPILATOR\daily_life\dl_cr_detain_accept.nss
+NWNScriptCompiler - built Jan 29 2014 19:24:04
+Copyright (C) 2008-2014 Skywing.
+Portions copyright (C) 2002-2003, Edward T. Smith.
+Portions copyright (C) 2003, The Open Knights Consortium.
+Compiling: dl_cr_detain_accept.NSS
+
+dl_cache_helpers_inc.nss(584): Error: NSC1020: Undeclared identifier "DL_FindObjectByTagInAreaDeterministic"
+
+dl_blocked_inc.nss(51): Error: NSC1020: Undeclared identifier "DL_ApplyDirectiveSkeleton"
+
+dl_lifecycle_inc.nss(6): Error: NSC1051: Constant "DL_NPC_EVENT_BLOCKED" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(9): Error: NSC1051: Constant "DL_UD_PIPELINE_NPC_EVENT" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(37): Error: NSC1020: Undeclared identifier "DL_ClearTransitionExecutionState"
+
+dl_lifecycle_inc.nss(135): Error: NSC1020: Undeclared identifier "DL_UnregisterNpc"
+
+dl_lifecycle_inc.nss(240): Error: NSC1020: Undeclared identifier "DL_RegisterNpc"
+
+dl_lifecycle_inc.nss(241): Error: NSC1020: Undeclared identifier "DL_ReconcileNpcAreaRegistration"
+
+dl_lifecycle_inc.nss(242): Error: NSC1020: Undeclared identifier "DL_RequestResync"
+
+dl_lifecycle_inc.nss(243): Error: NSC1020: Undeclared identifier "DL_ProcessResync"
+
+dl_diag_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_BLOCKED_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(36): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_TARGET" must be initialized before it may be referenced
+
+dl_transition_inc.nss(37): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_STATUS" must be initialized before it may be referenced
+
+dl_transition_inc.nss(38): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(134): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(135): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(164): Error: NSC1020: Undeclared identifier "DL_ParseAutoNavTag"
+
+dl_transition_inc.nss(165): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(600): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(601): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(896): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveGlobalTransitionWaypointByTag"
+
+dl_transition_inc.nss(1025): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterIsTransitionDriverTypeMatch"
+
+dl_transition_inc.nss(1026): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(1164): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1201): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1266): Error: NSC1020: Undeclared identifier "DL_IsTransitionNavigableTarget"
+
+dl_transition_inc.nss(1305): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_legacy_adapter_inc.nss(61): Error: NSC1020: Undeclared identifier "DL_TRANSITION_TAG_SEARCH_CAP"
+
+dl_transition_legacy_adapter_inc.nss(63): Error: NSC1007: Required argument "nDeterministicCap" missing in call to "DL_ResolveObjectByTagWithPolicy"
+
+dl_transition_legacy_adapter_inc.nss(64): Error: NSC1039: Not all paths return a value
+
+dl_cross_area_nav_inc.nss(70): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cross_area_nav_inc.nss(114): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_exec_inc.nss(62): Error: NSC1062: Function "DL_TryAdvanceViaTransitionOrRoute" already has a body defined at dl_transition_contract_inc.nss(24)
+
+dl_directive_pipeline_inc.nss(7): Error: NSC1051: Constant "DL_PIPE_STEP_PREPARE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(9): Error: NSC1051: Constant "DL_PIPE_STEP_FINALIZE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(90): Error: NSC1020: Undeclared identifier "DL_TryHardResetActionQueue"
+
+dl_res_inc.nss(20): Error: NSC1051: Constant "DL_L_NPC_DIRECTIVE" must be initialized before it may be referenced
+
+dl_res_inc.nss(25): Error: NSC1051: Constant "DL_L_NPC_PROFILE_ID" must be initialized before it may be referenced
+
+dl_res_inc.nss(26): Error: NSC1051: Constant "DL_L_NPC_STATE" must be initialized before it may be referenced
+
+dl_res_inc.nss(27): Error: NSC1051: Constant "DL_L_NPC_SLEEP_PHASE" must be initialized before it may be referenced
+
+dl_res_inc.nss(28): Error: NSC1051: Constant "DL_L_NPC_SLEEP_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(29): Error: NSC1051: Constant "DL_L_NPC_SLEEP_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(30): Error: NSC1051: Constant "DL_L_NPC_SLEEP_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(31): Error: NSC1051: Constant "DL_L_NPC_WORK_KIND" must be initialized before it may be referenced
+
+dl_res_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORK_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(33): Error: NSC1051: Constant "DL_L_NPC_WORK_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(34): Error: NSC1051: Constant "DL_L_NPC_WORK_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(58): Error: NSC1051: Constant "DL_L_NPC_FOCUS_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(59): Error: NSC1051: Constant "DL_L_NPC_FOCUS_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(60): Error: NSC1051: Constant "DL_L_NPC_FOCUS_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(118): Error: NSC1051: Constant "DL_DIR_NONE" must be initialized before it may be referenced
+
+dl_res_inc.nss(119): Error: NSC1051: Constant "DL_DIR_SLEEP" must be initialized before it may be referenced
+
+dl_res_inc.nss(120): Error: NSC1051: Constant "DL_DIR_WORK" must be initialized before it may be referenced
+
+dl_res_inc.nss(121): Error: NSC1051: Constant "DL_DIR_SOCIAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(122): Error: NSC1051: Constant "DL_DIR_MEAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(123): Error: NSC1051: Constant "DL_DIR_PUBLIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(124): Error: NSC1051: Constant "DL_DIR_CHILL" must be initialized before it may be referenced
+
+dl_anchor_cache_inc.nss(151): Error: NSC1020: Undeclared identifier "DL_LogInvalidAreaTagIssue"
+
+dl_anchor_cache_inc.nss(199): Error: NSC1020: Undeclared identifier "DL_LogMissingAnchorIssue"
+
+dl_anchor_cache_inc.nss(220): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_anchor_cache_inc.nss(224): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_social_pool_inc.nss(7): Error: NSC1051: Constant "DL_L_NPC_SOCIAL_RESERVED_WP" must be initialized before it may be referenced
+
+dl_registry_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORKER_SEQ" must be initialized before it may be referenced
+
+dl_registry_inc.nss(51): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_TICK" must be initialized before it may be referenced
+
+dl_registry_inc.nss(52): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_MODE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_RESYNC_PENDING" must be initialized before it may be referenced
+
+dl_resync_inc.nss(2): Error: NSC1051: Constant "DL_L_NPC_RESYNC_REASON" must be initialized before it may be referenced
+
+dl_resync_inc.nss(6): Error: NSC1051: Constant "DL_RESYNC_NONE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(7): Error: NSC1051: Constant "DL_RESYNC_SPAWN" must be initialized before it may be referenced
+
+dl_cr_crime_inc.nss(317): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cr_crime_inc.nss(318): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+Compilation aborted with errors.
+
+Processing aborted.
+
+Total Execution time = 47ms
+
+Running mode 'check' for 'D:\a\COMPILATOR\COMPILATOR\daily_life\dl_cr_detain_refuse.nss' from 'D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin': D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin\NWNScriptCompiler.exe -c -a -i D:\a\COMPILATOR\COMPILATOR\daily_life -i D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\stock_scripts -b D:\a\COMPILATOR\COMPILATOR\artifacts\ncc D:\a\COMPILATOR\COMPILATOR\daily_life\dl_cr_detain_refuse.nss
+NWNScriptCompiler - built Jan 29 2014 19:24:04
+Copyright (C) 2008-2014 Skywing.
+Portions copyright (C) 2002-2003, Edward T. Smith.
+Portions copyright (C) 2003, The Open Knights Consortium.
+Compiling: dl_cr_detain_refuse.NSS
+
+dl_cache_helpers_inc.nss(584): Error: NSC1020: Undeclared identifier "DL_FindObjectByTagInAreaDeterministic"
+
+dl_blocked_inc.nss(51): Error: NSC1020: Undeclared identifier "DL_ApplyDirectiveSkeleton"
+
+dl_lifecycle_inc.nss(6): Error: NSC1051: Constant "DL_NPC_EVENT_BLOCKED" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(9): Error: NSC1051: Constant "DL_UD_PIPELINE_NPC_EVENT" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(37): Error: NSC1020: Undeclared identifier "DL_ClearTransitionExecutionState"
+
+dl_lifecycle_inc.nss(135): Error: NSC1020: Undeclared identifier "DL_UnregisterNpc"
+
+dl_lifecycle_inc.nss(240): Error: NSC1020: Undeclared identifier "DL_RegisterNpc"
+
+dl_lifecycle_inc.nss(241): Error: NSC1020: Undeclared identifier "DL_ReconcileNpcAreaRegistration"
+
+dl_lifecycle_inc.nss(242): Error: NSC1020: Undeclared identifier "DL_RequestResync"
+
+dl_lifecycle_inc.nss(243): Error: NSC1020: Undeclared identifier "DL_ProcessResync"
+
+dl_diag_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_BLOCKED_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(36): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_TARGET" must be initialized before it may be referenced
+
+dl_transition_inc.nss(37): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_STATUS" must be initialized before it may be referenced
+
+dl_transition_inc.nss(38): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(134): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(135): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(164): Error: NSC1020: Undeclared identifier "DL_ParseAutoNavTag"
+
+dl_transition_inc.nss(165): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(600): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(601): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(896): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveGlobalTransitionWaypointByTag"
+
+dl_transition_inc.nss(1025): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterIsTransitionDriverTypeMatch"
+
+dl_transition_inc.nss(1026): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(1164): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1201): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1266): Error: NSC1020: Undeclared identifier "DL_IsTransitionNavigableTarget"
+
+dl_transition_inc.nss(1305): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_legacy_adapter_inc.nss(61): Error: NSC1020: Undeclared identifier "DL_TRANSITION_TAG_SEARCH_CAP"
+
+dl_transition_legacy_adapter_inc.nss(63): Error: NSC1007: Required argument "nDeterministicCap" missing in call to "DL_ResolveObjectByTagWithPolicy"
+
+dl_transition_legacy_adapter_inc.nss(64): Error: NSC1039: Not all paths return a value
+
+dl_cross_area_nav_inc.nss(70): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cross_area_nav_inc.nss(114): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_exec_inc.nss(62): Error: NSC1062: Function "DL_TryAdvanceViaTransitionOrRoute" already has a body defined at dl_transition_contract_inc.nss(24)
+
+dl_directive_pipeline_inc.nss(7): Error: NSC1051: Constant "DL_PIPE_STEP_PREPARE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(9): Error: NSC1051: Constant "DL_PIPE_STEP_FINALIZE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(90): Error: NSC1020: Undeclared identifier "DL_TryHardResetActionQueue"
+
+dl_res_inc.nss(20): Error: NSC1051: Constant "DL_L_NPC_DIRECTIVE" must be initialized before it may be referenced
+
+dl_res_inc.nss(25): Error: NSC1051: Constant "DL_L_NPC_PROFILE_ID" must be initialized before it may be referenced
+
+dl_res_inc.nss(26): Error: NSC1051: Constant "DL_L_NPC_STATE" must be initialized before it may be referenced
+
+dl_res_inc.nss(27): Error: NSC1051: Constant "DL_L_NPC_SLEEP_PHASE" must be initialized before it may be referenced
+
+dl_res_inc.nss(28): Error: NSC1051: Constant "DL_L_NPC_SLEEP_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(29): Error: NSC1051: Constant "DL_L_NPC_SLEEP_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(30): Error: NSC1051: Constant "DL_L_NPC_SLEEP_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(31): Error: NSC1051: Constant "DL_L_NPC_WORK_KIND" must be initialized before it may be referenced
+
+dl_res_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORK_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(33): Error: NSC1051: Constant "DL_L_NPC_WORK_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(34): Error: NSC1051: Constant "DL_L_NPC_WORK_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(58): Error: NSC1051: Constant "DL_L_NPC_FOCUS_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(59): Error: NSC1051: Constant "DL_L_NPC_FOCUS_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(60): Error: NSC1051: Constant "DL_L_NPC_FOCUS_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(118): Error: NSC1051: Constant "DL_DIR_NONE" must be initialized before it may be referenced
+
+dl_res_inc.nss(119): Error: NSC1051: Constant "DL_DIR_SLEEP" must be initialized before it may be referenced
+
+dl_res_inc.nss(120): Error: NSC1051: Constant "DL_DIR_WORK" must be initialized before it may be referenced
+
+dl_res_inc.nss(121): Error: NSC1051: Constant "DL_DIR_SOCIAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(122): Error: NSC1051: Constant "DL_DIR_MEAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(123): Error: NSC1051: Constant "DL_DIR_PUBLIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(124): Error: NSC1051: Constant "DL_DIR_CHILL" must be initialized before it may be referenced
+
+dl_anchor_cache_inc.nss(151): Error: NSC1020: Undeclared identifier "DL_LogInvalidAreaTagIssue"
+
+dl_anchor_cache_inc.nss(199): Error: NSC1020: Undeclared identifier "DL_LogMissingAnchorIssue"
+
+dl_anchor_cache_inc.nss(220): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_anchor_cache_inc.nss(224): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_social_pool_inc.nss(7): Error: NSC1051: Constant "DL_L_NPC_SOCIAL_RESERVED_WP" must be initialized before it may be referenced
+
+dl_registry_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORKER_SEQ" must be initialized before it may be referenced
+
+dl_registry_inc.nss(51): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_TICK" must be initialized before it may be referenced
+
+dl_registry_inc.nss(52): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_MODE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_RESYNC_PENDING" must be initialized before it may be referenced
+
+dl_resync_inc.nss(2): Error: NSC1051: Constant "DL_L_NPC_RESYNC_REASON" must be initialized before it may be referenced
+
+dl_resync_inc.nss(6): Error: NSC1051: Constant "DL_RESYNC_NONE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(7): Error: NSC1051: Constant "DL_RESYNC_SPAWN" must be initialized before it may be referenced
+
+dl_cr_crime_inc.nss(317): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cr_crime_inc.nss(318): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+Compilation aborted with errors.
+
+Processing aborted.
+
+Total Execution time = 47ms
+
+Running mode 'check' for 'D:\a\COMPILATOR\COMPILATOR\daily_life\dl_cr_restricted_trg.nss' from 'D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin': D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin\NWNScriptCompiler.exe -c -a -i D:\a\COMPILATOR\COMPILATOR\daily_life -i D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\stock_scripts -b D:\a\COMPILATOR\COMPILATOR\artifacts\ncc D:\a\COMPILATOR\COMPILATOR\daily_life\dl_cr_restricted_trg.nss
+NWNScriptCompiler - built Jan 29 2014 19:24:04
+Copyright (C) 2008-2014 Skywing.
+Portions copyright (C) 2002-2003, Edward T. Smith.
+Portions copyright (C) 2003, The Open Knights Consortium.
+Compiling: dl_cr_restricted_trg.NSS
+
+dl_cache_helpers_inc.nss(584): Error: NSC1020: Undeclared identifier "DL_FindObjectByTagInAreaDeterministic"
+
+dl_blocked_inc.nss(51): Error: NSC1020: Undeclared identifier "DL_ApplyDirectiveSkeleton"
+
+dl_lifecycle_inc.nss(6): Error: NSC1051: Constant "DL_NPC_EVENT_BLOCKED" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(9): Error: NSC1051: Constant "DL_UD_PIPELINE_NPC_EVENT" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(37): Error: NSC1020: Undeclared identifier "DL_ClearTransitionExecutionState"
+
+dl_lifecycle_inc.nss(135): Error: NSC1020: Undeclared identifier "DL_UnregisterNpc"
+
+dl_lifecycle_inc.nss(240): Error: NSC1020: Undeclared identifier "DL_RegisterNpc"
+
+dl_lifecycle_inc.nss(241): Error: NSC1020: Undeclared identifier "DL_ReconcileNpcAreaRegistration"
+
+dl_lifecycle_inc.nss(242): Error: NSC1020: Undeclared identifier "DL_RequestResync"
+
+dl_lifecycle_inc.nss(243): Error: NSC1020: Undeclared identifier "DL_ProcessResync"
+
+dl_diag_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_BLOCKED_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(36): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_TARGET" must be initialized before it may be referenced
+
+dl_transition_inc.nss(37): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_STATUS" must be initialized before it may be referenced
+
+dl_transition_inc.nss(38): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(134): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(135): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(164): Error: NSC1020: Undeclared identifier "DL_ParseAutoNavTag"
+
+dl_transition_inc.nss(165): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(600): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(601): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(896): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveGlobalTransitionWaypointByTag"
+
+dl_transition_inc.nss(1025): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterIsTransitionDriverTypeMatch"
+
+dl_transition_inc.nss(1026): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(1164): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1201): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1266): Error: NSC1020: Undeclared identifier "DL_IsTransitionNavigableTarget"
+
+dl_transition_inc.nss(1305): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_legacy_adapter_inc.nss(61): Error: NSC1020: Undeclared identifier "DL_TRANSITION_TAG_SEARCH_CAP"
+
+dl_transition_legacy_adapter_inc.nss(63): Error: NSC1007: Required argument "nDeterministicCap" missing in call to "DL_ResolveObjectByTagWithPolicy"
+
+dl_transition_legacy_adapter_inc.nss(64): Error: NSC1039: Not all paths return a value
+
+dl_cross_area_nav_inc.nss(70): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cross_area_nav_inc.nss(114): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_exec_inc.nss(62): Error: NSC1062: Function "DL_TryAdvanceViaTransitionOrRoute" already has a body defined at dl_transition_contract_inc.nss(24)
+
+dl_directive_pipeline_inc.nss(7): Error: NSC1051: Constant "DL_PIPE_STEP_PREPARE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(9): Error: NSC1051: Constant "DL_PIPE_STEP_FINALIZE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(90): Error: NSC1020: Undeclared identifier "DL_TryHardResetActionQueue"
+
+dl_res_inc.nss(20): Error: NSC1051: Constant "DL_L_NPC_DIRECTIVE" must be initialized before it may be referenced
+
+dl_res_inc.nss(25): Error: NSC1051: Constant "DL_L_NPC_PROFILE_ID" must be initialized before it may be referenced
+
+dl_res_inc.nss(26): Error: NSC1051: Constant "DL_L_NPC_STATE" must be initialized before it may be referenced
+
+dl_res_inc.nss(27): Error: NSC1051: Constant "DL_L_NPC_SLEEP_PHASE" must be initialized before it may be referenced
+
+dl_res_inc.nss(28): Error: NSC1051: Constant "DL_L_NPC_SLEEP_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(29): Error: NSC1051: Constant "DL_L_NPC_SLEEP_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(30): Error: NSC1051: Constant "DL_L_NPC_SLEEP_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(31): Error: NSC1051: Constant "DL_L_NPC_WORK_KIND" must be initialized before it may be referenced
+
+dl_res_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORK_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(33): Error: NSC1051: Constant "DL_L_NPC_WORK_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(34): Error: NSC1051: Constant "DL_L_NPC_WORK_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(58): Error: NSC1051: Constant "DL_L_NPC_FOCUS_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(59): Error: NSC1051: Constant "DL_L_NPC_FOCUS_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(60): Error: NSC1051: Constant "DL_L_NPC_FOCUS_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(118): Error: NSC1051: Constant "DL_DIR_NONE" must be initialized before it may be referenced
+
+dl_res_inc.nss(119): Error: NSC1051: Constant "DL_DIR_SLEEP" must be initialized before it may be referenced
+
+dl_res_inc.nss(120): Error: NSC1051: Constant "DL_DIR_WORK" must be initialized before it may be referenced
+
+dl_res_inc.nss(121): Error: NSC1051: Constant "DL_DIR_SOCIAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(122): Error: NSC1051: Constant "DL_DIR_MEAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(123): Error: NSC1051: Constant "DL_DIR_PUBLIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(124): Error: NSC1051: Constant "DL_DIR_CHILL" must be initialized before it may be referenced
+
+dl_anchor_cache_inc.nss(151): Error: NSC1020: Undeclared identifier "DL_LogInvalidAreaTagIssue"
+
+dl_anchor_cache_inc.nss(199): Error: NSC1020: Undeclared identifier "DL_LogMissingAnchorIssue"
+
+dl_anchor_cache_inc.nss(220): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_anchor_cache_inc.nss(224): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_social_pool_inc.nss(7): Error: NSC1051: Constant "DL_L_NPC_SOCIAL_RESERVED_WP" must be initialized before it may be referenced
+
+dl_registry_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORKER_SEQ" must be initialized before it may be referenced
+
+dl_registry_inc.nss(51): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_TICK" must be initialized before it may be referenced
+
+dl_registry_inc.nss(52): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_MODE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_RESYNC_PENDING" must be initialized before it may be referenced
+
+dl_resync_inc.nss(2): Error: NSC1051: Constant "DL_L_NPC_RESYNC_REASON" must be initialized before it may be referenced
+
+dl_resync_inc.nss(6): Error: NSC1051: Constant "DL_RESYNC_NONE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(7): Error: NSC1051: Constant "DL_RESYNC_SPAWN" must be initialized before it may be referenced
+
+dl_cr_crime_inc.nss(317): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cr_crime_inc.nss(318): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+Compilation aborted with errors.
+
+Processing aborted.
+
+Total Execution time = 46ms
+
+Running mode 'check' for 'D:\a\COMPILATOR\COMPILATOR\daily_life\dl_damaged.nss' from 'D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin': D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin\NWNScriptCompiler.exe -c -a -i D:\a\COMPILATOR\COMPILATOR\daily_life -i D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\stock_scripts -b D:\a\COMPILATOR\COMPILATOR\artifacts\ncc D:\a\COMPILATOR\COMPILATOR\daily_life\dl_damaged.nss
+NWNScriptCompiler - built Jan 29 2014 19:24:04
+Copyright (C) 2008-2014 Skywing.
+Portions copyright (C) 2002-2003, Edward T. Smith.
+Portions copyright (C) 2003, The Open Knights Consortium.
+Compiling: dl_damaged.NSS
+
+dl_cache_helpers_inc.nss(584): Error: NSC1020: Undeclared identifier "DL_FindObjectByTagInAreaDeterministic"
+
+dl_blocked_inc.nss(51): Error: NSC1020: Undeclared identifier "DL_ApplyDirectiveSkeleton"
+
+dl_lifecycle_inc.nss(6): Error: NSC1051: Constant "DL_NPC_EVENT_BLOCKED" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(9): Error: NSC1051: Constant "DL_UD_PIPELINE_NPC_EVENT" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(37): Error: NSC1020: Undeclared identifier "DL_ClearTransitionExecutionState"
+
+dl_lifecycle_inc.nss(135): Error: NSC1020: Undeclared identifier "DL_UnregisterNpc"
+
+dl_lifecycle_inc.nss(240): Error: NSC1020: Undeclared identifier "DL_RegisterNpc"
+
+dl_lifecycle_inc.nss(241): Error: NSC1020: Undeclared identifier "DL_ReconcileNpcAreaRegistration"
+
+dl_lifecycle_inc.nss(242): Error: NSC1020: Undeclared identifier "DL_RequestResync"
+
+dl_lifecycle_inc.nss(243): Error: NSC1020: Undeclared identifier "DL_ProcessResync"
+
+dl_diag_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_BLOCKED_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(36): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_TARGET" must be initialized before it may be referenced
+
+dl_transition_inc.nss(37): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_STATUS" must be initialized before it may be referenced
+
+dl_transition_inc.nss(38): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(134): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(135): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(164): Error: NSC1020: Undeclared identifier "DL_ParseAutoNavTag"
+
+dl_transition_inc.nss(165): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(600): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(601): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(896): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveGlobalTransitionWaypointByTag"
+
+dl_transition_inc.nss(1025): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterIsTransitionDriverTypeMatch"
+
+dl_transition_inc.nss(1026): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(1164): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1201): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1266): Error: NSC1020: Undeclared identifier "DL_IsTransitionNavigableTarget"
+
+dl_transition_inc.nss(1305): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_legacy_adapter_inc.nss(61): Error: NSC1020: Undeclared identifier "DL_TRANSITION_TAG_SEARCH_CAP"
+
+dl_transition_legacy_adapter_inc.nss(63): Error: NSC1007: Required argument "nDeterministicCap" missing in call to "DL_ResolveObjectByTagWithPolicy"
+
+dl_transition_legacy_adapter_inc.nss(64): Error: NSC1039: Not all paths return a value
+
+dl_cross_area_nav_inc.nss(70): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cross_area_nav_inc.nss(114): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_exec_inc.nss(62): Error: NSC1062: Function "DL_TryAdvanceViaTransitionOrRoute" already has a body defined at dl_transition_contract_inc.nss(24)
+
+dl_directive_pipeline_inc.nss(7): Error: NSC1051: Constant "DL_PIPE_STEP_PREPARE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(9): Error: NSC1051: Constant "DL_PIPE_STEP_FINALIZE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(90): Error: NSC1020: Undeclared identifier "DL_TryHardResetActionQueue"
+
+dl_res_inc.nss(20): Error: NSC1051: Constant "DL_L_NPC_DIRECTIVE" must be initialized before it may be referenced
+
+dl_res_inc.nss(25): Error: NSC1051: Constant "DL_L_NPC_PROFILE_ID" must be initialized before it may be referenced
+
+dl_res_inc.nss(26): Error: NSC1051: Constant "DL_L_NPC_STATE" must be initialized before it may be referenced
+
+dl_res_inc.nss(27): Error: NSC1051: Constant "DL_L_NPC_SLEEP_PHASE" must be initialized before it may be referenced
+
+dl_res_inc.nss(28): Error: NSC1051: Constant "DL_L_NPC_SLEEP_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(29): Error: NSC1051: Constant "DL_L_NPC_SLEEP_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(30): Error: NSC1051: Constant "DL_L_NPC_SLEEP_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(31): Error: NSC1051: Constant "DL_L_NPC_WORK_KIND" must be initialized before it may be referenced
+
+dl_res_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORK_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(33): Error: NSC1051: Constant "DL_L_NPC_WORK_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(34): Error: NSC1051: Constant "DL_L_NPC_WORK_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(58): Error: NSC1051: Constant "DL_L_NPC_FOCUS_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(59): Error: NSC1051: Constant "DL_L_NPC_FOCUS_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(60): Error: NSC1051: Constant "DL_L_NPC_FOCUS_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(118): Error: NSC1051: Constant "DL_DIR_NONE" must be initialized before it may be referenced
+
+dl_res_inc.nss(119): Error: NSC1051: Constant "DL_DIR_SLEEP" must be initialized before it may be referenced
+
+dl_res_inc.nss(120): Error: NSC1051: Constant "DL_DIR_WORK" must be initialized before it may be referenced
+
+dl_res_inc.nss(121): Error: NSC1051: Constant "DL_DIR_SOCIAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(122): Error: NSC1051: Constant "DL_DIR_MEAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(123): Error: NSC1051: Constant "DL_DIR_PUBLIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(124): Error: NSC1051: Constant "DL_DIR_CHILL" must be initialized before it may be referenced
+
+dl_anchor_cache_inc.nss(151): Error: NSC1020: Undeclared identifier "DL_LogInvalidAreaTagIssue"
+
+dl_anchor_cache_inc.nss(199): Error: NSC1020: Undeclared identifier "DL_LogMissingAnchorIssue"
+
+dl_anchor_cache_inc.nss(220): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_anchor_cache_inc.nss(224): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_social_pool_inc.nss(7): Error: NSC1051: Constant "DL_L_NPC_SOCIAL_RESERVED_WP" must be initialized before it may be referenced
+
+dl_registry_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORKER_SEQ" must be initialized before it may be referenced
+
+dl_registry_inc.nss(51): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_TICK" must be initialized before it may be referenced
+
+dl_registry_inc.nss(52): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_MODE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_RESYNC_PENDING" must be initialized before it may be referenced
+
+dl_resync_inc.nss(2): Error: NSC1051: Constant "DL_L_NPC_RESYNC_REASON" must be initialized before it may be referenced
+
+dl_resync_inc.nss(6): Error: NSC1051: Constant "DL_RESYNC_NONE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(7): Error: NSC1051: Constant "DL_RESYNC_SPAWN" must be initialized before it may be referenced
+
+dl_cr_crime_inc.nss(317): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cr_crime_inc.nss(318): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+Compilation aborted with errors.
+
+Processing aborted.
+
+Total Execution time = 62ms
+
+Running mode 'check' for 'D:\a\COMPILATOR\COMPILATOR\daily_life\dl_dbg_time.nss' from 'D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin': D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin\NWNScriptCompiler.exe -c -a -i D:\a\COMPILATOR\COMPILATOR\daily_life -i D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\stock_scripts -b D:\a\COMPILATOR\COMPILATOR\artifacts\ncc D:\a\COMPILATOR\COMPILATOR\daily_life\dl_dbg_time.nss
+NWNScriptCompiler - built Jan 29 2014 19:24:04
+Copyright (C) 2008-2014 Skywing.
+Portions copyright (C) 2002-2003, Edward T. Smith.
+Portions copyright (C) 2003, The Open Knights Consortium.
+Compiling: dl_dbg_time.NSS
+
+dl_cache_helpers_inc.nss(584): Error: NSC1020: Undeclared identifier "DL_FindObjectByTagInAreaDeterministic"
+
+dl_blocked_inc.nss(51): Error: NSC1020: Undeclared identifier "DL_ApplyDirectiveSkeleton"
+
+dl_lifecycle_inc.nss(6): Error: NSC1051: Constant "DL_NPC_EVENT_BLOCKED" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(9): Error: NSC1051: Constant "DL_UD_PIPELINE_NPC_EVENT" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(37): Error: NSC1020: Undeclared identifier "DL_ClearTransitionExecutionState"
+
+dl_lifecycle_inc.nss(119): Error: NSC1020: Undeclared identifier "DL_L_NPC_RESYNC_PENDING"
+
+dl_lifecycle_inc.nss(119): Error: NSC1007: Required argument "sVarName" missing in call to "SetLocalInt"
+
+dl_lifecycle_inc.nss(120): Error: NSC1020: Undeclared identifier "DL_L_NPC_RESYNC_REASON"
+
+dl_lifecycle_inc.nss(120): Error: NSC1020: Undeclared identifier "DL_RESYNC_NONE"
+
+dl_lifecycle_inc.nss(120): Error: NSC1007: Required argument "sVarName" missing in call to "SetLocalInt"
+
+dl_lifecycle_inc.nss(135): Error: NSC1020: Undeclared identifier "DL_UnregisterNpc"
+
+dl_lifecycle_inc.nss(139): Error: NSC1020: Undeclared identifier "DL_L_NPC_RESYNC_PENDING"
+
+dl_lifecycle_inc.nss(139): Error: NSC1007: Required argument "sVarName" missing in call to "SetLocalInt"
+
+dl_lifecycle_inc.nss(140): Error: NSC1020: Undeclared identifier "DL_L_NPC_RESYNC_REASON"
+
+dl_lifecycle_inc.nss(140): Error: NSC1020: Undeclared identifier "DL_RESYNC_NONE"
+
+dl_lifecycle_inc.nss(140): Error: NSC1007: Required argument "sVarName" missing in call to "SetLocalInt"
+
+dl_lifecycle_inc.nss(141): Error: NSC1020: Undeclared identifier "DL_L_NPC_WORKER_SEQ"
+
+dl_lifecycle_inc.nss(141): Error: NSC1007: Required argument "sVarName" missing in call to "DeleteLocalInt"
+
+dl_lifecycle_inc.nss(240): Error: NSC1020: Undeclared identifier "DL_RegisterNpc"
+
+dl_lifecycle_inc.nss(241): Error: NSC1020: Undeclared identifier "DL_ReconcileNpcAreaRegistration"
+
+dl_lifecycle_inc.nss(242): Error: NSC1020: Undeclared identifier "DL_RESYNC_SPAWN"
+
+dl_lifecycle_inc.nss(242): Error: NSC1020: Undeclared identifier "DL_RequestResync"
+
+dl_lifecycle_inc.nss(243): Error: NSC1020: Undeclared identifier "DL_ProcessResync"
+
+dl_diag_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_BLOCKED_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(36): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_TARGET" must be initialized before it may be referenced
+
+dl_transition_inc.nss(37): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_STATUS" must be initialized before it may be referenced
+
+dl_transition_inc.nss(38): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(134): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(135): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(164): Error: NSC1020: Undeclared identifier "DL_ParseAutoNavTag"
+
+dl_transition_inc.nss(165): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(600): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(601): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(896): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveGlobalTransitionWaypointByTag"
+
+dl_transition_inc.nss(1025): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterIsTransitionDriverTypeMatch"
+
+dl_transition_inc.nss(1026): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(1164): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1201): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1266): Error: NSC1020: Undeclared identifier "DL_IsTransitionNavigableTarget"
+
+dl_transition_inc.nss(1305): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_legacy_adapter_inc.nss(61): Error: NSC1020: Undeclared identifier "DL_TRANSITION_TAG_SEARCH_CAP"
+
+dl_transition_legacy_adapter_inc.nss(63): Error: NSC1007: Required argument "nDeterministicCap" missing in call to "DL_ResolveObjectByTagWithPolicy"
+
+dl_transition_legacy_adapter_inc.nss(64): Error: NSC1039: Not all paths return a value
+
+dl_cross_area_nav_inc.nss(70): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cross_area_nav_inc.nss(114): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_exec_inc.nss(62): Error: NSC1062: Function "DL_TryAdvanceViaTransitionOrRoute" already has a body defined at dl_transition_contract_inc.nss(24)
+
+dl_directive_pipeline_inc.nss(7): Error: NSC1051: Constant "DL_PIPE_STEP_PREPARE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(9): Error: NSC1051: Constant "DL_PIPE_STEP_FINALIZE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(90): Error: NSC1020: Undeclared identifier "DL_TryHardResetActionQueue"
+
+dl_res_inc.nss(20): Error: NSC1051: Constant "DL_L_NPC_DIRECTIVE" must be initialized before it may be referenced
+
+dl_res_inc.nss(25): Error: NSC1051: Constant "DL_L_NPC_PROFILE_ID" must be initialized before it may be referenced
+
+dl_res_inc.nss(26): Error: NSC1051: Constant "DL_L_NPC_STATE" must be initialized before it may be referenced
+
+dl_res_inc.nss(27): Error: NSC1051: Constant "DL_L_NPC_SLEEP_PHASE" must be initialized before it may be referenced
+
+dl_res_inc.nss(28): Error: NSC1051: Constant "DL_L_NPC_SLEEP_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(29): Error: NSC1051: Constant "DL_L_NPC_SLEEP_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(30): Error: NSC1051: Constant "DL_L_NPC_SLEEP_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(31): Error: NSC1051: Constant "DL_L_NPC_WORK_KIND" must be initialized before it may be referenced
+
+dl_res_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORK_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(33): Error: NSC1051: Constant "DL_L_NPC_WORK_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(34): Error: NSC1051: Constant "DL_L_NPC_WORK_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(58): Error: NSC1051: Constant "DL_L_NPC_FOCUS_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(59): Error: NSC1051: Constant "DL_L_NPC_FOCUS_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(60): Error: NSC1051: Constant "DL_L_NPC_FOCUS_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(118): Error: NSC1051: Constant "DL_DIR_NONE" must be initialized before it may be referenced
+
+dl_res_inc.nss(119): Error: NSC1051: Constant "DL_DIR_SLEEP" must be initialized before it may be referenced
+
+dl_res_inc.nss(120): Error: NSC1051: Constant "DL_DIR_WORK" must be initialized before it may be referenced
+
+dl_res_inc.nss(121): Error: NSC1051: Constant "DL_DIR_SOCIAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(122): Error: NSC1051: Constant "DL_DIR_MEAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(123): Error: NSC1051: Constant "DL_DIR_PUBLIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(124): Error: NSC1051: Constant "DL_DIR_CHILL" must be initialized before it may be referenced
+
+dl_anchor_cache_inc.nss(151): Error: NSC1020: Undeclared identifier "DL_LogInvalidAreaTagIssue"
+
+dl_anchor_cache_inc.nss(199): Error: NSC1020: Undeclared identifier "DL_LogMissingAnchorIssue"
+
+dl_anchor_cache_inc.nss(220): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_anchor_cache_inc.nss(224): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_social_pool_inc.nss(7): Error: NSC1051: Constant "DL_L_NPC_SOCIAL_RESERVED_WP" must be initialized before it may be referenced
+
+dl_social_pool_inc.nss(207): Error: NSC1020: Undeclared identifier "DL_L_AREA_PASS_SNAPSHOT_TICK"
+
+dl_social_pool_inc.nss(207): Error: NSC1007: Required argument "sVarName" missing in call to "GetLocalInt"
+
+dl_social_pool_inc.nss(208): Error: NSC1020: Undeclared identifier "DL_L_AREA_PASS_SNAPSHOT_MODE"
+
+dl_social_pool_inc.nss(208): Error: NSC1007: Required argument "sVarName" missing in call to "GetLocalInt"
+
+Compilation aborted with errors.
+
+Processing aborted.
+
+Total Execution time = 47ms
+
+Running mode 'check' for 'D:\a\COMPILATOR\COMPILATOR\daily_life\dl_death.nss' from 'D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin': D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin\NWNScriptCompiler.exe -c -a -i D:\a\COMPILATOR\COMPILATOR\daily_life -i D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\stock_scripts -b D:\a\COMPILATOR\COMPILATOR\artifacts\ncc D:\a\COMPILATOR\COMPILATOR\daily_life\dl_death.nss
+NWNScriptCompiler - built Jan 29 2014 19:24:04
+Copyright (C) 2008-2014 Skywing.
+Portions copyright (C) 2002-2003, Edward T. Smith.
+Portions copyright (C) 2003, The Open Knights Consortium.
+Compiling: dl_death.NSS
+
+dl_cache_helpers_inc.nss(584): Error: NSC1020: Undeclared identifier "DL_FindObjectByTagInAreaDeterministic"
+
+dl_blocked_inc.nss(51): Error: NSC1020: Undeclared identifier "DL_ApplyDirectiveSkeleton"
+
+dl_lifecycle_inc.nss(6): Error: NSC1051: Constant "DL_NPC_EVENT_BLOCKED" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(9): Error: NSC1051: Constant "DL_UD_PIPELINE_NPC_EVENT" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(37): Error: NSC1020: Undeclared identifier "DL_ClearTransitionExecutionState"
+
+dl_lifecycle_inc.nss(135): Error: NSC1020: Undeclared identifier "DL_UnregisterNpc"
+
+dl_lifecycle_inc.nss(240): Error: NSC1020: Undeclared identifier "DL_RegisterNpc"
+
+dl_lifecycle_inc.nss(241): Error: NSC1020: Undeclared identifier "DL_ReconcileNpcAreaRegistration"
+
+dl_lifecycle_inc.nss(242): Error: NSC1020: Undeclared identifier "DL_RequestResync"
+
+dl_lifecycle_inc.nss(243): Error: NSC1020: Undeclared identifier "DL_ProcessResync"
+
+dl_diag_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_BLOCKED_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(36): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_TARGET" must be initialized before it may be referenced
+
+dl_transition_inc.nss(37): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_STATUS" must be initialized before it may be referenced
+
+dl_transition_inc.nss(38): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(134): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(135): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(164): Error: NSC1020: Undeclared identifier "DL_ParseAutoNavTag"
+
+dl_transition_inc.nss(165): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(600): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(601): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(896): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveGlobalTransitionWaypointByTag"
+
+dl_transition_inc.nss(1025): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterIsTransitionDriverTypeMatch"
+
+dl_transition_inc.nss(1026): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(1164): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1201): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1266): Error: NSC1020: Undeclared identifier "DL_IsTransitionNavigableTarget"
+
+dl_transition_inc.nss(1305): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_legacy_adapter_inc.nss(61): Error: NSC1020: Undeclared identifier "DL_TRANSITION_TAG_SEARCH_CAP"
+
+dl_transition_legacy_adapter_inc.nss(63): Error: NSC1007: Required argument "nDeterministicCap" missing in call to "DL_ResolveObjectByTagWithPolicy"
+
+dl_transition_legacy_adapter_inc.nss(64): Error: NSC1039: Not all paths return a value
+
+dl_cross_area_nav_inc.nss(70): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cross_area_nav_inc.nss(114): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_exec_inc.nss(62): Error: NSC1062: Function "DL_TryAdvanceViaTransitionOrRoute" already has a body defined at dl_transition_contract_inc.nss(24)
+
+dl_directive_pipeline_inc.nss(7): Error: NSC1051: Constant "DL_PIPE_STEP_PREPARE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(9): Error: NSC1051: Constant "DL_PIPE_STEP_FINALIZE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(90): Error: NSC1020: Undeclared identifier "DL_TryHardResetActionQueue"
+
+dl_res_inc.nss(20): Error: NSC1051: Constant "DL_L_NPC_DIRECTIVE" must be initialized before it may be referenced
+
+dl_res_inc.nss(25): Error: NSC1051: Constant "DL_L_NPC_PROFILE_ID" must be initialized before it may be referenced
+
+dl_res_inc.nss(26): Error: NSC1051: Constant "DL_L_NPC_STATE" must be initialized before it may be referenced
+
+dl_res_inc.nss(27): Error: NSC1051: Constant "DL_L_NPC_SLEEP_PHASE" must be initialized before it may be referenced
+
+dl_res_inc.nss(28): Error: NSC1051: Constant "DL_L_NPC_SLEEP_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(29): Error: NSC1051: Constant "DL_L_NPC_SLEEP_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(30): Error: NSC1051: Constant "DL_L_NPC_SLEEP_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(31): Error: NSC1051: Constant "DL_L_NPC_WORK_KIND" must be initialized before it may be referenced
+
+dl_res_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORK_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(33): Error: NSC1051: Constant "DL_L_NPC_WORK_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(34): Error: NSC1051: Constant "DL_L_NPC_WORK_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(58): Error: NSC1051: Constant "DL_L_NPC_FOCUS_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(59): Error: NSC1051: Constant "DL_L_NPC_FOCUS_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(60): Error: NSC1051: Constant "DL_L_NPC_FOCUS_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(118): Error: NSC1051: Constant "DL_DIR_NONE" must be initialized before it may be referenced
+
+dl_res_inc.nss(119): Error: NSC1051: Constant "DL_DIR_SLEEP" must be initialized before it may be referenced
+
+dl_res_inc.nss(120): Error: NSC1051: Constant "DL_DIR_WORK" must be initialized before it may be referenced
+
+dl_res_inc.nss(121): Error: NSC1051: Constant "DL_DIR_SOCIAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(122): Error: NSC1051: Constant "DL_DIR_MEAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(123): Error: NSC1051: Constant "DL_DIR_PUBLIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(124): Error: NSC1051: Constant "DL_DIR_CHILL" must be initialized before it may be referenced
+
+dl_anchor_cache_inc.nss(151): Error: NSC1020: Undeclared identifier "DL_LogInvalidAreaTagIssue"
+
+dl_anchor_cache_inc.nss(199): Error: NSC1020: Undeclared identifier "DL_LogMissingAnchorIssue"
+
+dl_anchor_cache_inc.nss(220): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_anchor_cache_inc.nss(224): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_social_pool_inc.nss(7): Error: NSC1051: Constant "DL_L_NPC_SOCIAL_RESERVED_WP" must be initialized before it may be referenced
+
+dl_registry_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORKER_SEQ" must be initialized before it may be referenced
+
+dl_registry_inc.nss(51): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_TICK" must be initialized before it may be referenced
+
+dl_registry_inc.nss(52): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_MODE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_RESYNC_PENDING" must be initialized before it may be referenced
+
+dl_resync_inc.nss(2): Error: NSC1051: Constant "DL_L_NPC_RESYNC_REASON" must be initialized before it may be referenced
+
+dl_resync_inc.nss(6): Error: NSC1051: Constant "DL_RESYNC_NONE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(7): Error: NSC1051: Constant "DL_RESYNC_SPAWN" must be initialized before it may be referenced
+
+dl_cr_crime_inc.nss(317): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cr_crime_inc.nss(318): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+Compilation aborted with errors.
+
+Processing aborted.
+
+Total Execution time = 46ms
+
+Running mode 'check' for 'D:\a\COMPILATOR\COMPILATOR\daily_life\dl_disturbed.nss' from 'D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin': D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin\NWNScriptCompiler.exe -c -a -i D:\a\COMPILATOR\COMPILATOR\daily_life -i D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\stock_scripts -b D:\a\COMPILATOR\COMPILATOR\artifacts\ncc D:\a\COMPILATOR\COMPILATOR\daily_life\dl_disturbed.nss
+NWNScriptCompiler - built Jan 29 2014 19:24:04
+Copyright (C) 2008-2014 Skywing.
+Portions copyright (C) 2002-2003, Edward T. Smith.
+Portions copyright (C) 2003, The Open Knights Consortium.
+Compiling: dl_disturbed.NSS
+
+dl_cache_helpers_inc.nss(584): Error: NSC1020: Undeclared identifier "DL_FindObjectByTagInAreaDeterministic"
+
+dl_blocked_inc.nss(51): Error: NSC1020: Undeclared identifier "DL_ApplyDirectiveSkeleton"
+
+dl_lifecycle_inc.nss(6): Error: NSC1051: Constant "DL_NPC_EVENT_BLOCKED" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(9): Error: NSC1051: Constant "DL_UD_PIPELINE_NPC_EVENT" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(37): Error: NSC1020: Undeclared identifier "DL_ClearTransitionExecutionState"
+
+dl_lifecycle_inc.nss(135): Error: NSC1020: Undeclared identifier "DL_UnregisterNpc"
+
+dl_lifecycle_inc.nss(240): Error: NSC1020: Undeclared identifier "DL_RegisterNpc"
+
+dl_lifecycle_inc.nss(241): Error: NSC1020: Undeclared identifier "DL_ReconcileNpcAreaRegistration"
+
+dl_lifecycle_inc.nss(242): Error: NSC1020: Undeclared identifier "DL_RequestResync"
+
+dl_lifecycle_inc.nss(243): Error: NSC1020: Undeclared identifier "DL_ProcessResync"
+
+dl_diag_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_BLOCKED_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(36): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_TARGET" must be initialized before it may be referenced
+
+dl_transition_inc.nss(37): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_STATUS" must be initialized before it may be referenced
+
+dl_transition_inc.nss(38): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(134): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(135): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(164): Error: NSC1020: Undeclared identifier "DL_ParseAutoNavTag"
+
+dl_transition_inc.nss(165): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(600): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(601): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(896): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveGlobalTransitionWaypointByTag"
+
+dl_transition_inc.nss(1025): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterIsTransitionDriverTypeMatch"
+
+dl_transition_inc.nss(1026): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(1164): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1201): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1266): Error: NSC1020: Undeclared identifier "DL_IsTransitionNavigableTarget"
+
+dl_transition_inc.nss(1305): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_legacy_adapter_inc.nss(61): Error: NSC1020: Undeclared identifier "DL_TRANSITION_TAG_SEARCH_CAP"
+
+dl_transition_legacy_adapter_inc.nss(63): Error: NSC1007: Required argument "nDeterministicCap" missing in call to "DL_ResolveObjectByTagWithPolicy"
+
+dl_transition_legacy_adapter_inc.nss(64): Error: NSC1039: Not all paths return a value
+
+dl_cross_area_nav_inc.nss(70): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cross_area_nav_inc.nss(114): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_exec_inc.nss(62): Error: NSC1062: Function "DL_TryAdvanceViaTransitionOrRoute" already has a body defined at dl_transition_contract_inc.nss(24)
+
+dl_directive_pipeline_inc.nss(7): Error: NSC1051: Constant "DL_PIPE_STEP_PREPARE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(9): Error: NSC1051: Constant "DL_PIPE_STEP_FINALIZE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(90): Error: NSC1020: Undeclared identifier "DL_TryHardResetActionQueue"
+
+dl_res_inc.nss(20): Error: NSC1051: Constant "DL_L_NPC_DIRECTIVE" must be initialized before it may be referenced
+
+dl_res_inc.nss(25): Error: NSC1051: Constant "DL_L_NPC_PROFILE_ID" must be initialized before it may be referenced
+
+dl_res_inc.nss(26): Error: NSC1051: Constant "DL_L_NPC_STATE" must be initialized before it may be referenced
+
+dl_res_inc.nss(27): Error: NSC1051: Constant "DL_L_NPC_SLEEP_PHASE" must be initialized before it may be referenced
+
+dl_res_inc.nss(28): Error: NSC1051: Constant "DL_L_NPC_SLEEP_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(29): Error: NSC1051: Constant "DL_L_NPC_SLEEP_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(30): Error: NSC1051: Constant "DL_L_NPC_SLEEP_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(31): Error: NSC1051: Constant "DL_L_NPC_WORK_KIND" must be initialized before it may be referenced
+
+dl_res_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORK_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(33): Error: NSC1051: Constant "DL_L_NPC_WORK_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(34): Error: NSC1051: Constant "DL_L_NPC_WORK_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(58): Error: NSC1051: Constant "DL_L_NPC_FOCUS_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(59): Error: NSC1051: Constant "DL_L_NPC_FOCUS_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(60): Error: NSC1051: Constant "DL_L_NPC_FOCUS_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(118): Error: NSC1051: Constant "DL_DIR_NONE" must be initialized before it may be referenced
+
+dl_res_inc.nss(119): Error: NSC1051: Constant "DL_DIR_SLEEP" must be initialized before it may be referenced
+
+dl_res_inc.nss(120): Error: NSC1051: Constant "DL_DIR_WORK" must be initialized before it may be referenced
+
+dl_res_inc.nss(121): Error: NSC1051: Constant "DL_DIR_SOCIAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(122): Error: NSC1051: Constant "DL_DIR_MEAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(123): Error: NSC1051: Constant "DL_DIR_PUBLIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(124): Error: NSC1051: Constant "DL_DIR_CHILL" must be initialized before it may be referenced
+
+dl_anchor_cache_inc.nss(151): Error: NSC1020: Undeclared identifier "DL_LogInvalidAreaTagIssue"
+
+dl_anchor_cache_inc.nss(199): Error: NSC1020: Undeclared identifier "DL_LogMissingAnchorIssue"
+
+dl_anchor_cache_inc.nss(220): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_anchor_cache_inc.nss(224): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_social_pool_inc.nss(7): Error: NSC1051: Constant "DL_L_NPC_SOCIAL_RESERVED_WP" must be initialized before it may be referenced
+
+dl_registry_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORKER_SEQ" must be initialized before it may be referenced
+
+dl_registry_inc.nss(51): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_TICK" must be initialized before it may be referenced
+
+dl_registry_inc.nss(52): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_MODE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_RESYNC_PENDING" must be initialized before it may be referenced
+
+dl_resync_inc.nss(2): Error: NSC1051: Constant "DL_L_NPC_RESYNC_REASON" must be initialized before it may be referenced
+
+dl_resync_inc.nss(6): Error: NSC1051: Constant "DL_RESYNC_NONE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(7): Error: NSC1051: Constant "DL_RESYNC_SPAWN" must be initialized before it may be referenced
+
+dl_cr_crime_inc.nss(317): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cr_crime_inc.nss(318): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+Compilation aborted with errors.
+
+Processing aborted.
+
+Total Execution time = 47ms
+
+Running mode 'check' for 'D:\a\COMPILATOR\COMPILATOR\daily_life\dl_lg_resolve_detain.nss' from 'D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin': D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin\NWNScriptCompiler.exe -c -a -i D:\a\COMPILATOR\COMPILATOR\daily_life -i D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\stock_scripts -b D:\a\COMPILATOR\COMPILATOR\artifacts\ncc D:\a\COMPILATOR\COMPILATOR\daily_life\dl_lg_resolve_detain.nss
+NWNScriptCompiler - built Jan 29 2014 19:24:04
+Copyright (C) 2008-2014 Skywing.
+Portions copyright (C) 2002-2003, Edward T. Smith.
+Portions copyright (C) 2003, The Open Knights Consortium.
+Compiling: dl_lg_resolve_detain.NSS
+
+dl_cache_helpers_inc.nss(584): Error: NSC1020: Undeclared identifier "DL_FindObjectByTagInAreaDeterministic"
+
+dl_blocked_inc.nss(51): Error: NSC1020: Undeclared identifier "DL_ApplyDirectiveSkeleton"
+
+dl_lifecycle_inc.nss(6): Error: NSC1051: Constant "DL_NPC_EVENT_BLOCKED" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(9): Error: NSC1051: Constant "DL_UD_PIPELINE_NPC_EVENT" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(37): Error: NSC1020: Undeclared identifier "DL_ClearTransitionExecutionState"
+
+dl_lifecycle_inc.nss(135): Error: NSC1020: Undeclared identifier "DL_UnregisterNpc"
+
+dl_lifecycle_inc.nss(240): Error: NSC1020: Undeclared identifier "DL_RegisterNpc"
+
+dl_lifecycle_inc.nss(241): Error: NSC1020: Undeclared identifier "DL_ReconcileNpcAreaRegistration"
+
+dl_lifecycle_inc.nss(242): Error: NSC1020: Undeclared identifier "DL_RequestResync"
+
+dl_lifecycle_inc.nss(243): Error: NSC1020: Undeclared identifier "DL_ProcessResync"
+
+dl_diag_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_BLOCKED_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(36): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_TARGET" must be initialized before it may be referenced
+
+dl_transition_inc.nss(37): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_STATUS" must be initialized before it may be referenced
+
+dl_transition_inc.nss(38): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(134): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(135): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(164): Error: NSC1020: Undeclared identifier "DL_ParseAutoNavTag"
+
+dl_transition_inc.nss(165): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(600): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(601): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(896): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveGlobalTransitionWaypointByTag"
+
+dl_transition_inc.nss(1025): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterIsTransitionDriverTypeMatch"
+
+dl_transition_inc.nss(1026): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(1164): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1201): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1266): Error: NSC1020: Undeclared identifier "DL_IsTransitionNavigableTarget"
+
+dl_transition_inc.nss(1305): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_legacy_adapter_inc.nss(61): Error: NSC1020: Undeclared identifier "DL_TRANSITION_TAG_SEARCH_CAP"
+
+dl_transition_legacy_adapter_inc.nss(63): Error: NSC1007: Required argument "nDeterministicCap" missing in call to "DL_ResolveObjectByTagWithPolicy"
+
+dl_transition_legacy_adapter_inc.nss(64): Error: NSC1039: Not all paths return a value
+
+dl_cross_area_nav_inc.nss(70): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cross_area_nav_inc.nss(114): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_exec_inc.nss(62): Error: NSC1062: Function "DL_TryAdvanceViaTransitionOrRoute" already has a body defined at dl_transition_contract_inc.nss(24)
+
+dl_directive_pipeline_inc.nss(7): Error: NSC1051: Constant "DL_PIPE_STEP_PREPARE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(9): Error: NSC1051: Constant "DL_PIPE_STEP_FINALIZE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(90): Error: NSC1020: Undeclared identifier "DL_TryHardResetActionQueue"
+
+dl_res_inc.nss(20): Error: NSC1051: Constant "DL_L_NPC_DIRECTIVE" must be initialized before it may be referenced
+
+dl_res_inc.nss(25): Error: NSC1051: Constant "DL_L_NPC_PROFILE_ID" must be initialized before it may be referenced
+
+dl_res_inc.nss(26): Error: NSC1051: Constant "DL_L_NPC_STATE" must be initialized before it may be referenced
+
+dl_res_inc.nss(27): Error: NSC1051: Constant "DL_L_NPC_SLEEP_PHASE" must be initialized before it may be referenced
+
+dl_res_inc.nss(28): Error: NSC1051: Constant "DL_L_NPC_SLEEP_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(29): Error: NSC1051: Constant "DL_L_NPC_SLEEP_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(30): Error: NSC1051: Constant "DL_L_NPC_SLEEP_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(31): Error: NSC1051: Constant "DL_L_NPC_WORK_KIND" must be initialized before it may be referenced
+
+dl_res_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORK_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(33): Error: NSC1051: Constant "DL_L_NPC_WORK_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(34): Error: NSC1051: Constant "DL_L_NPC_WORK_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(58): Error: NSC1051: Constant "DL_L_NPC_FOCUS_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(59): Error: NSC1051: Constant "DL_L_NPC_FOCUS_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(60): Error: NSC1051: Constant "DL_L_NPC_FOCUS_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(118): Error: NSC1051: Constant "DL_DIR_NONE" must be initialized before it may be referenced
+
+dl_res_inc.nss(119): Error: NSC1051: Constant "DL_DIR_SLEEP" must be initialized before it may be referenced
+
+dl_res_inc.nss(120): Error: NSC1051: Constant "DL_DIR_WORK" must be initialized before it may be referenced
+
+dl_res_inc.nss(121): Error: NSC1051: Constant "DL_DIR_SOCIAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(122): Error: NSC1051: Constant "DL_DIR_MEAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(123): Error: NSC1051: Constant "DL_DIR_PUBLIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(124): Error: NSC1051: Constant "DL_DIR_CHILL" must be initialized before it may be referenced
+
+dl_anchor_cache_inc.nss(151): Error: NSC1020: Undeclared identifier "DL_LogInvalidAreaTagIssue"
+
+dl_anchor_cache_inc.nss(199): Error: NSC1020: Undeclared identifier "DL_LogMissingAnchorIssue"
+
+dl_anchor_cache_inc.nss(220): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_anchor_cache_inc.nss(224): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_social_pool_inc.nss(7): Error: NSC1051: Constant "DL_L_NPC_SOCIAL_RESERVED_WP" must be initialized before it may be referenced
+
+dl_registry_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORKER_SEQ" must be initialized before it may be referenced
+
+dl_registry_inc.nss(51): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_TICK" must be initialized before it may be referenced
+
+dl_registry_inc.nss(52): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_MODE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_RESYNC_PENDING" must be initialized before it may be referenced
+
+dl_resync_inc.nss(2): Error: NSC1051: Constant "DL_L_NPC_RESYNC_REASON" must be initialized before it may be referenced
+
+dl_resync_inc.nss(6): Error: NSC1051: Constant "DL_RESYNC_NONE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(7): Error: NSC1051: Constant "DL_RESYNC_SPAWN" must be initialized before it may be referenced
+
+dl_cr_crime_inc.nss(317): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cr_crime_inc.nss(318): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+Compilation aborted with errors.
+
+Processing aborted.
+
+Total Execution time = 62ms
+
+Running mode 'check' for 'D:\a\COMPILATOR\COMPILATOR\daily_life\dl_lg_resolve_fine.nss' from 'D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin': D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin\NWNScriptCompiler.exe -c -a -i D:\a\COMPILATOR\COMPILATOR\daily_life -i D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\stock_scripts -b D:\a\COMPILATOR\COMPILATOR\artifacts\ncc D:\a\COMPILATOR\COMPILATOR\daily_life\dl_lg_resolve_fine.nss
+NWNScriptCompiler - built Jan 29 2014 19:24:04
+Copyright (C) 2008-2014 Skywing.
+Portions copyright (C) 2002-2003, Edward T. Smith.
+Portions copyright (C) 2003, The Open Knights Consortium.
+Compiling: dl_lg_resolve_fine.NSS
+
+dl_cache_helpers_inc.nss(584): Error: NSC1020: Undeclared identifier "DL_FindObjectByTagInAreaDeterministic"
+
+dl_blocked_inc.nss(51): Error: NSC1020: Undeclared identifier "DL_ApplyDirectiveSkeleton"
+
+dl_lifecycle_inc.nss(6): Error: NSC1051: Constant "DL_NPC_EVENT_BLOCKED" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(9): Error: NSC1051: Constant "DL_UD_PIPELINE_NPC_EVENT" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(37): Error: NSC1020: Undeclared identifier "DL_ClearTransitionExecutionState"
+
+dl_lifecycle_inc.nss(135): Error: NSC1020: Undeclared identifier "DL_UnregisterNpc"
+
+dl_lifecycle_inc.nss(240): Error: NSC1020: Undeclared identifier "DL_RegisterNpc"
+
+dl_lifecycle_inc.nss(241): Error: NSC1020: Undeclared identifier "DL_ReconcileNpcAreaRegistration"
+
+dl_lifecycle_inc.nss(242): Error: NSC1020: Undeclared identifier "DL_RequestResync"
+
+dl_lifecycle_inc.nss(243): Error: NSC1020: Undeclared identifier "DL_ProcessResync"
+
+dl_diag_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_BLOCKED_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(36): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_TARGET" must be initialized before it may be referenced
+
+dl_transition_inc.nss(37): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_STATUS" must be initialized before it may be referenced
+
+dl_transition_inc.nss(38): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(134): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(135): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(164): Error: NSC1020: Undeclared identifier "DL_ParseAutoNavTag"
+
+dl_transition_inc.nss(165): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(600): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(601): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(896): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveGlobalTransitionWaypointByTag"
+
+dl_transition_inc.nss(1025): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterIsTransitionDriverTypeMatch"
+
+dl_transition_inc.nss(1026): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(1164): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1201): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1266): Error: NSC1020: Undeclared identifier "DL_IsTransitionNavigableTarget"
+
+dl_transition_inc.nss(1305): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_legacy_adapter_inc.nss(61): Error: NSC1020: Undeclared identifier "DL_TRANSITION_TAG_SEARCH_CAP"
+
+dl_transition_legacy_adapter_inc.nss(63): Error: NSC1007: Required argument "nDeterministicCap" missing in call to "DL_ResolveObjectByTagWithPolicy"
+
+dl_transition_legacy_adapter_inc.nss(64): Error: NSC1039: Not all paths return a value
+
+dl_cross_area_nav_inc.nss(70): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cross_area_nav_inc.nss(114): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_exec_inc.nss(62): Error: NSC1062: Function "DL_TryAdvanceViaTransitionOrRoute" already has a body defined at dl_transition_contract_inc.nss(24)
+
+dl_directive_pipeline_inc.nss(7): Error: NSC1051: Constant "DL_PIPE_STEP_PREPARE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(9): Error: NSC1051: Constant "DL_PIPE_STEP_FINALIZE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(90): Error: NSC1020: Undeclared identifier "DL_TryHardResetActionQueue"
+
+dl_res_inc.nss(20): Error: NSC1051: Constant "DL_L_NPC_DIRECTIVE" must be initialized before it may be referenced
+
+dl_res_inc.nss(25): Error: NSC1051: Constant "DL_L_NPC_PROFILE_ID" must be initialized before it may be referenced
+
+dl_res_inc.nss(26): Error: NSC1051: Constant "DL_L_NPC_STATE" must be initialized before it may be referenced
+
+dl_res_inc.nss(27): Error: NSC1051: Constant "DL_L_NPC_SLEEP_PHASE" must be initialized before it may be referenced
+
+dl_res_inc.nss(28): Error: NSC1051: Constant "DL_L_NPC_SLEEP_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(29): Error: NSC1051: Constant "DL_L_NPC_SLEEP_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(30): Error: NSC1051: Constant "DL_L_NPC_SLEEP_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(31): Error: NSC1051: Constant "DL_L_NPC_WORK_KIND" must be initialized before it may be referenced
+
+dl_res_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORK_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(33): Error: NSC1051: Constant "DL_L_NPC_WORK_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(34): Error: NSC1051: Constant "DL_L_NPC_WORK_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(58): Error: NSC1051: Constant "DL_L_NPC_FOCUS_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(59): Error: NSC1051: Constant "DL_L_NPC_FOCUS_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(60): Error: NSC1051: Constant "DL_L_NPC_FOCUS_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(118): Error: NSC1051: Constant "DL_DIR_NONE" must be initialized before it may be referenced
+
+dl_res_inc.nss(119): Error: NSC1051: Constant "DL_DIR_SLEEP" must be initialized before it may be referenced
+
+dl_res_inc.nss(120): Error: NSC1051: Constant "DL_DIR_WORK" must be initialized before it may be referenced
+
+dl_res_inc.nss(121): Error: NSC1051: Constant "DL_DIR_SOCIAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(122): Error: NSC1051: Constant "DL_DIR_MEAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(123): Error: NSC1051: Constant "DL_DIR_PUBLIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(124): Error: NSC1051: Constant "DL_DIR_CHILL" must be initialized before it may be referenced
+
+dl_anchor_cache_inc.nss(151): Error: NSC1020: Undeclared identifier "DL_LogInvalidAreaTagIssue"
+
+dl_anchor_cache_inc.nss(199): Error: NSC1020: Undeclared identifier "DL_LogMissingAnchorIssue"
+
+dl_anchor_cache_inc.nss(220): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_anchor_cache_inc.nss(224): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_social_pool_inc.nss(7): Error: NSC1051: Constant "DL_L_NPC_SOCIAL_RESERVED_WP" must be initialized before it may be referenced
+
+dl_registry_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORKER_SEQ" must be initialized before it may be referenced
+
+dl_registry_inc.nss(51): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_TICK" must be initialized before it may be referenced
+
+dl_registry_inc.nss(52): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_MODE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_RESYNC_PENDING" must be initialized before it may be referenced
+
+dl_resync_inc.nss(2): Error: NSC1051: Constant "DL_L_NPC_RESYNC_REASON" must be initialized before it may be referenced
+
+dl_resync_inc.nss(6): Error: NSC1051: Constant "DL_RESYNC_NONE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(7): Error: NSC1051: Constant "DL_RESYNC_SPAWN" must be initialized before it may be referenced
+
+dl_cr_crime_inc.nss(317): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cr_crime_inc.nss(318): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+Compilation aborted with errors.
+
+Processing aborted.
+
+Total Execution time = 46ms
+
+Running mode 'check' for 'D:\a\COMPILATOR\COMPILATOR\daily_life\dl_load.nss' from 'D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin': D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin\NWNScriptCompiler.exe -c -a -i D:\a\COMPILATOR\COMPILATOR\daily_life -i D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\stock_scripts -b D:\a\COMPILATOR\COMPILATOR\artifacts\ncc D:\a\COMPILATOR\COMPILATOR\daily_life\dl_load.nss
+NWNScriptCompiler - built Jan 29 2014 19:24:04
+Copyright (C) 2008-2014 Skywing.
+Portions copyright (C) 2002-2003, Edward T. Smith.
+Portions copyright (C) 2003, The Open Knights Consortium.
+Compiling: dl_load.NSS
+
+dl_cache_helpers_inc.nss(584): Error: NSC1020: Undeclared identifier "DL_FindObjectByTagInAreaDeterministic"
+
+dl_blocked_inc.nss(51): Error: NSC1020: Undeclared identifier "DL_ApplyDirectiveSkeleton"
+
+dl_lifecycle_inc.nss(6): Error: NSC1051: Constant "DL_NPC_EVENT_BLOCKED" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(9): Error: NSC1051: Constant "DL_UD_PIPELINE_NPC_EVENT" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(37): Error: NSC1020: Undeclared identifier "DL_ClearTransitionExecutionState"
+
+dl_lifecycle_inc.nss(135): Error: NSC1020: Undeclared identifier "DL_UnregisterNpc"
+
+dl_lifecycle_inc.nss(240): Error: NSC1020: Undeclared identifier "DL_RegisterNpc"
+
+dl_lifecycle_inc.nss(241): Error: NSC1020: Undeclared identifier "DL_ReconcileNpcAreaRegistration"
+
+dl_lifecycle_inc.nss(242): Error: NSC1020: Undeclared identifier "DL_RequestResync"
+
+dl_lifecycle_inc.nss(243): Error: NSC1020: Undeclared identifier "DL_ProcessResync"
+
+dl_diag_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_BLOCKED_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(36): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_TARGET" must be initialized before it may be referenced
+
+dl_transition_inc.nss(37): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_STATUS" must be initialized before it may be referenced
+
+dl_transition_inc.nss(38): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(134): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(135): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(164): Error: NSC1020: Undeclared identifier "DL_ParseAutoNavTag"
+
+dl_transition_inc.nss(165): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(600): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(601): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(896): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveGlobalTransitionWaypointByTag"
+
+dl_transition_inc.nss(1025): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterIsTransitionDriverTypeMatch"
+
+dl_transition_inc.nss(1026): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(1164): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1201): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1266): Error: NSC1020: Undeclared identifier "DL_IsTransitionNavigableTarget"
+
+dl_transition_inc.nss(1305): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_legacy_adapter_inc.nss(61): Error: NSC1020: Undeclared identifier "DL_TRANSITION_TAG_SEARCH_CAP"
+
+dl_transition_legacy_adapter_inc.nss(63): Error: NSC1007: Required argument "nDeterministicCap" missing in call to "DL_ResolveObjectByTagWithPolicy"
+
+dl_transition_legacy_adapter_inc.nss(64): Error: NSC1039: Not all paths return a value
+
+dl_cross_area_nav_inc.nss(70): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cross_area_nav_inc.nss(114): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_exec_inc.nss(62): Error: NSC1062: Function "DL_TryAdvanceViaTransitionOrRoute" already has a body defined at dl_transition_contract_inc.nss(24)
+
+dl_directive_pipeline_inc.nss(7): Error: NSC1051: Constant "DL_PIPE_STEP_PREPARE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(9): Error: NSC1051: Constant "DL_PIPE_STEP_FINALIZE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(90): Error: NSC1020: Undeclared identifier "DL_TryHardResetActionQueue"
+
+dl_res_inc.nss(20): Error: NSC1051: Constant "DL_L_NPC_DIRECTIVE" must be initialized before it may be referenced
+
+dl_res_inc.nss(25): Error: NSC1051: Constant "DL_L_NPC_PROFILE_ID" must be initialized before it may be referenced
+
+dl_res_inc.nss(26): Error: NSC1051: Constant "DL_L_NPC_STATE" must be initialized before it may be referenced
+
+dl_res_inc.nss(27): Error: NSC1051: Constant "DL_L_NPC_SLEEP_PHASE" must be initialized before it may be referenced
+
+dl_res_inc.nss(28): Error: NSC1051: Constant "DL_L_NPC_SLEEP_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(29): Error: NSC1051: Constant "DL_L_NPC_SLEEP_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(30): Error: NSC1051: Constant "DL_L_NPC_SLEEP_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(31): Error: NSC1051: Constant "DL_L_NPC_WORK_KIND" must be initialized before it may be referenced
+
+dl_res_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORK_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(33): Error: NSC1051: Constant "DL_L_NPC_WORK_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(34): Error: NSC1051: Constant "DL_L_NPC_WORK_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(58): Error: NSC1051: Constant "DL_L_NPC_FOCUS_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(59): Error: NSC1051: Constant "DL_L_NPC_FOCUS_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(60): Error: NSC1051: Constant "DL_L_NPC_FOCUS_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(118): Error: NSC1051: Constant "DL_DIR_NONE" must be initialized before it may be referenced
+
+dl_res_inc.nss(119): Error: NSC1051: Constant "DL_DIR_SLEEP" must be initialized before it may be referenced
+
+dl_res_inc.nss(120): Error: NSC1051: Constant "DL_DIR_WORK" must be initialized before it may be referenced
+
+dl_res_inc.nss(121): Error: NSC1051: Constant "DL_DIR_SOCIAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(122): Error: NSC1051: Constant "DL_DIR_MEAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(123): Error: NSC1051: Constant "DL_DIR_PUBLIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(124): Error: NSC1051: Constant "DL_DIR_CHILL" must be initialized before it may be referenced
+
+dl_anchor_cache_inc.nss(151): Error: NSC1020: Undeclared identifier "DL_LogInvalidAreaTagIssue"
+
+dl_anchor_cache_inc.nss(199): Error: NSC1020: Undeclared identifier "DL_LogMissingAnchorIssue"
+
+dl_anchor_cache_inc.nss(220): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_anchor_cache_inc.nss(224): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_social_pool_inc.nss(7): Error: NSC1051: Constant "DL_L_NPC_SOCIAL_RESERVED_WP" must be initialized before it may be referenced
+
+dl_registry_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORKER_SEQ" must be initialized before it may be referenced
+
+dl_registry_inc.nss(51): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_TICK" must be initialized before it may be referenced
+
+dl_registry_inc.nss(52): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_MODE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_RESYNC_PENDING" must be initialized before it may be referenced
+
+dl_resync_inc.nss(2): Error: NSC1051: Constant "DL_L_NPC_RESYNC_REASON" must be initialized before it may be referenced
+
+dl_resync_inc.nss(6): Error: NSC1051: Constant "DL_RESYNC_NONE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(7): Error: NSC1051: Constant "DL_RESYNC_SPAWN" must be initialized before it may be referenced
+
+dl_cr_crime_inc.nss(317): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cr_crime_inc.nss(318): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+Compilation aborted with errors.
+
+Processing aborted.
+
+Total Execution time = 47ms
+
+Running mode 'check' for 'D:\a\COMPILATOR\COMPILATOR\daily_life\dl_open.nss' from 'D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin': D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin\NWNScriptCompiler.exe -c -a -i D:\a\COMPILATOR\COMPILATOR\daily_life -i D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\stock_scripts -b D:\a\COMPILATOR\COMPILATOR\artifacts\ncc D:\a\COMPILATOR\COMPILATOR\daily_life\dl_open.nss
+NWNScriptCompiler - built Jan 29 2014 19:24:04
+Copyright (C) 2008-2014 Skywing.
+Portions copyright (C) 2002-2003, Edward T. Smith.
+Portions copyright (C) 2003, The Open Knights Consortium.
+Compiling: dl_open.NSS
+
+dl_cache_helpers_inc.nss(584): Error: NSC1020: Undeclared identifier "DL_FindObjectByTagInAreaDeterministic"
+
+dl_blocked_inc.nss(51): Error: NSC1020: Undeclared identifier "DL_ApplyDirectiveSkeleton"
+
+dl_lifecycle_inc.nss(6): Error: NSC1051: Constant "DL_NPC_EVENT_BLOCKED" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(9): Error: NSC1051: Constant "DL_UD_PIPELINE_NPC_EVENT" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(37): Error: NSC1020: Undeclared identifier "DL_ClearTransitionExecutionState"
+
+dl_lifecycle_inc.nss(135): Error: NSC1020: Undeclared identifier "DL_UnregisterNpc"
+
+dl_lifecycle_inc.nss(240): Error: NSC1020: Undeclared identifier "DL_RegisterNpc"
+
+dl_lifecycle_inc.nss(241): Error: NSC1020: Undeclared identifier "DL_ReconcileNpcAreaRegistration"
+
+dl_lifecycle_inc.nss(242): Error: NSC1020: Undeclared identifier "DL_RequestResync"
+
+dl_lifecycle_inc.nss(243): Error: NSC1020: Undeclared identifier "DL_ProcessResync"
+
+dl_diag_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_BLOCKED_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(36): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_TARGET" must be initialized before it may be referenced
+
+dl_transition_inc.nss(37): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_STATUS" must be initialized before it may be referenced
+
+dl_transition_inc.nss(38): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(134): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(135): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(164): Error: NSC1020: Undeclared identifier "DL_ParseAutoNavTag"
+
+dl_transition_inc.nss(165): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(600): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(601): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(896): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveGlobalTransitionWaypointByTag"
+
+dl_transition_inc.nss(1025): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterIsTransitionDriverTypeMatch"
+
+dl_transition_inc.nss(1026): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(1164): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1201): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1266): Error: NSC1020: Undeclared identifier "DL_IsTransitionNavigableTarget"
+
+dl_transition_inc.nss(1305): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_legacy_adapter_inc.nss(61): Error: NSC1020: Undeclared identifier "DL_TRANSITION_TAG_SEARCH_CAP"
+
+dl_transition_legacy_adapter_inc.nss(63): Error: NSC1007: Required argument "nDeterministicCap" missing in call to "DL_ResolveObjectByTagWithPolicy"
+
+dl_transition_legacy_adapter_inc.nss(64): Error: NSC1039: Not all paths return a value
+
+dl_cross_area_nav_inc.nss(70): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cross_area_nav_inc.nss(114): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_exec_inc.nss(62): Error: NSC1062: Function "DL_TryAdvanceViaTransitionOrRoute" already has a body defined at dl_transition_contract_inc.nss(24)
+
+dl_directive_pipeline_inc.nss(7): Error: NSC1051: Constant "DL_PIPE_STEP_PREPARE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(9): Error: NSC1051: Constant "DL_PIPE_STEP_FINALIZE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(90): Error: NSC1020: Undeclared identifier "DL_TryHardResetActionQueue"
+
+dl_res_inc.nss(20): Error: NSC1051: Constant "DL_L_NPC_DIRECTIVE" must be initialized before it may be referenced
+
+dl_res_inc.nss(25): Error: NSC1051: Constant "DL_L_NPC_PROFILE_ID" must be initialized before it may be referenced
+
+dl_res_inc.nss(26): Error: NSC1051: Constant "DL_L_NPC_STATE" must be initialized before it may be referenced
+
+dl_res_inc.nss(27): Error: NSC1051: Constant "DL_L_NPC_SLEEP_PHASE" must be initialized before it may be referenced
+
+dl_res_inc.nss(28): Error: NSC1051: Constant "DL_L_NPC_SLEEP_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(29): Error: NSC1051: Constant "DL_L_NPC_SLEEP_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(30): Error: NSC1051: Constant "DL_L_NPC_SLEEP_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(31): Error: NSC1051: Constant "DL_L_NPC_WORK_KIND" must be initialized before it may be referenced
+
+dl_res_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORK_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(33): Error: NSC1051: Constant "DL_L_NPC_WORK_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(34): Error: NSC1051: Constant "DL_L_NPC_WORK_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(58): Error: NSC1051: Constant "DL_L_NPC_FOCUS_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(59): Error: NSC1051: Constant "DL_L_NPC_FOCUS_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(60): Error: NSC1051: Constant "DL_L_NPC_FOCUS_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(118): Error: NSC1051: Constant "DL_DIR_NONE" must be initialized before it may be referenced
+
+dl_res_inc.nss(119): Error: NSC1051: Constant "DL_DIR_SLEEP" must be initialized before it may be referenced
+
+dl_res_inc.nss(120): Error: NSC1051: Constant "DL_DIR_WORK" must be initialized before it may be referenced
+
+dl_res_inc.nss(121): Error: NSC1051: Constant "DL_DIR_SOCIAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(122): Error: NSC1051: Constant "DL_DIR_MEAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(123): Error: NSC1051: Constant "DL_DIR_PUBLIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(124): Error: NSC1051: Constant "DL_DIR_CHILL" must be initialized before it may be referenced
+
+dl_anchor_cache_inc.nss(151): Error: NSC1020: Undeclared identifier "DL_LogInvalidAreaTagIssue"
+
+dl_anchor_cache_inc.nss(199): Error: NSC1020: Undeclared identifier "DL_LogMissingAnchorIssue"
+
+dl_anchor_cache_inc.nss(220): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_anchor_cache_inc.nss(224): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_social_pool_inc.nss(7): Error: NSC1051: Constant "DL_L_NPC_SOCIAL_RESERVED_WP" must be initialized before it may be referenced
+
+dl_registry_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORKER_SEQ" must be initialized before it may be referenced
+
+dl_registry_inc.nss(51): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_TICK" must be initialized before it may be referenced
+
+dl_registry_inc.nss(52): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_MODE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_RESYNC_PENDING" must be initialized before it may be referenced
+
+dl_resync_inc.nss(2): Error: NSC1051: Constant "DL_L_NPC_RESYNC_REASON" must be initialized before it may be referenced
+
+dl_resync_inc.nss(6): Error: NSC1051: Constant "DL_RESYNC_NONE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(7): Error: NSC1051: Constant "DL_RESYNC_SPAWN" must be initialized before it may be referenced
+
+dl_cr_crime_inc.nss(317): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cr_crime_inc.nss(318): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+Compilation aborted with errors.
+
+Processing aborted.
+
+Total Execution time = 47ms
+
+Running mode 'check' for 'D:\a\COMPILATOR\COMPILATOR\daily_life\dl_perception.nss' from 'D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin': D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin\NWNScriptCompiler.exe -c -a -i D:\a\COMPILATOR\COMPILATOR\daily_life -i D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\stock_scripts -b D:\a\COMPILATOR\COMPILATOR\artifacts\ncc D:\a\COMPILATOR\COMPILATOR\daily_life\dl_perception.nss
+NWNScriptCompiler - built Jan 29 2014 19:24:04
+Copyright (C) 2008-2014 Skywing.
+Portions copyright (C) 2002-2003, Edward T. Smith.
+Portions copyright (C) 2003, The Open Knights Consortium.
+Compiling: dl_perception.NSS
+
+dl_cache_helpers_inc.nss(584): Error: NSC1020: Undeclared identifier "DL_FindObjectByTagInAreaDeterministic"
+
+dl_blocked_inc.nss(51): Error: NSC1020: Undeclared identifier "DL_ApplyDirectiveSkeleton"
+
+dl_lifecycle_inc.nss(6): Error: NSC1051: Constant "DL_NPC_EVENT_BLOCKED" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(9): Error: NSC1051: Constant "DL_UD_PIPELINE_NPC_EVENT" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(37): Error: NSC1020: Undeclared identifier "DL_ClearTransitionExecutionState"
+
+dl_lifecycle_inc.nss(135): Error: NSC1020: Undeclared identifier "DL_UnregisterNpc"
+
+dl_lifecycle_inc.nss(240): Error: NSC1020: Undeclared identifier "DL_RegisterNpc"
+
+dl_lifecycle_inc.nss(241): Error: NSC1020: Undeclared identifier "DL_ReconcileNpcAreaRegistration"
+
+dl_lifecycle_inc.nss(242): Error: NSC1020: Undeclared identifier "DL_RequestResync"
+
+dl_lifecycle_inc.nss(243): Error: NSC1020: Undeclared identifier "DL_ProcessResync"
+
+dl_diag_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_BLOCKED_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(36): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_TARGET" must be initialized before it may be referenced
+
+dl_transition_inc.nss(37): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_STATUS" must be initialized before it may be referenced
+
+dl_transition_inc.nss(38): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(134): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(135): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(164): Error: NSC1020: Undeclared identifier "DL_ParseAutoNavTag"
+
+dl_transition_inc.nss(165): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(600): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(601): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(896): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveGlobalTransitionWaypointByTag"
+
+dl_transition_inc.nss(1025): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterIsTransitionDriverTypeMatch"
+
+dl_transition_inc.nss(1026): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(1164): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1201): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1266): Error: NSC1020: Undeclared identifier "DL_IsTransitionNavigableTarget"
+
+dl_transition_inc.nss(1305): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_legacy_adapter_inc.nss(61): Error: NSC1020: Undeclared identifier "DL_TRANSITION_TAG_SEARCH_CAP"
+
+dl_transition_legacy_adapter_inc.nss(63): Error: NSC1007: Required argument "nDeterministicCap" missing in call to "DL_ResolveObjectByTagWithPolicy"
+
+dl_transition_legacy_adapter_inc.nss(64): Error: NSC1039: Not all paths return a value
+
+dl_cross_area_nav_inc.nss(70): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cross_area_nav_inc.nss(114): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_exec_inc.nss(62): Error: NSC1062: Function "DL_TryAdvanceViaTransitionOrRoute" already has a body defined at dl_transition_contract_inc.nss(24)
+
+dl_directive_pipeline_inc.nss(7): Error: NSC1051: Constant "DL_PIPE_STEP_PREPARE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(9): Error: NSC1051: Constant "DL_PIPE_STEP_FINALIZE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(90): Error: NSC1020: Undeclared identifier "DL_TryHardResetActionQueue"
+
+dl_res_inc.nss(20): Error: NSC1051: Constant "DL_L_NPC_DIRECTIVE" must be initialized before it may be referenced
+
+dl_res_inc.nss(25): Error: NSC1051: Constant "DL_L_NPC_PROFILE_ID" must be initialized before it may be referenced
+
+dl_res_inc.nss(26): Error: NSC1051: Constant "DL_L_NPC_STATE" must be initialized before it may be referenced
+
+dl_res_inc.nss(27): Error: NSC1051: Constant "DL_L_NPC_SLEEP_PHASE" must be initialized before it may be referenced
+
+dl_res_inc.nss(28): Error: NSC1051: Constant "DL_L_NPC_SLEEP_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(29): Error: NSC1051: Constant "DL_L_NPC_SLEEP_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(30): Error: NSC1051: Constant "DL_L_NPC_SLEEP_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(31): Error: NSC1051: Constant "DL_L_NPC_WORK_KIND" must be initialized before it may be referenced
+
+dl_res_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORK_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(33): Error: NSC1051: Constant "DL_L_NPC_WORK_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(34): Error: NSC1051: Constant "DL_L_NPC_WORK_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(58): Error: NSC1051: Constant "DL_L_NPC_FOCUS_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(59): Error: NSC1051: Constant "DL_L_NPC_FOCUS_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(60): Error: NSC1051: Constant "DL_L_NPC_FOCUS_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(118): Error: NSC1051: Constant "DL_DIR_NONE" must be initialized before it may be referenced
+
+dl_res_inc.nss(119): Error: NSC1051: Constant "DL_DIR_SLEEP" must be initialized before it may be referenced
+
+dl_res_inc.nss(120): Error: NSC1051: Constant "DL_DIR_WORK" must be initialized before it may be referenced
+
+dl_res_inc.nss(121): Error: NSC1051: Constant "DL_DIR_SOCIAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(122): Error: NSC1051: Constant "DL_DIR_MEAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(123): Error: NSC1051: Constant "DL_DIR_PUBLIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(124): Error: NSC1051: Constant "DL_DIR_CHILL" must be initialized before it may be referenced
+
+dl_anchor_cache_inc.nss(151): Error: NSC1020: Undeclared identifier "DL_LogInvalidAreaTagIssue"
+
+dl_anchor_cache_inc.nss(199): Error: NSC1020: Undeclared identifier "DL_LogMissingAnchorIssue"
+
+dl_anchor_cache_inc.nss(220): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_anchor_cache_inc.nss(224): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_social_pool_inc.nss(7): Error: NSC1051: Constant "DL_L_NPC_SOCIAL_RESERVED_WP" must be initialized before it may be referenced
+
+dl_registry_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORKER_SEQ" must be initialized before it may be referenced
+
+dl_registry_inc.nss(51): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_TICK" must be initialized before it may be referenced
+
+dl_registry_inc.nss(52): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_MODE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_RESYNC_PENDING" must be initialized before it may be referenced
+
+dl_resync_inc.nss(2): Error: NSC1051: Constant "DL_L_NPC_RESYNC_REASON" must be initialized before it may be referenced
+
+dl_resync_inc.nss(6): Error: NSC1051: Constant "DL_RESYNC_NONE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(7): Error: NSC1051: Constant "DL_RESYNC_SPAWN" must be initialized before it may be referenced
+
+dl_cr_crime_inc.nss(317): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cr_crime_inc.nss(318): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+Compilation aborted with errors.
+
+Processing aborted.
+
+Total Execution time = 46ms
+
+Running mode 'check' for 'D:\a\COMPILATOR\COMPILATOR\daily_life\dl_smk_sync.nss' from 'D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin': D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin\NWNScriptCompiler.exe -c -a -i D:\a\COMPILATOR\COMPILATOR\daily_life -i D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\stock_scripts -b D:\a\COMPILATOR\COMPILATOR\artifacts\ncc D:\a\COMPILATOR\COMPILATOR\daily_life\dl_smk_sync.nss
+NWNScriptCompiler - built Jan 29 2014 19:24:04
+Copyright (C) 2008-2014 Skywing.
+Portions copyright (C) 2002-2003, Edward T. Smith.
+Portions copyright (C) 2003, The Open Knights Consortium.
+Compiling: dl_smk_sync.NSS
+
+dl_cache_helpers_inc.nss(584): Error: NSC1020: Undeclared identifier "DL_FindObjectByTagInAreaDeterministic"
+
+dl_blocked_inc.nss(51): Error: NSC1020: Undeclared identifier "DL_ApplyDirectiveSkeleton"
+
+dl_lifecycle_inc.nss(6): Error: NSC1051: Constant "DL_NPC_EVENT_BLOCKED" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(9): Error: NSC1051: Constant "DL_UD_PIPELINE_NPC_EVENT" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(37): Error: NSC1020: Undeclared identifier "DL_ClearTransitionExecutionState"
+
+dl_lifecycle_inc.nss(135): Error: NSC1020: Undeclared identifier "DL_UnregisterNpc"
+
+dl_lifecycle_inc.nss(240): Error: NSC1020: Undeclared identifier "DL_RegisterNpc"
+
+dl_lifecycle_inc.nss(241): Error: NSC1020: Undeclared identifier "DL_ReconcileNpcAreaRegistration"
+
+dl_lifecycle_inc.nss(242): Error: NSC1020: Undeclared identifier "DL_RequestResync"
+
+dl_lifecycle_inc.nss(243): Error: NSC1020: Undeclared identifier "DL_ProcessResync"
+
+dl_diag_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_BLOCKED_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(36): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_TARGET" must be initialized before it may be referenced
+
+dl_transition_inc.nss(37): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_STATUS" must be initialized before it may be referenced
+
+dl_transition_inc.nss(38): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(134): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(135): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(164): Error: NSC1020: Undeclared identifier "DL_ParseAutoNavTag"
+
+dl_transition_inc.nss(165): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(600): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(601): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(896): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveGlobalTransitionWaypointByTag"
+
+dl_transition_inc.nss(1025): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterIsTransitionDriverTypeMatch"
+
+dl_transition_inc.nss(1026): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(1164): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1201): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1266): Error: NSC1020: Undeclared identifier "DL_IsTransitionNavigableTarget"
+
+dl_transition_inc.nss(1305): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_legacy_adapter_inc.nss(61): Error: NSC1020: Undeclared identifier "DL_TRANSITION_TAG_SEARCH_CAP"
+
+dl_transition_legacy_adapter_inc.nss(63): Error: NSC1007: Required argument "nDeterministicCap" missing in call to "DL_ResolveObjectByTagWithPolicy"
+
+dl_transition_legacy_adapter_inc.nss(64): Error: NSC1039: Not all paths return a value
+
+dl_cross_area_nav_inc.nss(70): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cross_area_nav_inc.nss(114): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_exec_inc.nss(62): Error: NSC1062: Function "DL_TryAdvanceViaTransitionOrRoute" already has a body defined at dl_transition_contract_inc.nss(24)
+
+dl_directive_pipeline_inc.nss(7): Error: NSC1051: Constant "DL_PIPE_STEP_PREPARE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(9): Error: NSC1051: Constant "DL_PIPE_STEP_FINALIZE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(90): Error: NSC1020: Undeclared identifier "DL_TryHardResetActionQueue"
+
+dl_res_inc.nss(20): Error: NSC1051: Constant "DL_L_NPC_DIRECTIVE" must be initialized before it may be referenced
+
+dl_res_inc.nss(25): Error: NSC1051: Constant "DL_L_NPC_PROFILE_ID" must be initialized before it may be referenced
+
+dl_res_inc.nss(26): Error: NSC1051: Constant "DL_L_NPC_STATE" must be initialized before it may be referenced
+
+dl_res_inc.nss(27): Error: NSC1051: Constant "DL_L_NPC_SLEEP_PHASE" must be initialized before it may be referenced
+
+dl_res_inc.nss(28): Error: NSC1051: Constant "DL_L_NPC_SLEEP_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(29): Error: NSC1051: Constant "DL_L_NPC_SLEEP_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(30): Error: NSC1051: Constant "DL_L_NPC_SLEEP_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(31): Error: NSC1051: Constant "DL_L_NPC_WORK_KIND" must be initialized before it may be referenced
+
+dl_res_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORK_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(33): Error: NSC1051: Constant "DL_L_NPC_WORK_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(34): Error: NSC1051: Constant "DL_L_NPC_WORK_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(58): Error: NSC1051: Constant "DL_L_NPC_FOCUS_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(59): Error: NSC1051: Constant "DL_L_NPC_FOCUS_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(60): Error: NSC1051: Constant "DL_L_NPC_FOCUS_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(118): Error: NSC1051: Constant "DL_DIR_NONE" must be initialized before it may be referenced
+
+dl_res_inc.nss(119): Error: NSC1051: Constant "DL_DIR_SLEEP" must be initialized before it may be referenced
+
+dl_res_inc.nss(120): Error: NSC1051: Constant "DL_DIR_WORK" must be initialized before it may be referenced
+
+dl_res_inc.nss(121): Error: NSC1051: Constant "DL_DIR_SOCIAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(122): Error: NSC1051: Constant "DL_DIR_MEAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(123): Error: NSC1051: Constant "DL_DIR_PUBLIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(124): Error: NSC1051: Constant "DL_DIR_CHILL" must be initialized before it may be referenced
+
+dl_anchor_cache_inc.nss(151): Error: NSC1020: Undeclared identifier "DL_LogInvalidAreaTagIssue"
+
+dl_anchor_cache_inc.nss(199): Error: NSC1020: Undeclared identifier "DL_LogMissingAnchorIssue"
+
+dl_anchor_cache_inc.nss(220): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_anchor_cache_inc.nss(224): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_social_pool_inc.nss(7): Error: NSC1051: Constant "DL_L_NPC_SOCIAL_RESERVED_WP" must be initialized before it may be referenced
+
+dl_registry_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORKER_SEQ" must be initialized before it may be referenced
+
+dl_registry_inc.nss(51): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_TICK" must be initialized before it may be referenced
+
+dl_registry_inc.nss(52): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_MODE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_RESYNC_PENDING" must be initialized before it may be referenced
+
+dl_resync_inc.nss(2): Error: NSC1051: Constant "DL_L_NPC_RESYNC_REASON" must be initialized before it may be referenced
+
+dl_resync_inc.nss(6): Error: NSC1051: Constant "DL_RESYNC_NONE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(7): Error: NSC1051: Constant "DL_RESYNC_SPAWN" must be initialized before it may be referenced
+
+dl_cr_crime_inc.nss(317): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cr_crime_inc.nss(318): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_smk_sync.nss(8): Error: NSC1047: "const" qualifier not allowed on local variables (see declaration of "DL_SMK_L_ENABLED")
+
+dl_smk_sync.nss(9): Error: NSC1047: "const" qualifier not allowed on local variables (see declaration of "DL_SMK_L_ACTOR_TAG")
+
+dl_smk_sync.nss(10): Error: NSC1047: "const" qualifier not allowed on local variables (see declaration of "DL_SMK_NS")
+
+Compilation aborted with errors.
+
+Processing aborted.
+
+Total Execution time = 47ms
+
+Running mode 'check' for 'D:\a\COMPILATOR\COMPILATOR\daily_life\dl_smk_tier.nss' from 'D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin': D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin\NWNScriptCompiler.exe -c -a -i D:\a\COMPILATOR\COMPILATOR\daily_life -i D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\stock_scripts -b D:\a\COMPILATOR\COMPILATOR\artifacts\ncc D:\a\COMPILATOR\COMPILATOR\daily_life\dl_smk_tier.nss
+NWNScriptCompiler - built Jan 29 2014 19:24:04
+Copyright (C) 2008-2014 Skywing.
+Portions copyright (C) 2002-2003, Edward T. Smith.
+Portions copyright (C) 2003, The Open Knights Consortium.
+Compiling: dl_smk_tier.NSS
+
+dl_cache_helpers_inc.nss(584): Error: NSC1020: Undeclared identifier "DL_FindObjectByTagInAreaDeterministic"
+
+dl_blocked_inc.nss(51): Error: NSC1020: Undeclared identifier "DL_ApplyDirectiveSkeleton"
+
+dl_lifecycle_inc.nss(6): Error: NSC1051: Constant "DL_NPC_EVENT_BLOCKED" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(9): Error: NSC1051: Constant "DL_UD_PIPELINE_NPC_EVENT" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(37): Error: NSC1020: Undeclared identifier "DL_ClearTransitionExecutionState"
+
+dl_lifecycle_inc.nss(135): Error: NSC1020: Undeclared identifier "DL_UnregisterNpc"
+
+dl_lifecycle_inc.nss(240): Error: NSC1020: Undeclared identifier "DL_RegisterNpc"
+
+dl_lifecycle_inc.nss(241): Error: NSC1020: Undeclared identifier "DL_ReconcileNpcAreaRegistration"
+
+dl_lifecycle_inc.nss(242): Error: NSC1020: Undeclared identifier "DL_RequestResync"
+
+dl_lifecycle_inc.nss(243): Error: NSC1020: Undeclared identifier "DL_ProcessResync"
+
+dl_diag_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_BLOCKED_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(36): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_TARGET" must be initialized before it may be referenced
+
+dl_transition_inc.nss(37): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_STATUS" must be initialized before it may be referenced
+
+dl_transition_inc.nss(38): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(134): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(135): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(164): Error: NSC1020: Undeclared identifier "DL_ParseAutoNavTag"
+
+dl_transition_inc.nss(165): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(600): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(601): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(896): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveGlobalTransitionWaypointByTag"
+
+dl_transition_inc.nss(1025): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterIsTransitionDriverTypeMatch"
+
+dl_transition_inc.nss(1026): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(1164): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1201): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1266): Error: NSC1020: Undeclared identifier "DL_IsTransitionNavigableTarget"
+
+dl_transition_inc.nss(1305): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_legacy_adapter_inc.nss(61): Error: NSC1020: Undeclared identifier "DL_TRANSITION_TAG_SEARCH_CAP"
+
+dl_transition_legacy_adapter_inc.nss(63): Error: NSC1007: Required argument "nDeterministicCap" missing in call to "DL_ResolveObjectByTagWithPolicy"
+
+dl_transition_legacy_adapter_inc.nss(64): Error: NSC1039: Not all paths return a value
+
+dl_cross_area_nav_inc.nss(70): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cross_area_nav_inc.nss(114): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_exec_inc.nss(62): Error: NSC1062: Function "DL_TryAdvanceViaTransitionOrRoute" already has a body defined at dl_transition_contract_inc.nss(24)
+
+dl_directive_pipeline_inc.nss(7): Error: NSC1051: Constant "DL_PIPE_STEP_PREPARE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(9): Error: NSC1051: Constant "DL_PIPE_STEP_FINALIZE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(90): Error: NSC1020: Undeclared identifier "DL_TryHardResetActionQueue"
+
+dl_res_inc.nss(20): Error: NSC1051: Constant "DL_L_NPC_DIRECTIVE" must be initialized before it may be referenced
+
+dl_res_inc.nss(25): Error: NSC1051: Constant "DL_L_NPC_PROFILE_ID" must be initialized before it may be referenced
+
+dl_res_inc.nss(26): Error: NSC1051: Constant "DL_L_NPC_STATE" must be initialized before it may be referenced
+
+dl_res_inc.nss(27): Error: NSC1051: Constant "DL_L_NPC_SLEEP_PHASE" must be initialized before it may be referenced
+
+dl_res_inc.nss(28): Error: NSC1051: Constant "DL_L_NPC_SLEEP_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(29): Error: NSC1051: Constant "DL_L_NPC_SLEEP_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(30): Error: NSC1051: Constant "DL_L_NPC_SLEEP_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(31): Error: NSC1051: Constant "DL_L_NPC_WORK_KIND" must be initialized before it may be referenced
+
+dl_res_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORK_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(33): Error: NSC1051: Constant "DL_L_NPC_WORK_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(34): Error: NSC1051: Constant "DL_L_NPC_WORK_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(58): Error: NSC1051: Constant "DL_L_NPC_FOCUS_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(59): Error: NSC1051: Constant "DL_L_NPC_FOCUS_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(60): Error: NSC1051: Constant "DL_L_NPC_FOCUS_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(118): Error: NSC1051: Constant "DL_DIR_NONE" must be initialized before it may be referenced
+
+dl_res_inc.nss(119): Error: NSC1051: Constant "DL_DIR_SLEEP" must be initialized before it may be referenced
+
+dl_res_inc.nss(120): Error: NSC1051: Constant "DL_DIR_WORK" must be initialized before it may be referenced
+
+dl_res_inc.nss(121): Error: NSC1051: Constant "DL_DIR_SOCIAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(122): Error: NSC1051: Constant "DL_DIR_MEAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(123): Error: NSC1051: Constant "DL_DIR_PUBLIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(124): Error: NSC1051: Constant "DL_DIR_CHILL" must be initialized before it may be referenced
+
+dl_anchor_cache_inc.nss(151): Error: NSC1020: Undeclared identifier "DL_LogInvalidAreaTagIssue"
+
+dl_anchor_cache_inc.nss(199): Error: NSC1020: Undeclared identifier "DL_LogMissingAnchorIssue"
+
+dl_anchor_cache_inc.nss(220): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_anchor_cache_inc.nss(224): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_social_pool_inc.nss(7): Error: NSC1051: Constant "DL_L_NPC_SOCIAL_RESERVED_WP" must be initialized before it may be referenced
+
+dl_registry_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORKER_SEQ" must be initialized before it may be referenced
+
+dl_registry_inc.nss(51): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_TICK" must be initialized before it may be referenced
+
+dl_registry_inc.nss(52): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_MODE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_RESYNC_PENDING" must be initialized before it may be referenced
+
+dl_resync_inc.nss(2): Error: NSC1051: Constant "DL_L_NPC_RESYNC_REASON" must be initialized before it may be referenced
+
+dl_resync_inc.nss(6): Error: NSC1051: Constant "DL_RESYNC_NONE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(7): Error: NSC1051: Constant "DL_RESYNC_SPAWN" must be initialized before it may be referenced
+
+dl_cr_crime_inc.nss(317): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cr_crime_inc.nss(318): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_smk_tier.nss(9): Error: NSC1047: "const" qualifier not allowed on local variables (see declaration of "DL_SMK_L_ENABLED")
+
+dl_smk_tier.nss(10): Error: NSC1047: "const" qualifier not allowed on local variables (see declaration of "DL_SMK_L_ACTOR_TAG")
+
+dl_smk_tier.nss(11): Error: NSC1047: "const" qualifier not allowed on local variables (see declaration of "DL_SMK_NS")
+
+Compilation aborted with errors.
+
+Processing aborted.
+
+Total Execution time = 62ms
+
+Running mode 'check' for 'D:\a\COMPILATOR\COMPILATOR\daily_life\dl_smk_work.nss' from 'D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin': D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin\NWNScriptCompiler.exe -c -a -i D:\a\COMPILATOR\COMPILATOR\daily_life -i D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\stock_scripts -b D:\a\COMPILATOR\COMPILATOR\artifacts\ncc D:\a\COMPILATOR\COMPILATOR\daily_life\dl_smk_work.nss
+NWNScriptCompiler - built Jan 29 2014 19:24:04
+Copyright (C) 2008-2014 Skywing.
+Portions copyright (C) 2002-2003, Edward T. Smith.
+Portions copyright (C) 2003, The Open Knights Consortium.
+Compiling: dl_smk_work.NSS
+
+dl_cache_helpers_inc.nss(584): Error: NSC1020: Undeclared identifier "DL_FindObjectByTagInAreaDeterministic"
+
+dl_blocked_inc.nss(51): Error: NSC1020: Undeclared identifier "DL_ApplyDirectiveSkeleton"
+
+dl_lifecycle_inc.nss(6): Error: NSC1051: Constant "DL_NPC_EVENT_BLOCKED" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(9): Error: NSC1051: Constant "DL_UD_PIPELINE_NPC_EVENT" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(37): Error: NSC1020: Undeclared identifier "DL_ClearTransitionExecutionState"
+
+dl_lifecycle_inc.nss(135): Error: NSC1020: Undeclared identifier "DL_UnregisterNpc"
+
+dl_lifecycle_inc.nss(240): Error: NSC1020: Undeclared identifier "DL_RegisterNpc"
+
+dl_lifecycle_inc.nss(241): Error: NSC1020: Undeclared identifier "DL_ReconcileNpcAreaRegistration"
+
+dl_lifecycle_inc.nss(242): Error: NSC1020: Undeclared identifier "DL_RequestResync"
+
+dl_lifecycle_inc.nss(243): Error: NSC1020: Undeclared identifier "DL_ProcessResync"
+
+dl_diag_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_BLOCKED_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(36): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_TARGET" must be initialized before it may be referenced
+
+dl_transition_inc.nss(37): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_STATUS" must be initialized before it may be referenced
+
+dl_transition_inc.nss(38): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(134): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(135): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(164): Error: NSC1020: Undeclared identifier "DL_ParseAutoNavTag"
+
+dl_transition_inc.nss(165): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(600): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(601): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(896): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveGlobalTransitionWaypointByTag"
+
+dl_transition_inc.nss(1025): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterIsTransitionDriverTypeMatch"
+
+dl_transition_inc.nss(1026): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(1164): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1201): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1266): Error: NSC1020: Undeclared identifier "DL_IsTransitionNavigableTarget"
+
+dl_transition_inc.nss(1305): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_legacy_adapter_inc.nss(61): Error: NSC1020: Undeclared identifier "DL_TRANSITION_TAG_SEARCH_CAP"
+
+dl_transition_legacy_adapter_inc.nss(63): Error: NSC1007: Required argument "nDeterministicCap" missing in call to "DL_ResolveObjectByTagWithPolicy"
+
+dl_transition_legacy_adapter_inc.nss(64): Error: NSC1039: Not all paths return a value
+
+dl_cross_area_nav_inc.nss(70): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cross_area_nav_inc.nss(114): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_exec_inc.nss(62): Error: NSC1062: Function "DL_TryAdvanceViaTransitionOrRoute" already has a body defined at dl_transition_contract_inc.nss(24)
+
+dl_directive_pipeline_inc.nss(7): Error: NSC1051: Constant "DL_PIPE_STEP_PREPARE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(9): Error: NSC1051: Constant "DL_PIPE_STEP_FINALIZE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(90): Error: NSC1020: Undeclared identifier "DL_TryHardResetActionQueue"
+
+dl_res_inc.nss(20): Error: NSC1051: Constant "DL_L_NPC_DIRECTIVE" must be initialized before it may be referenced
+
+dl_res_inc.nss(25): Error: NSC1051: Constant "DL_L_NPC_PROFILE_ID" must be initialized before it may be referenced
+
+dl_res_inc.nss(26): Error: NSC1051: Constant "DL_L_NPC_STATE" must be initialized before it may be referenced
+
+dl_res_inc.nss(27): Error: NSC1051: Constant "DL_L_NPC_SLEEP_PHASE" must be initialized before it may be referenced
+
+dl_res_inc.nss(28): Error: NSC1051: Constant "DL_L_NPC_SLEEP_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(29): Error: NSC1051: Constant "DL_L_NPC_SLEEP_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(30): Error: NSC1051: Constant "DL_L_NPC_SLEEP_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(31): Error: NSC1051: Constant "DL_L_NPC_WORK_KIND" must be initialized before it may be referenced
+
+dl_res_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORK_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(33): Error: NSC1051: Constant "DL_L_NPC_WORK_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(34): Error: NSC1051: Constant "DL_L_NPC_WORK_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(58): Error: NSC1051: Constant "DL_L_NPC_FOCUS_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(59): Error: NSC1051: Constant "DL_L_NPC_FOCUS_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(60): Error: NSC1051: Constant "DL_L_NPC_FOCUS_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(118): Error: NSC1051: Constant "DL_DIR_NONE" must be initialized before it may be referenced
+
+dl_res_inc.nss(119): Error: NSC1051: Constant "DL_DIR_SLEEP" must be initialized before it may be referenced
+
+dl_res_inc.nss(120): Error: NSC1051: Constant "DL_DIR_WORK" must be initialized before it may be referenced
+
+dl_res_inc.nss(121): Error: NSC1051: Constant "DL_DIR_SOCIAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(122): Error: NSC1051: Constant "DL_DIR_MEAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(123): Error: NSC1051: Constant "DL_DIR_PUBLIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(124): Error: NSC1051: Constant "DL_DIR_CHILL" must be initialized before it may be referenced
+
+dl_anchor_cache_inc.nss(151): Error: NSC1020: Undeclared identifier "DL_LogInvalidAreaTagIssue"
+
+dl_anchor_cache_inc.nss(199): Error: NSC1020: Undeclared identifier "DL_LogMissingAnchorIssue"
+
+dl_anchor_cache_inc.nss(220): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_anchor_cache_inc.nss(224): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_social_pool_inc.nss(7): Error: NSC1051: Constant "DL_L_NPC_SOCIAL_RESERVED_WP" must be initialized before it may be referenced
+
+dl_registry_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORKER_SEQ" must be initialized before it may be referenced
+
+dl_registry_inc.nss(51): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_TICK" must be initialized before it may be referenced
+
+dl_registry_inc.nss(52): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_MODE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_RESYNC_PENDING" must be initialized before it may be referenced
+
+dl_resync_inc.nss(2): Error: NSC1051: Constant "DL_L_NPC_RESYNC_REASON" must be initialized before it may be referenced
+
+dl_resync_inc.nss(6): Error: NSC1051: Constant "DL_RESYNC_NONE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(7): Error: NSC1051: Constant "DL_RESYNC_SPAWN" must be initialized before it may be referenced
+
+dl_cr_crime_inc.nss(317): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cr_crime_inc.nss(318): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_smk_work.nss(9): Error: NSC1047: "const" qualifier not allowed on local variables (see declaration of "DL_SMK_L_ENABLED")
+
+dl_smk_work.nss(10): Error: NSC1047: "const" qualifier not allowed on local variables (see declaration of "DL_SMK_L_ACTOR_TAG")
+
+dl_smk_work.nss(11): Error: NSC1047: "const" qualifier not allowed on local variables (see declaration of "DL_SMK_NS")
+
+Compilation aborted with errors.
+
+Processing aborted.
+
+Total Execution time = 62ms
+
+Running mode 'check' for 'D:\a\COMPILATOR\COMPILATOR\daily_life\dl_smoke_ev.nss' from 'D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin': D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin\NWNScriptCompiler.exe -c -a -i D:\a\COMPILATOR\COMPILATOR\daily_life -i D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\stock_scripts -b D:\a\COMPILATOR\COMPILATOR\artifacts\ncc D:\a\COMPILATOR\COMPILATOR\daily_life\dl_smoke_ev.nss
+NWNScriptCompiler - built Jan 29 2014 19:24:04
+Copyright (C) 2008-2014 Skywing.
+Portions copyright (C) 2002-2003, Edward T. Smith.
+Portions copyright (C) 2003, The Open Knights Consortium.
+Compiling: dl_smoke_ev.NSS
+
+dl_cache_helpers_inc.nss(584): Error: NSC1020: Undeclared identifier "DL_FindObjectByTagInAreaDeterministic"
+
+dl_blocked_inc.nss(51): Error: NSC1020: Undeclared identifier "DL_ApplyDirectiveSkeleton"
+
+dl_lifecycle_inc.nss(6): Error: NSC1051: Constant "DL_NPC_EVENT_BLOCKED" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(9): Error: NSC1051: Constant "DL_UD_PIPELINE_NPC_EVENT" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(37): Error: NSC1020: Undeclared identifier "DL_ClearTransitionExecutionState"
+
+dl_lifecycle_inc.nss(135): Error: NSC1020: Undeclared identifier "DL_UnregisterNpc"
+
+dl_lifecycle_inc.nss(240): Error: NSC1020: Undeclared identifier "DL_RegisterNpc"
+
+dl_lifecycle_inc.nss(241): Error: NSC1020: Undeclared identifier "DL_ReconcileNpcAreaRegistration"
+
+dl_lifecycle_inc.nss(242): Error: NSC1020: Undeclared identifier "DL_RequestResync"
+
+dl_lifecycle_inc.nss(243): Error: NSC1020: Undeclared identifier "DL_ProcessResync"
+
+dl_diag_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_BLOCKED_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(36): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_TARGET" must be initialized before it may be referenced
+
+dl_transition_inc.nss(37): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_STATUS" must be initialized before it may be referenced
+
+dl_transition_inc.nss(38): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(134): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(135): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(164): Error: NSC1020: Undeclared identifier "DL_ParseAutoNavTag"
+
+dl_transition_inc.nss(165): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(600): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(601): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(896): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveGlobalTransitionWaypointByTag"
+
+dl_transition_inc.nss(1025): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterIsTransitionDriverTypeMatch"
+
+dl_transition_inc.nss(1026): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(1164): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1201): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1266): Error: NSC1020: Undeclared identifier "DL_IsTransitionNavigableTarget"
+
+dl_transition_inc.nss(1305): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_legacy_adapter_inc.nss(61): Error: NSC1020: Undeclared identifier "DL_TRANSITION_TAG_SEARCH_CAP"
+
+dl_transition_legacy_adapter_inc.nss(63): Error: NSC1007: Required argument "nDeterministicCap" missing in call to "DL_ResolveObjectByTagWithPolicy"
+
+dl_transition_legacy_adapter_inc.nss(64): Error: NSC1039: Not all paths return a value
+
+dl_cross_area_nav_inc.nss(70): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cross_area_nav_inc.nss(114): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_exec_inc.nss(62): Error: NSC1062: Function "DL_TryAdvanceViaTransitionOrRoute" already has a body defined at dl_transition_contract_inc.nss(24)
+
+dl_directive_pipeline_inc.nss(7): Error: NSC1051: Constant "DL_PIPE_STEP_PREPARE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(9): Error: NSC1051: Constant "DL_PIPE_STEP_FINALIZE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(90): Error: NSC1020: Undeclared identifier "DL_TryHardResetActionQueue"
+
+dl_res_inc.nss(20): Error: NSC1051: Constant "DL_L_NPC_DIRECTIVE" must be initialized before it may be referenced
+
+dl_res_inc.nss(25): Error: NSC1051: Constant "DL_L_NPC_PROFILE_ID" must be initialized before it may be referenced
+
+dl_res_inc.nss(26): Error: NSC1051: Constant "DL_L_NPC_STATE" must be initialized before it may be referenced
+
+dl_res_inc.nss(27): Error: NSC1051: Constant "DL_L_NPC_SLEEP_PHASE" must be initialized before it may be referenced
+
+dl_res_inc.nss(28): Error: NSC1051: Constant "DL_L_NPC_SLEEP_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(29): Error: NSC1051: Constant "DL_L_NPC_SLEEP_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(30): Error: NSC1051: Constant "DL_L_NPC_SLEEP_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(31): Error: NSC1051: Constant "DL_L_NPC_WORK_KIND" must be initialized before it may be referenced
+
+dl_res_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORK_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(33): Error: NSC1051: Constant "DL_L_NPC_WORK_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(34): Error: NSC1051: Constant "DL_L_NPC_WORK_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(58): Error: NSC1051: Constant "DL_L_NPC_FOCUS_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(59): Error: NSC1051: Constant "DL_L_NPC_FOCUS_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(60): Error: NSC1051: Constant "DL_L_NPC_FOCUS_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(118): Error: NSC1051: Constant "DL_DIR_NONE" must be initialized before it may be referenced
+
+dl_res_inc.nss(119): Error: NSC1051: Constant "DL_DIR_SLEEP" must be initialized before it may be referenced
+
+dl_res_inc.nss(120): Error: NSC1051: Constant "DL_DIR_WORK" must be initialized before it may be referenced
+
+dl_res_inc.nss(121): Error: NSC1051: Constant "DL_DIR_SOCIAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(122): Error: NSC1051: Constant "DL_DIR_MEAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(123): Error: NSC1051: Constant "DL_DIR_PUBLIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(124): Error: NSC1051: Constant "DL_DIR_CHILL" must be initialized before it may be referenced
+
+dl_anchor_cache_inc.nss(151): Error: NSC1020: Undeclared identifier "DL_LogInvalidAreaTagIssue"
+
+dl_anchor_cache_inc.nss(199): Error: NSC1020: Undeclared identifier "DL_LogMissingAnchorIssue"
+
+dl_anchor_cache_inc.nss(220): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_anchor_cache_inc.nss(224): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_social_pool_inc.nss(7): Error: NSC1051: Constant "DL_L_NPC_SOCIAL_RESERVED_WP" must be initialized before it may be referenced
+
+dl_registry_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORKER_SEQ" must be initialized before it may be referenced
+
+dl_registry_inc.nss(51): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_TICK" must be initialized before it may be referenced
+
+dl_registry_inc.nss(52): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_MODE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_RESYNC_PENDING" must be initialized before it may be referenced
+
+dl_resync_inc.nss(2): Error: NSC1051: Constant "DL_L_NPC_RESYNC_REASON" must be initialized before it may be referenced
+
+dl_resync_inc.nss(6): Error: NSC1051: Constant "DL_RESYNC_NONE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(7): Error: NSC1051: Constant "DL_RESYNC_SPAWN" must be initialized before it may be referenced
+
+dl_cr_crime_inc.nss(317): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cr_crime_inc.nss(318): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+Compilation aborted with errors.
+
+Processing aborted.
+
+Total Execution time = 63ms
+
+Running mode 'check' for 'D:\a\COMPILATOR\COMPILATOR\daily_life\dl_spawn.nss' from 'D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin': D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin\NWNScriptCompiler.exe -c -a -i D:\a\COMPILATOR\COMPILATOR\daily_life -i D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\stock_scripts -b D:\a\COMPILATOR\COMPILATOR\artifacts\ncc D:\a\COMPILATOR\COMPILATOR\daily_life\dl_spawn.nss
+NWNScriptCompiler - built Jan 29 2014 19:24:04
+Copyright (C) 2008-2014 Skywing.
+Portions copyright (C) 2002-2003, Edward T. Smith.
+Portions copyright (C) 2003, The Open Knights Consortium.
+Compiling: dl_spawn.NSS
+
+dl_cache_helpers_inc.nss(584): Error: NSC1020: Undeclared identifier "DL_FindObjectByTagInAreaDeterministic"
+
+dl_blocked_inc.nss(51): Error: NSC1020: Undeclared identifier "DL_ApplyDirectiveSkeleton"
+
+dl_lifecycle_inc.nss(6): Error: NSC1051: Constant "DL_NPC_EVENT_BLOCKED" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(9): Error: NSC1051: Constant "DL_UD_PIPELINE_NPC_EVENT" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(37): Error: NSC1020: Undeclared identifier "DL_ClearTransitionExecutionState"
+
+dl_lifecycle_inc.nss(135): Error: NSC1020: Undeclared identifier "DL_UnregisterNpc"
+
+dl_lifecycle_inc.nss(240): Error: NSC1020: Undeclared identifier "DL_RegisterNpc"
+
+dl_lifecycle_inc.nss(241): Error: NSC1020: Undeclared identifier "DL_ReconcileNpcAreaRegistration"
+
+dl_lifecycle_inc.nss(242): Error: NSC1020: Undeclared identifier "DL_RequestResync"
+
+dl_lifecycle_inc.nss(243): Error: NSC1020: Undeclared identifier "DL_ProcessResync"
+
+dl_diag_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_BLOCKED_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(36): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_TARGET" must be initialized before it may be referenced
+
+dl_transition_inc.nss(37): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_STATUS" must be initialized before it may be referenced
+
+dl_transition_inc.nss(38): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(134): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(135): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(164): Error: NSC1020: Undeclared identifier "DL_ParseAutoNavTag"
+
+dl_transition_inc.nss(165): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(600): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(601): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(896): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveGlobalTransitionWaypointByTag"
+
+dl_transition_inc.nss(1025): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterIsTransitionDriverTypeMatch"
+
+dl_transition_inc.nss(1026): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(1164): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1201): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1266): Error: NSC1020: Undeclared identifier "DL_IsTransitionNavigableTarget"
+
+dl_transition_inc.nss(1305): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_legacy_adapter_inc.nss(61): Error: NSC1020: Undeclared identifier "DL_TRANSITION_TAG_SEARCH_CAP"
+
+dl_transition_legacy_adapter_inc.nss(63): Error: NSC1007: Required argument "nDeterministicCap" missing in call to "DL_ResolveObjectByTagWithPolicy"
+
+dl_transition_legacy_adapter_inc.nss(64): Error: NSC1039: Not all paths return a value
+
+dl_cross_area_nav_inc.nss(70): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cross_area_nav_inc.nss(114): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_exec_inc.nss(62): Error: NSC1062: Function "DL_TryAdvanceViaTransitionOrRoute" already has a body defined at dl_transition_contract_inc.nss(24)
+
+dl_directive_pipeline_inc.nss(7): Error: NSC1051: Constant "DL_PIPE_STEP_PREPARE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(9): Error: NSC1051: Constant "DL_PIPE_STEP_FINALIZE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(90): Error: NSC1020: Undeclared identifier "DL_TryHardResetActionQueue"
+
+dl_res_inc.nss(20): Error: NSC1051: Constant "DL_L_NPC_DIRECTIVE" must be initialized before it may be referenced
+
+dl_res_inc.nss(25): Error: NSC1051: Constant "DL_L_NPC_PROFILE_ID" must be initialized before it may be referenced
+
+dl_res_inc.nss(26): Error: NSC1051: Constant "DL_L_NPC_STATE" must be initialized before it may be referenced
+
+dl_res_inc.nss(27): Error: NSC1051: Constant "DL_L_NPC_SLEEP_PHASE" must be initialized before it may be referenced
+
+dl_res_inc.nss(28): Error: NSC1051: Constant "DL_L_NPC_SLEEP_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(29): Error: NSC1051: Constant "DL_L_NPC_SLEEP_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(30): Error: NSC1051: Constant "DL_L_NPC_SLEEP_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(31): Error: NSC1051: Constant "DL_L_NPC_WORK_KIND" must be initialized before it may be referenced
+
+dl_res_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORK_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(33): Error: NSC1051: Constant "DL_L_NPC_WORK_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(34): Error: NSC1051: Constant "DL_L_NPC_WORK_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(58): Error: NSC1051: Constant "DL_L_NPC_FOCUS_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(59): Error: NSC1051: Constant "DL_L_NPC_FOCUS_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(60): Error: NSC1051: Constant "DL_L_NPC_FOCUS_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(118): Error: NSC1051: Constant "DL_DIR_NONE" must be initialized before it may be referenced
+
+dl_res_inc.nss(119): Error: NSC1051: Constant "DL_DIR_SLEEP" must be initialized before it may be referenced
+
+dl_res_inc.nss(120): Error: NSC1051: Constant "DL_DIR_WORK" must be initialized before it may be referenced
+
+dl_res_inc.nss(121): Error: NSC1051: Constant "DL_DIR_SOCIAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(122): Error: NSC1051: Constant "DL_DIR_MEAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(123): Error: NSC1051: Constant "DL_DIR_PUBLIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(124): Error: NSC1051: Constant "DL_DIR_CHILL" must be initialized before it may be referenced
+
+dl_anchor_cache_inc.nss(151): Error: NSC1020: Undeclared identifier "DL_LogInvalidAreaTagIssue"
+
+dl_anchor_cache_inc.nss(199): Error: NSC1020: Undeclared identifier "DL_LogMissingAnchorIssue"
+
+dl_anchor_cache_inc.nss(220): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_anchor_cache_inc.nss(224): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_social_pool_inc.nss(7): Error: NSC1051: Constant "DL_L_NPC_SOCIAL_RESERVED_WP" must be initialized before it may be referenced
+
+dl_registry_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORKER_SEQ" must be initialized before it may be referenced
+
+dl_registry_inc.nss(51): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_TICK" must be initialized before it may be referenced
+
+dl_registry_inc.nss(52): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_MODE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_RESYNC_PENDING" must be initialized before it may be referenced
+
+dl_resync_inc.nss(2): Error: NSC1051: Constant "DL_L_NPC_RESYNC_REASON" must be initialized before it may be referenced
+
+dl_resync_inc.nss(6): Error: NSC1051: Constant "DL_RESYNC_NONE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(7): Error: NSC1051: Constant "DL_RESYNC_SPAWN" must be initialized before it may be referenced
+
+dl_cr_crime_inc.nss(317): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cr_crime_inc.nss(318): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+Compilation aborted with errors.
+
+Processing aborted.
+
+Total Execution time = 63ms
+
+Running mode 'check' for 'D:\a\COMPILATOR\COMPILATOR\daily_life\dl_userdef.nss' from 'D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin': D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\bin\NWNScriptCompiler.exe -c -a -i D:\a\COMPILATOR\COMPILATOR\daily_life -i D:\a\COMPILATOR\COMPILATOR\tools\nwn2_compiler\stock_scripts -b D:\a\COMPILATOR\COMPILATOR\artifacts\ncc D:\a\COMPILATOR\COMPILATOR\daily_life\dl_userdef.nss
+NWNScriptCompiler - built Jan 29 2014 19:24:04
+Copyright (C) 2008-2014 Skywing.
+Portions copyright (C) 2002-2003, Edward T. Smith.
+Portions copyright (C) 2003, The Open Knights Consortium.
+Compiling: dl_userdef.NSS
+
+dl_cache_helpers_inc.nss(584): Error: NSC1020: Undeclared identifier "DL_FindObjectByTagInAreaDeterministic"
+
+dl_blocked_inc.nss(51): Error: NSC1020: Undeclared identifier "DL_ApplyDirectiveSkeleton"
+
+dl_lifecycle_inc.nss(6): Error: NSC1051: Constant "DL_NPC_EVENT_BLOCKED" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(9): Error: NSC1051: Constant "DL_UD_PIPELINE_NPC_EVENT" must be initialized before it may be referenced
+
+dl_lifecycle_inc.nss(37): Error: NSC1020: Undeclared identifier "DL_ClearTransitionExecutionState"
+
+dl_lifecycle_inc.nss(135): Error: NSC1020: Undeclared identifier "DL_UnregisterNpc"
+
+dl_lifecycle_inc.nss(240): Error: NSC1020: Undeclared identifier "DL_RegisterNpc"
+
+dl_lifecycle_inc.nss(241): Error: NSC1020: Undeclared identifier "DL_ReconcileNpcAreaRegistration"
+
+dl_lifecycle_inc.nss(242): Error: NSC1020: Undeclared identifier "DL_RequestResync"
+
+dl_lifecycle_inc.nss(243): Error: NSC1020: Undeclared identifier "DL_ProcessResync"
+
+dl_diag_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_BLOCKED_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(36): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_TARGET" must be initialized before it may be referenced
+
+dl_transition_inc.nss(37): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_STATUS" must be initialized before it may be referenced
+
+dl_transition_inc.nss(38): Error: NSC1051: Constant "DL_L_NPC_TRANSITION_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_transition_inc.nss(134): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(135): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(164): Error: NSC1020: Undeclared identifier "DL_ParseAutoNavTag"
+
+dl_transition_inc.nss(165): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(600): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveExitTagFromKindId"
+
+dl_transition_inc.nss(601): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(896): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterResolveGlobalTransitionWaypointByTag"
+
+dl_transition_inc.nss(1025): Error: NSC1020: Undeclared identifier "DL_LegacyAdapterIsTransitionDriverTypeMatch"
+
+dl_transition_inc.nss(1026): Error: NSC1039: Not all paths return a value
+
+dl_transition_inc.nss(1164): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1201): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_inc.nss(1266): Error: NSC1020: Undeclared identifier "DL_IsTransitionNavigableTarget"
+
+dl_transition_inc.nss(1305): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_legacy_adapter_inc.nss(61): Error: NSC1020: Undeclared identifier "DL_TRANSITION_TAG_SEARCH_CAP"
+
+dl_transition_legacy_adapter_inc.nss(63): Error: NSC1007: Required argument "nDeterministicCap" missing in call to "DL_ResolveObjectByTagWithPolicy"
+
+dl_transition_legacy_adapter_inc.nss(64): Error: NSC1039: Not all paths return a value
+
+dl_cross_area_nav_inc.nss(70): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cross_area_nav_inc.nss(114): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_transition_exec_inc.nss(62): Error: NSC1062: Function "DL_TryAdvanceViaTransitionOrRoute" already has a body defined at dl_transition_contract_inc.nss(24)
+
+dl_directive_pipeline_inc.nss(7): Error: NSC1051: Constant "DL_PIPE_STEP_PREPARE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(9): Error: NSC1051: Constant "DL_PIPE_STEP_FINALIZE" must be initialized before it may be referenced
+
+dl_directive_pipeline_inc.nss(90): Error: NSC1020: Undeclared identifier "DL_TryHardResetActionQueue"
+
+dl_res_inc.nss(20): Error: NSC1051: Constant "DL_L_NPC_DIRECTIVE" must be initialized before it may be referenced
+
+dl_res_inc.nss(25): Error: NSC1051: Constant "DL_L_NPC_PROFILE_ID" must be initialized before it may be referenced
+
+dl_res_inc.nss(26): Error: NSC1051: Constant "DL_L_NPC_STATE" must be initialized before it may be referenced
+
+dl_res_inc.nss(27): Error: NSC1051: Constant "DL_L_NPC_SLEEP_PHASE" must be initialized before it may be referenced
+
+dl_res_inc.nss(28): Error: NSC1051: Constant "DL_L_NPC_SLEEP_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(29): Error: NSC1051: Constant "DL_L_NPC_SLEEP_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(30): Error: NSC1051: Constant "DL_L_NPC_SLEEP_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(31): Error: NSC1051: Constant "DL_L_NPC_WORK_KIND" must be initialized before it may be referenced
+
+dl_res_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORK_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(33): Error: NSC1051: Constant "DL_L_NPC_WORK_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(34): Error: NSC1051: Constant "DL_L_NPC_WORK_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(58): Error: NSC1051: Constant "DL_L_NPC_FOCUS_STATUS" must be initialized before it may be referenced
+
+dl_res_inc.nss(59): Error: NSC1051: Constant "DL_L_NPC_FOCUS_TARGET" must be initialized before it may be referenced
+
+dl_res_inc.nss(60): Error: NSC1051: Constant "DL_L_NPC_FOCUS_DIAGNOSTIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(118): Error: NSC1051: Constant "DL_DIR_NONE" must be initialized before it may be referenced
+
+dl_res_inc.nss(119): Error: NSC1051: Constant "DL_DIR_SLEEP" must be initialized before it may be referenced
+
+dl_res_inc.nss(120): Error: NSC1051: Constant "DL_DIR_WORK" must be initialized before it may be referenced
+
+dl_res_inc.nss(121): Error: NSC1051: Constant "DL_DIR_SOCIAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(122): Error: NSC1051: Constant "DL_DIR_MEAL" must be initialized before it may be referenced
+
+dl_res_inc.nss(123): Error: NSC1051: Constant "DL_DIR_PUBLIC" must be initialized before it may be referenced
+
+dl_res_inc.nss(124): Error: NSC1051: Constant "DL_DIR_CHILL" must be initialized before it may be referenced
+
+dl_anchor_cache_inc.nss(151): Error: NSC1020: Undeclared identifier "DL_LogInvalidAreaTagIssue"
+
+dl_anchor_cache_inc.nss(199): Error: NSC1020: Undeclared identifier "DL_LogMissingAnchorIssue"
+
+dl_anchor_cache_inc.nss(220): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_anchor_cache_inc.nss(224): Error: NSC1020: Undeclared identifier "DL_LogForeignWaypointIssue"
+
+dl_social_pool_inc.nss(7): Error: NSC1051: Constant "DL_L_NPC_SOCIAL_RESERVED_WP" must be initialized before it may be referenced
+
+dl_registry_inc.nss(32): Error: NSC1051: Constant "DL_L_NPC_WORKER_SEQ" must be initialized before it may be referenced
+
+dl_registry_inc.nss(51): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_TICK" must be initialized before it may be referenced
+
+dl_registry_inc.nss(52): Error: NSC1051: Constant "DL_L_AREA_PASS_SNAPSHOT_MODE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(1): Error: NSC1051: Constant "DL_L_NPC_RESYNC_PENDING" must be initialized before it may be referenced
+
+dl_resync_inc.nss(2): Error: NSC1051: Constant "DL_L_NPC_RESYNC_REASON" must be initialized before it may be referenced
+
+dl_resync_inc.nss(6): Error: NSC1051: Constant "DL_RESYNC_NONE" must be initialized before it may be referenced
+
+dl_resync_inc.nss(7): Error: NSC1051: Constant "DL_RESYNC_SPAWN" must be initialized before it may be referenced
+
+dl_cr_crime_inc.nss(317): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+dl_cr_crime_inc.nss(318): Error: NSC1020: Undeclared identifier "DL_SELECTION_SCORE_INF"
+
+Compilation aborted with errors.
+
+Processing aborted.
+
+Total Execution time = 47ms
+
