@@ -73,6 +73,60 @@ const string DL_NAV_TAG_PREFIX = "dl_nav_";
 const int DL_NAV_TAG_PREFIX_LENGTH = 7;
 const string DL_NAV_TAG_SEPARATOR = "_to_";
 const int DL_NAV_TAG_SEPARATOR_LENGTH = 4;
+const string DL_TRANSITION_KEY_SEPARATOR = "|";
+
+// Runtime-state constructors (locals/cache keys used by gameplay state).
+string DL_BuildTransitionRuntimeKey2(string sPartA, string sPartB)
+{
+    return sPartA + DL_TRANSITION_KEY_SEPARATOR + sPartB;
+}
+
+string DL_BuildTransitionRuntimeKey3(string sPartA, string sPartB, string sPartC)
+{
+    return DL_BuildTransitionRuntimeKey2(sPartA, sPartB) + DL_TRANSITION_KEY_SEPARATOR + sPartC;
+}
+
+// Telemetry/log constructors (diagnostics/log payload fragments).
+string DL_BuildTransitionDiagnostic(string sDiagContext, string sDiagCode)
+{
+    if (sDiagCode == "")
+    {
+        return "";
+    }
+    if (sDiagContext == "")
+    {
+        return sDiagCode;
+    }
+    return sDiagContext + "_" + sDiagCode;
+}
+
+string DL_BuildAutoNavReverseTag(string sFromZone, string sToZone)
+{
+    if (sFromZone == "" || sToZone == "")
+    {
+        return "";
+    }
+
+    return DL_NAV_TAG_PREFIX + sToZone + DL_NAV_TAG_SEPARATOR + sFromZone;
+}
+
+string DL_BuildTransitionLegacyExitTag(string sKind, string sTransitionId)
+{
+    if (sTransitionId == "")
+    {
+        return "";
+    }
+
+    if (sKind == DL_TRANSITION_KIND_AREA_LINK)
+    {
+        return "dl_xfer_" + sTransitionId + "_to";
+    }
+    if (sKind == DL_TRANSITION_KIND_LOCAL_JUMP)
+    {
+        return "dl_jump_" + sTransitionId + "_to";
+    }
+    return "";
+}
 
 // Forward declarations for helpers provided by other include units.
 int DL_ClampInt(int nValue, int nMin, int nMax);
@@ -177,7 +231,7 @@ string DL_GetAutoNavReverseTag(string sTag)
         return "";
     }
 
-    return DL_NAV_TAG_PREFIX + sTo + DL_NAV_TAG_SEPARATOR + sFrom;
+    return DL_BuildAutoNavReverseTag(sFrom, sTo);
 }
 
 object DL_GetTransitionWaypointByTag(string sTag)
@@ -323,13 +377,8 @@ void DL_SetTransitionState(object oNpc, string sStatus, string sDiagnostic, stri
         return;
     }
 
-    DL_SetRuntimeState(
-        oNpc,
-        DL_L_NPC_TRANSITION_STATUS,
-        sStatus,
-        DL_L_NPC_TRANSITION_DIAGNOSTIC,
-        DL_BuildTransitionDiagnostic(sDiagnostic, sDiagContext)
-    );
+    string sDiagnosticValue = DL_BuildTransitionDiagnostic(sDiagContext, sDiagnostic);
+    DL_SetRuntimeState(oNpc, DL_L_NPC_TRANSITION_STATUS, sStatus, DL_L_NPC_TRANSITION_DIAGNOSTIC, sDiagnosticValue);
 }
 
 string DL_GetResolvedTransitionExitTag(object oEntryWp)
@@ -353,17 +402,7 @@ string DL_GetResolvedTransitionExitTag(object oEntryWp)
 
     string sKind = DL_GetWaypointTransitionKind(oEntryWp);
     string sTransitionId = DL_GetWaypointTransitionId(oEntryWp);
-    if (sKind == DL_TRANSITION_KIND_AREA_LINK)
-    {
-        return "dl_xfer_" + sTransitionId + "_to";
-    }
-
-    if (sKind == DL_TRANSITION_KIND_LOCAL_JUMP)
-    {
-        return "dl_jump_" + sTransitionId + "_to";
-    }
-
-    return "";
+    return DL_BuildTransitionLegacyExitTag(sKind, sTransitionId);
 }
 
 void DL_ClearTransitionExecutionState(object oNpc)

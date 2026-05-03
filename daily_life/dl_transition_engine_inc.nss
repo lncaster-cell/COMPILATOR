@@ -126,6 +126,6 @@ int DL_ExecuteTransitionEngine(object oNpc, object oEntryWp, string sDiagPrefix)
         oEntryWp,
         lExit,
         oExitWp,
-        DL_BuildTransitionDiagnostic(DL_TRANSITION_DIAG_IN_PROGRESS, sDiagPrefix)
+        DL_BuildTransitionDiagnostic(sDiagPrefix, DL_TRANSITION_DIAG_IN_PROGRESS)
     );
 }
