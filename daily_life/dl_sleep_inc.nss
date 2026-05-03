@@ -178,7 +178,7 @@ void DL_ExecuteSleepDirective(object oNpc)
     int bMayUseNavigation = DL_ShouldAttemptSleepNavigation(oNpc);
 
     if (!bCommittedToBed && bMayUseNavigation &&
-        DL_TryAdvanceViaTransitionOrRoute(oNpc, oApproach, TRUE, GetTag(oApproach)))
+        DL_TryAdvanceViaTransitionOrRouteEx(oNpc, oApproach, DL_DIAG_CTX_ROUTED, TRUE))
     {
         return;
     }
@@ -203,7 +203,7 @@ void DL_ExecuteSleepDirective(object oNpc)
     }
 
     if (bMayUseNavigation &&
-        DL_TryAdvanceViaTransitionOrRoute(oNpc, oBed, TRUE, GetTag(oBed)))
+        DL_TryAdvanceViaTransitionOrRouteEx(oNpc, oBed, DL_DIAG_CTX_ROUTED, TRUE))
     {
         return;
     }
