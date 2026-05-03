@@ -17,6 +17,16 @@ const int DL_SOCIAL_POOL_SEARCH_CAP = 32;
 const int DL_SOCIAL_RESERVATION_TTL_MINUTES = 90;
 const string DL_LOOKUP_MODE_SOCIAL_POOL = "social_pool";
 
+string DL_GetAreaPassSnapshotTickLocalForSocial()
+{
+    return "dl_area_pass_snapshot_tick";
+}
+
+string DL_GetAreaPassSnapshotModeLocalForSocial()
+{
+    return "dl_area_pass_snapshot_mode";
+}
+
 int DL_GetSocialReservationAbsMin(object oWp)
 {
     return GetLocalInt(oWp, DL_L_WP_SOCIAL_RESERVED_ABS_MIN);
@@ -204,8 +214,8 @@ void DL_EnsureAreaSocialWaypointIndex(object oArea)
         return;
     }
 
-    int nTick = GetLocalInt(oArea, DL_L_AREA_PASS_SNAPSHOT_TICK);
-    int nMode = GetLocalInt(oArea, DL_L_AREA_PASS_SNAPSHOT_MODE);
+    int nTick = GetLocalInt(oArea, DL_GetAreaPassSnapshotTickLocalForSocial());
+    int nMode = GetLocalInt(oArea, DL_GetAreaPassSnapshotModeLocalForSocial());
     if (GetLocalInt(oArea, DL_L_AREA_SOCIAL_INDEX_BUILD_TICK) == nTick &&
         GetLocalInt(oArea, DL_L_AREA_SOCIAL_INDEX_BUILD_MODE) == nMode)
     {
@@ -429,7 +439,7 @@ object DL_ResolveStandaloneSocialWaypoint(object oNpc, string sKind)
 
     if (GetIsObjectValid(oBest))
     {
-        DL_ReserveSocialWaypointForNpc(oNpc, oBest);
+        DL_ReserveSocialWaypointForNpc(oBest == OBJECT_INVALID ? OBJECT_INVALID : oNpc, oBest);
         return oBest;
     }
 

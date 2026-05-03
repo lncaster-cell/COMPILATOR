@@ -55,8 +55,3 @@ int DL_TryAdvanceViaTransitionOrRouteEx(object oNpc, object oTargetWp, string sR
 
     return FALSE;
 }
-
-int DL_TryAdvanceViaTransitionOrRoute(object oNpc, object oTargetWp, string sRouteContext)
-{
-    return DL_TryAdvanceViaTransitionOrRouteEx(oNpc, oTargetWp, sRouteContext, FALSE);
-}

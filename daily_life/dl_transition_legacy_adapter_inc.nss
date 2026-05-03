@@ -58,7 +58,7 @@ object DL_LegacyAdapterResolveGlobalTransitionWaypointByTag(string sResolvedTag)
         sResolvedTag,
         OBJECT_TYPE_WAYPOINT,
         OBJECT_INVALID,
-        DL_TRANSITION_TAG_SEARCH_CAP,
+        DL_TRANSITION_TAG_SEARCH_CAP_GLOBAL_FALLBACK,
         DL_TAG_FALLBACK_GLOBAL
     );
 }

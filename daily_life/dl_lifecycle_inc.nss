@@ -98,7 +98,7 @@ void DL_ResetNpcDirectiveExecutionState(object oNpc, int nDirectiveMask)
         DeleteLocalString(oNpc, DL_L_NPC_FOCUS_TARGET);
         DeleteLocalString(oNpc, DL_L_NPC_FOCUS_STATUS);
         DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
-        DeleteLocalObject(oNpc, DL_L_NPC_SOCIAL_RESERVED_WP);
+        DeleteLocalObject(oNpc, DL_GetNpcSocialReservedWpLocal());
     }
     if (nDirectiveMask & DL_NPC_RESET_DIRECTIVE_EXEC_PUBLIC)
     {
@@ -116,8 +116,8 @@ void DL_InitNpcRuntimeState(object oNpc, string sIngressReason)
     }
 
     SetLocalInt(oNpc, DL_L_NPC_EVENT_KIND, DL_NPC_EVENT_SPAWN);
-    SetLocalInt(oNpc, DL_L_NPC_RESYNC_PENDING, FALSE);
-    SetLocalInt(oNpc, DL_L_NPC_RESYNC_REASON, DL_RESYNC_NONE);
+    SetLocalInt(oNpc, DL_GetNpcResyncPendingLocal(), FALSE);
+    SetLocalInt(oNpc, DL_GetNpcResyncReasonLocal(), 0);
 
     if (sIngressReason == "")
     {
@@ -136,9 +136,9 @@ void DL_CleanupNpcRuntimeState(object oNpc, string sEgressReason)
 
     DeleteLocalInt(oNpc, DL_L_NPC_EVENT_KIND);
     DeleteLocalInt(oNpc, DL_L_NPC_EVENT_SEQ);
-    SetLocalInt(oNpc, DL_L_NPC_RESYNC_PENDING, FALSE);
-    SetLocalInt(oNpc, DL_L_NPC_RESYNC_REASON, DL_RESYNC_NONE);
-    DeleteLocalInt(oNpc, DL_L_NPC_WORKER_SEQ);
+    SetLocalInt(oNpc, DL_GetNpcResyncPendingLocal(), FALSE);
+    SetLocalInt(oNpc, DL_GetNpcResyncReasonLocal(), 0);
+    DeleteLocalInt(oNpc, DL_GetNpcWorkerSeqLocal());
 
     DeleteLocalObject(oNpc, DL_L_NPC_BLOCKED_OBJ);
     DeleteLocalString(oNpc, DL_L_NPC_BLOCKED_TAG);
@@ -239,7 +239,7 @@ void DL_HandleNpcUserDefined(object oNpc, int nUserDefined)
 
         DL_RegisterNpc(oNpc);
         DL_ReconcileNpcAreaRegistration(oNpc);
-        DL_RequestResync(oNpc, DL_RESYNC_SPAWN);
+        DL_RequestResync(oNpc, 1);
         DL_ProcessResync(oNpc);
         return;
     }
