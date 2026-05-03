@@ -1,6 +1,7 @@
 const string DL_L_MODULE_CACHE_METRIC_PREFIX = "dl_metric_cache_";
 const string DL_L_CACHE_CTX_PREFIX = "dl_cache_ctx_";
 const string DL_L_CACHE_MISS_TICK_SUFFIX = "miss_tick";
+const string DL_L_AREA_TAG_CACHE_PREFIX = "dl_area_tag_cache_";
 
 const int DL_TAG_ENUM_DEFAULT_CAP = 32;
 const int DL_WAYPOINT_TAG_SEARCH_CAP = 64;
@@ -15,6 +16,50 @@ int DL_GetSafeTagSearchCap(int nRequestedCap)
     }
 
     return nRequestedCap;
+}
+
+string DL_BuildAreaTagCacheKey(string sTag, int nObjectType, object oArea)
+{
+    return DL_L_AREA_TAG_CACHE_PREFIX + ObjectToString(oArea) + "_" + IntToString(nObjectType) + "_" + sTag;
+}
+
+object DL_GetAreaScopedCachedObjectByTag(object oOwner, string sTag, int nObjectType, object oArea)
+{
+    if (!GetIsObjectValid(oOwner) || !GetIsObjectValid(oArea) || sTag == "")
+    {
+        return OBJECT_INVALID;
+    }
+
+    string sLocal = DL_BuildAreaTagCacheKey(sTag, nObjectType, oArea);
+    object oCached = GetLocalObject(oOwner, sLocal);
+    if (DL_IsCachedObjectValidForTagInArea(oCached, sTag, nObjectType, oArea))
+    {
+        return oCached;
+    }
+
+    if (GetIsObjectValid(oCached))
+    {
+        DeleteLocalObject(oOwner, sLocal);
+    }
+
+    return OBJECT_INVALID;
+}
+
+void DL_SetAreaScopedCachedObjectByTag(object oOwner, string sTag, int nObjectType, object oArea, object oValue)
+{
+    if (!GetIsObjectValid(oOwner) || !GetIsObjectValid(oArea) || sTag == "")
+    {
+        return;
+    }
+
+    string sLocal = DL_BuildAreaTagCacheKey(sTag, nObjectType, oArea);
+    if (!GetIsObjectValid(oValue))
+    {
+        DeleteLocalObject(oOwner, sLocal);
+        return;
+    }
+
+    SetLocalObject(oOwner, sLocal, oValue);
 }
 
 object DL_FindObjectByTagWithChecks(
@@ -32,6 +77,16 @@ object DL_FindObjectByTagWithChecks(
     }
 
     int nCap = DL_GetSafeTagSearchCap(nSearchCap);
+    if (GetIsObjectValid(oArea))
+    {
+        object oAreaCached = DL_GetAreaScopedCachedObjectByTag(OBJECT_SELF, sTag, nObjectType, oArea);
+        if (GetIsObjectValid(oAreaCached) &&
+            (!GetIsObjectValid(oExclude) || oAreaCached != oExclude) &&
+            (!bRequireActivePipelineNpc || DL_IsActivePipelineNpc(oAreaCached)))
+        {
+            return oAreaCached;
+        }
+    }
     int nNth = 0;
     while (nNth < nCap)
     {
@@ -65,6 +120,10 @@ object DL_FindObjectByTagWithChecks(
             continue;
         }
 
+        if (GetIsObjectValid(oArea))
+        {
+            DL_SetAreaScopedCachedObjectByTag(OBJECT_SELF, sTag, nObjectType, oArea, oCandidate);
+        }
         return oCandidate;
     }
 
@@ -216,11 +275,18 @@ object DL_GetNpcCachedObjectByTagInArea(
         return OBJECT_INVALID;
     }
 
+    int nNowTick = DL_GetAreaTick(oArea);
+    if (DL_IsCacheMissSuppressedThisTick(oNpc, sCacheLocal, nNowTick))
+    {
+        return OBJECT_INVALID;
+    }
+
     int nTier = DL_GetAreaTier(oArea);
     int nLifecycleSeq = GetLocalInt(oNpc, DL_L_NPC_EVENT_SEQ);
     object oCached = DL_GetCachedObject(oNpc, sCacheLocal, sTag, nObjectType, oArea, nTier, nLifecycleSeq);
     if (GetIsObjectValid(oCached))
     {
+        DL_ClearCacheMissSuppressedTick(oNpc, sCacheLocal);
         DL_RecordCacheMetric(oArea, sMetricScope, TRUE);
         return oCached;
     }
@@ -231,10 +297,13 @@ object DL_GetNpcCachedObjectByTagInArea(
     if (GetIsObjectValid(oResolved))
     {
         DL_SetCachedObject(oNpc, sCacheLocal, oResolved, sTag, nObjectType, oArea, nTier, nLifecycleSeq);
+        DL_SetAreaScopedCachedObjectByTag(oNpc, sTag, nObjectType, oArea, oResolved);
+        DL_ClearCacheMissSuppressedTick(oNpc, sCacheLocal);
         DL_RecordCacheMetric(oArea, sMetricScope, FALSE);
         return oResolved;
     }
 
+    DL_MarkCacheMissThisTick(oNpc, sCacheLocal, nNowTick);
     DL_RecordCacheMetric(oArea, sMetricScope, FALSE);
     return OBJECT_INVALID;
 }
@@ -268,9 +337,16 @@ object DL_ResolveCachedObjectByTagInArea(
         return OBJECT_INVALID;
     }
 
+    int nNowTick = DL_GetAreaTick(oArea);
+    if (DL_IsCacheMissSuppressedThisTick(oOwner, sCacheLocal, nNowTick))
+    {
+        return OBJECT_INVALID;
+    }
+
     object oCached = DL_GetCachedObject(oOwner, sCacheLocal, sTag, nObjectType, oArea, nTier, nLifecycleSeq);
     if (GetIsObjectValid(oCached))
     {
+        DL_ClearCacheMissSuppressedTick(oOwner, sCacheLocal);
         return oCached;
     }
 
@@ -278,9 +354,12 @@ object DL_ResolveCachedObjectByTagInArea(
     if (GetIsObjectValid(oResolved))
     {
         DL_SetCachedObject(oOwner, sCacheLocal, oResolved, sTag, nObjectType, oArea, nTier, nLifecycleSeq);
+        DL_SetAreaScopedCachedObjectByTag(oOwner, sTag, nObjectType, oArea, oResolved);
+        DL_ClearCacheMissSuppressedTick(oOwner, sCacheLocal);
         return oResolved;
     }
 
+    DL_MarkCacheMissThisTick(oOwner, sCacheLocal, nNowTick);
     DL_InvalidateCachedObject(oOwner, sCacheLocal);
     return OBJECT_INVALID;
 }
