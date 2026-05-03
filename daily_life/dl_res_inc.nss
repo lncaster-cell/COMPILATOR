@@ -1,6 +1,7 @@
 #include "dl_runtime_contract_inc"
 #include "dl_activity_archive_anim_inc"
 #include "dl_cache_helpers_inc"
+#include "dl_index_inc"
 #include "dl_directive_pipeline_inc"
 #include "dl_transition_legacy_adapter_inc"
 #include "dl_transition_inc"
@@ -669,12 +670,8 @@ void DL_ApplyIdleLikeDirectiveState(object oNpc, int bSocial)
     DL_ClearNpcSocialReservation(oNpc);
     DL_ClearActivityPresentation(oNpc);
 }
-// Deprecated: legacy external fallback predicate; SOCIAL fallback now runs
-// atomically inside SOCIAL execution branch.
-int DL_ShouldFallbackSocialToPublic(object oNpc)
-{
-    return FALSE;
-}
+// SOCIAL fallback to PUBLIC is implemented only inside dl_focus_inc.nss
+// via DL_ShouldFallbackSocialToPublicLocal().
 int DL_ShouldUseDirectiveFastPath(object oNpc, int nEffectiveDirective)
 {
     if (!GetIsObjectValid(oNpc))

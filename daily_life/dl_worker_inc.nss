@@ -98,11 +98,13 @@ void DL_WriteResyncTelemetry(object oArea, int nProcessed, int bNoBudget)
 
 void DL_MarkAreaRegistryRebuildPending(object oArea)
 {
+    DL_InvalidateAreaSocialWaypointIndex(oArea);
     SetLocalInt(oArea, DL_L_AREA_REGISTRY_REBUILD_PENDING, TRUE);
 }
 
 void DL_ClearAreaRegistryRebuildPending(object oArea)
 {
+    DL_InvalidateAreaSocialWaypointIndex(oArea);
     DeleteLocalInt(oArea, DL_L_AREA_REGISTRY_REBUILD_PENDING);
     DeleteLocalInt(oArea, DL_L_AREA_REGISTRY_REBUILD_OBJ_CURSOR);
     DeleteLocalInt(oArea, DL_L_AREA_REGISTRY_REPAIR_CURSOR);
@@ -200,7 +202,7 @@ int DL_RunAreaRegistryFallbackIntegrityRepair(object oArea, int nRepairBudget)
     return bMutated;
 }
 
-int DL_RunAreaRegistryFallbackCatchupScan(object oArea, int nTickStamp, int nScanBudget)
+int DL_RunAreaRegistryFallbackCatchupScan(object oArea, int nTickStamp, int nScanBudget, int nSnapshotCount)
 {
     if (nScanBudget < DL_WORKER_BUDGET_MIN)
     {
@@ -226,7 +228,6 @@ int DL_RunAreaRegistryFallbackCatchupScan(object oArea, int nTickStamp, int nSca
         nObjectHopBudget = nScanBudget;
     }
 
-    int nSnapshotCount = DL_EnsureAreaPassSnapshot(oArea, nTickStamp, DL_AREA_PASS_MODE_FALLBACK);
     if (nSnapshotCount > 0)
     {
         if (nObjCursor >= nSnapshotCount)
@@ -260,40 +261,35 @@ int DL_RunAreaRegistryFallbackCatchupScan(object oArea, int nTickStamp, int nSca
     }
 
     // Fallback path: preserve legacy direct full-scan behavior when snapshot is unavailable.
-    object oObj = GetFirstObjectInArea(oArea);
+    object oCursor = GetFirstObjectInArea(oArea);
     int nSkipped = 0;
-    while (GetIsObjectValid(oObj) && nSkipped < nObjCursor && nSkipped < nObjectHopBudget)
+    while (GetIsObjectValid(oCursor) && nSkipped < nObjCursor && nSkipped < nObjectHopBudget)
     {
-        oObj = GetNextObjectInArea(oArea);
+        oCursor = GetNextObjectInArea(oArea);
         nSkipped = nSkipped + 1;
     }
 
-    if (nSkipped < nObjCursor && !GetIsObjectValid(oObj))
+    if (nSkipped < nObjCursor && !GetIsObjectValid(oCursor))
     {
         nObjCursor = 0;
-        oObj = GetFirstObjectInArea(oArea);
+        oCursor = GetFirstObjectInArea(oArea);
     }
 
-    int nVisitedObjects = 0;
+    int nVisitedObjects = nSkipped;
     int nScannedActive = 0;
     int bReachedEnd = FALSE;
+    object oNpc = OBJECT_INVALID;
 
-    while (GetIsObjectValid(oObj) && nScannedActive < nScanBudget && nVisitedObjects < nObjectHopBudget)
+    while (nScannedActive < nScanBudget && DL_GetNextActiveAreaNpc(oArea, oCursor, nVisitedObjects, nObjectHopBudget, oNpc))
     {
-        if (GetObjectType(oObj) == OBJECT_TYPE_CREATURE && DL_IsActivePipelineNpc(oObj))
+        nScannedActive = nScannedActive + 1;
+        if (GetLocalInt(oNpc, DL_L_NPC_REG_ON) != TRUE)
         {
-            nScannedActive = nScannedActive + 1;
-            if (GetLocalInt(oObj, DL_L_NPC_REG_ON) != TRUE)
-            {
-                DL_RegisterNpc(oObj);
-            }
+            DL_RegisterNpc(oNpc);
         }
-
-        oObj = GetNextObjectInArea(oArea);
-        nVisitedObjects = nVisitedObjects + 1;
     }
 
-    if (!GetIsObjectValid(oObj))
+    if (!GetIsObjectValid(oCursor))
     {
         bReachedEnd = TRUE;
     }
@@ -310,7 +306,7 @@ int DL_RunAreaRegistryFallbackCatchupScan(object oArea, int nTickStamp, int nSca
     return bReachedEnd;
 }
 
-int DL_RunAreaRegistryFallbackRecovery(object oArea, int nTickStamp, int nScanBudget)
+int DL_RunAreaRegistryFallbackRecovery(object oArea, int nTickStamp, int nScanBudget, int nSnapshotCount)
 {
     if (nScanBudget < DL_WORKER_BUDGET_MIN)
     {
@@ -318,7 +314,7 @@ int DL_RunAreaRegistryFallbackRecovery(object oArea, int nTickStamp, int nScanBu
     }
 
     DL_RunAreaRegistryFallbackIntegrityRepair(oArea, nScanBudget);
-    int bCatchupDone = DL_RunAreaRegistryFallbackCatchupScan(oArea, nTickStamp, nScanBudget);
+    int bCatchupDone = DL_RunAreaRegistryFallbackCatchupScan(oArea, nTickStamp, nScanBudget, nSnapshotCount);
     if (bCatchupDone)
     {
         DL_ClearAreaRegistryRebuildPending(oArea);
@@ -377,7 +373,7 @@ int DL_ProcessAreaNpcByPassMode(object oArea, object oNpc, int nPassMode, int nT
     return TRUE;
 }
 
-int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPassMode, int nTickStamp)
+int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPassMode, int nTickStamp, int nSnapshotCount)
 {
     if (nCursor < 0)
     {
@@ -389,8 +385,6 @@ int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPas
         nBudget = DL_WORKER_BUDGET_MIN;
     }
 
-    // One-pass snapshot keyed by (area, tick, pass mode), rebuilt automatically on tick change.
-    DL_EnsureAreaPassSnapshot(oArea, nTickStamp, nPassMode);
 
     int nNpcProcessed = 0;
     int nCandidates = 0;
@@ -404,7 +398,7 @@ int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPas
     if (nNpcRegistered == 0)
     {
         DL_MarkAreaRegistryRebuildPending(oArea);
-        nNpcRegistered = DL_RunAreaRegistryFallbackRecovery(oArea, nTickStamp, nBudget);
+        nNpcRegistered = DL_RunAreaRegistryFallbackRecovery(oArea, nTickStamp, nBudget, nSnapshotCount);
         if (nNpcRegistered == 0)
         {
             SetLocalInt(oArea, DL_L_AREA_PASS_LAST_SEEN, 0);
@@ -476,7 +470,7 @@ int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPas
 
     if (GetLocalInt(oArea, DL_L_AREA_REGISTRY_REBUILD_PENDING) == TRUE)
     {
-        nNpcRegistered = DL_RunAreaRegistryFallbackRecovery(oArea, nTickStamp, nBudget);
+        nNpcRegistered = DL_RunAreaRegistryFallbackRecovery(oArea, nTickStamp, nBudget, nSnapshotCount);
     }
 
     SetLocalInt(oArea, DL_L_AREA_PASS_LAST_SEEN, nNpcRegistered);
@@ -528,6 +522,12 @@ void DL_RunAreaEnterResyncTick(object oArea)
     }
 
     int nBudget = DL_GetAreaResyncBudget(oArea);
+    int nTickStamp = DL_GetAreaTick(oArea);
+    int nSnapshotCount = DL_EnsureAreaPassSnapshot(oArea, nTickStamp, DL_AREA_PASS_MODE_RESYNC);
+    if (nSnapshotCount > 0 && nBudget > nSnapshotCount)
+    {
+        nBudget = nSnapshotCount;
+    }
     nBudget = DL_ConsumeModuleNpcBudget(nBudget);
     if (nBudget <= 0)
     {
@@ -538,8 +538,7 @@ void DL_RunAreaEnterResyncTick(object oArea)
     }
 
     int nCursor = GetLocalInt(oArea, DL_L_AREA_ENTER_RESYNC_CURSOR);
-    int nTickStamp = DL_GetAreaTick(oArea);
-    int nNpcProcessed = DL_RunAreaNpcRoundRobinPass(oArea, nCursor, nBudget, DL_AREA_PASS_MODE_RESYNC, nTickStamp);
+    int nNpcProcessed = DL_RunAreaNpcRoundRobinPass(oArea, nCursor, nBudget, DL_AREA_PASS_MODE_RESYNC, nTickStamp, nSnapshotCount);
     int nNpcSeen = GetLocalInt(oArea, DL_L_AREA_PASS_LAST_SEEN);
 
     SetLocalInt(oArea, DL_L_AREA_ENTER_RESYNC_TOUCHED, nNpcProcessed);
@@ -583,6 +582,11 @@ void DL_RunAreaWarmMaintenanceTick(object oArea)
     SetLocalInt(oArea, DL_L_AREA_LAST_WARM_MAINT_TICK, nTickStamp);
 
     int nBudget = DL_WORKER_BUDGET_MIN;
+    int nSnapshotCount = DL_EnsureAreaPassSnapshot(oArea, nTickStamp, DL_AREA_PASS_MODE_WARM);
+    if (nSnapshotCount > 0 && nBudget > nSnapshotCount)
+    {
+        nBudget = nSnapshotCount;
+    }
     nBudget = DL_ConsumeModuleNpcBudget(nBudget);
     if (nBudget <= 0)
     {
@@ -593,7 +597,7 @@ void DL_RunAreaWarmMaintenanceTick(object oArea)
     }
 
     int nCursor = DL_GetAreaWorkerCursor(oArea);
-    int nNpcProcessed = DL_RunAreaNpcRoundRobinPass(oArea, nCursor, nBudget, DL_AREA_PASS_MODE_WARM, nTickStamp);
+    int nNpcProcessed = DL_RunAreaNpcRoundRobinPass(oArea, nCursor, nBudget, DL_AREA_PASS_MODE_WARM, nTickStamp, nSnapshotCount);
     int nNpcSeen = GetLocalInt(oArea, DL_L_AREA_PASS_LAST_SEEN);
 
     if (nNpcSeen <= 0)
@@ -638,6 +642,12 @@ void DL_RunAreaWorkerTick(object oArea)
     DL_RunAreaEnterResyncTick(oArea);
 
     int nBudget = DL_GetAreaWorkerBudget(oArea);
+    int nTickStamp = DL_GetAreaTick(oArea);
+    int nSnapshotCount = DL_EnsureAreaPassSnapshot(oArea, nTickStamp, DL_AREA_PASS_MODE_WORKER);
+    if (nSnapshotCount > 0 && nBudget > nSnapshotCount)
+    {
+        nBudget = nSnapshotCount;
+    }
     nBudget = DL_ConsumeModuleNpcBudget(nBudget);
     if (nBudget <= 0)
     {
@@ -650,8 +660,7 @@ void DL_RunAreaWorkerTick(object oArea)
     }
 
     int nCursor = DL_GetAreaWorkerCursor(oArea);
-    int nTickStamp = DL_GetAreaTick(oArea);
-    int nNpcProcessed = DL_RunAreaNpcRoundRobinPass(oArea, nCursor, nBudget, DL_AREA_PASS_MODE_WORKER, nTickStamp);
+    int nNpcProcessed = DL_RunAreaNpcRoundRobinPass(oArea, nCursor, nBudget, DL_AREA_PASS_MODE_WORKER, nTickStamp, nSnapshotCount);
     int nNpcSeen = GetLocalInt(oArea, DL_L_AREA_PASS_LAST_SEEN);
 
     if (nNpcSeen <= 0)
