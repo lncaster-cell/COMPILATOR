@@ -98,12 +98,11 @@ object DL_FindCrossAreaNavEntry(object oNpc, object oTarget, string sFromZone, s
                     {
                         nScore = nScore + FloatToInt(GetDistanceBetween(oExit, oTarget) * 100.0);
                     }
-                    string sTie = DL_SelectionBuildTieKey(oEntry, oExit, i);
-                    if (DL_SelectionCompare(nScore, nBestScore, sTie, sBestTie))
+                    if (DL_SelectionConsiderTransitionCandidate(nScore, oEntry, oExit, i, nBestScore, sBestTie))
                     {
                         oBestEntry = oEntry;
                         nBestScore = nScore;
-                        sBestTie = sTie;
+                        sBestTie = DL_SelectionBuildTieKey(oEntry, oExit, i);
                     }
                 }
             }

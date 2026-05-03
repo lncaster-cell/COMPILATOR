@@ -911,12 +911,11 @@ object DL_FindDirectNavZoneEntry(object oNpc, object oTarget, string sFromZone, 
             {
                 nScore = nScore + FloatToInt(GetDistanceBetween(oExit, oTarget) * 100.0);
             }
-            string sTie = DL_SelectionBuildTieKey(oEntry, oExit, i);
-            if (DL_SelectionCompare(nScore, nBestScore, sTie, sBestTie))
+            if (DL_SelectionConsiderTransitionCandidate(nScore, oEntry, oExit, i, nBestScore, sBestTie))
             {
                 oBestEntry = oEntry;
                 nBestScore = nScore;
-                sBestTie = sTie;
+                sBestTie = DL_SelectionBuildTieKey(oEntry, oExit, i);
             }
         }
         i = i + 1;
@@ -959,12 +958,11 @@ object DL_FindTwoHopNavZoneEntry(object oNpc, object oTarget, string sFromZone, 
                     {
                         nScore = nScore + FloatToInt(GetDistanceBetween(oExitB, oTarget) * 100.0);
                     }
-                    string sTie = DL_SelectionBuildTieKey(oEntryA, oEntryB, i);
-                    if (DL_SelectionCompare(nScore, nBestScore, sTie, sBestTie))
+                    if (DL_SelectionConsiderTransitionCandidate(nScore, oEntryA, oEntryB, i, nBestScore, sBestTie))
                     {
                         oBestEntry = oEntryA;
                         nBestScore = nScore;
-                        sBestTie = sTie;
+                        sBestTie = DL_SelectionBuildTieKey(oEntryA, oEntryB, i);
                     }
                 }
                 j = j + 1;
@@ -1009,12 +1007,11 @@ int DL_TryUseNavigationRouteToTarget(object oNpc, object oTarget)
             {
                 int nScore = FloatToInt(GetDistanceBetween(oNpc, oEntry) * 100.0) +
                              FloatToInt(GetDistanceBetween(oExit, oTarget) * 100.0);
-                string sTie = DL_SelectionBuildTieKey(oEntry, oExit, i);
-                if (DL_SelectionCompare(nScore, nBestScore, sTie, sBestTie))
+                if (DL_SelectionConsiderTransitionCandidate(nScore, oEntry, oExit, i, nBestScore, sBestTie))
                 {
                     oBestEntry = oEntry;
                     nBestScore = nScore;
-                    sBestTie = sTie;
+                    sBestTie = DL_SelectionBuildTieKey(oEntry, oExit, i);
                 }
             }
         }
