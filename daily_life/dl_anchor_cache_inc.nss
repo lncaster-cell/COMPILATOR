@@ -47,15 +47,7 @@ object DL_ResolveEffectiveWaypointForNpc(object oNpc, object oWp)
         return oWp;
     }
 
-    // Backward-compatible transition handoff:
-    // a foreign transition entry may still be used if its exit lands in the NPC area.
-    object oExitWp = DL_TryGetTransitionExitWaypoint(oWp);
-    if (GetIsObjectValid(oExitWp) && GetArea(oExitWp) == GetArea(oNpc))
-    {
-        return oExitWp;
-    }
-
-    return OBJECT_INVALID;
+    return DL_LegacyAdapterResolveForeignAnchorTransitionHandoff(oNpc, oWp);
 }
 object DL_ResolveNpcWaypointWithFallbackTag(
     object oNpc,
