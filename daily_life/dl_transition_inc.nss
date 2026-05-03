@@ -2,6 +2,8 @@
 // Adapter policy: add wrappers only for explicit API contract compatibility;
 // no new pass-through adapters when canonical implementation exists.
 // Transition business-logic contract:
+// - Pass-mode semantics (worker/warm/resync/fallback) are owned by worker/registry includes;
+//   this transition layer must stay mode-agnostic and preserve those runtime exceptions.
 // - All transition execution business logic lives only in
 //   daily_life/dl_transition_engine_inc.nss::DL_ExecuteTransitionEngine.
 // - This include may keep only compatibility wrappers around that engine and
