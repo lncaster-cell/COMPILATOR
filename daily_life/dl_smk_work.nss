@@ -6,9 +6,9 @@ void main()
 {
     object oArea = OBJECT_SELF;
     object oModule = GetModule();
-    const string DL_SMK_L_ENABLED = "dl_smk_enabled";
-    const string DL_SMK_L_ACTOR_TAG = "dl_smk_actor_tag";
-    const string DL_SMK_NS = "dl_smk_metric_work_";
+    string DL_SMK_L_ENABLED = "dl_smk_enabled";
+    string DL_SMK_L_ACTOR_TAG = "dl_smk_actor_tag";
+    string DL_SMK_NS = "dl_smk_metric_work_";
 
     if (GetLocalInt(oModule, DL_SMK_L_ENABLED) != TRUE)
     {
