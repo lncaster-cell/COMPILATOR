@@ -342,6 +342,35 @@ void DL_ClearTransitionExecutionState(object oNpc)
     DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC);
 }
 
+void DL_OnNpcArrivedAtAnchor(object oNpc, object oTarget, string sStatusLocal, string sStatusValue, string sDiagLocal, string sAnim, int bSetFacing)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
+    {
+        return;
+    }
+
+    DL_ClearTransitionExecutionState(oNpc);
+    if (sDiagLocal != "")
+    {
+        DeleteLocalString(oNpc, sDiagLocal);
+    }
+
+    if (sStatusLocal != "")
+    {
+        SetLocalString(oNpc, sStatusLocal, sStatusValue);
+    }
+
+    if (bSetFacing)
+    {
+        AssignCommand(oNpc, SetFacing(GetFacing(oTarget)));
+    }
+
+    if (sAnim != "")
+    {
+        PlayCustomAnimation(oNpc, sAnim, TRUE);
+    }
+}
+
 int DL_WaypointHasTransition(object oWp)
 {
     if (!DL_IsValidWaypointObject(oWp))
