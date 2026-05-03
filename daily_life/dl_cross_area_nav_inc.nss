@@ -141,6 +141,9 @@ object DL_FindCrossAreaNavEntry(object oNpc, object oTarget, string sFromZone, s
     return oBestEntry;
 }
 
+// Public cache API: NPC-scoped cross-area route-entry cache.
+// Expected lifetime: one NPC event sequence in the same source area/tier and same target+zone tuple.
+// Invalidation triggers: explicit invalidate, area/tier context shift, or DL_L_NPC_EVENT_SEQ increment.
 object DL_FindCrossAreaNavigationRouteEntryToTarget(object oNpc, object oTarget)
 {
     if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))

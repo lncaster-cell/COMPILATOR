@@ -178,38 +178,39 @@ object DL_FindObjectByTagInAreaDeterministic(string sTag, int nObjectType, objec
     return DL_FindObjectByTagWithChecks(sTag, nSearchCap, nObjectType, oArea, OBJECT_INVALID, FALSE);
 }
 
-object DL_GetNpcCachedObjectByTagInArea(
-    object oNpc,
+
+// Public cache API: npc-scoped cache keyed by (tag,type,area,tier,life-seq).
+// Expected lifetime: until any context component changes.
+// Invalidation triggers: explicit invalidate call, area/tier change, or NPC event-seq bump.
+object DL_ResolveCachedObjectByTagInArea(
+    object oOwner,
     string sCacheLocal,
     string sTag,
-    object oArea,
     int nObjectType,
-    string sMetricDomain
+    object oArea,
+    int nTier,
+    int nLifecycleSeq,
+    int nSearchCap
 )
 {
-    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oArea) || sTag == "")
+    if (!GetIsObjectValid(oOwner) || !GetIsObjectValid(oArea) || sTag == "")
     {
         return OBJECT_INVALID;
     }
 
-    int nTier = DL_GetAreaTier(oArea);
-    int nLifecycleSeq = GetLocalInt(oNpc, DL_L_NPC_EVENT_SEQ);
-    object oCached = DL_GetCachedObject(oNpc, sCacheLocal, sTag, nObjectType, oArea, nTier, nLifecycleSeq);
+    object oCached = DL_GetCachedObject(oOwner, sCacheLocal, sTag, nObjectType, oArea, nTier, nLifecycleSeq);
     if (GetIsObjectValid(oCached))
     {
-        DL_RecordCacheMetric(oArea, sMetricDomain, TRUE);
         return oCached;
     }
 
-    DL_InvalidateCachedObject(oNpc, sCacheLocal);
-    object oResolved = DL_FindObjectByTagInAreaDeterministic(sTag, nObjectType, oArea, DL_WAYPOINT_TAG_SEARCH_CAP);
+    object oResolved = DL_FindObjectByTagInAreaDeterministic(sTag, nObjectType, oArea, nSearchCap);
     if (GetIsObjectValid(oResolved))
     {
-        DL_SetCachedObject(oNpc, sCacheLocal, oResolved, sTag, nObjectType, oArea, nTier, nLifecycleSeq);
-        DL_RecordCacheMetric(oArea, sMetricDomain, FALSE);
+        DL_SetCachedObject(oOwner, sCacheLocal, oResolved, sTag, nObjectType, oArea, nTier, nLifecycleSeq);
         return oResolved;
     }
 
-    DL_RecordCacheMetric(oArea, sMetricDomain, FALSE);
+    DL_InvalidateCachedObject(oOwner, sCacheLocal);
     return OBJECT_INVALID;
 }

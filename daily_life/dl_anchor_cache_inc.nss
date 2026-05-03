@@ -20,16 +20,31 @@ object DL_GetNpcCachedWaypointByTag(object oNpc, string sCacheLocal, string sTag
     SetLocalObject(oNpc, sCacheLocal, oWp);
     return oWp;
 }
+// Public cache API: NPC-scoped anchor waypoint cache for (tag, area, tier, npc-event-seq).
+// Expected lifetime: one NPC lifecycle sequence within stable area/tier context.
+// Invalidation triggers: explicit invalidate, area tier change, or DL_L_NPC_EVENT_SEQ change.
 object DL_GetNpcCachedWaypointByTagInArea(object oNpc, string sCacheLocal, string sTag, object oArea)
 {
-    return DL_GetNpcCachedObjectByTagInArea(
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oArea) || sTag == "")
+    {
+        return OBJECT_INVALID;
+    }
+
+    int nTier = DL_GetAreaTier(oArea);
+    int nLifecycleSeq = GetLocalInt(oNpc, DL_L_NPC_EVENT_SEQ);
+    object oWp = DL_ResolveCachedObjectByTagInArea(
         oNpc,
         sCacheLocal,
         sTag,
-        oArea,
         OBJECT_TYPE_WAYPOINT,
-        "anchor"
+        oArea,
+        nTier,
+        nLifecycleSeq,
+        DL_WAYPOINT_TAG_SEARCH_CAP
     );
+
+    DL_RecordCacheMetric(oArea, "anchor", GetIsObjectValid(oWp));
+    return oWp;
 }
 object DL_ResolveEffectiveWaypointForNpc(object oNpc, object oWp)
 {
