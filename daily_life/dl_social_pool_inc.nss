@@ -11,10 +11,15 @@ const string DL_SOCIAL_KIND_PUBLIC = "public";
 const int DL_SOCIAL_POOL_SEARCH_CAP = 32;
 const int DL_SOCIAL_RESERVATION_TTL_MINUTES = 90;
 
+int DL_GetSocialReservationAbsMin(object oWp)
+{
+    return GetLocalInt(oWp, DL_L_WP_SOCIAL_RESERVED_ABS_MIN);
+}
+
 void DL_SocialSetReservation(object oNpc, object oWp, int nUntilAbsMin)
 {
     SetLocalObject(oWp, DL_L_WP_SOCIAL_RESERVED_BY, oNpc);
-    SetLocalInt(oWp, DL_L_WP_SOCIAL_RESERVED_UNTIL, nUntilAbsMin);
+    SetLocalInt(oWp, DL_L_WP_SOCIAL_RESERVED_ABS_MIN, nUntilAbsMin);
     SetLocalObject(oNpc, DL_L_NPC_SOCIAL_RESERVED_WP, oWp);
 }
 
@@ -23,7 +28,7 @@ void DL_SocialClearReservation(object oNpc, object oWp)
     if (GetIsObjectValid(oWp))
     {
         DeleteLocalObject(oWp, DL_L_WP_SOCIAL_RESERVED_BY);
-        DeleteLocalInt(oWp, DL_L_WP_SOCIAL_RESERVED_UNTIL);
+        DeleteLocalInt(oWp, DL_L_WP_SOCIAL_RESERVED_ABS_MIN);
     }
     if (GetIsObjectValid(oNpc))
     {
@@ -83,7 +88,6 @@ string DL_GetStandaloneSocialAnimation(string sKind)
         return "talk02";
     }
 
-    // Theater and unknown standalone social destinations should stay visually quiet.
     return "pause";
 }
 
@@ -254,7 +258,7 @@ object DL_ResolveStandaloneSocialWaypoint(object oNpc, string sKind)
     string sPrefix = DL_GetSocialPoolTagPrefix(sKind);
     int nStart = DL_GetTagDeterministicOffset(GetTag(oNpc), DL_SOCIAL_POOL_SEARCH_CAP, 0);
     object oBest = OBJECT_INVALID;
-    int nBestScore = DL_SELECTION_SCORE_INF;
+    int nBestScore = DL_GetSelectionScoreInf();
     string sBestTie = "";
     int i = 0;
     while (i < DL_SOCIAL_POOL_SEARCH_CAP)

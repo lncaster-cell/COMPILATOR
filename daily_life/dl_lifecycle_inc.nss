@@ -13,13 +13,7 @@ const int DL_NPC_RESET_DIRECTIVE_EXEC_MEAL   = 4;
 const int DL_NPC_RESET_DIRECTIVE_EXEC_CHILL  = 8;
 const int DL_NPC_RESET_DIRECTIVE_EXEC_SOCIAL = 16;
 const int DL_NPC_RESET_DIRECTIVE_EXEC_PUBLIC = 32;
-const int DL_NPC_RESET_DIRECTIVE_EXEC_ALL    =
-    DL_NPC_RESET_DIRECTIVE_EXEC_SLEEP |
-    DL_NPC_RESET_DIRECTIVE_EXEC_WORK |
-    DL_NPC_RESET_DIRECTIVE_EXEC_MEAL |
-    DL_NPC_RESET_DIRECTIVE_EXEC_CHILL |
-    DL_NPC_RESET_DIRECTIVE_EXEC_SOCIAL |
-    DL_NPC_RESET_DIRECTIVE_EXEC_PUBLIC;
+const int DL_NPC_RESET_DIRECTIVE_EXEC_ALL    = 63;
 
 void DL_ResetNpcDirectiveExecutionState(object oNpc, int nDirectiveMask)
 {
@@ -30,28 +24,42 @@ void DL_ResetNpcDirectiveExecutionState(object oNpc, int nDirectiveMask)
 
     if (nDirectiveMask & DL_NPC_RESET_DIRECTIVE_EXEC_SLEEP)
     {
-        DeleteLocalInt(oNpc, DL_L_NPC_SLEEP_TARGET_VALID);
+        DeleteLocalString(oNpc, DL_L_NPC_SLEEP_TARGET);
+        DeleteLocalString(oNpc, DL_L_NPC_SLEEP_STATUS);
+        DeleteLocalString(oNpc, DL_L_NPC_SLEEP_DIAGNOSTIC);
+        DeleteLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE);
     }
     if (nDirectiveMask & DL_NPC_RESET_DIRECTIVE_EXEC_WORK)
     {
-        DeleteLocalObject(oNpc, DL_L_NPC_WORK_TARGET);
+        DeleteLocalString(oNpc, DL_L_NPC_WORK_TARGET);
+        DeleteLocalString(oNpc, DL_L_NPC_WORK_STATUS);
+        DeleteLocalString(oNpc, DL_L_NPC_WORK_DIAGNOSTIC);
+        DeleteLocalString(oNpc, DL_L_NPC_WORK_KIND);
     }
     if (nDirectiveMask & DL_NPC_RESET_DIRECTIVE_EXEC_MEAL)
     {
-        DeleteLocalObject(oNpc, DL_L_NPC_MEAL_TARGET);
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_TARGET);
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_STATUS);
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
     }
     if (nDirectiveMask & DL_NPC_RESET_DIRECTIVE_EXEC_CHILL)
     {
-        DeleteLocalObject(oNpc, DL_L_NPC_CHILL_TARGET);
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_TARGET);
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_STATUS);
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
     }
     if (nDirectiveMask & DL_NPC_RESET_DIRECTIVE_EXEC_SOCIAL)
     {
-        DeleteLocalObject(oNpc, DL_L_NPC_SOCIAL_TARGET);
-        DeleteLocalObject(oNpc, DL_L_NPC_SOCIAL_PARTNER);
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_TARGET);
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_STATUS);
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
+        DeleteLocalObject(oNpc, DL_L_NPC_SOCIAL_RESERVED_WP);
     }
     if (nDirectiveMask & DL_NPC_RESET_DIRECTIVE_EXEC_PUBLIC)
     {
-        DeleteLocalObject(oNpc, DL_L_NPC_PUBLIC_TARGET);
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_TARGET);
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_STATUS);
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
     }
 }
 
@@ -62,16 +70,10 @@ void DL_InitNpcRuntimeState(object oNpc, string sIngressReason)
         return;
     }
 
-    // lifecycle ownership map (NPC locals):
-    // - DL_L_NPC_EVENT_KIND
-    // - DL_L_NPC_EVENT_SEQ
-    // - DL_L_NPC_RESYNC_PENDING
-    // - DL_L_NPC_RESYNC_REASON
     SetLocalInt(oNpc, DL_L_NPC_EVENT_KIND, DL_NPC_EVENT_SPAWN);
     SetLocalInt(oNpc, DL_L_NPC_RESYNC_PENDING, FALSE);
     SetLocalInt(oNpc, DL_L_NPC_RESYNC_REASON, DL_RESYNC_NONE);
 
-    // Keep explicit no-op use to make ingress reason part of canonical API contract.
     if (sIngressReason == "")
     {
         return;
@@ -93,11 +95,10 @@ void DL_CleanupNpcRuntimeState(object oNpc, string sEgressReason)
     SetLocalInt(oNpc, DL_L_NPC_RESYNC_REASON, DL_RESYNC_NONE);
     DeleteLocalInt(oNpc, DL_L_NPC_WORKER_SEQ);
 
-    // blocked lifecycle cleanup
-    DeleteLocalObject(oNpc, DL_L_NPC_BLOCKED_OBJ);
-    DeleteLocalString(oNpc, DL_L_NPC_BLOCKED_TAG);
-    DeleteLocalInt(oNpc, DL_L_NPC_BLOCKED_TYPE);
-    DeleteLocalInt(oNpc, DL_L_NPC_BLOCKED_BUSY);
+    DeleteLocalObject(oNpc, "dl_npc_blocked_obj");
+    DeleteLocalString(oNpc, "dl_npc_blocked_tag");
+    DeleteLocalInt(oNpc, "dl_npc_blocked_type");
+    DeleteLocalInt(oNpc, "dl_npc_blocked_busy");
 
     DL_ResetNpcDirectiveExecutionState(oNpc, DL_NPC_RESET_DIRECTIVE_EXEC_ALL);
 
@@ -167,7 +168,6 @@ void DL_HandleNpcUserDefined(object oNpc, int nUserDefined)
         return;
     }
 
-    // Death cleanup is an invariant: runtime state must be cleaned even if runtime is disabled.
     if (nEventKind == DL_NPC_EVENT_DEATH)
     {
         DL_CleanupNpcRuntimeState(oNpc, "death");
@@ -178,7 +178,6 @@ void DL_HandleNpcUserDefined(object oNpc, int nUserDefined)
     }
     else if (!DL_IsRuntimeEnabled())
     {
-        // Spawn processing remains runtime-gated by design.
         return;
     }
 
