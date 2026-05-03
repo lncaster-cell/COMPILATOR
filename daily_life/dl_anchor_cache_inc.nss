@@ -1,3 +1,12 @@
+const int DL_AREA_PURPOSE_SLEEP = 1;
+const int DL_AREA_PURPOSE_WORK = 2;
+const int DL_AREA_PURPOSE_MEAL = 3;
+const int DL_AREA_PURPOSE_SOCIAL = 4;
+const int DL_AREA_PURPOSE_PUBLIC = 5;
+
+object DL_GetSocialArea(object oNpc);
+object DL_GetPublicArea(object oNpc);
+
 object DL_GetNpcCachedWaypointByTag(object oNpc, string sCacheLocal, string sTag)
 {
     if (!GetIsObjectValid(oNpc) || sTag == "")
@@ -302,8 +311,3 @@ object DL_GetPublicArea(object oNpc)
 {
     return DL_GetNpcAreaOrCurrentFallback(oNpc, DL_L_NPC_PUBLIC_AREA_TAG, DL_L_NPC_CACHE_PUBLIC_AREA);
 }
-const int DL_AREA_PURPOSE_SLEEP = 1;
-const int DL_AREA_PURPOSE_WORK = 2;
-const int DL_AREA_PURPOSE_MEAL = 3;
-const int DL_AREA_PURPOSE_SOCIAL = 4;
-const int DL_AREA_PURPOSE_PUBLIC = 5;
