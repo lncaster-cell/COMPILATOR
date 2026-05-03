@@ -2,12 +2,8 @@ const string DL_L_MODULE_CACHE_METRIC_PREFIX = "dl_metric_cache_";
 const string DL_L_CACHE_CTX_PREFIX = "dl_cache_ctx_";
 const string DL_L_CACHE_MISS_TICK_SUFFIX = "miss_tick";
 const string DL_L_AREA_TAG_CACHE_PREFIX = "dl_area_tag_cache_";
-const string DL_L_CACHE_METRIC_KEY_CTX_PREFIX = "dl_cache_metric_key_";
-
-const string DL_L_METRIC_NAV_MODULE_HIT = "dl_metric_cache_module_nav_hit";
-const string DL_L_METRIC_NAV_MODULE_MISS = "dl_metric_cache_module_nav_miss";
-const string DL_L_METRIC_NAV_AREA_HIT = "dl_metric_cache_area_nav_hit";
-const string DL_L_METRIC_NAV_AREA_MISS = "dl_metric_cache_area_nav_miss";
+const string DL_L_TICK_MEMO_PREFIX = "dl_tick_memo_";
+const string DL_L_TICK_MEMO_MISS_PREFIX = "dl_tick_memo_miss_";
 
 const int DL_TAG_ENUM_DEFAULT_CAP = 32;
 const int DL_WAYPOINT_TAG_SEARCH_CAP = 64;
@@ -262,6 +258,76 @@ int DL_IsCachedObjectValidForTagInArea(object oCached, string sTag, int nObjectT
 string DL_GetCachedObjectContextKey(string sCacheLocal, string sSuffix)
 {
     return DL_L_CACHE_CTX_PREFIX + sCacheLocal + "_" + sSuffix;
+}
+
+string DL_BuildTickMemoKey(object oOwner, int nTickStamp, string sTag, int nObjectType, object oArea, string sLookupMode)
+{
+    return DL_L_TICK_MEMO_PREFIX +
+        ObjectToString(oOwner) + "_" +
+        IntToString(nTickStamp) + "_" +
+        sTag + "_" +
+        IntToString(nObjectType) + "_" +
+        ObjectToString(oArea) + "_" +
+        sLookupMode;
+}
+
+string DL_BuildTickMemoMissKey(object oOwner, int nTickStamp, string sTag, int nObjectType, object oArea, string sLookupMode)
+{
+    return DL_L_TICK_MEMO_MISS_PREFIX +
+        ObjectToString(oOwner) + "_" +
+        IntToString(nTickStamp) + "_" +
+        sTag + "_" +
+        IntToString(nObjectType) + "_" +
+        ObjectToString(oArea) + "_" +
+        sLookupMode;
+}
+
+object DL_GetTickMemoizedLookup(object oMemoStore, object oOwner, int nTickStamp, string sTag, int nObjectType, object oArea, string sLookupMode, int &bIsMiss)
+{
+    bIsMiss = FALSE;
+    if (!GetIsObjectValid(oMemoStore) || !GetIsObjectValid(oOwner) || sTag == "" || sLookupMode == "")
+    {
+        return OBJECT_INVALID;
+    }
+
+    string sMemoKey = DL_BuildTickMemoKey(oOwner, nTickStamp, sTag, nObjectType, oArea, sLookupMode);
+    object oMemoized = GetLocalObject(oMemoStore, sMemoKey);
+    if (GetIsObjectValid(oMemoized) &&
+        GetTag(oMemoized) == sTag &&
+        GetObjectType(oMemoized) == nObjectType &&
+        (!GetIsObjectValid(oArea) || GetArea(oMemoized) == oArea))
+    {
+        return oMemoized;
+    }
+
+    if (GetIsObjectValid(oMemoized))
+    {
+        DeleteLocalObject(oMemoStore, sMemoKey);
+    }
+
+    string sMissKey = DL_BuildTickMemoMissKey(oOwner, nTickStamp, sTag, nObjectType, oArea, sLookupMode);
+    bIsMiss = GetLocalInt(oMemoStore, sMissKey) == nTickStamp;
+    return OBJECT_INVALID;
+}
+
+void DL_SetTickMemoizedLookup(object oMemoStore, object oOwner, int nTickStamp, string sTag, int nObjectType, object oArea, string sLookupMode, object oValue)
+{
+    if (!GetIsObjectValid(oMemoStore) || !GetIsObjectValid(oOwner) || sTag == "" || sLookupMode == "")
+    {
+        return;
+    }
+
+    string sMemoKey = DL_BuildTickMemoKey(oOwner, nTickStamp, sTag, nObjectType, oArea, sLookupMode);
+    string sMissKey = DL_BuildTickMemoMissKey(oOwner, nTickStamp, sTag, nObjectType, oArea, sLookupMode);
+    if (GetIsObjectValid(oValue))
+    {
+        SetLocalObject(oMemoStore, sMemoKey, oValue);
+        DeleteLocalInt(oMemoStore, sMissKey);
+        return;
+    }
+
+    DeleteLocalObject(oMemoStore, sMemoKey);
+    SetLocalInt(oMemoStore, sMissKey, nTickStamp);
 }
 
 int DL_IsCacheMissSuppressedThisTick(object oOwner, string sCacheLocal, int nNowTick)

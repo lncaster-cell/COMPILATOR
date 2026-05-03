@@ -75,6 +75,8 @@ const float DL_AREA_NAV_SIDE_BIAS = 0.50;
 const int DL_TAG_FALLBACK_NONE = 0;
 const int DL_TAG_FALLBACK_GLOBAL = 1;
 const int DL_TAG_FALLBACK_NEAREST = 2;
+const string DL_LOOKUP_MODE_TRANSITION_POLICY = "transition_policy";
+const string DL_LOOKUP_MODE_TRANSITION_CROSS_AREA = "transition_cross_area";
 
 const int DL_TRANSITION_TAG_NEAREST_CAP = 12;
 const float DL_TRANSITION_TAG_NEAREST_MAX_DISTANCE = 80.0;
@@ -311,7 +313,18 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
         nCap = 1;
     }
 
-    int nNowTick = -1;
+    int nTickStamp = GetIsObjectValid(oPreferredArea) ? DL_GetAreaTick(oPreferredArea) : 0;
+    int bMemoMiss = FALSE;
+    object oMemoized = DL_GetTickMemoizedLookup(GetModule(), OBJECT_SELF, nTickStamp, sTag, nObjectType, oPreferredArea, DL_LOOKUP_MODE_TRANSITION_POLICY + "_" + IntToString(nFallbackMode), bMemoMiss);
+    if (GetIsObjectValid(oMemoized))
+    {
+        return oMemoized;
+    }
+    if (bMemoMiss)
+    {
+        return OBJECT_INVALID;
+    }
+
     if (GetIsObjectValid(oPreferredArea))
     {
         nNowTick = DL_GetAreaTick(oPreferredArea);
@@ -330,7 +343,7 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
         object oLocal = DL_FindObjectByTagInAreaDeterministic(sTag, nObjectType, oPreferredArea, nCap);
         if (GetIsObjectValid(oLocal))
         {
-            DL_ClearTransitionTagMissSuppressedTick(sTag, nObjectType, oPreferredArea, nFallbackMode);
+            DL_SetTickMemoizedLookup(GetModule(), OBJECT_SELF, nTickStamp, sTag, nObjectType, oPreferredArea, DL_LOOKUP_MODE_TRANSITION_POLICY + "_" + IntToString(nFallbackMode), oLocal);
             return oLocal;
         }
     }
@@ -338,14 +351,7 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
     if (nFallbackMode == DL_TAG_FALLBACK_GLOBAL)
     {
         object oGlobal = GetObjectByTagAndType(sTag, nObjectType);
-        if (GetIsObjectValid(oGlobal) && GetIsObjectValid(oPreferredArea))
-        {
-            DL_ClearTransitionTagMissSuppressedTick(sTag, nObjectType, oPreferredArea, nFallbackMode);
-        }
-        else if (!GetIsObjectValid(oGlobal) && GetIsObjectValid(oPreferredArea))
-        {
-            DL_MarkTransitionTagMissThisTick(sTag, nObjectType, oPreferredArea, nFallbackMode, nNowTick);
-        }
+        DL_SetTickMemoizedLookup(GetModule(), OBJECT_SELF, nTickStamp, sTag, nObjectType, oPreferredArea, DL_LOOKUP_MODE_TRANSITION_POLICY + "_" + IntToString(nFallbackMode), oGlobal);
         return oGlobal;
     }
 
@@ -379,20 +385,14 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
 
             if (GetObjectType(oNearest) == nObjectType)
             {
-                if (GetIsObjectValid(oPreferredArea))
-                {
-                    DL_ClearTransitionTagMissSuppressedTick(sTag, nObjectType, oPreferredArea, nFallbackMode);
-                }
+                DL_SetTickMemoizedLookup(GetModule(), OBJECT_SELF, nTickStamp, sTag, nObjectType, oPreferredArea, DL_LOOKUP_MODE_TRANSITION_POLICY + "_" + IntToString(nFallbackMode), oNearest);
                 return oNearest;
             }
             nNth = nNth + 1;
         }
     }
 
-    if (GetIsObjectValid(oPreferredArea))
-    {
-        DL_MarkTransitionTagMissThisTick(sTag, nObjectType, oPreferredArea, nFallbackMode, nNowTick);
-    }
+    DL_SetTickMemoizedLookup(GetModule(), OBJECT_SELF, nTickStamp, sTag, nObjectType, oPreferredArea, DL_LOOKUP_MODE_TRANSITION_POLICY + "_" + IntToString(nFallbackMode), OBJECT_INVALID);
     return OBJECT_INVALID;
 }
 object DL_GetTransitionWaypointByTagInArea(string sTag, object oArea)
@@ -805,12 +805,25 @@ object DL_GetCrossNavAreaByTag(string sAreaTag)
         return OBJECT_INVALID;
     }
 
+    int bMemoMiss = FALSE;
+    object oMemoized = DL_GetTickMemoizedLookup(GetModule(), OBJECT_SELF, DL_GetAbsoluteMinute(), sAreaTag, -1, OBJECT_INVALID, DL_LOOKUP_MODE_TRANSITION_CROSS_AREA, bMemoMiss);
+    if (GetIsObjectValid(oMemoized))
+    {
+        return oMemoized;
+    }
+    if (bMemoMiss)
+    {
+        return OBJECT_INVALID;
+    }
+
     object oCandidate = DL_FindObjectByTagWithChecks(sAreaTag, DL_CROSS_AREA_TAG_SEARCH_CAP, -1, OBJECT_INVALID, OBJECT_INVALID, FALSE);
     if (GetIsObjectValid(oCandidate) && DL_IsAreaObject(oCandidate))
     {
+        DL_SetTickMemoizedLookup(GetModule(), OBJECT_SELF, DL_GetAbsoluteMinute(), sAreaTag, -1, OBJECT_INVALID, DL_LOOKUP_MODE_TRANSITION_CROSS_AREA, oCandidate);
         return oCandidate;
     }
 
+    DL_SetTickMemoizedLookup(GetModule(), OBJECT_SELF, DL_GetAbsoluteMinute(), sAreaTag, -1, OBJECT_INVALID, DL_LOOKUP_MODE_TRANSITION_CROSS_AREA, OBJECT_INVALID);
     return OBJECT_INVALID;
 }
 

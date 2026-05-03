@@ -10,10 +10,7 @@ const string DL_SOCIAL_KIND_PUBLIC = "public";
 
 const int DL_SOCIAL_POOL_SEARCH_CAP = 32;
 const int DL_SOCIAL_RESERVATION_TTL_MINUTES = 90;
-const string DL_L_AREA_SOCIAL_INDEX_BUILD_TICK = "dl_area_social_index_build_tick";
-const string DL_L_AREA_SOCIAL_INDEX_BUILD_MODE = "dl_area_social_index_build_mode";
-const string DL_L_AREA_SOCIAL_INDEX_COUNT_PREFIX = "dl_area_social_index_count_";
-const string DL_L_AREA_SOCIAL_INDEX_SLOT_PREFIX = "dl_area_social_index_slot_";
+const string DL_LOOKUP_MODE_SOCIAL_POOL = "social_pool";
 
 int DL_GetSocialReservationAbsMin(object oWp)
 {
@@ -118,7 +115,22 @@ object DL_FindSocialPoolWaypointByTagInArea(string sTag, object oArea)
         return OBJECT_INVALID;
     }
 
+    int nTickStamp = DL_GetAreaTick(oArea);
+    int bMemoMiss = FALSE;
+    object oMemoized = DL_GetTickMemoizedLookup(GetModule(), OBJECT_SELF, nTickStamp, sTag, OBJECT_TYPE_WAYPOINT, oArea, DL_LOOKUP_MODE_SOCIAL_POOL, bMemoMiss);
+    if (GetIsObjectValid(oMemoized))
+    {
+        DL_RecordCacheMetric(oArea, "social", TRUE);
+        return oMemoized;
+    }
+    if (bMemoMiss)
+    {
+        DL_RecordCacheMetric(oArea, "social", FALSE);
+        return OBJECT_INVALID;
+    }
+
     object oResolved = DL_FindObjectByTagInAreaDeterministic(sTag, OBJECT_TYPE_WAYPOINT, oArea, DL_WAYPOINT_TAG_SEARCH_CAP);
+    DL_SetTickMemoizedLookup(GetModule(), OBJECT_SELF, nTickStamp, sTag, OBJECT_TYPE_WAYPOINT, oArea, DL_LOOKUP_MODE_SOCIAL_POOL, oResolved);
     DL_RecordCacheMetric(oArea, "social", GetIsObjectValid(oResolved));
     return oResolved;
 }
