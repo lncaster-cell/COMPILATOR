@@ -1124,48 +1124,6 @@ object DL_ResolveTransitionDriverObject(object oEntryWp)
     return OBJECT_INVALID;
 }
 
-// Backward-compatibility shim.
-// Canonical transition execution is implemented in DL_ExecuteTransitionEngine
-// (daily_life/dl_transition_engine_inc.nss). Keep this wrapper signature stable
-// for legacy callers and delegate without local business logic.
-int DL_TryExecuteTransitionEntryWaypoint(object oNpc, object oEntryWp)
-{
-    return DL_ExecuteTransitionEngine(oNpc, oEntryWp, "");
-}
-
-int DL_TryExecuteTransitionAtWaypoint(object oNpc, object oTargetWp)
-{
-    if (!DL_IsValidNpcObject(oNpc) || !DL_IsValidWaypointObject(oTargetWp))
-    {
-        return FALSE;
-    }
-
-    object oActualEntry = oTargetWp;
-    object oPairedWp = DL_ResolveTransitionExitWaypointFromEntry(oTargetWp);
-
-    if (GetIsObjectValid(oPairedWp) &&
-        GetArea(oPairedWp) == GetArea(oNpc) &&
-        GetArea(oTargetWp) == GetArea(oNpc) &&
-        DL_IsBidirectionalTransitionPair(oTargetWp, oPairedWp))
-    {
-        float fTargetDist = GetDistanceBetweenLocations(GetLocation(oNpc), GetLocation(oTargetWp));
-        float fPairedDist = GetDistanceBetweenLocations(GetLocation(oNpc), GetLocation(oPairedWp));
-
-        if (DL_IsWithinAnchorRadius(oNpc, oTargetWp, DL_TRANSITION_ENTRY_RADIUS))
-        {
-            DL_ClearTransitionExecutionState(oNpc);
-            return FALSE;
-        }
-
-        if (fPairedDist < fTargetDist)
-        {
-            oActualEntry = oPairedWp;
-        }
-    }
-
-    return DL_TryExecuteTransitionEntryWaypoint(oNpc, oActualEntry);
-}
-
 int DL_ShouldUseNavigationEntryForTarget(object oNpc, object oTarget, object oEntry, object oExit)
 {
     if (!DL_IsValidNpcObject(oNpc) || !GetIsObjectValid(oTarget) ||

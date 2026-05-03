@@ -17,6 +17,9 @@ object DL_FindNextTransitionEntryToTarget(object oNpc, object oTarget);
 int DL_TryRouteToTarget(object oNpc, object oTarget);
 
 // Executor API (single-transition execution + transition-state writes).
+// public compatibility API:
+// - Entry point for router/domain callers: daily_life/dl_nav_router_inc.nss::DL_RouteNpcOneTransitionStep.
+// - Canonical execution implementation: daily_life/dl_transition_engine_inc.nss::DL_ExecuteTransitionEngine.
 int DL_ExecuteTransitionViaEntryWaypoint(object oNpc, object oEntryWp, string sDiagPrefix);
 int DL_TryAdvanceViaTransitionOrRoute(object oNpc, object oTargetWp, string sRouteContext);
 
