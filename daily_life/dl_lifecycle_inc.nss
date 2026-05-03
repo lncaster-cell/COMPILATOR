@@ -1,5 +1,3 @@
-#include "dl_blocked_inc"
-
 // Valid runtime lifecycle events start at 1.
 const int DL_NPC_EVENT_SPAWN = 1;
 const int DL_NPC_EVENT_DEATH = 2;
@@ -22,6 +20,8 @@ const int DL_NPC_RESET_DOMAIN_SLEEP = 1;
 const int DL_NPC_RESET_DOMAIN_WORK  = 2;
 const int DL_NPC_RESET_DOMAIN_FOCUS = 4;
 const int DL_NPC_RESET_DOMAIN_ALL   = 7;
+
+#include "dl_blocked_inc"
 
 // Transition rule: every directive-to-directive switch must pass through this API.
 // Domain-specific cleanup hooks (animations/reservations/etc.) should wrap this helper

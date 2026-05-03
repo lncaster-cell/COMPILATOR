@@ -1,18 +1,3 @@
-#include "dl_runtime_contract_inc"
-#include "dl_activity_archive_anim_inc"
-#include "dl_cache_helpers_inc"
-#include "dl_index_inc"
-#include "dl_lifecycle_inc"
-#include "dl_diag_inc"
-#include "dl_selection_inc"
-#include "dl_transition_contract_inc"
-#include "dl_transition_inc"
-#include "dl_transition_legacy_adapter_inc"
-#include "dl_cross_area_nav_inc"
-#include "dl_transition_exec_inc"
-#include "dl_nav_router_inc"
-#include "dl_directive_pipeline_inc"
-
 // Step 05+: resolver/materialization skeleton.
 string DL_GetNpcProblemSummary(object oNpc);
 // Scope: basic BLACKSMITH/GATE_POST/TRADER WORK/SLEEP window split.
@@ -259,6 +244,21 @@ object DL_ResolvePreferredAreaWithFallbacks(object oNpc, int nPurpose);
 object DL_ResolveChillWaypoint(object oNpc);
 void DL_MaybeRefreshNpcCachesForEpoch(object oNpc);
 void DL_MaybeRefreshAreaCachesForEpoch(object oArea);
+
+#include "dl_runtime_contract_inc"
+#include "dl_activity_archive_anim_inc"
+#include "dl_cache_helpers_inc"
+#include "dl_index_inc"
+#include "dl_lifecycle_inc"
+#include "dl_diag_inc"
+#include "dl_selection_inc"
+#include "dl_transition_contract_inc"
+#include "dl_transition_inc"
+#include "dl_transition_legacy_adapter_inc"
+#include "dl_cross_area_nav_inc"
+#include "dl_transition_exec_inc"
+#include "dl_nav_router_inc"
+#include "dl_directive_pipeline_inc"
 
 #include "dl_sched_inc"
 
