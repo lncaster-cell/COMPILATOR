@@ -369,8 +369,6 @@ int DL_ProcessAreaNpcByPassMode(object oArea, object oNpc, int nPassMode, int nT
         GetLocalInt(oArea, DL_L_AREA_ENTER_RESYNC_PENDING) == TRUE &&
         GetLocalInt(oNpc, DL_L_NPC_AREA_TICK_RESYNC_TOUCH) == nTickStamp)
     {
-        // Counts skipped worker touches during resync to tune hot-area budgets.
-        DL_IncLocalInt(oArea, DL_L_AREA_WORKER_SKIP_RESYNC_TICK);
         return FALSE;
     }
 
@@ -422,6 +420,7 @@ int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPas
 
     int nAttempts = 0;
     int bFallbackNeeded = FALSE;
+    int nSkipResyncDelta = 0;
     while (nAttempts < nNpcRegistered && nNpcProcessed < nBudget)
     {
         int nSlot = (nCursor + nAttempts) % nNpcRegistered;
@@ -438,6 +437,14 @@ int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPas
                 GetLocalInt(oCandidate, DL_L_NPC_REG_SLOT) == nSlot &&
                 DL_IsActivePipelineNpc(oCandidate))
             {
+                if (nPassMode == DL_AREA_PASS_MODE_WORKER &&
+                    DL_GetAreaTier(oArea) == DL_TIER_HOT &&
+                    GetLocalInt(oArea, DL_L_AREA_ENTER_RESYNC_PENDING) == TRUE &&
+                    GetLocalInt(oCandidate, DL_L_NPC_AREA_TICK_RESYNC_TOUCH) == nTickStamp)
+                {
+                    // Counts skipped worker touches during resync to tune hot-area budgets.
+                    nSkipResyncDelta = nSkipResyncDelta + 1;
+                }
                 if (DL_ProcessAreaNpcByPassMode(oArea, oCandidate, nPassMode, nTickStamp))
                 {
                     nNpcProcessed = nNpcProcessed + 1;
@@ -455,6 +462,11 @@ int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPas
         }
 
         nAttempts = nAttempts + 1;
+    }
+
+    if (nSkipResyncDelta > 0)
+    {
+        SetLocalInt(oArea, DL_L_AREA_WORKER_SKIP_RESYNC_TICK, GetLocalInt(oArea, DL_L_AREA_WORKER_SKIP_RESYNC_TICK) + nSkipResyncDelta);
     }
 
     if (bFallbackNeeded)

@@ -7,6 +7,7 @@ const int DL_TAG_ENUM_DEFAULT_CAP = 32;
 const int DL_WAYPOINT_TAG_SEARCH_CAP = 64;
 
 void DL_InvalidateCachedObject(object oOwner, string sCacheLocal);
+void DL_RecordCacheMetricBatch(object oArea, string sScope, int nHitDelta, int nMissDelta);
 
 int DL_GetSafeTagSearchCap(int nRequestedCap)
 {
@@ -137,13 +138,48 @@ string DL_GetCacheMetricKey(string sScope, string sMetric)
 
 void DL_RecordCacheMetric(object oArea, string sScope, int bHit)
 {
-    object oModule = GetModule();
-    string sMetric = bHit ? "hit" : "miss";
-    SetLocalInt(oModule, DL_GetCacheMetricKey("module_" + sScope, sMetric), GetLocalInt(oModule, DL_GetCacheMetricKey("module_" + sScope, sMetric)) + 1);
-
-    if (GetIsObjectValid(oArea))
+    if (bHit)
     {
-        SetLocalInt(oArea, DL_GetCacheMetricKey("area_" + sScope, sMetric), GetLocalInt(oArea, DL_GetCacheMetricKey("area_" + sScope, sMetric)) + 1);
+        DL_RecordCacheMetricBatch(oArea, sScope, 1, 0);
+        return;
+    }
+
+    DL_RecordCacheMetricBatch(oArea, sScope, 0, 1);
+}
+
+void DL_RecordCacheMetricBatch(object oArea, string sScope, int nHitDelta, int nMissDelta)
+{
+    if (sScope == "")
+    {
+        return;
+    }
+
+    object oModule = GetModule();
+    if (nHitDelta != 0)
+    {
+        string sModuleHit = DL_GetCacheMetricKey("module_" + sScope, "hit");
+        SetLocalInt(oModule, sModuleHit, GetLocalInt(oModule, sModuleHit) + nHitDelta);
+    }
+    if (nMissDelta != 0)
+    {
+        string sModuleMiss = DL_GetCacheMetricKey("module_" + sScope, "miss");
+        SetLocalInt(oModule, sModuleMiss, GetLocalInt(oModule, sModuleMiss) + nMissDelta);
+    }
+
+    if (!GetIsObjectValid(oArea))
+    {
+        return;
+    }
+
+    if (nHitDelta != 0)
+    {
+        string sAreaHit = DL_GetCacheMetricKey("area_" + sScope, "hit");
+        SetLocalInt(oArea, sAreaHit, GetLocalInt(oArea, sAreaHit) + nHitDelta);
+    }
+    if (nMissDelta != 0)
+    {
+        string sAreaMiss = DL_GetCacheMetricKey("area_" + sScope, "miss");
+        SetLocalInt(oArea, sAreaMiss, GetLocalInt(oArea, sAreaMiss) + nMissDelta);
     }
 }
 
