@@ -1,5 +1,7 @@
 #include "dl_compile_order_inc"
 #include "dl_res_inc"
+#include "dl_compile_body_inc"
+#include "dl_transition_engine_inc"
 #include "dl_config_inc"
 #include "dl_registry_inc"
 #include "dl_resync_inc"
