@@ -1,3 +1,5 @@
+#include "dl_blocked_inc"
+
 // Valid runtime lifecycle events start at 1.
 const int DL_NPC_EVENT_SPAWN = 1;
 const int DL_NPC_EVENT_DEATH = 2;
@@ -138,10 +140,10 @@ void DL_CleanupNpcRuntimeState(object oNpc, string sEgressReason)
     SetLocalInt(oNpc, DL_L_NPC_RESYNC_REASON, DL_RESYNC_NONE);
     DeleteLocalInt(oNpc, DL_L_NPC_WORKER_SEQ);
 
-    DeleteLocalObject(oNpc, "dl_npc_blocked_obj");
-    DeleteLocalString(oNpc, "dl_npc_blocked_tag");
-    DeleteLocalInt(oNpc, "dl_npc_blocked_type");
-    DeleteLocalInt(oNpc, "dl_npc_blocked_busy");
+    DeleteLocalObject(oNpc, DL_L_NPC_BLOCKED_OBJ);
+    DeleteLocalString(oNpc, DL_L_NPC_BLOCKED_TAG);
+    DeleteLocalInt(oNpc, DL_L_NPC_BLOCKED_TYPE);
+    DeleteLocalInt(oNpc, DL_L_NPC_BLOCKED_BUSY);
 
     DL_ResetNpcDirectiveExecutionState(oNpc, DL_NPC_RESET_DIRECTIVE_EXEC_ALL);
 
