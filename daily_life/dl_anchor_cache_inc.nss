@@ -1,31 +1,3 @@
-const int DL_WAYPOINT_TAG_SEARCH_CAP = 64;
-
-void DL_LogMissingAnchorIssue(object oNpc, object oArea, string sAnchorLocal, string sReason)
-{
-    string sNpcTag = GetTag(oNpc);
-    string sAreaTag = GetTag(oArea);
-    string sKey = "markup_missing_anchor_npc_" + sNpcTag + "_area_" + sAreaTag + "_local_" + sAnchorLocal + "_tag_none_reason_" + sReason;
-    string sMessage = "Markup issue: npc='" + sNpcTag + "' area='" + sAreaTag + "' local='" + sAnchorLocal + "' tag='(none)' reason='" + sReason + "'.";
-    DL_LogMarkupIssueOnce(oNpc, sKey, sMessage);
-}
-
-void DL_LogInvalidAreaTagIssue(object oNpc, string sAreaTagLocal, string sAreaTag, string sReason)
-{
-    string sNpcTag = GetTag(oNpc);
-    string sKey = "markup_invalid_area_npc_" + sNpcTag + "_area_none_local_" + sAreaTagLocal + "_tag_" + sAreaTag + "_reason_" + sReason;
-    string sMessage = "Markup issue: npc='" + sNpcTag + "' area='(none)' local='" + sAreaTagLocal + "' tag='" + sAreaTag + "' reason='" + sReason + "'.";
-    DL_LogMarkupIssueOnce(oNpc, sKey, sMessage);
-}
-
-void DL_LogForeignWaypointIssue(object oNpc, object oArea, string sAnchorLocal, string sWpTag, string sReason)
-{
-    string sNpcTag = GetTag(oNpc);
-    string sAreaTag = GetTag(oArea);
-    string sKey = "markup_foreign_wp_npc_" + sNpcTag + "_area_" + sAreaTag + "_local_" + sAnchorLocal + "_tag_" + sWpTag + "_reason_" + sReason;
-    string sMessage = "Markup issue: npc='" + sNpcTag + "' area='" + sAreaTag + "' local='" + sAnchorLocal + "' tag='" + sWpTag + "' reason='" + sReason + "'.";
-    DL_LogMarkupIssueOnce(oNpc, sKey, sMessage);
-}
-
 object DL_GetNpcCachedWaypointByTag(object oNpc, string sCacheLocal, string sTag)
 {
     if (!GetIsObjectValid(oNpc) || sTag == "")
@@ -50,31 +22,14 @@ object DL_GetNpcCachedWaypointByTag(object oNpc, string sCacheLocal, string sTag
 }
 object DL_GetNpcCachedWaypointByTagInArea(object oNpc, string sCacheLocal, string sTag, object oArea)
 {
-    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oArea) || sTag == "")
-    {
-        return OBJECT_INVALID;
-    }
-
-    int nTier = DL_GetAreaTier(oArea);
-    int nLifecycleSeq = GetLocalInt(oNpc, DL_L_NPC_EVENT_SEQ);
-    object oCached = DL_GetCachedObject(oNpc, sCacheLocal, sTag, OBJECT_TYPE_WAYPOINT, oArea, nTier, nLifecycleSeq);
-    if (GetIsObjectValid(oCached))
-    {
-        DL_RecordCacheMetric(oArea, "anchor", TRUE);
-        return oCached;
-    }
-
-    DL_InvalidateCachedObject(oNpc, sCacheLocal);
-    object oResolved = DL_FindObjectByTagInAreaDeterministic(sTag, OBJECT_TYPE_WAYPOINT, oArea, DL_WAYPOINT_TAG_SEARCH_CAP);
-    if (GetIsObjectValid(oResolved))
-    {
-        DL_SetCachedObject(oNpc, sCacheLocal, oResolved, sTag, OBJECT_TYPE_WAYPOINT, oArea, nTier, nLifecycleSeq);
-        DL_RecordCacheMetric(oArea, "anchor", FALSE);
-        return oResolved;
-    }
-
-    DL_RecordCacheMetric(oArea, "anchor", FALSE);
-    return OBJECT_INVALID;
+    return DL_GetNpcCachedObjectByTagInArea(
+        oNpc,
+        sCacheLocal,
+        sTag,
+        oArea,
+        OBJECT_TYPE_WAYPOINT,
+        "anchor"
+    );
 }
 object DL_ResolveEffectiveWaypointForNpc(object oNpc, object oWp)
 {
