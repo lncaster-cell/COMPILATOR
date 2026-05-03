@@ -139,7 +139,7 @@ int DL_ClampInt(int nValue, int nMin, int nMax);
 int DL_GetAreaTick(object oArea);
 int DL_TryRouteToTarget(object oNpc, object oTarget);
 int DL_ExecuteTransitionViaEntryWaypoint(object oNpc, object oEntryWp, string sDiagPrefix);
-int DL_TryAdvanceViaTransitionOrRoute(object oNpc, object oTargetWp, int bMarkDomainProgress, string sDomainTag);
+int DL_TryAdvanceViaTransitionOrRoute(object oNpc, object oTargetWp, string sRouteContext);
 int DL_EngineJumpNpcToTransitionExit(object oNpc, location lExit, string sStatus = "", string sDiagnostic = "");
 int DL_EngineExecuteTransitionDriver(object oNpc, object oEntryWp, location lExit, object oExitWp, string sJumpDiagnostic = DL_TRANSITION_DIAG_IN_PROGRESS);
 int DL_ExecuteTransitionEngine(object oNpc, object oEntryWp, string sDiagPrefix);
@@ -1238,7 +1238,7 @@ object DL_FindTwoHopNavZoneEntry(object oNpc, object oTarget, string sFromZone, 
     return oBestEntry;
 }
 
-int DL_TryAdvanceViaTransitionOrRoute(object oNpc, object oTargetWp, int bMarkDomainProgress, string sDomainTag)
+int DL_TryAdvanceViaTransitionOrRoute(object oNpc, object oTargetWp, string sRouteContext)
 {
     if (!DL_IsValidTransitionContext(oNpc, oTargetWp))
     {
@@ -1270,19 +1270,11 @@ int DL_TryNavigateToTargetViaTransition(object oNpc, object oTargetWp, int bAllo
 
     if (DL_ExecuteTransitionViaEntryWaypoint(oNpc, oTargetWp, DL_DIAG_CTX_ROUTED))
     {
-        if (bMarkDomainProgress)
-        {
-            DL_MarkSleepNavigationInProgress(oNpc, sDomainTag);
-        }
         return TRUE;
     }
 
     if (DL_TryRouteToTarget(oNpc, oTargetWp))
     {
-        if (bMarkDomainProgress)
-        {
-            DL_MarkSleepNavigationInProgress(oNpc, sDomainTag);
-        }
         return TRUE;
     }
 

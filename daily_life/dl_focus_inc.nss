@@ -110,7 +110,7 @@ int DL_ProgressFocusAtTarget(object oNpc, object oTarget, string sOnAnchorStatus
         return FALSE;
     }
 
-    if (DL_TryAdvanceViaTransitionOrRoute(oNpc, oTarget, FALSE, ""))
+    if (DL_TryAdvanceViaTransitionOrRoute(oNpc, oTarget, DL_DIAG_CTX_ROUTED))
     {
         return TRUE;
     }
