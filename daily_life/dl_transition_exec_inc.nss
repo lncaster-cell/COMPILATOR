@@ -3,7 +3,7 @@
 // Contract:
 // - Executes exactly one transition entry selected by Nav Router.
 // - Does not choose routes.
-// - Uses existing transition metadata and driver semantics from dl_transition_inc.
+// - Canonical execution path is DL_ExecuteTransitionEngine; legacy wrappers in dl_transition_inc only delegate to it.
 
 int DL_ExecuteTransitionViaEntryWaypoint(object oNpc, object oEntryWp, string sDiagPrefix)
 {
