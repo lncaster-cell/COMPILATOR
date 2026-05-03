@@ -102,6 +102,7 @@ object DL_GetNpcCachedPlaceableByTagInArea(object oNpc, string sCacheLocal, stri
         "anchor"
     );
 }
+// Domain contract: interpret navigation result only; do not mutate transition locals directly.
 int DL_ProgressFocusAtTarget(object oNpc, object oTarget, string sOnAnchorStatus, string sAnim)
 {
     if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))

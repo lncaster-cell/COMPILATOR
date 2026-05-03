@@ -61,6 +61,7 @@ object DL_FindNextTransitionEntryToTarget(object oNpc, object oTarget)
     return DL_FindTwoHopNavZoneEntryToTarget(oNpc, oTarget);
 }
 
+// DO NOT DUPLICATE: canonical router entrypoint (selects entry only).
 int DL_TryRouteToTarget(object oNpc, object oTarget)
 {
     if (!DL_IsValidNpcObject(oNpc) || !DL_IsValidWaypointObject(oTarget))

@@ -6,6 +6,7 @@
 // - Does not choose routes.
 // - Canonical execution path is DL_ExecuteTransitionEngine; legacy wrappers in dl_transition_inc only delegate to it.
 
+// DO NOT DUPLICATE: canonical public transition entrypoint.
 int DL_ExecuteTransitionViaEntryWaypoint(object oNpc, object oEntryWp, string sDiagPrefix)
 {
     if (!DL_IsValidTransitionContext(oNpc, oEntryWp))
@@ -27,6 +28,8 @@ int DL_TryExecuteRoutedTransitionEntryWaypoint(object oNpc, object oEntryWp)
 }
 
 
+// Extension point: domain-specific post-success hooks are allowed only through
+// parameters/flags; transition locals remain executor-owned.
 int DL_TryAdvanceViaTransitionOrRouteEx(object oNpc, object oTargetWp, string sRouteContext, int bMarkSleepNavigation)
 {
     if (!DL_IsValidTransitionContext(oNpc, oTargetWp))
