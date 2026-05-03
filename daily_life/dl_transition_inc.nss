@@ -134,9 +134,26 @@ int DL_GetAreaTick(object oArea);
 int DL_TryRouteToTarget(object oNpc, object oTarget);
 int DL_ExecuteTransitionViaEntryWaypoint(object oNpc, object oEntryWp, string sDiagPrefix);
 int DL_TryExecuteRoutedTransitionEntryWaypoint(object oNpc, object oEntryWp);
+int DL_TryAdvanceViaTransitionOrRoute(object oNpc, object oTargetWp, int bMarkDomainProgress, string sDomainTag);
 int DL_EngineJumpNpcToTransitionExit(object oNpc, location lExit, string sStatus = "", string sDiagnostic = "");
 int DL_EngineExecuteTransitionDriver(object oNpc, object oEntryWp, location lExit, object oExitWp, string sJumpDiagnostic = DL_TRANSITION_DIAG_IN_PROGRESS);
 int DL_ExecuteTransitionEngine(object oNpc, object oEntryWp, string sDiagPrefix);
+void DL_MarkSleepNavigationInProgress(object oNpc, string sTargetTag);
+
+string DL_BuildTransitionDiagnostic(string sDiagnostic, string sDiagContext)
+{
+    if (sDiagnostic == "")
+    {
+        return "";
+    }
+
+    if (sDiagContext == "")
+    {
+        return sDiagnostic;
+    }
+
+    return sDiagContext + "_" + sDiagnostic;
+}
 
 string DL_GetAreaNavigationSlotKey(int nSlot)
 {
@@ -332,6 +349,21 @@ void DL_SetNpcNavZoneFromWaypoint(object oNpc, object oWp)
 
 // Canonical transition state setter contract.
 // Any new transition branches must set status/diagnostic only through this helper.
+string DL_BuildTransitionDiagnostic(string sDiagnostic, string sDiagContext)
+{
+    if (sDiagnostic == "")
+    {
+        return "";
+    }
+
+    if (sDiagContext == "")
+    {
+        return sDiagnostic;
+    }
+
+    return sDiagContext + "_" + sDiagnostic;
+}
+
 void DL_SetTransitionState(object oNpc, string sStatus, string sDiagnostic, string sDiagContext)
 {
     if (!DL_IsValidNpcObject(oNpc))
@@ -380,6 +412,35 @@ void DL_ClearTransitionExecutionState(object oNpc)
     DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET);
     DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS);
     DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC);
+}
+
+void DL_OnNpcArrivedAtAnchor(object oNpc, object oTarget, string sStatusLocal, string sStatusValue, string sDiagLocal, string sAnim, int bSetFacing)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
+    {
+        return;
+    }
+
+    DL_ClearTransitionExecutionState(oNpc);
+    if (sDiagLocal != "")
+    {
+        DeleteLocalString(oNpc, sDiagLocal);
+    }
+
+    if (sStatusLocal != "")
+    {
+        SetLocalString(oNpc, sStatusLocal, sStatusValue);
+    }
+
+    if (bSetFacing)
+    {
+        AssignCommand(oNpc, SetFacing(GetFacing(oTarget)));
+    }
+
+    if (sAnim != "")
+    {
+        PlayCustomAnimation(oNpc, sAnim, TRUE);
+    }
 }
 
 int DL_WaypointHasTransition(object oWp)
@@ -642,6 +703,11 @@ object DL_ResolveTransitionExitWaypointFromEntry(object oEntryWp)
 
 object DL_TryGetTransitionExitWaypoint(object oEntryWp)
 {
+    if (!DL_IsValidWaypointObject(oEntryWp))
+    {
+        return OBJECT_INVALID;
+    }
+
     if (!DL_WaypointHasTransition(oEntryWp))
     {
         return OBJECT_INVALID;
@@ -664,9 +730,16 @@ object DL_TryGetTransitionExitWaypointWithDiag(object oNpc, object oEntryWp, str
         return oExitWp;
     }
 
-    if (GetIsObjectValid(oNpc) && sDiagLocal != "" && sDiagCode != "")
+    if (GetIsObjectValid(oNpc) && sDiagCode != "")
     {
-        SetLocalString(oNpc, sDiagLocal, sDiagCode);
+        if (sDiagLocal == DL_L_NPC_TRANSITION_DIAGNOSTIC)
+        {
+            DL_SetTransitionState(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS), sDiagCode, "");
+        }
+        else if (sDiagLocal != "")
+        {
+            SetLocalString(oNpc, sDiagLocal, sDiagCode);
+        }
     }
 
     return OBJECT_INVALID;
@@ -985,6 +1058,34 @@ object DL_FindTwoHopNavZoneEntry(object oNpc, object oTarget, string sFromZone, 
     }
 
     return oBestEntry;
+}
+
+int DL_TryAdvanceViaTransitionOrRoute(object oNpc, object oTargetWp, int bMarkDomainProgress, string sDomainTag)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTargetWp))
+    {
+        return FALSE;
+    }
+
+    if (DL_WaypointHasTransition(oTargetWp) && DL_TryExecuteRoutedTransitionEntryWaypoint(oNpc, oTargetWp))
+    {
+        if (bMarkDomainProgress)
+        {
+            DL_MarkSleepNavigationInProgress(oNpc, sDomainTag);
+        }
+        return TRUE;
+    }
+
+    if (DL_TryRouteToTarget(oNpc, oTargetWp))
+    {
+        if (bMarkDomainProgress)
+        {
+            DL_MarkSleepNavigationInProgress(oNpc, sDomainTag);
+        }
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 int DL_TryUseNavigationRouteToTarget(object oNpc, object oTarget)
