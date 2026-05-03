@@ -101,11 +101,7 @@ void DL_StopSleepPresentationIfActive(object oNpc)
 void DL_ClearSleepExecutionState(object oNpc)
 {
     DL_StopSleepPresentationIfActive(oNpc);
-    DeleteLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE);
-    DeleteLocalString(oNpc, DL_L_NPC_SLEEP_STATUS);
-    DeleteLocalString(oNpc, DL_L_NPC_SLEEP_TARGET);
-    DeleteLocalString(oNpc, DL_L_NPC_SLEEP_DIAGNOSTIC);
-    DL_ClearTransitionExecutionState(oNpc);
+    DL_ResetNpcDirectiveState(oNpc, DL_NPC_RESET_DOMAIN_SLEEP);
 }
 void DL_SetSleepMissingState(object oNpc)
 {

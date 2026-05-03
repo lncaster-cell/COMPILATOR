@@ -133,11 +133,7 @@ string DL_ResolveDomesticWorkerWorkKind(object oNpc, int bHasFetch)
 }
 void DL_ClearWorkExecutionState(object oNpc)
 {
-    DeleteLocalString(oNpc, DL_L_NPC_WORK_KIND);
-    DeleteLocalString(oNpc, DL_L_NPC_WORK_TARGET);
-    DeleteLocalString(oNpc, DL_L_NPC_WORK_STATUS);
-    DeleteLocalString(oNpc, DL_L_NPC_WORK_DIAGNOSTIC);
-    DL_ClearTransitionExecutionState(oNpc);
+    DL_ResetNpcDirectiveState(oNpc, DL_NPC_RESET_DOMAIN_WORK);
 }
 string DL_ResolveBlacksmithWorkKindAtHour(object oNpc)
 {
