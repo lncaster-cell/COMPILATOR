@@ -26,7 +26,19 @@ int DL_EngineJumpNpcToTransitionExit(object oNpc, location lExit, string sStatus
     return TRUE;
 }
 
-int DL_EngineExecuteTransitionDriver(object oNpc, object oEntryWp, location lExit, object oExitWp, string sJumpDiagnostic = DL_TRANSITION_DIAG_IN_PROGRESS)
+void DL_TransitionPrepareAndJump(object oNpc, object oExitWp, location lExit, string sStatus, string sDiag)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    DL_SetNpcNavZoneFromWaypoint(oNpc, oExitWp);
+    DL_SetTransitionState(oNpc, sStatus, sDiag, "");
+    DL_JumpNpcToTransitionExit(oNpc, lExit, sStatus, sDiag);
+}
+
+int DL_ExecuteTransitionDriver(object oNpc, object oEntryWp, location lExit, object oExitWp, string sJumpDiagnostic = DL_TRANSITION_DIAG_IN_PROGRESS)
 {
     if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oEntryWp))
     {
@@ -37,8 +49,7 @@ int DL_EngineExecuteTransitionDriver(object oNpc, object oEntryWp, location lExi
 
     if (sDriver == "" || sDriver == DL_TRANSITION_DRIVER_NONE || sDriver == DL_TRANSITION_DRIVER_TRIGGER)
     {
-        DL_SetNpcNavZoneFromWaypoint(oNpc, oExitWp);
-        DL_EngineJumpNpcToTransitionExit(oNpc, lExit, DL_TRANSITION_STATUS_TRANSITIONING, sJumpDiagnostic);
+        DL_TransitionPrepareAndJump(oNpc, oExitWp, lExit, DL_TRANSITION_STATUS_TRANSITIONING, sJumpDiagnostic);
         return TRUE;
     }
 
@@ -51,13 +62,12 @@ int DL_EngineExecuteTransitionDriver(object oNpc, object oEntryWp, location lExi
             return TRUE;
         }
 
-        DL_SetNpcNavZoneFromWaypoint(oNpc, oExitWp);
         AssignCommand(oNpc, ClearAllActions(TRUE));
         if (GetIsDoorActionPossible(oDoor, DOOR_ACTION_OPEN))
         {
             AssignCommand(oNpc, DoDoorAction(oDoor, DOOR_ACTION_OPEN));
         }
-        DL_EngineJumpNpcToTransitionExit(oNpc, lExit, DL_TRANSITION_STATUS_TRANSITIONING, sJumpDiagnostic);
+        DL_TransitionPrepareAndJump(oNpc, oExitWp, lExit, DL_TRANSITION_STATUS_TRANSITIONING, sJumpDiagnostic);
         return TRUE;
     }
 
