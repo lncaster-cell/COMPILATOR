@@ -278,6 +278,21 @@ void DL_SetNpcNavZoneFromWaypoint(object oNpc, object oWp)
 
 // Canonical transition state setter contract.
 // Any new transition branches must set status/diagnostic only through this helper.
+string DL_BuildTransitionDiagnostic(string sDiagnostic, string sDiagContext)
+{
+    if (sDiagnostic == "")
+    {
+        return "";
+    }
+
+    if (sDiagContext == "")
+    {
+        return sDiagnostic;
+    }
+
+    return sDiagContext + "_" + sDiagnostic;
+}
+
 void DL_SetTransitionState(object oNpc, string sStatus, string sDiagnostic, string sDiagContext)
 {
     if (!DL_IsValidNpcObject(oNpc))
@@ -291,12 +306,11 @@ void DL_SetTransitionState(object oNpc, string sStatus, string sDiagnostic, stri
         return;
     }
 
-    string sDiagnosticValue = sDiagnostic;
-    if (sDiagContext != "")
-    {
-        sDiagnosticValue = sDiagContext + "_" + sDiagnostic;
-    }
-    DL_SetRuntimeState(oNpc, DL_L_NPC_TRANSITION_STATUS, sStatus, DL_L_NPC_TRANSITION_DIAGNOSTIC, sDiagnosticValue);
+    DL_SetRuntimeState(oNpc,
+        DL_L_NPC_TRANSITION_STATUS,
+        sStatus,
+        DL_L_NPC_TRANSITION_DIAGNOSTIC,
+        DL_BuildTransitionDiagnostic(sDiagnostic, sDiagContext));
 }
 
 string DL_GetResolvedTransitionExitTag(object oEntryWp)
@@ -340,6 +354,35 @@ void DL_ClearTransitionExecutionState(object oNpc)
     DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET);
     DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS);
     DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC);
+}
+
+void DL_OnNpcArrivedAtAnchor(object oNpc, object oTarget, string sStatusLocal, string sStatusValue, string sDiagLocal, string sAnim, int bSetFacing)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
+    {
+        return;
+    }
+
+    DL_ClearTransitionExecutionState(oNpc);
+    if (sDiagLocal != "")
+    {
+        DeleteLocalString(oNpc, sDiagLocal);
+    }
+
+    if (sStatusLocal != "")
+    {
+        SetLocalString(oNpc, sStatusLocal, sStatusValue);
+    }
+
+    if (bSetFacing)
+    {
+        AssignCommand(oNpc, SetFacing(GetFacing(oTarget)));
+    }
+
+    if (sAnim != "")
+    {
+        PlayCustomAnimation(oNpc, sAnim, TRUE);
+    }
 }
 
 int DL_WaypointHasTransition(object oWp)
@@ -624,9 +667,16 @@ object DL_TryGetTransitionExitWaypointWithDiag(object oNpc, object oEntryWp, str
         return oExitWp;
     }
 
-    if (GetIsObjectValid(oNpc) && sDiagLocal != "" && sDiagCode != "")
+    if (GetIsObjectValid(oNpc) && sDiagCode != "")
     {
-        SetLocalString(oNpc, sDiagLocal, sDiagCode);
+        if (sDiagLocal == DL_L_NPC_TRANSITION_DIAGNOSTIC)
+        {
+            DL_SetTransitionState(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS), sDiagCode, "");
+        }
+        else if (sDiagLocal != "")
+        {
+            SetLocalString(oNpc, sDiagLocal, sDiagCode);
+        }
     }
 
     return OBJECT_INVALID;
@@ -945,6 +995,51 @@ object DL_FindTwoHopNavZoneEntry(object oNpc, object oTarget, string sFromZone, 
     }
 
     return oBestEntry;
+}
+
+
+// Contract: navigation helpers only perform navigation attempts and must not mutate
+// domain-specific runtime/status state outside transition execution internals.
+int DL_IsTransitionNavigableTarget(object oNpc, object oTargetWp)
+{
+    if (!GetIsObjectValid(oNpc) || !DL_IsValidWaypointObject(oTargetWp))
+    {
+        return FALSE;
+    }
+
+    if (!DL_WaypointHasTransition(oTargetWp))
+    {
+        return FALSE;
+    }
+
+    object oNpcArea = GetArea(oNpc);
+    object oTargetArea = GetArea(oTargetWp);
+    if (!GetIsObjectValid(oNpcArea) || !GetIsObjectValid(oTargetArea))
+    {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+int DL_TryNavigateToTargetViaTransition(object oNpc, object oTargetWp, int bAllowRouterFallback)
+{
+    if (!DL_IsTransitionNavigableTarget(oNpc, oTargetWp))
+    {
+        return FALSE;
+    }
+
+    if (DL_ExecuteTransitionViaEntryWaypoint(oNpc, oTargetWp, DL_DIAG_CTX_ROUTED))
+    {
+        return TRUE;
+    }
+
+    if (bAllowRouterFallback && DL_TryRouteToTarget(oNpc, oTargetWp))
+    {
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 int DL_TryUseNavigationRouteToTarget(object oNpc, object oTarget)
