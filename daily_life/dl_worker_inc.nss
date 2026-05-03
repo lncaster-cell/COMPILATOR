@@ -392,6 +392,7 @@ int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPas
     }
 
     // One-pass snapshot keyed by (area, tick, pass mode), rebuilt automatically on tick change.
+    DL_EnsureAreaIndexBuilt(oArea);
     DL_EnsureAreaPassSnapshot(oArea, nTickStamp, nPassMode);
 
     int nNpcProcessed = 0;

@@ -866,6 +866,7 @@ void DL_RegisterNpc(object oNpc)
         SetLocalObject(oNpc, DL_L_NPC_REG_AREA, oArea);
         SetLocalInt(oArea, DL_L_AREA_REG_COUNT, nSlot + 1);
         DL_IncLocalInt(oArea, DL_L_AREA_REG_SEQ);
+        DL_InvalidateAreaIndex(oArea);
     }
 }
 
@@ -971,6 +972,7 @@ void DL_UnregisterNpc(object oNpc)
             }
         }
         DL_IncLocalInt(oArea, DL_L_AREA_REG_SEQ);
+        DL_InvalidateAreaIndex(oArea);
     }
 
     DeleteLocalObject(oNpc, DL_L_NPC_REG_AREA);
