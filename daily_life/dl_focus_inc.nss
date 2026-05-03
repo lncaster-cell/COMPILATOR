@@ -94,14 +94,39 @@ object DL_ResolveSocialPartnerObject(object oNpc, string sPartnerTag)
 }
 object DL_GetNpcCachedPlaceableByTagInArea(object oNpc, string sCacheLocal, string sTag, object oArea)
 {
-    return DL_GetNpcCachedObjectByTagInArea(
-        oNpc,
-        sCacheLocal,
-        sTag,
-        oArea,
-        OBJECT_TYPE_PLACEABLE,
-        "anchor"
-    );
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oArea) || sTag == "")
+    {
+        return OBJECT_INVALID;
+    }
+
+    int nTier = DL_GetAreaTier(oArea);
+    int nLifecycleSeq = GetLocalInt(oNpc, DL_L_NPC_EVENT_SEQ);
+    int nNowTick = DL_GetAreaTick(oArea);
+    object oCached = DL_GetCachedObject(oNpc, sCacheLocal, sTag, OBJECT_TYPE_PLACEABLE, oArea, nTier, nLifecycleSeq);
+    if (GetIsObjectValid(oCached))
+    {
+        DL_RecordCacheMetric(oArea, "anchor", TRUE);
+        return oCached;
+    }
+    DL_InvalidateCachedObject(oNpc, sCacheLocal);
+    if (DL_IsCacheMissSuppressedThisTick(oNpc, sCacheLocal, nNowTick))
+    {
+        DL_RecordCacheMetric(oArea, "anchor", FALSE);
+        return OBJECT_INVALID;
+    }
+
+    object oResolved = DL_FindObjectByTagInAreaDeterministic(sTag, OBJECT_TYPE_PLACEABLE, oArea, DL_WAYPOINT_TAG_SEARCH_CAP);
+    if (GetIsObjectValid(oResolved))
+    {
+        DL_SetCachedObject(oNpc, sCacheLocal, oResolved, sTag, OBJECT_TYPE_PLACEABLE, oArea, nTier, nLifecycleSeq);
+        DL_ClearCacheMissSuppressedTick(oNpc, sCacheLocal);
+        DL_RecordCacheMetric(oArea, "anchor", FALSE);
+        return oResolved;
+    }
+
+    DL_MarkCacheMissThisTick(oNpc, sCacheLocal, nNowTick);
+    DL_RecordCacheMetric(oArea, "anchor", FALSE);
+    return OBJECT_INVALID;
 }
 int DL_ProgressFocusAtTarget(object oNpc, object oTarget, string sOnAnchorStatus, string sAnim)
 {
