@@ -86,6 +86,21 @@ int DL_EngineExecuteTransitionDriver(object oNpc, object oEntryWp, location lExi
 int DL_ExecuteTransitionEngine(object oNpc, object oEntryWp, string sDiagPrefix);
 void DL_MarkSleepNavigationInProgress(object oNpc, string sTargetTag);
 
+string DL_BuildTransitionDiagnostic(string sDiagnostic, string sDiagContext)
+{
+    if (sDiagnostic == "")
+    {
+        return "";
+    }
+
+    if (sDiagContext == "")
+    {
+        return sDiagnostic;
+    }
+
+    return sDiagContext + "_" + sDiagnostic;
+}
+
 string DL_GetAreaNavigationSlotKey(int nSlot)
 {
     if (nSlot < 0)
@@ -280,6 +295,21 @@ void DL_SetNpcNavZoneFromWaypoint(object oNpc, object oWp)
 
 // Canonical transition state setter contract.
 // Any new transition branches must set status/diagnostic only through this helper.
+string DL_BuildTransitionDiagnostic(string sDiagnostic, string sDiagContext)
+{
+    if (sDiagnostic == "")
+    {
+        return "";
+    }
+
+    if (sDiagContext == "")
+    {
+        return sDiagnostic;
+    }
+
+    return sDiagContext + "_" + sDiagnostic;
+}
+
 void DL_SetTransitionState(object oNpc, string sStatus, string sDiagnostic, string sDiagContext)
 {
     if (!DL_IsValidNpcObject(oNpc))
@@ -293,12 +323,13 @@ void DL_SetTransitionState(object oNpc, string sStatus, string sDiagnostic, stri
         return;
     }
 
-    string sDiagnosticValue = sDiagnostic;
-    if (sDiagContext != "")
-    {
-        sDiagnosticValue = sDiagContext + "_" + sDiagnostic;
-    }
-    DL_SetRuntimeState(oNpc, DL_L_NPC_TRANSITION_STATUS, sStatus, DL_L_NPC_TRANSITION_DIAGNOSTIC, sDiagnosticValue);
+    DL_SetRuntimeState(
+        oNpc,
+        DL_L_NPC_TRANSITION_STATUS,
+        sStatus,
+        DL_L_NPC_TRANSITION_DIAGNOSTIC,
+        DL_BuildTransitionDiagnostic(sDiagnostic, sDiagContext)
+    );
 }
 
 string DL_GetResolvedTransitionExitTag(object oEntryWp)
@@ -342,6 +373,35 @@ void DL_ClearTransitionExecutionState(object oNpc)
     DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET);
     DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS);
     DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC);
+}
+
+void DL_OnNpcArrivedAtAnchor(object oNpc, object oTarget, string sStatusLocal, string sStatusValue, string sDiagLocal, string sAnim, int bSetFacing)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
+    {
+        return;
+    }
+
+    DL_ClearTransitionExecutionState(oNpc);
+    if (sDiagLocal != "")
+    {
+        DeleteLocalString(oNpc, sDiagLocal);
+    }
+
+    if (sStatusLocal != "")
+    {
+        SetLocalString(oNpc, sStatusLocal, sStatusValue);
+    }
+
+    if (bSetFacing)
+    {
+        AssignCommand(oNpc, SetFacing(GetFacing(oTarget)));
+    }
+
+    if (sAnim != "")
+    {
+        PlayCustomAnimation(oNpc, sAnim, TRUE);
+    }
 }
 
 int DL_WaypointHasTransition(object oWp)
@@ -604,6 +664,11 @@ object DL_ResolveTransitionExitWaypointFromEntry(object oEntryWp)
 
 object DL_TryGetTransitionExitWaypoint(object oEntryWp)
 {
+    if (!DL_IsValidWaypointObject(oEntryWp))
+    {
+        return OBJECT_INVALID;
+    }
+
     if (!DL_WaypointHasTransition(oEntryWp))
     {
         return OBJECT_INVALID;
@@ -626,9 +691,16 @@ object DL_TryGetTransitionExitWaypointWithDiag(object oNpc, object oEntryWp, str
         return oExitWp;
     }
 
-    if (GetIsObjectValid(oNpc) && sDiagLocal != "" && sDiagCode != "")
+    if (GetIsObjectValid(oNpc) && sDiagCode != "")
     {
-        SetLocalString(oNpc, sDiagLocal, sDiagCode);
+        if (sDiagLocal == DL_L_NPC_TRANSITION_DIAGNOSTIC)
+        {
+            DL_SetTransitionState(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS), sDiagCode, "");
+        }
+        else if (sDiagLocal != "")
+        {
+            SetLocalString(oNpc, sDiagLocal, sDiagCode);
+        }
     }
 
     return OBJECT_INVALID;

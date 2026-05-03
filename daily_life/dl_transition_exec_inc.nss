@@ -24,3 +24,41 @@ int DL_TryExecuteRoutedTransitionEntryWaypoint(object oNpc, object oEntryWp)
     // deprecated shim: use canonical DL_ExecuteTransitionViaEntryWaypoint directly.
     return DL_ExecuteTransitionViaEntryWaypoint(oNpc, oEntryWp, DL_DIAG_CTX_ROUTED);
 }
+
+
+int DL_TryAdvanceViaTransitionOrRouteEx(object oNpc, object oTargetWp, string sRouteContext, int bMarkSleepNavigation)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTargetWp))
+    {
+        return FALSE;
+    }
+
+    int bHasTransition = GetIsObjectValid(DL_TryGetTransitionExitWaypoint(oTargetWp));
+    if (bHasTransition)
+    {
+        if (DL_ExecuteTransitionViaEntryWaypoint(oNpc, oTargetWp, sRouteContext))
+        {
+            if (bMarkSleepNavigation)
+            {
+                DL_MarkSleepNavigationInProgress(oNpc, GetTag(oTargetWp));
+            }
+            return TRUE;
+        }
+    }
+
+    if (DL_TryRouteToTarget(oNpc, oTargetWp))
+    {
+        if (bMarkSleepNavigation)
+        {
+            DL_MarkSleepNavigationInProgress(oNpc, GetTag(oTargetWp));
+        }
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+int DL_TryAdvanceViaTransitionOrRoute(object oNpc, object oTargetWp, string sRouteContext)
+{
+    return DL_TryAdvanceViaTransitionOrRouteEx(oNpc, oTargetWp, sRouteContext, FALSE);
+}

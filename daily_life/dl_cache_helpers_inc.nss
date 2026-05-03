@@ -2,6 +2,7 @@ const string DL_L_MODULE_CACHE_METRIC_PREFIX = "dl_metric_cache_";
 const string DL_L_CACHE_CTX_PREFIX = "dl_cache_ctx_";
 
 const int DL_TAG_ENUM_DEFAULT_CAP = 32;
+const int DL_WAYPOINT_TAG_SEARCH_CAP = 64;
 
 void DL_InvalidateCachedObject(object oOwner, string sCacheLocal);
 
@@ -175,4 +176,40 @@ object DL_FindObjectByTagInAreaDeterministic(string sTag, int nObjectType, objec
     }
 
     return DL_FindObjectByTagWithChecks(sTag, nSearchCap, nObjectType, oArea, OBJECT_INVALID, FALSE);
+}
+
+object DL_GetNpcCachedObjectByTagInArea(
+    object oNpc,
+    string sCacheLocal,
+    string sTag,
+    object oArea,
+    int nObjectType,
+    string sMetricDomain
+)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oArea) || sTag == "")
+    {
+        return OBJECT_INVALID;
+    }
+
+    int nTier = DL_GetAreaTier(oArea);
+    int nLifecycleSeq = GetLocalInt(oNpc, DL_L_NPC_EVENT_SEQ);
+    object oCached = DL_GetCachedObject(oNpc, sCacheLocal, sTag, nObjectType, oArea, nTier, nLifecycleSeq);
+    if (GetIsObjectValid(oCached))
+    {
+        DL_RecordCacheMetric(oArea, sMetricDomain, TRUE);
+        return oCached;
+    }
+
+    DL_InvalidateCachedObject(oNpc, sCacheLocal);
+    object oResolved = DL_FindObjectByTagInAreaDeterministic(sTag, nObjectType, oArea, DL_WAYPOINT_TAG_SEARCH_CAP);
+    if (GetIsObjectValid(oResolved))
+    {
+        DL_SetCachedObject(oNpc, sCacheLocal, oResolved, sTag, nObjectType, oArea, nTier, nLifecycleSeq);
+        DL_RecordCacheMetric(oArea, sMetricDomain, FALSE);
+        return oResolved;
+    }
+
+    DL_RecordCacheMetric(oArea, sMetricDomain, FALSE);
+    return OBJECT_INVALID;
 }
