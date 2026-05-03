@@ -33,9 +33,9 @@ const int DL_CROSS_AREA_TAG_SEARCH_CAP = 32;
 
 const string DL_L_NPC_TRANSITION_KIND = "dl_npc_transition_kind";
 const string DL_L_NPC_TRANSITION_ID = "dl_npc_transition_id";
-const string DL_L_NPC_TRANSITION_TARGET = "dl_npc_transition_target";
-const string DL_L_NPC_TRANSITION_STATUS = "dl_npc_transition_status";
-const string DL_L_NPC_TRANSITION_DIAGNOSTIC = "dl_npc_transition_diagnostic";
+string DL_L_NPC_TRANSITION_TARGET = "dl_npc_transition_target";
+string DL_L_NPC_TRANSITION_STATUS = "dl_npc_transition_status";
+string DL_L_NPC_TRANSITION_DIAGNOSTIC = "dl_npc_transition_diagnostic";
 const string DL_L_NPC_NAV_ZONE = "dl_npc_nav_zone";
 
 // Transition diagnostic context prefixes.
