@@ -1,7 +1,10 @@
 // Daily Life core event ingress facade.
 // Maintains legacy include API while delegating to focused subsystems.
 
-#include "dl_runtime_contract_inc"
+// dl_res_inc is intentionally first: it owns the Daily Life directive/local
+// contract consumed by diagnostics, registry, worker, lifecycle, city/legal
+// integrations, and blocked handling.
+#include "dl_res_inc"
 #include "dl_config_inc"
 #include "dl_diag_inc"
 #include "dl_registry_inc"
