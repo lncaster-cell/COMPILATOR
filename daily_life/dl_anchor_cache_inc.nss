@@ -62,13 +62,10 @@ object DL_ResolveEffectiveWaypointForNpc(object oNpc, object oWp)
         return oWp;
     }
 
-    if (DL_WaypointHasTransition(oWp))
+    object oExitWp = DL_TryGetTransitionExitWaypoint(oWp);
+    if (GetIsObjectValid(oExitWp) && GetArea(oExitWp) == GetArea(oNpc))
     {
-        object oExitWp = DL_ResolveTransitionExitWaypointFromEntry(oWp);
-        if (GetIsObjectValid(oExitWp) && GetArea(oExitWp) == GetArea(oNpc))
-        {
-            return oExitWp;
-        }
+        return oExitWp;
     }
 
     return OBJECT_INVALID;
@@ -233,13 +230,10 @@ object DL_GetAreaAnchorWaypoint(object oNpc, object oArea, string sAnchorLocal, 
     // Backward-compatible transition handoff: an anchor may still point to an
     // entry waypoint in another area when that entry's exit lands in the target area.
     object oLegacyWp = DL_GetNpcCachedWaypointByTag(oNpc, sCacheLocal, sWpTag);
-    if (GetIsObjectValid(oLegacyWp) && DL_WaypointHasTransition(oLegacyWp))
+    object oExitWp = DL_TryGetTransitionExitWaypoint(oLegacyWp);
+    if (GetIsObjectValid(oExitWp) && GetArea(oExitWp) == oArea)
     {
-        object oExitWp = DL_ResolveTransitionExitWaypointFromEntry(oLegacyWp);
-        if (GetIsObjectValid(oExitWp) && GetArea(oExitWp) == oArea)
-        {
-            return oExitWp;
-        }
+        return oExitWp;
     }
 
     if (!GetIsObjectValid(oLegacyWp))

@@ -4,7 +4,7 @@
 // - oEntryWp: route-discovered transition entry waypoint
 // - sDiagPrefix: execution context prefix ("", "routed", "cross_area", ...)
 
-int DL_JumpNpcToTransitionExit(object oNpc, location lExit, string sStatus = "", string sDiagnostic = "")
+int DL_EngineJumpNpcToTransitionExit(object oNpc, location lExit, string sStatus = "", string sDiagnostic = "")
 {
     if (!GetIsObjectValid(oNpc))
     {
@@ -121,5 +121,5 @@ int DL_ExecuteTransitionEngine(object oNpc, object oEntryWp, string sDiagPrefix)
 
     location lExit = GetLocation(oExitWp);
     DL_SetTransitionState(oNpc, DL_TRANSITION_STATUS_TRANSITIONING, DL_TRANSITION_DIAG_IN_PROGRESS, sDiagPrefix);
-    return DL_ExecuteTransitionDriver(oNpc, oEntryWp, lExit, oExitWp, sDiagPrefix + "_" + DL_TRANSITION_DIAG_IN_PROGRESS);
+    return DL_EngineExecuteTransitionDriver(oNpc, oEntryWp, lExit, oExitWp, sDiagPrefix + "_" + DL_TRANSITION_DIAG_IN_PROGRESS);
 }

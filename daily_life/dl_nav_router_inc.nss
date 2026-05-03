@@ -5,6 +5,40 @@
 // - Delegates execution of that one transition to Transition Executor.
 // - Does not reserve destinations and does not play animations.
 
+object DL_FindDirectNavZoneEntryToTarget(object oNpc, object oTarget)
+{
+    string sTargetZone = DL_GetWaypointNavZone(oTarget);
+    if (sTargetZone == "")
+    {
+        return OBJECT_INVALID;
+    }
+
+    string sCurrentZone = DL_InferNpcNavZoneFromAreaRoutes(oNpc);
+    if (sCurrentZone == "")
+    {
+        return OBJECT_INVALID;
+    }
+
+    return DL_FindDirectNavZoneEntry(oNpc, oTarget, sCurrentZone, sTargetZone);
+}
+
+object DL_FindTwoHopNavZoneEntryToTarget(object oNpc, object oTarget)
+{
+    string sTargetZone = DL_GetWaypointNavZone(oTarget);
+    if (sTargetZone == "")
+    {
+        return OBJECT_INVALID;
+    }
+
+    string sCurrentZone = DL_InferNpcNavZoneFromAreaRoutes(oNpc);
+    if (sCurrentZone == "")
+    {
+        return OBJECT_INVALID;
+    }
+
+    return DL_FindTwoHopNavZoneEntry(oNpc, oTarget, sCurrentZone, sTargetZone);
+}
+
 object DL_FindNextTransitionEntryToTarget(object oNpc, object oTarget)
 {
     if (!DL_IsValidNpcObject(oNpc) || !DL_IsValidWaypointObject(oTarget))
@@ -18,25 +52,13 @@ object DL_FindNextTransitionEntryToTarget(object oNpc, object oTarget)
         return oEntry;
     }
 
-    string sTargetZone = DL_GetWaypointNavZone(oTarget);
-    if (sTargetZone == "")
-    {
-        return OBJECT_INVALID;
-    }
-
-    string sCurrentZone = DL_InferNpcNavZoneFromAreaRoutes(oNpc);
-    if (sCurrentZone == "")
-    {
-        return OBJECT_INVALID;
-    }
-
-    oEntry = DL_FindDirectNavZoneEntry(oNpc, oTarget, sCurrentZone, sTargetZone);
+    oEntry = DL_FindDirectNavZoneEntryToTarget(oNpc, oTarget);
     if (GetIsObjectValid(oEntry))
     {
         return oEntry;
     }
 
-    return DL_FindTwoHopNavZoneEntry(oNpc, oTarget, sCurrentZone, sTargetZone);
+    return DL_FindTwoHopNavZoneEntryToTarget(oNpc, oTarget);
 }
 
 int DL_TryRouteToTarget(object oNpc, object oTarget)
