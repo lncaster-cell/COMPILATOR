@@ -15,6 +15,49 @@ const int DL_NPC_RESET_DIRECTIVE_EXEC_SOCIAL = 16;
 const int DL_NPC_RESET_DIRECTIVE_EXEC_PUBLIC = 32;
 const int DL_NPC_RESET_DIRECTIVE_EXEC_ALL    = 63;
 
+// Pipeline-level runtime reset domains for directive transitions.
+const int DL_NPC_RESET_DOMAIN_SLEEP = 1;
+const int DL_NPC_RESET_DOMAIN_WORK  = 2;
+const int DL_NPC_RESET_DOMAIN_FOCUS = 4;
+const int DL_NPC_RESET_DOMAIN_ALL   = 7;
+
+// Transition rule: every directive-to-directive switch must pass through this API.
+// Domain-specific cleanup hooks (animations/reservations/etc.) should wrap this helper
+// instead of duplicating the baseline reset.
+void DL_ResetNpcDirectiveState(object oNpc, int nDomainMask)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    // Mandatory base reset for any directive transition.
+    DL_ClearTransitionExecutionState(oNpc);
+
+    if (nDomainMask & DL_NPC_RESET_DOMAIN_SLEEP)
+    {
+        DeleteLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE);
+        DeleteLocalString(oNpc, DL_L_NPC_SLEEP_STATUS);
+        DeleteLocalString(oNpc, DL_L_NPC_SLEEP_TARGET);
+        DeleteLocalString(oNpc, DL_L_NPC_SLEEP_DIAGNOSTIC);
+    }
+
+    if (nDomainMask & DL_NPC_RESET_DOMAIN_WORK)
+    {
+        DeleteLocalString(oNpc, DL_L_NPC_WORK_KIND);
+        DeleteLocalString(oNpc, DL_L_NPC_WORK_TARGET);
+        DeleteLocalString(oNpc, DL_L_NPC_WORK_STATUS);
+        DeleteLocalString(oNpc, DL_L_NPC_WORK_DIAGNOSTIC);
+    }
+
+    if (nDomainMask & DL_NPC_RESET_DOMAIN_FOCUS)
+    {
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_STATUS);
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_TARGET);
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
+    }
+}
+
 void DL_ResetNpcDirectiveExecutionState(object oNpc, int nDirectiveMask)
 {
     if (!GetIsObjectValid(oNpc))

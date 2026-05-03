@@ -119,7 +119,7 @@ object DL_FindCrossAreaNavEntry(object oNpc, object oTarget, string sFromZone, s
         object oEntry = DL_GetAreaNavigationRouteAtSlot(oCurrentArea, i);
         if (DL_CrossNavEntryMatchesZone(oEntry, sFromZone))
         {
-            object oExit = DL_ResolveTransitionExitWaypointFromEntry(oEntry);
+            object oExit = DL_TryGetTransitionExitWaypoint(oEntry);
             object oExitArea = GetArea(oExit);
             string sExitZone = DL_GetWaypointNavZone(oExit);
             if (DL_IsCrossAreaCandidateValid(oEntry, oExit, oExitArea, sFromZone, sExitZone, oTargetArea, sTargetZone))
@@ -141,6 +141,9 @@ object DL_FindCrossAreaNavEntry(object oNpc, object oTarget, string sFromZone, s
     return oBestEntry;
 }
 
+// Public cache API: NPC-scoped cross-area route-entry cache.
+// Expected lifetime: one NPC event sequence in the same source area/tier and same target+zone tuple.
+// Invalidation triggers: explicit invalidate, area/tier context shift, or DL_L_NPC_EVENT_SEQ increment.
 object DL_FindCrossAreaNavigationRouteEntryToTarget(object oNpc, object oTarget)
 {
     if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
@@ -168,7 +171,7 @@ object DL_FindCrossAreaNavigationRouteEntryToTarget(object oNpc, object oTarget)
     object oArea = GetArea(oNpc);
     int nTier = DL_GetAreaTier(oArea);
     int nLifecycleSeq = GetLocalInt(oNpc, DL_L_NPC_EVENT_SEQ);
-    string sCacheTag = GetTag(oTarget) + "|" + sCurrentZone + "|" + sTargetZone;
+    string sCacheTag = DL_BuildTransitionRuntimeKey3(GetTag(oTarget), sCurrentZone, sTargetZone);
     object oCached = DL_GetCachedObject(oNpc, DL_L_NPC_CACHE_CROSS_NAV_ENTRY, sCacheTag, OBJECT_TYPE_WAYPOINT, oArea, nTier, nLifecycleSeq);
     if (GetIsObjectValid(oCached))
     {
