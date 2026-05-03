@@ -31,17 +31,17 @@ object DL_ResolveSleepApproachWaypoint(object oNpc)
     );
     if (GetIsObjectValid(oWp))
     {
-        return oWp;
+        return DL_ResolveEffectiveWaypointForNpc(oNpc, oWp);
     }
 
-    return DL_ResolveNpcWaypointWithFallbackTagInArea(
+    return DL_ResolveEffectiveWaypointForNpc(oNpc, DL_ResolveNpcWaypointWithFallbackTagInArea(
         oNpc,
         DL_L_NPC_CACHE_SLEEP_APPROACH,
         oHome,
         "dl_sleep_",
         "_approach",
         "dl_sleep_approach_" + IntToString(nSlot)
-    );
+    ));
 }
 object DL_ResolveSleepBedWaypoint(object oNpc)
 {
@@ -57,17 +57,17 @@ object DL_ResolveSleepBedWaypoint(object oNpc)
     );
     if (GetIsObjectValid(oWp))
     {
-        return oWp;
+        return DL_ResolveEffectiveWaypointForNpc(oNpc, oWp);
     }
 
-    return DL_ResolveNpcWaypointWithFallbackTagInArea(
+    return DL_ResolveEffectiveWaypointForNpc(oNpc, DL_ResolveNpcWaypointWithFallbackTagInArea(
         oNpc,
         DL_L_NPC_CACHE_SLEEP_BED,
         oHome,
         "dl_sleep_",
         "_bed",
         "dl_sleep_bed_" + IntToString(nSlot)
-    );
+    ));
 }
 int DL_HasActiveSleepExecutionState(object oNpc)
 {
