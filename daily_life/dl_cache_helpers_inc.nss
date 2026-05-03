@@ -2,6 +2,12 @@ const string DL_L_MODULE_CACHE_METRIC_PREFIX = "dl_metric_cache_";
 const string DL_L_CACHE_CTX_PREFIX = "dl_cache_ctx_";
 const string DL_L_CACHE_MISS_TICK_SUFFIX = "miss_tick";
 const string DL_L_AREA_TAG_CACHE_PREFIX = "dl_area_tag_cache_";
+const string DL_L_CACHE_METRIC_KEY_CTX_PREFIX = "dl_cache_metric_key_";
+
+const string DL_L_METRIC_NAV_MODULE_HIT = "dl_metric_cache_module_nav_hit";
+const string DL_L_METRIC_NAV_MODULE_MISS = "dl_metric_cache_module_nav_miss";
+const string DL_L_METRIC_NAV_AREA_HIT = "dl_metric_cache_area_nav_hit";
+const string DL_L_METRIC_NAV_AREA_MISS = "dl_metric_cache_area_nav_miss";
 
 const int DL_TAG_ENUM_DEFAULT_CAP = 32;
 const int DL_WAYPOINT_TAG_SEARCH_CAP = 64;
@@ -136,8 +142,70 @@ string DL_GetCacheMetricKey(string sScope, string sMetric)
     return DL_L_MODULE_CACHE_METRIC_PREFIX + sScope + "_" + sMetric;
 }
 
+string DL_GetCachedMetricKeyContext(string sScope, string sMetric)
+{
+    return DL_L_CACHE_METRIC_KEY_CTX_PREFIX + sScope + "_" + sMetric;
+}
+
+void DL_PrimeHotCacheMetricKeys(object oArea)
+{
+    object oModule = GetModule();
+    SetLocalString(oModule, DL_GetCachedMetricKeyContext("module_nav", "hit"), DL_L_METRIC_NAV_MODULE_HIT);
+    SetLocalString(oModule, DL_GetCachedMetricKeyContext("module_nav", "miss"), DL_L_METRIC_NAV_MODULE_MISS);
+
+    if (GetIsObjectValid(oArea))
+    {
+        SetLocalString(oArea, DL_GetCachedMetricKeyContext("area_nav", "hit"), DL_L_METRIC_NAV_AREA_HIT);
+        SetLocalString(oArea, DL_GetCachedMetricKeyContext("area_nav", "miss"), DL_L_METRIC_NAV_AREA_MISS);
+    }
+}
+
+string DL_GetPreparedCacheMetricKey(object oOwner, string sScope, string sMetric)
+{
+    if (!GetIsObjectValid(oOwner) || sScope == "" || sMetric == "")
+    {
+        return "";
+    }
+
+    string sCachedKey = GetLocalString(oOwner, DL_GetCachedMetricKeyContext(sScope, sMetric));
+    if (sCachedKey != "")
+    {
+        return sCachedKey;
+    }
+
+    string sBuiltKey = DL_GetCacheMetricKey(sScope, sMetric);
+    SetLocalString(oOwner, DL_GetCachedMetricKeyContext(sScope, sMetric), sBuiltKey);
+    return sBuiltKey;
+}
+
+void DL_RecordNavCacheMetric(object oArea, int bHit)
+{
+    object oModule = GetModule();
+    if (bHit)
+    {
+        SetLocalInt(oModule, DL_L_METRIC_NAV_MODULE_HIT, GetLocalInt(oModule, DL_L_METRIC_NAV_MODULE_HIT) + 1);
+        if (GetIsObjectValid(oArea))
+        {
+            SetLocalInt(oArea, DL_L_METRIC_NAV_AREA_HIT, GetLocalInt(oArea, DL_L_METRIC_NAV_AREA_HIT) + 1);
+        }
+        return;
+    }
+
+    SetLocalInt(oModule, DL_L_METRIC_NAV_MODULE_MISS, GetLocalInt(oModule, DL_L_METRIC_NAV_MODULE_MISS) + 1);
+    if (GetIsObjectValid(oArea))
+    {
+        SetLocalInt(oArea, DL_L_METRIC_NAV_AREA_MISS, GetLocalInt(oArea, DL_L_METRIC_NAV_AREA_MISS) + 1);
+    }
+}
+
 void DL_RecordCacheMetric(object oArea, string sScope, int bHit)
 {
+    if (sScope == "nav")
+    {
+        DL_RecordNavCacheMetric(oArea, bHit);
+        return;
+    }
+
     if (bHit)
     {
         DL_RecordCacheMetricBatch(oArea, sScope, 1, 0);
@@ -157,12 +225,12 @@ void DL_RecordCacheMetricBatch(object oArea, string sScope, int nHitDelta, int n
     object oModule = GetModule();
     if (nHitDelta != 0)
     {
-        string sModuleHit = DL_GetCacheMetricKey("module_" + sScope, "hit");
+        string sModuleHit = DL_GetPreparedCacheMetricKey(oModule, "module_" + sScope, "hit");
         SetLocalInt(oModule, sModuleHit, GetLocalInt(oModule, sModuleHit) + nHitDelta);
     }
     if (nMissDelta != 0)
     {
-        string sModuleMiss = DL_GetCacheMetricKey("module_" + sScope, "miss");
+        string sModuleMiss = DL_GetPreparedCacheMetricKey(oModule, "module_" + sScope, "miss");
         SetLocalInt(oModule, sModuleMiss, GetLocalInt(oModule, sModuleMiss) + nMissDelta);
     }
 
@@ -173,12 +241,12 @@ void DL_RecordCacheMetricBatch(object oArea, string sScope, int nHitDelta, int n
 
     if (nHitDelta != 0)
     {
-        string sAreaHit = DL_GetCacheMetricKey("area_" + sScope, "hit");
+        string sAreaHit = DL_GetPreparedCacheMetricKey(oArea, "area_" + sScope, "hit");
         SetLocalInt(oArea, sAreaHit, GetLocalInt(oArea, sAreaHit) + nHitDelta);
     }
     if (nMissDelta != 0)
     {
-        string sAreaMiss = DL_GetCacheMetricKey("area_" + sScope, "miss");
+        string sAreaMiss = DL_GetPreparedCacheMetricKey(oArea, "area_" + sScope, "miss");
         SetLocalInt(oArea, sAreaMiss, GetLocalInt(oArea, sAreaMiss) + nMissDelta);
     }
 }
