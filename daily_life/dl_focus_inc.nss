@@ -16,11 +16,8 @@ const string DL_FOCUS_STATUS_MOVING_TO_ANCHOR = "moving_to_anchor";
 void DL_ClearFocusExecutionState(object oNpc)
 {
     DL_ClearNpcSocialReservation(oNpc);
-    DeleteLocalString(oNpc, DL_L_NPC_FOCUS_STATUS);
-    DeleteLocalString(oNpc, DL_L_NPC_FOCUS_TARGET);
-    DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
+    DL_ResetNpcDirectiveState(oNpc, DL_NPC_RESET_DOMAIN_FOCUS);
     DeleteLocalInt(oNpc, DL_L_NPC_CHILL_SIT_RETRY_UNTIL);
-    DL_ClearTransitionExecutionState(oNpc);
 }
 object DL_ResolveSocialPartnerObject(object oNpc, string sPartnerTag)
 {
