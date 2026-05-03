@@ -48,8 +48,8 @@ const int DL_WARM_MAINTENANCE_INTERVAL_TICKS = 20;
 const int DL_WARM_TO_FROZEN_TIMEOUT_TICKS = 100;
 
 const string DL_L_AREA_PASS_LAST_SEEN = "dl_area_pass_last_seen";
-const string DL_L_AREA_PASS_SNAPSHOT_TICK = "dl_area_pass_snapshot_tick";
-const string DL_L_AREA_PASS_SNAPSHOT_MODE = "dl_area_pass_snapshot_mode";
+string DL_L_AREA_PASS_SNAPSHOT_TICK = "dl_area_pass_snapshot_tick";
+string DL_L_AREA_PASS_SNAPSHOT_MODE = "dl_area_pass_snapshot_mode";
 const string DL_L_AREA_PASS_SNAPSHOT_COUNT = "dl_area_pass_snapshot_count";
 const string DL_L_AREA_PASS_SNAPSHOT_SLOT_PREFIX = "dl_area_pass_snapshot_slot_";
 
