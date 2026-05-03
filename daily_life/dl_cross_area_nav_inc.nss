@@ -168,7 +168,7 @@ object DL_FindCrossAreaNavigationRouteEntryToTarget(object oNpc, object oTarget)
     object oArea = GetArea(oNpc);
     int nTier = DL_GetAreaTier(oArea);
     int nLifecycleSeq = GetLocalInt(oNpc, DL_L_NPC_EVENT_SEQ);
-    string sCacheTag = GetTag(oTarget) + "|" + sCurrentZone + "|" + sTargetZone;
+    string sCacheTag = DL_BuildTransitionRuntimeKey3(GetTag(oTarget), sCurrentZone, sTargetZone);
     object oCached = DL_GetCachedObject(oNpc, DL_L_NPC_CACHE_CROSS_NAV_ENTRY, sCacheTag, OBJECT_TYPE_WAYPOINT, oArea, nTier, nLifecycleSeq);
     if (GetIsObjectValid(oCached))
     {
