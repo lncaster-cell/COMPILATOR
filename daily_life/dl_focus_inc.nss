@@ -130,15 +130,7 @@ int DL_ProgressFocusAtTarget(object oNpc, object oTarget, string sOnAnchorStatus
         return FALSE;
     }
 
-    if (GetIsObjectValid(DL_TryGetTransitionExitWaypoint(oTarget)))
-    {
-        if (DL_ExecuteTransitionViaEntryWaypoint(oNpc, oTarget, DL_DIAG_CTX_ROUTED))
-        {
-            return TRUE;
-        }
-    }
-
-    if (DL_TryRouteToTarget(oNpc, oTarget))
+    if (DL_TryAdvanceViaTransitionOrRoute(oNpc, oTarget, FALSE, ""))
     {
         return TRUE;
     }
