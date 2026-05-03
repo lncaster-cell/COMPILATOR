@@ -526,7 +526,7 @@ void DL_OnNpcArrivedAtAnchor(object oNpc, object oTarget, string sStatusLocal, s
 
     if (bSetFacing)
     {
-        AssignCommand(oNpc, SetFacing(GetFacing(oTarget)));
+        DL_CommandSetFacing(oNpc, GetFacing(oTarget));
     }
 
     if (sAnim != "")
