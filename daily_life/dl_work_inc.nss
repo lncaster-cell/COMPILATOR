@@ -177,7 +177,7 @@ int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
         return FALSE;
     }
 
-    if (DL_TryAdvanceViaTransitionOrRoute(oNpc, oTarget, FALSE, ""))
+    if (DL_TryAdvanceViaTransitionOrRoute(oNpc, oTarget, DL_DIAG_CTX_ROUTED))
     {
         return TRUE;
     }

@@ -284,7 +284,7 @@ int DL_RunAreaRegistryFallbackCatchupScan(object oArea, int nTickStamp, int nSca
     int bReachedEnd = FALSE;
     object oNpc = OBJECT_INVALID;
 
-    while (nScannedActive < nScanBudget && DL_GetNextActiveAreaNpc(oArea, oCursor, nVisitedObjects, nObjectHopBudget, oNpc))
+    while (nScannedActive < nScanBudget && GetIsObjectValid(DL_GetNextActiveAreaNpc(oArea, oCursor, nVisitedObjects, nObjectHopBudget, "dl_tmp_cursor", "dl_tmp_hops", "dl_tmp_npc")))
     {
         nScannedActive = nScannedActive + 1;
         if (GetLocalInt(oNpc, DL_L_NPC_REG_ON) != TRUE)

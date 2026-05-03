@@ -360,6 +360,7 @@ object DL_ResolveStandaloneSocialWaypoint(object oNpc, string sKind)
     DL_EnsureAreaSocialWaypointIndex(oArea);
 
     int nCount = GetLocalInt(oArea, DL_GetSocialIndexCountLocal(sKind));
+    string sPrefix = DL_GetSocialPoolTagPrefix(sKind);
     int nStart = DL_GetTagDeterministicOffset(GetTag(oNpc), DL_SOCIAL_POOL_SEARCH_CAP, 0);
 
     int nWaypointIndexMask = 0;
