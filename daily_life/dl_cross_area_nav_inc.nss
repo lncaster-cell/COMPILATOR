@@ -1,4 +1,5 @@
 const int DL_CROSS_AREA_ROUTE_DEPTH = 4;
+const float DL_CROSS_AREA_SCORE_SCALE = 100.0;
 const string DL_L_NPC_CACHE_CROSS_NAV_ENTRY = "dl_cache_cross_nav_entry";
 
 int DL_CrossNavEntryMatchesZone(object oEntry, string sFromZone)
@@ -61,6 +62,39 @@ int DL_AreaCanReachTargetZoneWithinDepth(object oArea, string sFromZone, object 
     return FALSE;
 }
 
+int DL_ScoreCrossAreaRouteCandidate(object oNpc, object oTarget, object oEntry, object oExit, object oTargetArea)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget) ||
+        !GetIsObjectValid(oEntry) || !GetIsObjectValid(oExit) || !GetIsObjectValid(oTargetArea))
+    {
+        return DL_SELECTION_SCORE_INF;
+    }
+
+    int nScore = FloatToInt(GetDistanceBetween(oNpc, oEntry) * DL_CROSS_AREA_SCORE_SCALE);
+    if (GetArea(oExit) == oTargetArea)
+    {
+        nScore = nScore + FloatToInt(GetDistanceBetween(oExit, oTarget) * DL_CROSS_AREA_SCORE_SCALE);
+    }
+    return nScore;
+}
+
+int DL_IsCrossAreaCandidateValid(object oEntry, object oExit, object oExitArea, string sFromZone, string sExitZone, object oTargetArea, string sTargetZone)
+{
+    if (!DL_CrossNavEntryMatchesZone(oEntry, sFromZone) || !GetIsObjectValid(oExit) ||
+        !GetIsObjectValid(oExitArea) || sExitZone == "")
+    {
+        return FALSE;
+    }
+
+    return DL_AreaCanReachTargetZoneWithinDepth(
+        oExitArea,
+        sExitZone,
+        oTargetArea,
+        sTargetZone,
+        DL_CROSS_AREA_ROUTE_DEPTH - 1
+    );
+}
+
 object DL_FindCrossAreaNavEntry(object oNpc, object oTarget, string sFromZone, string sTargetZone)
 {
     if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget) || sFromZone == "" || sTargetZone == "")
@@ -86,25 +120,17 @@ object DL_FindCrossAreaNavEntry(object oNpc, object oTarget, string sFromZone, s
         if (DL_CrossNavEntryMatchesZone(oEntry, sFromZone))
         {
             object oExit = DL_ResolveTransitionExitWaypointFromEntry(oEntry);
-            if (GetIsObjectValid(oExit))
+            object oExitArea = GetArea(oExit);
+            string sExitZone = DL_GetWaypointNavZone(oExit);
+            if (DL_IsCrossAreaCandidateValid(oEntry, oExit, oExitArea, sFromZone, sExitZone, oTargetArea, sTargetZone))
             {
-                object oExitArea = GetArea(oExit);
-                string sExitZone = DL_GetWaypointNavZone(oExit);
-                if (GetIsObjectValid(oExitArea) && sExitZone != "" &&
-                    DL_AreaCanReachTargetZoneWithinDepth(oExitArea, sExitZone, oTargetArea, sTargetZone, DL_CROSS_AREA_ROUTE_DEPTH - 1))
+                int nScore = DL_ScoreCrossAreaRouteCandidate(oNpc, oTarget, oEntry, oExit, oTargetArea);
+                string sTie = DL_SelectionBuildTieKey(oEntry, oExit, i);
+                if (DL_SelectionCompare(nScore, nBestScore, sTie, sBestTie))
                 {
-                    int nScore = FloatToInt(GetDistanceBetween(oNpc, oEntry) * 100.0);
-                    if (oExitArea == oTargetArea)
-                    {
-                        nScore = nScore + FloatToInt(GetDistanceBetween(oExit, oTarget) * 100.0);
-                    }
-                    string sTie = DL_SelectionBuildTieKey(oEntry, oExit, i);
-                    if (DL_SelectionCompare(nScore, nBestScore, sTie, sBestTie))
-                    {
-                        oBestEntry = oEntry;
-                        nBestScore = nScore;
-                        sBestTie = sTie;
-                    }
+                    oBestEntry = oEntry;
+                    nBestScore = nScore;
+                    sBestTie = sTie;
                 }
             }
         }
@@ -150,7 +176,6 @@ object DL_FindCrossAreaNavigationRouteEntryToTarget(object oNpc, object oTarget)
         return oCached;
     }
 
-    DL_InvalidateCachedObject(oNpc, DL_L_NPC_CACHE_CROSS_NAV_ENTRY);
     object oResolved = DL_FindCrossAreaNavEntry(oNpc, oTarget, sCurrentZone, sTargetZone);
     if (GetIsObjectValid(oResolved))
     {
