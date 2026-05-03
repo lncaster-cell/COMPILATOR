@@ -73,8 +73,8 @@ const string DL_L_AREA_NAV_COUNT = "dl_area_nav_count";
 const string DL_L_AREA_NAV_SLOT_PREFIX = "dl_area_nav_";
 const int DL_AREA_NAV_ROUTE_CAP = 32;
 const int DL_TRANSITION_TAG_SEARCH_CAP_LOCAL_DETERMINISTIC = 64;
-const int DL_TRANSITION_TAG_SEARCH_CAP_NEAREST_FALLBACK = 24;
-const int DL_TRANSITION_TAG_SEARCH_CAP_GLOBAL_FALLBACK = 64;
+const int DL_TRANSITION_TAG_SEARCH_CAP_GLOBAL_FALLBACK = 24;
+const int DL_TRANSITION_TAG_SEARCH_CAP_NEAREST_FALLBACK = 12;
 const float DL_AREA_NAV_SIDE_BIAS = 0.50;
 const int DL_TAG_FALLBACK_NONE = 0;
 const int DL_TAG_FALLBACK_GLOBAL = 1;
@@ -82,7 +82,6 @@ const int DL_TAG_FALLBACK_NEAREST = 2;
 const string DL_LOOKUP_MODE_TRANSITION_POLICY = "transition_policy";
 const string DL_LOOKUP_MODE_TRANSITION_CROSS_AREA = "transition_cross_area";
 
-const int DL_TRANSITION_TAG_NEAREST_CAP = 12;
 const float DL_TRANSITION_TAG_NEAREST_MAX_DISTANCE = 80.0;
 const string DL_L_TRANSITION_TAG_MISS_SUPPRESS_PREFIX = "dl_transition_tag_miss_";
 
@@ -297,20 +296,32 @@ void DL_ClearTransitionTagMissSuppressedTick(string sTag, int nObjectType, objec
 // Policy contract:
 // 1) Always try area-preferred deterministic lookup first: module area-tag cache,
 //    then area-local deterministic scan when preferred area is valid.
-// 2) Fallback behavior is explicit and centralized:
-//    - DL_TAG_FALLBACK_NONE: area-local deterministic only.
-//    - DL_TAG_FALLBACK_GLOBAL: fallback to global typed lookup by tag.
-//    - DL_TAG_FALLBACK_NEAREST: fallback to nearest typed lookup using nearest cap.
-// 3) New modules must reuse this helper instead of introducing ad-hoc tag lookup flows.
-object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPreferredArea, int nDeterministicCapLocal, int nFallbackMode, int nFallbackCapNearest, int nFallbackCapGlobal)
+// 2) Fallback behavior is explicit and centralized with dedicated caps:
+//    - DL_TAG_FALLBACK_NONE: area-local deterministic only (DL_TRANSITION_TAG_SEARCH_CAP_LOCAL_DETERMINISTIC).
+//    - DL_TAG_FALLBACK_GLOBAL: fallback to global typed lookup by tag (DL_TRANSITION_TAG_SEARCH_CAP_GLOBAL_FALLBACK for local pre-pass).
+//    - DL_TAG_FALLBACK_NEAREST: fallback to nearest typed lookup with dedicated cap
+//      (DL_TRANSITION_TAG_SEARCH_CAP_NEAREST_FALLBACK) and early-stop context guards (distance/area boundary).
+// 3) Repeated misses are suppressed per tick by (tag, area, object_type, fallback_mode).
+// 4) New modules must reuse this helper instead of introducing ad-hoc tag lookup flows.
+object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPreferredArea, int nDeterministicCap, int nFallbackMode)
 {
     if (sTag == "")
     {
         return OBJECT_INVALID;
     }
 
-    int nLocalCap = nDeterministicCapLocal;
-    if (nLocalCap <= 0)
+    // NOTE: nDeterministicCap kept for API compatibility; cap policy is centralized by fallback mode.
+    int nCap = DL_TRANSITION_TAG_SEARCH_CAP_LOCAL_DETERMINISTIC;
+    if (nFallbackMode == DL_TAG_FALLBACK_NEAREST)
+    {
+        nCap = DL_TRANSITION_TAG_SEARCH_CAP_NEAREST_FALLBACK;
+    }
+    else if (nFallbackMode == DL_TAG_FALLBACK_GLOBAL)
+    {
+        nCap = DL_TRANSITION_TAG_SEARCH_CAP_GLOBAL_FALLBACK;
+    }
+
+    if (nCap <= 0)
     {
         nLocalCap = 1;
     }
@@ -355,9 +366,9 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
         }
         object oNearestOrigin = GetIsObjectValid(oPreferredArea) ? oPreferredArea : OBJECT_SELF;
         int nNearestCap = nCap;
-        if (nNearestCap > DL_TRANSITION_TAG_NEAREST_CAP)
+        if (nNearestCap > DL_TRANSITION_TAG_SEARCH_CAP_NEAREST_FALLBACK)
         {
-            nNearestCap = DL_TRANSITION_TAG_NEAREST_CAP;
+            nNearestCap = DL_TRANSITION_TAG_SEARCH_CAP_NEAREST_FALLBACK;
         }
 
         int nNth = 1;
@@ -414,9 +425,7 @@ object DL_GetTransitionWaypointByTagInArea(string sTag, object oArea)
         OBJECT_TYPE_WAYPOINT,
         oArea,
         DL_TRANSITION_TAG_SEARCH_CAP_LOCAL_DETERMINISTIC,
-        DL_TAG_FALLBACK_NONE,
-        0,
-        0
+        DL_TAG_FALLBACK_NONE // Non-critical nav lookup: deterministic area-local only to avoid cross-area ambiguity.
     );
     DL_RecordCacheMetricBatch(oArea, "index_fallback", GetIsObjectValid(oResolved), !GetIsObjectValid(oResolved));
     DL_RecordCacheMetric(oArea, "nav", GetIsObjectValid(oResolved));
@@ -886,9 +895,7 @@ object DL_ResolveTransitionExitWaypointFromEntrySimple(object oEntryWp)
         OBJECT_TYPE_WAYPOINT,
         oEntryArea,
         DL_TRANSITION_TAG_SEARCH_CAP_LOCAL_DETERMINISTIC,
-        DL_TAG_FALLBACK_NONE,
-        0,
-        0
+        DL_TAG_FALLBACK_NONE // Non-critical transition pairing: do not broaden search to global/nearest to prevent wrong exit binding.
     );
 
     if (!DL_IsAutoNavTag(GetTag(oEntryWp)) && !GetIsObjectValid(oExit))
