@@ -7,6 +7,35 @@ const int DL_AREA_PURPOSE_PUBLIC = 5;
 object DL_GetSocialArea(object oNpc);
 object DL_GetPublicArea(object oNpc);
 
+void DL_LogInvalidAreaTagIssue(object oNpc, string sContext, string sAreaTag, string sReason)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+    DL_LogMarkupIssueOnce(oNpc, sContext + "|" + sAreaTag, "NPC " + GetTag(oNpc) + " has invalid area tag " + sAreaTag + " for " + sContext + ": " + sReason);
+}
+
+void DL_LogMissingAnchorIssue(object oNpc, object oArea, string sAnchorLocal, string sReason)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+    string sAreaTag = GetIsObjectValid(oArea) ? GetTag(oArea) : "";
+    DL_LogMarkupIssueOnce(oNpc, sAnchorLocal + "|" + sAreaTag, "NPC " + GetTag(oNpc) + " has missing anchor " + sAnchorLocal + " in area " + sAreaTag + ": " + sReason);
+}
+
+void DL_LogForeignWaypointIssue(object oNpc, object oArea, string sAnchorLocal, string sWpTag, string sReason)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+    string sAreaTag = GetIsObjectValid(oArea) ? GetTag(oArea) : "";
+    DL_LogMarkupIssueOnce(oNpc, sAnchorLocal + "|" + sWpTag, "NPC " + GetTag(oNpc) + " has invalid waypoint " + sWpTag + " for anchor " + sAnchorLocal + " in area " + sAreaTag + ": " + sReason);
+}
+
 object DL_GetNpcCachedWaypointByTag(object oNpc, string sCacheLocal, string sTag)
 {
     if (!GetIsObjectValid(oNpc) || sTag == "")
