@@ -14,4 +14,4 @@ string DL_LegacyAdapterResolveExitTagFromKindId(string sKind, string sTransition
 object DL_LegacyAdapterResolveGlobalTransitionWaypointByTag(string sResolvedTag);
 int DL_LegacyAdapterIsTransitionDriverTypeMatch(string sDriverKind, object oDriver);
 int DL_ParseAutoNavTag(string sTag, string sFromLocal, string sToLocal);
-int DL_IsTransitionNavigableTarget(object oTarget);
+int DL_IsTransitionNavigableTarget(object oNpc, object oTarget);
