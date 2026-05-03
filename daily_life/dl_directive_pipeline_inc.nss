@@ -2,11 +2,11 @@
 // Pipeline steps for runtime directives:
 // 1) Validate  2) Resolve  3) Prepare  4) Execute  5) Finalize
 
-const string DL_PIPE_STEP_VALIDATE = "validate";
-const string DL_PIPE_STEP_RESOLVE = "resolve";
-const string DL_PIPE_STEP_PREPARE = "prepare";
-const string DL_PIPE_STEP_EXECUTE = "execute";
-const string DL_PIPE_STEP_FINALIZE = "finalize";
+string DL_PIPE_STEP_VALIDATE = "validate";
+string DL_PIPE_STEP_RESOLVE = "resolve";
+string DL_PIPE_STEP_PREPARE = "prepare";
+string DL_PIPE_STEP_EXECUTE = "execute";
+string DL_PIPE_STEP_FINALIZE = "finalize";
 
 // Forward declarations for helpers defined by downstream include units.
 // NWScript requires declarations before first call in the textual include graph.
