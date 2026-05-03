@@ -98,11 +98,13 @@ void DL_WriteResyncTelemetry(object oArea, int nProcessed, int bNoBudget)
 
 void DL_MarkAreaRegistryRebuildPending(object oArea)
 {
+    DL_InvalidateAreaSocialWaypointIndex(oArea);
     SetLocalInt(oArea, DL_L_AREA_REGISTRY_REBUILD_PENDING, TRUE);
 }
 
 void DL_ClearAreaRegistryRebuildPending(object oArea)
 {
+    DL_InvalidateAreaSocialWaypointIndex(oArea);
     DeleteLocalInt(oArea, DL_L_AREA_REGISTRY_REBUILD_PENDING);
     DeleteLocalInt(oArea, DL_L_AREA_REGISTRY_REBUILD_OBJ_CURSOR);
     DeleteLocalInt(oArea, DL_L_AREA_REGISTRY_REPAIR_CURSOR);
@@ -259,40 +261,35 @@ int DL_RunAreaRegistryFallbackCatchupScan(object oArea, int nTickStamp, int nSca
     }
 
     // Fallback path: preserve legacy direct full-scan behavior when snapshot is unavailable.
-    object oObj = GetFirstObjectInArea(oArea);
+    object oCursor = GetFirstObjectInArea(oArea);
     int nSkipped = 0;
-    while (GetIsObjectValid(oObj) && nSkipped < nObjCursor && nSkipped < nObjectHopBudget)
+    while (GetIsObjectValid(oCursor) && nSkipped < nObjCursor && nSkipped < nObjectHopBudget)
     {
-        oObj = GetNextObjectInArea(oArea);
+        oCursor = GetNextObjectInArea(oArea);
         nSkipped = nSkipped + 1;
     }
 
-    if (nSkipped < nObjCursor && !GetIsObjectValid(oObj))
+    if (nSkipped < nObjCursor && !GetIsObjectValid(oCursor))
     {
         nObjCursor = 0;
-        oObj = GetFirstObjectInArea(oArea);
+        oCursor = GetFirstObjectInArea(oArea);
     }
 
-    int nVisitedObjects = 0;
+    int nVisitedObjects = nSkipped;
     int nScannedActive = 0;
     int bReachedEnd = FALSE;
+    object oNpc = OBJECT_INVALID;
 
-    while (GetIsObjectValid(oObj) && nScannedActive < nScanBudget && nVisitedObjects < nObjectHopBudget)
+    while (nScannedActive < nScanBudget && DL_GetNextActiveAreaNpc(oArea, oCursor, nVisitedObjects, nObjectHopBudget, oNpc))
     {
-        if (GetObjectType(oObj) == OBJECT_TYPE_CREATURE && DL_IsActivePipelineNpc(oObj))
+        nScannedActive = nScannedActive + 1;
+        if (GetLocalInt(oNpc, DL_L_NPC_REG_ON) != TRUE)
         {
-            nScannedActive = nScannedActive + 1;
-            if (GetLocalInt(oObj, DL_L_NPC_REG_ON) != TRUE)
-            {
-                DL_RegisterNpc(oObj);
-            }
+            DL_RegisterNpc(oNpc);
         }
-
-        oObj = GetNextObjectInArea(oArea);
-        nVisitedObjects = nVisitedObjects + 1;
     }
 
-    if (!GetIsObjectValid(oObj))
+    if (!GetIsObjectValid(oCursor))
     {
         bReachedEnd = TRUE;
     }
