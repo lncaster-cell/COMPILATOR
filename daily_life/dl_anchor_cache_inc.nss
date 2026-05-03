@@ -1,5 +1,3 @@
-const int DL_WAYPOINT_TAG_SEARCH_CAP = 64;
-
 object DL_GetNpcCachedWaypointByTag(object oNpc, string sCacheLocal, string sTag)
 {
     if (!GetIsObjectValid(oNpc) || sTag == "")
@@ -24,31 +22,14 @@ object DL_GetNpcCachedWaypointByTag(object oNpc, string sCacheLocal, string sTag
 }
 object DL_GetNpcCachedWaypointByTagInArea(object oNpc, string sCacheLocal, string sTag, object oArea)
 {
-    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oArea) || sTag == "")
-    {
-        return OBJECT_INVALID;
-    }
-
-    int nTier = DL_GetAreaTier(oArea);
-    int nLifecycleSeq = GetLocalInt(oNpc, DL_L_NPC_EVENT_SEQ);
-    object oCached = DL_GetCachedObject(oNpc, sCacheLocal, sTag, OBJECT_TYPE_WAYPOINT, oArea, nTier, nLifecycleSeq);
-    if (GetIsObjectValid(oCached))
-    {
-        DL_RecordCacheMetric(oArea, "anchor", TRUE);
-        return oCached;
-    }
-
-    DL_InvalidateCachedObject(oNpc, sCacheLocal);
-    object oResolved = DL_FindObjectByTagInAreaDeterministic(sTag, OBJECT_TYPE_WAYPOINT, oArea, DL_WAYPOINT_TAG_SEARCH_CAP);
-    if (GetIsObjectValid(oResolved))
-    {
-        DL_SetCachedObject(oNpc, sCacheLocal, oResolved, sTag, OBJECT_TYPE_WAYPOINT, oArea, nTier, nLifecycleSeq);
-        DL_RecordCacheMetric(oArea, "anchor", FALSE);
-        return oResolved;
-    }
-
-    DL_RecordCacheMetric(oArea, "anchor", FALSE);
-    return OBJECT_INVALID;
+    return DL_GetNpcCachedObjectByTagInArea(
+        oNpc,
+        sCacheLocal,
+        sTag,
+        oArea,
+        OBJECT_TYPE_WAYPOINT,
+        "anchor"
+    );
 }
 object DL_ResolveEffectiveWaypointForNpc(object oNpc, object oWp)
 {
