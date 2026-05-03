@@ -1,9 +1,10 @@
 // Debug helper: attach to a placeable OnUsed event.
-// Shows current module time and nearest Daily Life NPC runtime state.
+// Shows current module time, nearest Daily Life NPC runtime state, and subsystem audit.
 // Intended for builder/runtime smoke tests only.
 
 #include "dl_core_inc"
 #include "dl_diag_inc"
+#include "dl_dbg_audit_inc"
 
 const float DL_DBG_NPC_SCAN_RADIUS = 30.0;
 
@@ -147,4 +148,6 @@ void main()
                          " transition_target=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) +
                          " transition_diag=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC);
     DL_DbgSay(oPC, sTransition);
+
+    DL_DbgRunSubsystemAudit(oPC, oNpc);
 }
