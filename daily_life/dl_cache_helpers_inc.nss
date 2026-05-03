@@ -394,9 +394,9 @@ string DL_BuildTickMemoMissKey(object oOwner, int nTickStamp, string sTag, int n
         sLookupMode;
 }
 
-object DL_GetTickMemoizedLookup(object oMemoStore, object oOwner, int nTickStamp, string sTag, int nObjectType, object oArea, string sLookupMode, int &bIsMiss)
+object DL_GetTickMemoizedLookup(object oMemoStore, object oOwner, int nTickStamp, string sTag, int nObjectType, object oArea, string sLookupMode, string sMissLocal)
 {
-    bIsMiss = FALSE;
+    SetLocalInt(oMemoStore, sMissLocal, FALSE);
     if (!GetIsObjectValid(oMemoStore) || !GetIsObjectValid(oOwner) || sTag == "" || sLookupMode == "")
     {
         return OBJECT_INVALID;
@@ -418,7 +418,7 @@ object DL_GetTickMemoizedLookup(object oMemoStore, object oOwner, int nTickStamp
     }
 
     string sMissKey = DL_BuildTickMemoMissKey(oOwner, nTickStamp, sTag, nObjectType, oArea, sLookupMode);
-    bIsMiss = GetLocalInt(oMemoStore, sMissKey) == nTickStamp;
+    SetLocalInt(oMemoStore, sMissLocal, GetLocalInt(oMemoStore, sMissKey) == nTickStamp);
     return OBJECT_INVALID;
 }
 
