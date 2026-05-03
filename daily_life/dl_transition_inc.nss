@@ -145,20 +145,10 @@ int DL_EngineExecuteTransitionDriver(object oNpc, object oEntryWp, location lExi
 int DL_ExecuteTransitionEngine(object oNpc, object oEntryWp, string sDiagPrefix);
 void DL_MarkSleepNavigationInProgress(object oNpc, string sTargetTag);
 
-string DL_BuildTransitionDiagnostic(string sDiagnostic, string sDiagContext)
-{
-    if (sDiagnostic == "")
-    {
-        return "";
-    }
-
-    if (sDiagContext == "")
-    {
-        return sDiagnostic;
-    }
-
-    return sDiagContext + "_" + sDiagnostic;
-}
+int DL_GetAbsoluteMinute();
+void DL_LogTransitionEvent(object oNpc, string sKind, string sPayload);
+void DL_CommandSetFacing(object oObj, float fFacing);
+int DL_SelectNearestObjectCandidate(object oCandidate, float fCandidateDist, string sCandidateTie, object oBest, float fBestDist, string sBestTie);
 
 string DL_GetAreaNavigationSlotKey(int nSlot)
 {
@@ -328,7 +318,7 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
 
     if (nCap <= 0)
     {
-        nLocalCap = 1;
+        nCap = 1;
     }
 
         object oAreaCached = DL_GetAreaScopedCachedObjectByTag(OBJECT_SELF, sTag, nObjectType, oPreferredArea);
@@ -341,7 +331,7 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
 
     if (GetIsObjectValid(oPreferredArea))
     {
-        object oLocal = DL_FindObjectByTagInAreaDeterministic(sTag, nObjectType, oPreferredArea, nLocalCap);
+        object oLocal = DL_FindObjectByTagInAreaDeterministic(sTag, nObjectType, oPreferredArea, nCap);
         if (GetIsObjectValid(oLocal))
         {
             DL_ClearTransitionTagMissSuppressedTick(sTag, nObjectType, oPreferredArea, nFallbackMode);
@@ -352,7 +342,7 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
 
     if (nFallbackMode == DL_TAG_FALLBACK_GLOBAL)
     {
-        object oGlobal = GetObjectByTagAndType(sTag, nObjectType);
+        object oGlobal = GetObjectByTagAndType(sTag, nObjectType, 1);
         if (GetIsObjectValid(oGlobal) && GetIsObjectValid(oPreferredArea))
         {
             DL_ClearTransitionTagMissSuppressedTick(sTag, nObjectType, oPreferredArea, nFallbackMode);
@@ -360,21 +350,20 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
         }
         else if (!GetIsObjectValid(oGlobal) && GetIsObjectValid(oPreferredArea))
         {
-            DL_MarkTransitionTagMissThisTick(sTag, nObjectType, oPreferredArea, nFallbackMode, nNowTick);
+            DL_MarkTransitionTagMissThisTick(sTag, nObjectType, oPreferredArea, nFallbackMode, DL_GetAreaTick(oPreferredArea));
             DL_MemoStoreMiss(OBJECT_SELF, oPreferredArea, sTag, nObjectType, nFallbackMode);
         }
-        return GetObjectByTagAndType(sTag, nObjectType);
+        return GetObjectByTagAndType(sTag, nObjectType, 1);
     }
 
     if (nFallbackMode == DL_TAG_FALLBACK_NEAREST)
     {
-        int nNearestCap = nFallbackCapNearest;
+        int nNearestCap = nCap;
         if (nNearestCap <= 0)
         {
             return OBJECT_INVALID;
         }
         object oNearestOrigin = GetIsObjectValid(oPreferredArea) ? oPreferredArea : OBJECT_SELF;
-        int nNearestCap = nCap;
         if (nNearestCap > DL_TRANSITION_TAG_SEARCH_CAP_NEAREST_FALLBACK)
         {
             nNearestCap = DL_TRANSITION_TAG_SEARCH_CAP_NEAREST_FALLBACK;
@@ -414,7 +403,7 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
 
     if (GetIsObjectValid(oPreferredArea))
     {
-        DL_MarkTransitionTagMissThisTick(sTag, nObjectType, oPreferredArea, nFallbackMode, nNowTick);
+        DL_MarkTransitionTagMissThisTick(sTag, nObjectType, oPreferredArea, nFallbackMode, DL_GetAreaTick(oPreferredArea));
         DL_MemoStoreMiss(OBJECT_SELF, oPreferredArea, sTag, nObjectType, nFallbackMode);
     }
     return OBJECT_INVALID;
@@ -549,21 +538,6 @@ void DL_ApplyTransitionNavZoneUpdate(object oNpc, object oExitWp, int bOnSuccess
 
 // Canonical transition state setter contract.
 // Any new transition branches must set status/diagnostic only through this helper.
-string DL_BuildTransitionDiagnostic(string sDiagnostic, string sDiagContext)
-{
-    if (sDiagnostic == "")
-    {
-        return "";
-    }
-
-    if (sDiagContext == "")
-    {
-        return sDiagnostic;
-    }
-
-    return sDiagContext + "_" + sDiagnostic;
-}
-
 void DL_SetTransitionState(object oNpc, string sStatus, string sDiagnostic, string sDiagContext)
 {
     if (!DL_IsValidNpcObject(oNpc))
