@@ -1,5 +1,5 @@
 // Minimal compile-order declarations only.
-// Keep this include small: no constants and no default args.
+// Keep this include small: no constants, no default args, no function bodies.
 
 void DL_ExecuteSleepDirective(object oNpc);
 void DL_ExecuteWorkDirective(object oNpc);
@@ -14,13 +14,4 @@ string DL_LegacyAdapterResolveExitTagFromKindId(string sKind, string sTransition
 object DL_LegacyAdapterResolveGlobalTransitionWaypointByTag(string sResolvedTag);
 int DL_LegacyAdapterIsTransitionDriverTypeMatch(string sDriverKind, object oDriver);
 int DL_ParseAutoNavTag(string sTag, string sFromLocal, string sToLocal);
-
-int DL_IsTransitionNavigableTarget(object oTarget)
-{
-    if (!GetIsObjectValid(oTarget))
-    {
-        return FALSE;
-    }
-
-    return GetObjectType(oTarget) == OBJECT_TYPE_WAYPOINT;
-}
+int DL_IsTransitionNavigableTarget(object oTarget);
