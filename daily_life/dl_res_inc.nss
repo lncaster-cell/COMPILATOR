@@ -731,6 +731,7 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
     if (nPrevDirective != nEffectiveDirective)
     {
         DL_ClearNpcSocialReservation(oNpc);
+        DL_MarkDirectiveTransitionResetAllowed(oNpc, TRUE);
     }
 
     if (nPrevDirective == nEffectiveDirective && DL_ShouldUseDirectiveFastPath(oNpc, nEffectiveDirective))

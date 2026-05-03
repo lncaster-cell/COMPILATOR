@@ -71,7 +71,7 @@ void DL_PipelineDispatchCommand(object oActor, int nCommandKind, object oTargetA
     {
         if (GetIsObjectValid(oTargetA))
         {
-            DL_CommandMoveToObjectResetQueue(oActor, oTargetA, TRUE, 2.0);
+            DL_CommandMoveToObject(oActor, oTargetA, TRUE, 2.0);
         }
         return;
     }
@@ -87,6 +87,6 @@ void DL_PipelineDispatchCommand(object oActor, int nCommandKind, object oTargetA
 
     if (nCommandKind == 4)
     {
-        AssignCommand(oActor, ClearAllActions(TRUE));
+        DL_TryResetActionQueue(oActor, TRUE);
     }
 }

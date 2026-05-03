@@ -234,6 +234,11 @@ void DL_LogRuntime(string sLog)
 
 const string DL_L_NPC_ORCH_LAST_STATE = "dl_orch_last_state";
 const string DL_L_NPC_ORCH_LAST_WINDOW = "dl_orch_last_window";
+const string DL_L_MODULE_RESET_POLICY = "dl_reset_policy";
+const int DL_RESET_POLICY_TRANSITION_ONLY = 1;
+const int DL_RESET_POLICY_LEGACY_ALWAYS = 2;
+const string DL_L_NPC_LAST_RESET_TICK = "dl_npc_last_reset_tick";
+const string DL_L_NPC_DIRECTIVE_RESET_ALLOWED = "dl_npc_directive_reset_allowed";
 const int DL_ORCH_ACT_NONE = 0;
 const int DL_ORCH_ACT_MOVE_OBJECT = 1;
 const int DL_ORCH_ACT_MOVE_LOCATION = 2;
@@ -267,6 +272,40 @@ void DL_QueueMoveAction(object oNpc, location lTarget, int bRun)
 
 void DL_CommandStartConversation(object oActor, object oListener, string sDialogResRef, int bPrivateConversation = TRUE, int bPlayHello = TRUE);
 void DL_CommandAttack(object oActor, object oTarget);
+int DL_GetResetPolicyMode();
+int DL_TryResetActionQueue(object oActor, int bForce = FALSE);
+void DL_MarkDirectiveTransitionResetAllowed(object oActor, int bAllowed = TRUE);
+
+int DL_GetResetPolicyMode()
+{
+    object oModule = GetModule();
+    int nMode = GetLocalInt(oModule, DL_L_MODULE_RESET_POLICY);
+    if (nMode == DL_RESET_POLICY_LEGACY_ALWAYS) return DL_RESET_POLICY_LEGACY_ALWAYS;
+    return DL_RESET_POLICY_TRANSITION_ONLY;
+}
+
+void DL_MarkDirectiveTransitionResetAllowed(object oActor, int bAllowed = TRUE)
+{
+    if (!GetIsObjectValid(oActor)) return;
+    SetLocalInt(oActor, DL_L_NPC_DIRECTIVE_RESET_ALLOWED, bAllowed == TRUE ? TRUE : FALSE);
+}
+
+int DL_TryResetActionQueue(object oActor, int bForce = FALSE)
+{
+    if (!GetIsObjectValid(oActor)) return FALSE;
+    int nTick = GetTimeMillisecond();
+    if (GetLocalInt(oActor, DL_L_NPC_LAST_RESET_TICK) == nTick) return FALSE;
+
+    if (bForce != TRUE && DL_GetResetPolicyMode() == DL_RESET_POLICY_TRANSITION_ONLY)
+    {
+        if (GetLocalInt(oActor, DL_L_NPC_DIRECTIVE_RESET_ALLOWED) != TRUE) return FALSE;
+        DeleteLocalInt(oActor, DL_L_NPC_DIRECTIVE_RESET_ALLOWED);
+    }
+
+    AssignCommand(oActor, ClearAllActions(TRUE));
+    SetLocalInt(oActor, DL_L_NPC_LAST_RESET_TICK, nTick);
+    return TRUE;
+}
 
 void DL_OnNpcActionDispatched(object oActor, string sStatusKey = "", string sStatusValue = "", string sDiagKey = "", string sDiagValue = "", string sTelemetryKey = "", int nExecutionWindow = -1, string sNoopStateKey = "", string sNoopStateValue = "")
 {
@@ -284,7 +323,7 @@ void DL_OnNpcActionDispatched(object oActor, string sStatusKey = "", string sSta
     }
 }
 
-int DL_OrchestrateRuntimeAction(object oActor, int nActionKind, object oTarget, location lTarget, string sDialogResRef = "", int bResetQueue = TRUE, string sPreStatusKey = "", string sPreStatus = "", string sPreDiagKey = "", string sPreDiag = "", string sPostStatusKey = "", string sPostStatus = "", string sPostDiagKey = "", string sPostDiag = "", string sNoopStateKey = "", string sNoopStateValue = "", int nExecutionWindow = -1, int bRun = TRUE, float fRange = 1.0, int bPrivateConversation = TRUE, int bPlayHello = TRUE)
+int DL_OrchestrateRuntimeAction(object oActor, int nActionKind, object oTarget, location lTarget, string sDialogResRef = "", int bResetQueue = FALSE, string sPreStatusKey = "", string sPreStatus = "", string sPreDiagKey = "", string sPreDiag = "", string sPostStatusKey = "", string sPostStatus = "", string sPostDiagKey = "", string sPostDiag = "", string sNoopStateKey = "", string sNoopStateValue = "", int nExecutionWindow = -1, int bRun = TRUE, float fRange = 1.0, int bPrivateConversation = TRUE, int bPlayHello = TRUE)
 {
     if (!GetIsObjectValid(oActor)) return FALSE;
     if (sNoopStateKey != "" && sNoopStateValue != "" && nExecutionWindow >= 0)
@@ -292,7 +331,7 @@ int DL_OrchestrateRuntimeAction(object oActor, int nActionKind, object oTarget, 
         if (GetLocalString(oActor, sNoopStateKey) == sNoopStateValue && GetLocalInt(oActor, DL_L_NPC_ORCH_LAST_WINDOW) == nExecutionWindow && GetLocalString(oActor, DL_L_NPC_ORCH_LAST_STATE) == sNoopStateValue) return FALSE;
     }
     DL_SetRuntimeState(oActor, sPreStatusKey, sPreStatus, sPreDiagKey, sPreDiag);
-    if (bResetQueue) AssignCommand(oActor, ClearAllActions(TRUE));
+    if (bResetQueue) DL_TryResetActionQueue(oActor);
     if (nActionKind == DL_ORCH_ACT_NONE) {}
     else if (nActionKind == DL_ORCH_ACT_MOVE_OBJECT) DL_CommandMoveToObject(oActor, oTarget, bRun, fRange);
     else if (nActionKind == DL_ORCH_ACT_MOVE_LOCATION) DL_CommandMoveToLocation(oActor, lTarget, bRun);
@@ -305,18 +344,18 @@ int DL_OrchestrateRuntimeAction(object oActor, int nActionKind, object oTarget, 
 }
 
 void DL_CommandMoveToObject(object oActor, object oTarget, int bRun = TRUE, float fRange = 1.0) { AssignCommand(oActor, ActionMoveToObject(oTarget, bRun, fRange)); }
-void DL_CommandMoveToObjectResetQueue(object oActor, object oTarget, int bRun = TRUE, float fRange = 1.0) { AssignCommand(oActor, ClearAllActions(TRUE)); DL_CommandMoveToObject(oActor, oTarget, bRun, fRange); }
+void DL_CommandMoveToObjectResetQueue(object oActor, object oTarget, int bRun = TRUE, float fRange = 1.0) { DL_TryResetActionQueue(oActor, TRUE); DL_CommandMoveToObject(oActor, oTarget, bRun, fRange); }
 void DL_CommandMoveToLocation(object oActor, location lTarget, int bRun = TRUE) { AssignCommand(oActor, ActionMoveToLocation(lTarget, bRun)); }
-void DL_CommandMoveToLocationResetQueue(object oActor, location lTarget, int bRun = TRUE) { AssignCommand(oActor, ClearAllActions(TRUE)); DL_CommandMoveToLocation(oActor, lTarget, bRun); }
-void DL_DispatchMoveToLocation(object oActor, location lTarget, int bRun = TRUE) { DL_CommandMoveToLocationResetQueue(oActor, lTarget, bRun); }
+void DL_CommandMoveToLocationResetQueue(object oActor, location lTarget, int bRun = TRUE) { DL_TryResetActionQueue(oActor, TRUE); DL_CommandMoveToLocation(oActor, lTarget, bRun); }
+void DL_DispatchMoveToLocation(object oActor, location lTarget, int bRun = TRUE) { DL_CommandMoveToLocation(oActor, lTarget, bRun); }
 void DL_CommandJumpToLocation(object oActor, location lTarget) { AssignCommand(oActor, ActionJumpToLocation(lTarget)); }
-void DL_CommandJumpToLocationResetQueue(object oActor, location lTarget) { AssignCommand(oActor, ClearAllActions(TRUE)); DL_CommandJumpToLocation(oActor, lTarget); }
+void DL_CommandJumpToLocationResetQueue(object oActor, location lTarget) { DL_TryResetActionQueue(oActor, TRUE); DL_CommandJumpToLocation(oActor, lTarget); }
 void DL_DispatchJumpToLocation(object oActor, location lTarget) { DL_CommandJumpToLocationResetQueue(oActor, lTarget); }
 
 void DL_CommandStartConversation(object oActor, object oListener, string sDialogResRef, int bPrivateConversation = TRUE, int bPlayHello = TRUE) { AssignCommand(oActor, ActionStartConversation(oListener, sDialogResRef, bPrivateConversation, bPlayHello)); }
-void DL_CommandStartConversationResetQueue(object oActor, object oListener, string sDialogResRef, int bPrivateConversation = TRUE, int bPlayHello = TRUE) { AssignCommand(oActor, ClearAllActions(TRUE)); DL_CommandStartConversation(oActor, oListener, sDialogResRef, bPrivateConversation, bPlayHello); }
+void DL_CommandStartConversationResetQueue(object oActor, object oListener, string sDialogResRef, int bPrivateConversation = TRUE, int bPlayHello = TRUE) { DL_TryResetActionQueue(oActor, TRUE); DL_CommandStartConversation(oActor, oListener, sDialogResRef, bPrivateConversation, bPlayHello); }
 void DL_CommandAttack(object oActor, object oTarget) { AssignCommand(oActor, ActionAttack(oTarget)); }
-void DL_CommandAttackResetQueue(object oActor, object oTarget) { AssignCommand(oActor, ClearAllActions(TRUE)); DL_CommandAttack(oActor, oTarget); }
+void DL_CommandAttackResetQueue(object oActor, object oTarget) { DL_TryResetActionQueue(oActor, TRUE); DL_CommandAttack(oActor, oTarget); }
 
 void DL_InitModuleContract()
 {
