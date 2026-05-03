@@ -2,5 +2,12 @@
 
 void main()
 {
-    DL_CR_RunDetainDialogAction(DL_CR_DETAIN_ACTION_ACCEPT);
+    object oGuard = OBJECT_SELF;
+    object oPc = DL_GetDialogPlayer();
+    if (!GetIsObjectValid(oPc))
+    {
+        return;
+    }
+
+    DL_CR_HandleDetainAccepted(oPc, oGuard);
 }

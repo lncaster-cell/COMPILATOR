@@ -2,13 +2,8 @@
 
 void main()
 {
-    object oPc = GetPCSpeaker();
+    object oPc = DL_GetDialogPlayer();
     if (!GetIsObjectValid(oPc))
-    {
-        oPc = GetLastSpeaker();
-    }
-
-    if (!DL_IsRuntimePlayer(oPc))
     {
         return;
     }

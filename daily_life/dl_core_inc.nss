@@ -14,3 +14,20 @@
 #include "dl_city_response_inc"
 #include "dl_legal_inc"
 #include "dl_cr_crime_inc"
+
+object DL_GetDialogPlayer(int bRequireRuntimePlayer = TRUE)
+{
+    object oPc = GetPCSpeaker();
+    if (!GetIsObjectValid(oPc))
+    {
+        oPc = GetLastSpeaker();
+    }
+
+    if (bRequireRuntimePlayer && !DL_IsRuntimePlayer(oPc))
+    {
+        return OBJECT_INVALID;
+    }
+
+    return oPc;
+}
+
