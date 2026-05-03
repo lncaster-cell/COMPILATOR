@@ -644,6 +644,7 @@ int DL_GetTransitionDriverLookupCap()
 
 object DL_ResolveTransitionDriverObject(object oEntryWp)
 {
+    // Housekeeping: keep driver-resolve branches linear for a single transition pipeline.
     string sDriverTag = DL_GetWaypointTransitionDriverTag(oEntryWp);
     if (sDriverTag == "")
     {
@@ -659,29 +660,22 @@ object DL_ResolveTransitionDriverObject(object oEntryWp)
     object oArea = GetArea(oEntryWp);
     int nNowTick = DL_GetAreaTick(oArea);
     object oCached = GetLocalObject(oEntryWp, DL_L_WP_TRANSITION_DRIVER_OBJ);
+    int bCachedMatch = GetIsObjectValid(oCached) &&
+        GetTag(oCached) == sDriverTag &&
+        GetArea(oCached) == oArea &&
+        DL_IsTransitionDriverTypeMatch(sDriverKind, oCached);
+
     if (GetLocalInt(oEntryWp, DL_L_WP_TRANSITION_DRIVER_MISS_TICK) == nNowTick)
     {
-        if (GetIsObjectValid(oCached) &&
-            GetTag(oCached) == sDriverTag &&
-            GetArea(oCached) == GetArea(oEntryWp) &&
-            DL_IsTransitionDriverTypeMatch(sDriverKind, oCached))
+        if (bCachedMatch)
         {
             DeleteLocalInt(oEntryWp, DL_L_WP_TRANSITION_DRIVER_MISS_TICK);
             return oCached;
         }
-
-        if (!GetIsObjectValid(oCached))
-        {
-            return OBJECT_INVALID;
-        }
-
         return OBJECT_INVALID;
     }
 
-    if (GetIsObjectValid(oCached) &&
-        GetTag(oCached) == sDriverTag &&
-        GetArea(oCached) == GetArea(oEntryWp) &&
-        DL_IsTransitionDriverTypeMatch(sDriverKind, oCached))
+    if (bCachedMatch)
     {
         DeleteLocalInt(oEntryWp, DL_L_WP_TRANSITION_DRIVER_MISS_TICK);
         return oCached;
@@ -697,14 +691,12 @@ object DL_ResolveTransitionDriverObject(object oEntryWp)
             break;
         }
 
-        if (GetArea(oDriver) == GetArea(oEntryWp))
+        if (GetArea(oDriver) == oArea &&
+            DL_IsTransitionDriverTypeMatch(sDriverKind, oDriver))
         {
-            if (DL_IsTransitionDriverTypeMatch(sDriverKind, oDriver))
-            {
-                SetLocalObject(oEntryWp, DL_L_WP_TRANSITION_DRIVER_OBJ, oDriver);
-                DeleteLocalInt(oEntryWp, DL_L_WP_TRANSITION_DRIVER_MISS_TICK);
-                return oDriver;
-            }
+            SetLocalObject(oEntryWp, DL_L_WP_TRANSITION_DRIVER_OBJ, oDriver);
+            DeleteLocalInt(oEntryWp, DL_L_WP_TRANSITION_DRIVER_MISS_TICK);
+            return oDriver;
         }
 
         nNth = nNth + 1;
