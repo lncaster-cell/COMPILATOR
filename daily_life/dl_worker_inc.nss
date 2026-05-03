@@ -1,11 +1,11 @@
 #include "dl_runtime_contract_inc"
 const string DL_L_MODULE_WORKER_SEQ = "dl_module_worker_seq";
 const string DL_L_MODULE_WORKER_TICK_COUNT = "dl_module_worker_tick_count";
-// Backward-compatible aliases mapped to runtime contract keys.
-#define DL_L_MODULE_WORKER_LAST_PROCESSED_TICK DL_L_MODULE_WORKER_LAST_PROCESSED
-#define DL_L_MODULE_RESYNC_LAST_PROCESSED_TICK DL_L_MODULE_RESYNC_LAST_PROCESSED
-#define DL_L_AREA_WORKER_LAST_PROCESSED_TICK DL_L_AREA_WORKER_LAST_PROCESSED
-#define DL_L_AREA_RESYNC_LAST_PROCESSED_TICK DL_L_AREA_RESYNC_LAST_PROCESSED
+// Backward-compatible aliases mapped to runtime contract key values.
+const string DL_L_MODULE_WORKER_LAST_PROCESSED_TICK = "dl_module_worker_last_processed_tick";
+const string DL_L_MODULE_RESYNC_LAST_PROCESSED_TICK = "dl_module_resync_last_processed_tick";
+const string DL_L_AREA_WORKER_LAST_PROCESSED_TICK = "dl_area_worker_last_processed_tick";
+const string DL_L_AREA_RESYNC_LAST_PROCESSED_TICK = "dl_area_resync_last_processed_tick";
 const string DL_L_NPC_LAST_TOUCH_TICK = "dl_npc_last_touch_tick";
 const string DL_L_NPC_AREA_TICK_RESYNC_TOUCH = "dl_npc_area_tick_resync_touch";
 const string DL_L_AREA_WORKER_SKIP_RESYNC_TICK = "dl_area_worker_skip_resync_tick";
