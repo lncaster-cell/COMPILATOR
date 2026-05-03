@@ -98,11 +98,13 @@ void DL_WriteResyncTelemetry(object oArea, int nProcessed, int bNoBudget)
 
 void DL_MarkAreaRegistryRebuildPending(object oArea)
 {
+    DL_InvalidateAreaSocialWaypointIndex(oArea);
     SetLocalInt(oArea, DL_L_AREA_REGISTRY_REBUILD_PENDING, TRUE);
 }
 
 void DL_ClearAreaRegistryRebuildPending(object oArea)
 {
+    DL_InvalidateAreaSocialWaypointIndex(oArea);
     DeleteLocalInt(oArea, DL_L_AREA_REGISTRY_REBUILD_PENDING);
     DeleteLocalInt(oArea, DL_L_AREA_REGISTRY_REBUILD_OBJ_CURSOR);
     DeleteLocalInt(oArea, DL_L_AREA_REGISTRY_REPAIR_CURSOR);

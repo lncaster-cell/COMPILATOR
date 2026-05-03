@@ -78,6 +78,10 @@ const int DL_TAG_FALLBACK_NEAREST = 2;
 const string DL_LOOKUP_MODE_TRANSITION_POLICY = "transition_policy";
 const string DL_LOOKUP_MODE_TRANSITION_CROSS_AREA = "transition_cross_area";
 
+const int DL_TRANSITION_TAG_NEAREST_CAP = 12;
+const float DL_TRANSITION_TAG_NEAREST_MAX_DISTANCE = 80.0;
+const string DL_L_TRANSITION_TAG_MISS_SUPPRESS_PREFIX = "dl_transition_tag_miss_";
+
 const string DL_NAV_TAG_PREFIX = "dl_nav_";
 const int DL_NAV_TAG_PREFIX_LENGTH = 7;
 const string DL_NAV_TAG_SEPARATOR = "_to_";
@@ -247,14 +251,55 @@ object DL_GetTransitionWaypointByTag(string sTag)
     return oWp;
 }
 
+string DL_GetTransitionTagMissSuppressKey(string sTag, int nObjectType, object oArea, int nFallbackMode)
+{
+    return DL_L_TRANSITION_TAG_MISS_SUPPRESS_PREFIX + IntToString(nObjectType) + "_" + IntToString(nFallbackMode) + "_" + ObjectToString(oArea) + "_" + sTag;
+}
+
+int DL_IsTransitionTagMissSuppressedThisTick(string sTag, int nObjectType, object oArea, int nFallbackMode, int nTick)
+{
+    if (sTag == "" || !GetIsObjectValid(oArea) || nTick < 0)
+    {
+        return FALSE;
+    }
+
+    string sKey = DL_GetTransitionTagMissSuppressKey(sTag, nObjectType, oArea, nFallbackMode);
+    return GetLocalInt(GetModule(), sKey) == nTick;
+}
+
+void DL_MarkTransitionTagMissThisTick(string sTag, int nObjectType, object oArea, int nFallbackMode, int nTick)
+{
+    if (sTag == "" || !GetIsObjectValid(oArea) || nTick < 0)
+    {
+        return;
+    }
+
+    string sKey = DL_GetTransitionTagMissSuppressKey(sTag, nObjectType, oArea, nFallbackMode);
+    SetLocalInt(GetModule(), sKey, nTick);
+}
+
+void DL_ClearTransitionTagMissSuppressedTick(string sTag, int nObjectType, object oArea, int nFallbackMode)
+{
+    if (sTag == "" || !GetIsObjectValid(oArea))
+    {
+        return;
+    }
+
+    string sKey = DL_GetTransitionTagMissSuppressKey(sTag, nObjectType, oArea, nFallbackMode);
+    DeleteLocalInt(GetModule(), sKey);
+}
+
 // Unified tag lookup policy for transition/nav entities.
 // Policy contract:
-// 1) Always try deterministic area-local lookup first when preferred area is valid.
+// 1) Always try area-preferred deterministic lookup first: module area-tag cache,
+//    then area-local deterministic scan when preferred area is valid.
 // 2) Fallback behavior is explicit and centralized:
 //    - DL_TAG_FALLBACK_NONE: area-local deterministic only.
 //    - DL_TAG_FALLBACK_GLOBAL: fallback to global typed lookup by tag.
-//    - DL_TAG_FALLBACK_NEAREST: fallback to nearest typed lookup using deterministic cap.
-// 3) New modules must reuse this helper instead of introducing ad-hoc tag lookup flows.
+//    - DL_TAG_FALLBACK_NEAREST: fallback to nearest typed lookup with dedicated cap and
+//      early-stop context guards (distance/area boundary).
+// 3) Repeated misses are suppressed per tick by (tag, area, object_type, fallback_mode).
+// 4) New modules must reuse this helper instead of introducing ad-hoc tag lookup flows.
 object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPreferredArea, int nDeterministicCap, int nFallbackMode)
 {
     if (sTag == "")
@@ -282,6 +327,19 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
 
     if (GetIsObjectValid(oPreferredArea))
     {
+        nNowTick = DL_GetAreaTick(oPreferredArea);
+        if (DL_IsTransitionTagMissSuppressedThisTick(sTag, nObjectType, oPreferredArea, nFallbackMode, nNowTick))
+        {
+            return OBJECT_INVALID;
+        }
+
+        object oAreaCached = DL_GetAreaScopedCachedObjectByTag(OBJECT_SELF, sTag, nObjectType, oPreferredArea);
+        if (GetIsObjectValid(oAreaCached))
+        {
+            DL_ClearTransitionTagMissSuppressedTick(sTag, nObjectType, oPreferredArea, nFallbackMode);
+            return oAreaCached;
+        }
+
         object oLocal = DL_FindObjectByTagInAreaDeterministic(sTag, nObjectType, oPreferredArea, nCap);
         if (GetIsObjectValid(oLocal))
         {
@@ -300,14 +358,31 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
     if (nFallbackMode == DL_TAG_FALLBACK_NEAREST)
     {
         object oNearestOrigin = GetIsObjectValid(oPreferredArea) ? oPreferredArea : OBJECT_SELF;
+        int nNearestCap = nCap;
+        if (nNearestCap > DL_TRANSITION_TAG_NEAREST_CAP)
+        {
+            nNearestCap = DL_TRANSITION_TAG_NEAREST_CAP;
+        }
+
         int nNth = 1;
-        while (nNth <= nCap)
+        while (nNth <= nNearestCap)
         {
             object oNearest = GetNearestObjectByTag(sTag, oNearestOrigin, nNth);
             if (!GetIsObjectValid(oNearest))
             {
                 break;
             }
+
+            if (GetIsObjectValid(oPreferredArea) && GetArea(oNearest) != oPreferredArea)
+            {
+                break;
+            }
+
+            if (GetIsObjectValid(oPreferredArea) && GetDistanceBetween(oPreferredArea, oNearest) > DL_TRANSITION_TAG_NEAREST_MAX_DISTANCE)
+            {
+                break;
+            }
+
             if (GetObjectType(oNearest) == nObjectType)
             {
                 DL_SetTickMemoizedLookup(GetModule(), OBJECT_SELF, nTickStamp, sTag, nObjectType, oPreferredArea, DL_LOOKUP_MODE_TRANSITION_POLICY + "_" + IntToString(nFallbackMode), oNearest);
@@ -320,7 +395,6 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
     DL_SetTickMemoizedLookup(GetModule(), OBJECT_SELF, nTickStamp, sTag, nObjectType, oPreferredArea, DL_LOOKUP_MODE_TRANSITION_POLICY + "_" + IntToString(nFallbackMode), OBJECT_INVALID);
     return OBJECT_INVALID;
 }
-
 object DL_GetTransitionWaypointByTagInArea(string sTag, object oArea)
 {
     if (sTag == "" || !GetIsObjectValid(oArea))
