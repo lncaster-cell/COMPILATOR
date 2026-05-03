@@ -486,7 +486,7 @@ void DL_ClearTransitionExecutionState(object oNpc)
 
 void DL_OnNpcArrivedAtAnchor(object oNpc, object oTarget, string sStatusLocal, string sStatusValue, string sDiagLocal, string sAnim, int bSetFacing)
 {
-    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
+    if (!DL_IsValidNpcObject(oNpc) || !GetIsObjectValid(oTarget))
     {
         return;
     }
@@ -1011,7 +1011,7 @@ int DL_TryExecuteTransitionAtWaypoint(object oNpc, object oTargetWp)
 
 int DL_ShouldUseNavigationEntryForTarget(object oNpc, object oTarget, object oEntry, object oExit)
 {
-    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget) ||
+    if (!DL_IsValidNpcObject(oNpc) || !GetIsObjectValid(oTarget) ||
         !GetIsObjectValid(oEntry) || !GetIsObjectValid(oExit))
     {
         return FALSE;
@@ -1066,7 +1066,7 @@ int DL_TransitionConnectsNavZones(object oEntry, object oExit, string sFromZone,
 object DL_FindDirectNavZoneEntry(object oNpc, object oTarget, string sFromZone, string sToZone)
 {
     object oNpcArea = GetArea(oNpc);
-    if (!GetIsObjectValid(oNpcArea))
+    if (!DL_IsValidNpcAreaContext(oNpc, oNpcArea))
     {
         return OBJECT_INVALID;
     }
@@ -1103,7 +1103,7 @@ object DL_FindDirectNavZoneEntry(object oNpc, object oTarget, string sFromZone, 
 object DL_FindTwoHopNavZoneEntry(object oNpc, object oTarget, string sFromZone, string sToZone)
 {
     object oNpcArea = GetArea(oNpc);
-    if (!GetIsObjectValid(oNpcArea))
+    if (!DL_IsValidNpcAreaContext(oNpc, oNpcArea))
     {
         return OBJECT_INVALID;
     }
@@ -1152,12 +1152,35 @@ object DL_FindTwoHopNavZoneEntry(object oNpc, object oTarget, string sFromZone, 
 
 int DL_TryAdvanceViaTransitionOrRoute(object oNpc, object oTargetWp, int bMarkDomainProgress, string sDomainTag)
 {
-    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTargetWp))
+    if (!DL_IsValidTransitionContext(oNpc, oTargetWp))
     {
         return FALSE;
     }
 
-    if (DL_WaypointHasTransition(oTargetWp) && DL_TryExecuteRoutedTransitionEntryWaypoint(oNpc, oTargetWp))
+    // Business logic starts after guard-section.
+    if (!DL_WaypointHasTransition(oTargetWp))
+    {
+        return FALSE;
+    }
+
+    object oNpcArea = GetArea(oNpc);
+    object oTargetArea = GetArea(oTargetWp);
+    if (!GetIsObjectValid(oNpcArea) || !GetIsObjectValid(oTargetArea))
+    {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+int DL_TryNavigateToTargetViaTransition(object oNpc, object oTargetWp, int bAllowRouterFallback)
+{
+    if (!DL_IsTransitionNavigableTarget(oNpc, oTargetWp))
+    {
+        return FALSE;
+    }
+
+    if (DL_ExecuteTransitionViaEntryWaypoint(oNpc, oTargetWp, DL_DIAG_CTX_ROUTED))
     {
         if (bMarkDomainProgress)
         {
@@ -1180,17 +1203,18 @@ int DL_TryAdvanceViaTransitionOrRoute(object oNpc, object oTargetWp, int bMarkDo
 
 int DL_TryUseNavigationRouteToTarget(object oNpc, object oTarget)
 {
-    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
+    if (!DL_IsValidNpcObject(oNpc) || !GetIsObjectValid(oTarget))
     {
         return FALSE;
     }
 
     object oNpcArea = GetArea(oNpc);
-    if (!GetIsObjectValid(oNpcArea))
+    if (!DL_IsValidNpcAreaContext(oNpc, oNpcArea))
     {
         return FALSE;
     }
 
+    // Business logic starts after guard-section.
     if (DL_TryRouteToTarget(oNpc, oTarget))
     {
         return TRUE;

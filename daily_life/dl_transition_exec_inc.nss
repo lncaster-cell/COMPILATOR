@@ -8,11 +8,12 @@
 
 int DL_ExecuteTransitionViaEntryWaypoint(object oNpc, object oEntryWp, string sDiagPrefix)
 {
-    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oEntryWp))
+    if (!DL_IsValidTransitionContext(oNpc, oEntryWp))
     {
         return FALSE;
     }
 
+    // Business logic starts after guard-section.
     DL_OnNpcActionDispatched(oNpc, DL_L_NPC_TRANSITION_STATUS, DL_PIPE_STEP_PREPARE, "", "", "dl_tm_transition_dispatch_count");
     int bExecuted = DL_ExecuteTransitionEngine(oNpc, oEntryWp, sDiagPrefix);
     DL_OnNpcActionDispatched(oNpc, DL_L_NPC_TRANSITION_STATUS, DL_PIPE_STEP_FINALIZE);
@@ -28,11 +29,12 @@ int DL_TryExecuteRoutedTransitionEntryWaypoint(object oNpc, object oEntryWp)
 
 int DL_TryAdvanceViaTransitionOrRouteEx(object oNpc, object oTargetWp, string sRouteContext, int bMarkSleepNavigation)
 {
-    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTargetWp))
+    if (!DL_IsValidTransitionContext(oNpc, oTargetWp))
     {
         return FALSE;
     }
 
+    // Business logic starts after guard-section.
     int bHasTransition = GetIsObjectValid(DL_TryGetTransitionExitWaypoint(oTargetWp));
     if (bHasTransition)
     {
