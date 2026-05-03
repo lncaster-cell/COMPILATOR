@@ -94,6 +94,16 @@ string DL_GetAreaNavigationSlotKey(int nSlot)
 
 int DL_IsAutoNavTag(string sTag)
 {
+    string sFrom = "";
+    string sTo = "";
+    return DL_ParseAutoNavTag(sTag, sFrom, sTo);
+}
+
+int DL_ParseAutoNavTag(string sTag, string &sFromOut, string &sToOut)
+{
+    sFromOut = "";
+    sToOut = "";
+
     if (GetStringLength(sTag) <= (DL_NAV_TAG_PREFIX_LENGTH + DL_NAV_TAG_SEPARATOR_LENGTH + 1))
     {
         return FALSE;
@@ -111,40 +121,40 @@ int DL_IsAutoNavTag(string sTag)
         return FALSE;
     }
 
-    string sFrom = GetSubString(sTail, 0, nSep);
-    string sTo = GetSubString(sTail, nSep + DL_NAV_TAG_SEPARATOR_LENGTH, GetStringLength(sTail) - nSep - DL_NAV_TAG_SEPARATOR_LENGTH);
-    return sFrom != "" && sTo != "";
+    sFromOut = GetSubString(sTail, 0, nSep);
+    sToOut = GetSubString(sTail, nSep + DL_NAV_TAG_SEPARATOR_LENGTH, GetStringLength(sTail) - nSep - DL_NAV_TAG_SEPARATOR_LENGTH);
+    return sFromOut != "" && sToOut != "";
 }
 
 string DL_GetAutoNavFromZoneFromTag(string sTag)
 {
-    if (!DL_IsAutoNavTag(sTag))
+    string sFrom = "";
+    string sTo = "";
+    if (!DL_ParseAutoNavTag(sTag, sFrom, sTo))
     {
         return "";
     }
 
-    string sTail = GetSubString(sTag, DL_NAV_TAG_PREFIX_LENGTH, GetStringLength(sTag) - DL_NAV_TAG_PREFIX_LENGTH);
-    int nSep = FindSubString(sTail, DL_NAV_TAG_SEPARATOR);
-    return GetSubString(sTail, 0, nSep);
+    return sFrom;
 }
 
 string DL_GetAutoNavToZoneFromTag(string sTag)
 {
-    if (!DL_IsAutoNavTag(sTag))
+    string sFrom = "";
+    string sTo = "";
+    if (!DL_ParseAutoNavTag(sTag, sFrom, sTo))
     {
         return "";
     }
 
-    string sTail = GetSubString(sTag, DL_NAV_TAG_PREFIX_LENGTH, GetStringLength(sTag) - DL_NAV_TAG_PREFIX_LENGTH);
-    int nSep = FindSubString(sTail, DL_NAV_TAG_SEPARATOR);
-    return GetSubString(sTail, nSep + DL_NAV_TAG_SEPARATOR_LENGTH, GetStringLength(sTail) - nSep - DL_NAV_TAG_SEPARATOR_LENGTH);
+    return sTo;
 }
 
 string DL_GetAutoNavReverseTag(string sTag)
 {
-    string sFrom = DL_GetAutoNavFromZoneFromTag(sTag);
-    string sTo = DL_GetAutoNavToZoneFromTag(sTag);
-    if (sFrom == "" || sTo == "")
+    string sFrom = "";
+    string sTo = "";
+    if (!DL_ParseAutoNavTag(sTag, sFrom, sTo))
     {
         return "";
     }
@@ -647,6 +657,7 @@ int DL_GetTransitionDriverLookupCap()
 
 object DL_ResolveTransitionDriverObject(object oEntryWp)
 {
+    // Housekeeping: keep driver-resolve branches linear for a single transition pipeline.
     string sDriverTag = DL_GetWaypointTransitionDriverTag(oEntryWp);
     if (sDriverTag == "")
     {
@@ -662,29 +673,22 @@ object DL_ResolveTransitionDriverObject(object oEntryWp)
     object oArea = GetArea(oEntryWp);
     int nNowTick = DL_GetAreaTick(oArea);
     object oCached = GetLocalObject(oEntryWp, DL_L_WP_TRANSITION_DRIVER_OBJ);
+    int bCachedMatch = GetIsObjectValid(oCached) &&
+        GetTag(oCached) == sDriverTag &&
+        GetArea(oCached) == oArea &&
+        DL_IsTransitionDriverTypeMatch(sDriverKind, oCached);
+
     if (GetLocalInt(oEntryWp, DL_L_WP_TRANSITION_DRIVER_MISS_TICK) == nNowTick)
     {
-        if (GetIsObjectValid(oCached) &&
-            GetTag(oCached) == sDriverTag &&
-            GetArea(oCached) == GetArea(oEntryWp) &&
-            DL_IsTransitionDriverTypeMatch(sDriverKind, oCached))
+        if (bCachedMatch)
         {
             DeleteLocalInt(oEntryWp, DL_L_WP_TRANSITION_DRIVER_MISS_TICK);
             return oCached;
         }
-
-        if (!GetIsObjectValid(oCached))
-        {
-            return OBJECT_INVALID;
-        }
-
         return OBJECT_INVALID;
     }
 
-    if (GetIsObjectValid(oCached) &&
-        GetTag(oCached) == sDriverTag &&
-        GetArea(oCached) == GetArea(oEntryWp) &&
-        DL_IsTransitionDriverTypeMatch(sDriverKind, oCached))
+    if (bCachedMatch)
     {
         DeleteLocalInt(oEntryWp, DL_L_WP_TRANSITION_DRIVER_MISS_TICK);
         return oCached;
@@ -700,14 +704,12 @@ object DL_ResolveTransitionDriverObject(object oEntryWp)
             break;
         }
 
-        if (GetArea(oDriver) == GetArea(oEntryWp))
+        if (GetArea(oDriver) == oArea &&
+            DL_IsTransitionDriverTypeMatch(sDriverKind, oDriver))
         {
-            if (DL_IsTransitionDriverTypeMatch(sDriverKind, oDriver))
-            {
-                SetLocalObject(oEntryWp, DL_L_WP_TRANSITION_DRIVER_OBJ, oDriver);
-                DeleteLocalInt(oEntryWp, DL_L_WP_TRANSITION_DRIVER_MISS_TICK);
-                return oDriver;
-            }
+            SetLocalObject(oEntryWp, DL_L_WP_TRANSITION_DRIVER_OBJ, oDriver);
+            DeleteLocalInt(oEntryWp, DL_L_WP_TRANSITION_DRIVER_MISS_TICK);
+            return oDriver;
         }
 
         nNth = nNth + 1;
@@ -727,6 +729,10 @@ int DL_ExecuteTransitionDriver(object oNpc, object oEntryWp, location lExit, obj
     return DL_EngineExecuteTransitionDriver(oNpc, oEntryWp, lExit, oExitWp, sJumpDiagnostic);
 }
 
+// Backward-compatibility shim.
+// Canonical transition execution is implemented in DL_ExecuteTransitionEngine
+// (daily_life/dl_transition_engine_inc.nss). Keep this wrapper signature stable
+// for legacy callers and delegate without local business logic.
 int DL_TryExecuteTransitionEntryWaypoint(object oNpc, object oEntryWp)
 {
     return DL_ExecuteTransitionEngine(oNpc, oEntryWp, "");
@@ -844,12 +850,11 @@ object DL_FindDirectNavZoneEntry(object oNpc, object oTarget, string sFromZone, 
             {
                 nScore = nScore + FloatToInt(GetDistanceBetween(oExit, oTarget) * 100.0);
             }
-            string sTie = DL_SelectionBuildTieKey(oEntry, oExit, i);
-            if (DL_SelectionCompare(nScore, nBestScore, sTie, sBestTie))
+            if (DL_SelectionConsiderTransitionCandidate(nScore, oEntry, oExit, i, nBestScore, sBestTie))
             {
                 oBestEntry = oEntry;
                 nBestScore = nScore;
-                sBestTie = sTie;
+                sBestTie = DL_SelectionBuildTieKey(oEntry, oExit, i);
             }
         }
         i = i + 1;
@@ -892,12 +897,11 @@ object DL_FindTwoHopNavZoneEntry(object oNpc, object oTarget, string sFromZone, 
                     {
                         nScore = nScore + FloatToInt(GetDistanceBetween(oExitB, oTarget) * 100.0);
                     }
-                    string sTie = DL_SelectionBuildTieKey(oEntryA, oEntryB, i);
-                    if (DL_SelectionCompare(nScore, nBestScore, sTie, sBestTie))
+                    if (DL_SelectionConsiderTransitionCandidate(nScore, oEntryA, oEntryB, i, nBestScore, sBestTie))
                     {
                         oBestEntry = oEntryA;
                         nBestScore = nScore;
-                        sBestTie = sTie;
+                        sBestTie = DL_SelectionBuildTieKey(oEntryA, oEntryB, i);
                     }
                 }
                 j = j + 1;
@@ -942,12 +946,11 @@ int DL_TryUseNavigationRouteToTarget(object oNpc, object oTarget)
             {
                 int nScore = FloatToInt(GetDistanceBetween(oNpc, oEntry) * 100.0) +
                              FloatToInt(GetDistanceBetween(oExit, oTarget) * 100.0);
-                string sTie = DL_SelectionBuildTieKey(oEntry, oExit, i);
-                if (DL_SelectionCompare(nScore, nBestScore, sTie, sBestTie))
+                if (DL_SelectionConsiderTransitionCandidate(nScore, oEntry, oExit, i, nBestScore, sBestTie))
                 {
                     oBestEntry = oEntry;
                     nBestScore = nScore;
-                    sBestTie = sTie;
+                    sBestTie = DL_SelectionBuildTieKey(oEntry, oExit, i);
                 }
             }
         }

@@ -44,3 +44,19 @@ string DL_SelectionBuildTieKey(object oPrimary, object oSecondary, int nOrdinal)
     string sSecondary = GetIsObjectValid(oSecondary) ? GetTag(oSecondary) : "~";
     return sPrimary + "|" + sSecondary + "|" + IntToString(nOrdinal);
 }
+
+// Transition-routing contract:
+// all candidate comparisons for transition routing must go through this helper
+// to preserve deterministic score and tie-break behavior.
+int DL_SelectionConsiderTransitionCandidate(
+    int nCandidateScore,
+    object oTiePrimary,
+    object oTieSecondary,
+    int nOrdinal,
+    int nBestScore,
+    string sBestTieKey
+)
+{
+    string sCandidateTieKey = DL_SelectionBuildTieKey(oTiePrimary, oTieSecondary, nOrdinal);
+    return DL_SelectionCompare(nCandidateScore, nBestScore, sCandidateTieKey, sBestTieKey);
+}
