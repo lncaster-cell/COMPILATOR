@@ -60,7 +60,13 @@ int DL_ExecuteTransitionDriver(object oNpc, object oEntryWp, location lExit, obj
         object oDoor = DL_ResolveTransitionDriverObject(oEntryWp);
         if (!GetIsObjectValid(oDoor) || GetObjectType(oDoor) != OBJECT_TYPE_DOOR)
         {
-            DL_SetTransitionState(oNpc, DL_TRANSITION_STATUS_DRIVER_MISSING, DL_TRANSITION_DIAG_DRIVER_REQUIRED, sDiagContext);
+            DL_HandleTransitionFailure(
+                oNpc,
+                DL_TRANSITION_STATUS_DRIVER_MISSING,
+                DL_TRANSITION_DIAG_DRIVER_REQUIRED,
+                DL_FB_REASON_TRANSITION_DRIVER_MISSING,
+                sDiagContext
+            );
             return TRUE;
         }
 
@@ -73,7 +79,13 @@ int DL_ExecuteTransitionDriver(object oNpc, object oEntryWp, location lExit, obj
         return TRUE;
     }
 
-    DL_SetTransitionState(oNpc, DL_TRANSITION_STATUS_DRIVER_UNKNOWN, DL_TRANSITION_DIAG_DRIVER_UNKNOWN, sDiagContext);
+    DL_HandleTransitionFailure(
+        oNpc,
+        DL_TRANSITION_STATUS_DRIVER_UNKNOWN,
+        DL_TRANSITION_DIAG_DRIVER_UNKNOWN,
+        DL_FB_REASON_TRANSITION_DRIVER_MISSING,
+        sDiagContext
+    );
     return TRUE;
 }
 
@@ -101,7 +113,13 @@ int DL_ExecuteTransitionEngine(object oNpc, object oEntryWp, string sDiagPrefix)
 
     if (sExitTag == "" && (sKind == "" || sTransitionId == "") && !DL_IsAutoNavTag(GetTag(oEntryWp)))
     {
-        DL_SetTransitionState(oNpc, DL_TRANSITION_STATUS_METADATA_MISSING, DL_TRANSITION_DIAG_METADATA_REQUIRED, sDiagPrefix);
+        DL_HandleTransitionFailure(
+            oNpc,
+            DL_TRANSITION_STATUS_METADATA_MISSING,
+            DL_TRANSITION_DIAG_METADATA_REQUIRED,
+            DL_FB_REASON_TRANSITION_EXIT_MISSING,
+            sDiagPrefix
+        );
         return TRUE;
     }
 
@@ -118,7 +136,13 @@ int DL_ExecuteTransitionEngine(object oNpc, object oEntryWp, string sDiagPrefix)
     object oExitWp = DL_ResolveTransitionExitWaypointFromEntry(oEntryWp);
     if (!GetIsObjectValid(oExitWp))
     {
-        DL_SetTransitionState(oNpc, DL_TRANSITION_STATUS_EXIT_MISSING, DL_TRANSITION_DIAG_EXIT_REQUIRED, sDiagPrefix);
+        DL_HandleTransitionFailure(
+            oNpc,
+            DL_TRANSITION_STATUS_EXIT_MISSING,
+            DL_TRANSITION_DIAG_EXIT_REQUIRED,
+            DL_FB_REASON_TRANSITION_EXIT_MISSING,
+            sDiagPrefix
+        );
         return TRUE;
     }
 
