@@ -2,12 +2,5 @@
 
 void main()
 {
-    object oGuard = OBJECT_SELF;
-    object oPc = GetPCSpeaker();
-    if (!GetIsObjectValid(oPc))
-    {
-        oPc = GetLastSpeaker();
-    }
-
-    DL_CR_HandleDetainAccepted(oPc, oGuard);
+    DL_CR_RunDetainDialogAction(DL_CR_DETAIN_ACTION_ACCEPT);
 }
