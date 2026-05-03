@@ -263,6 +263,7 @@ const int DL_ORCH_ACT_ATTACK = 5;
 void DL_CommandMoveToObject(object oActor, object oTarget, int bRun = TRUE, float fRange = 1.0);
 void DL_CommandMoveToLocation(object oActor, location lTarget, int bRun = TRUE);
 void DL_CommandJumpToLocation(object oActor, location lTarget);
+void DL_DispatchMoveToLocation(object oActor, location lTarget, int bRun = TRUE);
 
 int DL_ShouldRedispatchMovement(object oNpc, string sStatusLocal, string sExpectedStatus, float fDistance, float fRadius)
 {
