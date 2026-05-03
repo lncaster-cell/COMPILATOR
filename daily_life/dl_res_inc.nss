@@ -522,19 +522,7 @@ void DL_ConsumeModuleCacheResetRequest()
 }
 void DL_ClearAreaNavigationCache(object oArea)
 {
-    if (!GetIsObjectValid(oArea))
-    {
-        return;
-    }
-
-    int i = 0;
-    while (i < DL_AREA_NAV_ROUTE_CAP)
-    {
-        DeleteLocalObject(oArea, DL_GetAreaNavigationSlotKey(i));
-        i = i + 1;
-    }
-    DeleteLocalInt(oArea, DL_L_AREA_NAV_READY);
-    DeleteLocalInt(oArea, DL_L_AREA_NAV_COUNT);
+    DL_InvalidateAreaNavigationRouteCache(oArea);
 }
 void DL_MaybeRefreshAreaCachesForEpoch(object oArea)
 {

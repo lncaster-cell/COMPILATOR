@@ -101,7 +101,7 @@ int DL_ExecuteTransitionEngine(object oNpc, object oEntryWp, string sDiagPrefix)
         return TRUE;
     }
 
-    if (GetDistanceBetweenLocations(GetLocation(oNpc), GetLocation(oEntryWp)) > DL_TRANSITION_ENTRY_RADIUS)
+    if (!DL_IsWithinAnchorRadius(oNpc, oEntryWp, DL_TRANSITION_ENTRY_RADIUS))
     {
         if (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != DL_TRANSITION_STATUS_MOVING_TO_ENTRY)
         {
@@ -121,5 +121,11 @@ int DL_ExecuteTransitionEngine(object oNpc, object oEntryWp, string sDiagPrefix)
 
     location lExit = GetLocation(oExitWp);
     DL_SetTransitionState(oNpc, DL_TRANSITION_STATUS_TRANSITIONING, DL_TRANSITION_DIAG_IN_PROGRESS, sDiagPrefix);
-    return DL_ExecuteTransitionDriver(oNpc, oEntryWp, lExit, oExitWp, sDiagPrefix, DL_TRANSITION_DIAG_IN_PROGRESS);
+    return DL_EngineExecuteTransitionDriver(
+        oNpc,
+        oEntryWp,
+        lExit,
+        oExitWp,
+        DL_BuildTransitionDiagnostic(sDiagPrefix, DL_TRANSITION_DIAG_IN_PROGRESS)
+    );
 }
