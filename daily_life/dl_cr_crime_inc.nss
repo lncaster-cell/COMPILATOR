@@ -18,6 +18,9 @@ const string DL_CR_KEY_PREFIX_SHOUT_CD = "dl_cr_shout_cd_";
 const float DL_CR_DISTANCE_INF = 1000000.0;
 const int DL_CR_LOCKPICK_MARK_TTL_MIN = 1;
 
+const int DL_CR_DETAIN_ACTION_ACCEPT = 1;
+const int DL_CR_DETAIN_ACTION_REFUSE = 2;
+
 int DL_CR_GetLockpickMarkAbsMin(object oTarget)
 {
     int nAbsMin = GetLocalInt(oTarget, DL_L_OBJ_CR_LOCKPICK_MARK_ABS_MIN);
@@ -586,6 +589,38 @@ void DL_CR_HandleRestrictedEntry(object oActor, object oSource)
         DL_CR_WitnessShout(oWitness, oOffender);
     }
     DL_CR_RegisterCrimeIncident(oOffender, oArea, DL_CR_EVT_RESTRICTED_ENTRY, bWitnessed, oWitness);
+}
+
+void DL_CR_RunDetainDialogAction(int nActionType)
+{
+    object oGuard = OBJECT_SELF;
+    if (!DL_IsValidNpcObject(oGuard))
+    {
+        return;
+    }
+
+    object oPc = GetPCSpeaker();
+    if (!GetIsObjectValid(oPc))
+    {
+        oPc = GetLastSpeaker();
+    }
+
+    if (!DL_IsRuntimePlayer(oPc))
+    {
+        return;
+    }
+
+    if (nActionType == DL_CR_DETAIN_ACTION_ACCEPT)
+    {
+        DL_CR_HandleDetainAccepted(oPc, oGuard);
+        return;
+    }
+
+    if (nActionType == DL_CR_DETAIN_ACTION_REFUSE)
+    {
+        DL_CR_HandleDetainRefused(oPc, oGuard);
+        return;
+    }
 }
 
 int DL_CR_TeleportToJail(object oPc)
