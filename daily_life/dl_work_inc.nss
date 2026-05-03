@@ -183,9 +183,10 @@ int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
     }
 
     location lTarget = GetLocation(oTarget);
-    if (!DL_IsWithinAnchorRadius(oNpc, oTarget, DL_WORK_ANCHOR_RADIUS))
+    float fTargetDistance = GetDistanceBetween(oNpc, oTarget);
+    if (fTargetDistance > DL_WORK_ANCHOR_RADIUS)
     {
-        if (GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) != DL_STATUS_MOVING_TO_ANCHOR)
+        if (DL_ShouldRedispatchMovement(oNpc, DL_L_NPC_WORK_STATUS, DL_STATUS_MOVING_TO_ANCHOR, fTargetDistance, DL_WORK_ANCHOR_RADIUS))
         {
             DL_SetRuntimeState(oNpc, DL_L_NPC_WORK_STATUS, DL_STATUS_MOVING_TO_ANCHOR, "", "");
             DL_QueueMoveAction(oNpc, lTarget, TRUE);

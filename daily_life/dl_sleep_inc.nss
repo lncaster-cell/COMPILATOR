@@ -114,10 +114,6 @@ void DL_SetSleepTargetState(object oNpc, object oBed)
     SetLocalString(oNpc, DL_L_NPC_SLEEP_TARGET, GetTag(oBed));
     DeleteLocalString(oNpc, DL_L_NPC_SLEEP_DIAGNOSTIC);
 }
-void DL_QueueMoveAction(object oNpc, location lTarget, int bRun)
-{
-    DL_DispatchMoveToLocation(oNpc, lTarget, bRun);
-}
 int DL_QueueJumpAction(object oNpc, location lTarget)
 {
     if (!GetIsObjectValid(oNpc))
@@ -178,7 +174,6 @@ void DL_ExecuteSleepDirective(object oNpc)
     location lApproach = GetLocation(oApproach);
     location lBed = GetLocation(oBed);
     int nPhase = GetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE);
-    string sStatus = GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS);
     int bCommittedToBed = nPhase == DL_SLEEP_PHASE_JUMPING || nPhase == DL_SLEEP_PHASE_ON_BED;
     int bMayUseNavigation = DL_ShouldAttemptSleepNavigation(oNpc);
 
@@ -188,9 +183,10 @@ void DL_ExecuteSleepDirective(object oNpc)
         return;
     }
 
-    if (!bCommittedToBed && !DL_IsWithinAnchorRadius(oNpc, oApproach, DL_SLEEP_APPROACH_RADIUS))
+    float fApproachDistance = GetDistanceBetween(oNpc, oApproach);
+    if (!bCommittedToBed && fApproachDistance > DL_SLEEP_APPROACH_RADIUS)
     {
-        if (nPhase != DL_SLEEP_PHASE_MOVING || sStatus != DL_STATUS_MOVING_TO_APPROACH)
+        if (nPhase != DL_SLEEP_PHASE_MOVING || DL_ShouldRedispatchMovement(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_MOVING_TO_APPROACH, fApproachDistance, DL_SLEEP_APPROACH_RADIUS))
         {
             SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_MOVING);
             SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_MOVING_TO_APPROACH);
@@ -204,7 +200,6 @@ void DL_ExecuteSleepDirective(object oNpc)
         SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_JUMPING);
         SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_APPROACH_REACHED);
         nPhase = DL_SLEEP_PHASE_JUMPING;
-        sStatus = DL_STATUS_APPROACH_REACHED;
     }
 
     if (bMayUseNavigation &&
@@ -213,9 +208,10 @@ void DL_ExecuteSleepDirective(object oNpc)
         return;
     }
 
-    if (!DL_IsWithinAnchorRadius(oNpc, oBed, DL_SLEEP_BED_RADIUS))
+    float fBedDistance = GetDistanceBetween(oNpc, oBed);
+    if (fBedDistance > DL_SLEEP_BED_RADIUS)
     {
-        if (nPhase != DL_SLEEP_PHASE_JUMPING || sStatus != DL_STATUS_JUMPING_TO_BED)
+        if (nPhase != DL_SLEEP_PHASE_JUMPING || DL_ShouldRedispatchMovement(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_JUMPING_TO_BED, fBedDistance, DL_SLEEP_BED_RADIUS))
         {
             SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_JUMPING);
             SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_JUMPING_TO_BED);
@@ -224,7 +220,7 @@ void DL_ExecuteSleepDirective(object oNpc)
         return;
     }
 
-    if (nPhase != DL_SLEEP_PHASE_ON_BED || sStatus != DL_STATUS_ON_BED)
+    if (nPhase != DL_SLEEP_PHASE_ON_BED || GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) != DL_STATUS_ON_BED)
     {
         DL_PlaySleepAnimation(oNpc);
     }

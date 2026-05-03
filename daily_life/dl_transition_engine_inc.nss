@@ -123,12 +123,13 @@ int DL_ExecuteTransitionEngine(object oNpc, object oEntryWp, string sDiagPrefix)
         return TRUE;
     }
 
-    if (!DL_IsWithinAnchorRadius(oNpc, oEntryWp, DL_TRANSITION_ENTRY_RADIUS))
+    float fEntryDistance = GetDistanceBetween(oNpc, oEntryWp);
+    if (fEntryDistance > DL_TRANSITION_ENTRY_RADIUS)
     {
-        if (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != DL_TRANSITION_STATUS_MOVING_TO_ENTRY)
+        if (DL_ShouldRedispatchMovement(oNpc, DL_L_NPC_TRANSITION_STATUS, DL_TRANSITION_STATUS_MOVING_TO_ENTRY, fEntryDistance, DL_TRANSITION_ENTRY_RADIUS))
         {
             DL_SetTransitionState(oNpc, DL_TRANSITION_STATUS_MOVING_TO_ENTRY, DL_TRANSITION_DIAG_MOVING_TO_ENTRY, sDiagPrefix);
-            DL_DispatchMoveToLocation(oNpc, GetLocation(oEntryWp), TRUE);
+            DL_QueueMoveAction(oNpc, GetLocation(oEntryWp), TRUE);
         }
         return TRUE;
     }
