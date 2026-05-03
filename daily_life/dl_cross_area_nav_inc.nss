@@ -119,7 +119,7 @@ object DL_FindCrossAreaNavEntry(object oNpc, object oTarget, string sFromZone, s
         object oEntry = DL_GetAreaNavigationRouteAtSlot(oCurrentArea, i);
         if (DL_CrossNavEntryMatchesZone(oEntry, sFromZone))
         {
-            object oExit = DL_ResolveTransitionExitWaypointFromEntry(oEntry);
+            object oExit = DL_TryGetTransitionExitWaypoint(oEntry);
             object oExitArea = GetArea(oExit);
             string sExitZone = DL_GetWaypointNavZone(oExit);
             if (DL_IsCrossAreaCandidateValid(oEntry, oExit, oExitArea, sFromZone, sExitZone, oTargetArea, sTargetZone))
