@@ -3,10 +3,10 @@
 void main()
 {
     object oGuard = OBJECT_SELF;
-    object oPc = GetPCSpeaker();
+    object oPc = DL_GetDialogPlayer();
     if (!GetIsObjectValid(oPc))
     {
-        oPc = GetLastSpeaker();
+        return;
     }
 
     DL_CR_HandleDetainAccepted(oPc, oGuard);
