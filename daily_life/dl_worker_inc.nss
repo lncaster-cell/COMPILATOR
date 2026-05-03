@@ -45,6 +45,9 @@ int DL_GetCursorAdvance(int nNpcProcessed, int nCandidatesSeen, int nNpcSeen)
     return nAdvance;
 }
 
+// external compatibility API
+// Minimal usage example:
+//   DL_WriteWorkerTelemetry(oArea, nNpcProcessed, FALSE, TRUE);
 // Telemetry contract:
 // - nProcessed: NPC count processed by the current pass in this tick.
 // - bNoBudget: TRUE when scheduler budget was exhausted before pass execution.
@@ -73,6 +76,9 @@ void DL_WriteWorkerTelemetry(object oArea, int nProcessed, int bNoBudget, int bC
     SetLocalInt(oModule, DL_L_MODULE_WORKER_LAST_PROCESSED, nValue);
 }
 
+// external compatibility API
+// Minimal usage example:
+//   DL_WriteResyncTelemetry(oArea, nNpcProcessed, FALSE);
 // Telemetry contract:
 // - nProcessed: NPC count processed by enter-resync pass in this tick.
 // - bNoBudget: TRUE when resync budget was exhausted before pass execution.
