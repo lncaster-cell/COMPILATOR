@@ -13,7 +13,7 @@ int DL_ExecuteTransitionViaEntryWaypoint(object oNpc, object oEntryWp, string sD
     }
 
     DL_OnNpcActionDispatched(oNpc, DL_L_NPC_TRANSITION_STATUS, DL_PIPE_STEP_PREPARE, "", "", "dl_tm_transition_dispatch_count");
-    int bExecuted = DL_TryExecuteTransitionEntryWaypoint(oNpc, oEntryWp);
+    int bExecuted = DL_ExecuteTransitionEngine(oNpc, oEntryWp, sDiagPrefix);
     DL_OnNpcActionDispatched(oNpc, DL_L_NPC_TRANSITION_STATUS, DL_PIPE_STEP_FINALIZE);
     return bExecuted;
 }
@@ -25,5 +25,5 @@ int DL_TryExecuteRoutedTransitionEntryWaypoint(object oNpc, object oEntryWp)
         return FALSE;
     }
 
-    return DL_TryExecuteTransitionEntryWaypoint(oNpc, oEntryWp);
+    return DL_ExecuteTransitionEngine(oNpc, oEntryWp, DL_DIAG_CTX_ROUTED);
 }
