@@ -64,7 +64,7 @@ int DL_ExecuteTransitionDriver(object oNpc, object oEntryWp, location lExit, obj
             return TRUE;
         }
 
-        AssignCommand(oNpc, ClearAllActions(TRUE));
+        DL_TryResetActionQueue(oNpc, TRUE);
         if (GetIsDoorActionPossible(oDoor, DOOR_ACTION_OPEN))
         {
             AssignCommand(oNpc, DoDoorAction(oDoor, DOOR_ACTION_OPEN));
