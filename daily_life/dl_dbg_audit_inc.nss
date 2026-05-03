@@ -1,6 +1,9 @@
 // Daily Life subsystem audit helpers for the existing placeable debug script.
 // This is an include, not a separate entry script.
 
+// Forward declaration: implemented by the debug entry script that includes this file.
+void DL_DbgSay(object oPC, string sText);
+
 string DL_AuditPF(int bPass)
 {
     return bPass ? "PASS" : "FAIL";
