@@ -244,6 +244,27 @@ const int DL_ORCH_ACT_ATTACK = 5;
 void DL_CommandMoveToObject(object oActor, object oTarget, int bRun = TRUE, float fRange = 1.0);
 void DL_CommandMoveToLocation(object oActor, location lTarget, int bRun = TRUE);
 void DL_CommandJumpToLocation(object oActor, location lTarget);
+
+int DL_ShouldRedispatchMovement(object oNpc, string sStatusLocal, string sExpectedStatus, float fDistance, float fRadius)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return FALSE;
+    }
+
+    if (fDistance <= fRadius)
+    {
+        return FALSE;
+    }
+
+    return GetLocalString(oNpc, sStatusLocal) != sExpectedStatus;
+}
+
+void DL_QueueMoveAction(object oNpc, location lTarget, int bRun)
+{
+    DL_DispatchMoveToLocation(oNpc, lTarget, bRun);
+}
+
 void DL_CommandStartConversation(object oActor, object oListener, string sDialogResRef, int bPrivateConversation = TRUE, int bPlayHello = TRUE);
 void DL_CommandAttack(object oActor, object oTarget);
 

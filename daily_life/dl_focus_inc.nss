@@ -114,10 +114,11 @@ int DL_ProgressFocusAtTarget(object oNpc, object oTarget, string sOnAnchorStatus
         return TRUE;
     }
 
-    if (GetDistanceBetween(oNpc, oTarget) > DL_WORK_ANCHOR_RADIUS)
+    float fTargetDistance = GetDistanceBetween(oNpc, oTarget);
+    if (fTargetDistance > DL_WORK_ANCHOR_RADIUS)
     {
         DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
-        if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) != DL_STATUS_MOVING_TO_ANCHOR)
+        if (DL_ShouldRedispatchMovement(oNpc, DL_L_NPC_FOCUS_STATUS, DL_STATUS_MOVING_TO_ANCHOR, fTargetDistance, DL_WORK_ANCHOR_RADIUS))
         {
             SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, DL_STATUS_MOVING_TO_ANCHOR);
             SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oTarget));
@@ -324,10 +325,11 @@ int DL_ProgressChillAtSeat(object oNpc, object oSeat)
         return TRUE;
     }
 
-    if (GetDistanceBetween(oNpc, oSeat) > DL_WORK_ANCHOR_RADIUS)
+    float fSeatDistance = GetDistanceBetween(oNpc, oSeat);
+    if (fSeatDistance > DL_WORK_ANCHOR_RADIUS)
     {
         DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
-        if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) != DL_STATUS_MOVING_TO_ANCHOR)
+        if (DL_ShouldRedispatchMovement(oNpc, DL_L_NPC_FOCUS_STATUS, DL_STATUS_MOVING_TO_ANCHOR, fSeatDistance, DL_WORK_ANCHOR_RADIUS))
         {
             SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, DL_STATUS_MOVING_TO_ANCHOR);
             SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oSeat));
