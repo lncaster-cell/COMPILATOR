@@ -287,8 +287,11 @@ void DL_CommandMoveToObject(object oActor, object oTarget, int bRun = TRUE, floa
 void DL_CommandMoveToObjectResetQueue(object oActor, object oTarget, int bRun = TRUE, float fRange = 1.0) { AssignCommand(oActor, ClearAllActions(TRUE)); DL_CommandMoveToObject(oActor, oTarget, bRun, fRange); }
 void DL_CommandMoveToLocation(object oActor, location lTarget, int bRun = TRUE) { AssignCommand(oActor, ActionMoveToLocation(lTarget, bRun)); }
 void DL_CommandMoveToLocationResetQueue(object oActor, location lTarget, int bRun = TRUE) { AssignCommand(oActor, ClearAllActions(TRUE)); DL_CommandMoveToLocation(oActor, lTarget, bRun); }
+void DL_DispatchMoveToLocation(object oActor, location lTarget, int bRun = TRUE) { DL_CommandMoveToLocationResetQueue(oActor, lTarget, bRun); }
 void DL_CommandJumpToLocation(object oActor, location lTarget) { AssignCommand(oActor, ActionJumpToLocation(lTarget)); }
 void DL_CommandJumpToLocationResetQueue(object oActor, location lTarget) { AssignCommand(oActor, ClearAllActions(TRUE)); DL_CommandJumpToLocation(oActor, lTarget); }
+void DL_DispatchJumpToLocation(object oActor, location lTarget) { DL_CommandJumpToLocationResetQueue(oActor, lTarget); }
+
 void DL_CommandStartConversation(object oActor, object oListener, string sDialogResRef, int bPrivateConversation = TRUE, int bPlayHello = TRUE) { AssignCommand(oActor, ActionStartConversation(oListener, sDialogResRef, bPrivateConversation, bPlayHello)); }
 void DL_CommandStartConversationResetQueue(object oActor, object oListener, string sDialogResRef, int bPrivateConversation = TRUE, int bPlayHello = TRUE) { AssignCommand(oActor, ClearAllActions(TRUE)); DL_CommandStartConversation(oActor, oListener, sDialogResRef, bPrivateConversation, bPlayHello); }
 void DL_CommandAttack(object oActor, object oTarget) { AssignCommand(oActor, ActionAttack(oTarget)); }

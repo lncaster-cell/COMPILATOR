@@ -88,10 +88,9 @@ void DL_StopSleepPresentationIfActive(object oNpc)
     }
 
     object oApproach = DL_ResolveSleepApproachWaypoint(oNpc);
-    AssignCommand(oNpc, ClearAllActions(TRUE));
     if (GetIsObjectValid(oApproach))
     {
-        AssignCommand(oNpc, JumpToLocation(GetLocation(oApproach)));
+        DL_DispatchJumpToLocation(oNpc, GetLocation(oApproach));
     }
 
     // NWN2 stock script documentation for PlayCustomAnimation says "%"
@@ -117,7 +116,7 @@ void DL_SetSleepTargetState(object oNpc, object oBed)
 }
 void DL_QueueMoveAction(object oNpc, location lTarget, int bRun)
 {
-    DL_CommandMoveToLocationResetQueue(oNpc, lTarget, bRun);
+    DL_DispatchMoveToLocation(oNpc, lTarget, bRun);
 }
 int DL_QueueJumpAction(object oNpc, location lTarget)
 {
@@ -133,7 +132,7 @@ int DL_QueueJumpAction(object oNpc, location lTarget)
         return FALSE;
     }
 
-    DL_CommandJumpToLocationResetQueue(oNpc, lTarget);
+    DL_DispatchJumpToLocation(oNpc, lTarget);
     return TRUE;
 }
 void DL_MarkSleepNavigationInProgress(object oNpc, string sTargetTag)
