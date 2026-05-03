@@ -22,6 +22,9 @@ object DL_GetNpcCachedWaypointByTag(object oNpc, string sCacheLocal, string sTag
     SetLocalObject(oNpc, sCacheLocal, oWp);
     return oWp;
 }
+// Public cache API: NPC-scoped anchor waypoint cache for (tag, area, tier, npc-event-seq).
+// Expected lifetime: one NPC lifecycle sequence within stable area/tier context.
+// Invalidation triggers: explicit invalidate, area tier change, or DL_L_NPC_EVENT_SEQ change.
 object DL_GetNpcCachedWaypointByTagInArea(object oNpc, string sCacheLocal, string sTag, object oArea)
 {
     if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oArea) || sTag == "")
@@ -31,24 +34,19 @@ object DL_GetNpcCachedWaypointByTagInArea(object oNpc, string sCacheLocal, strin
 
     int nTier = DL_GetAreaTier(oArea);
     int nLifecycleSeq = GetLocalInt(oNpc, DL_L_NPC_EVENT_SEQ);
-    object oCached = DL_GetCachedObject(oNpc, sCacheLocal, sTag, OBJECT_TYPE_WAYPOINT, oArea, nTier, nLifecycleSeq);
-    if (GetIsObjectValid(oCached))
-    {
-        DL_RecordCacheMetric(oArea, "anchor", TRUE);
-        return oCached;
-    }
+    object oWp = DL_ResolveCachedObjectByTagInArea(
+        oNpc,
+        sCacheLocal,
+        sTag,
+        OBJECT_TYPE_WAYPOINT,
+        oArea,
+        nTier,
+        nLifecycleSeq,
+        DL_WAYPOINT_TAG_SEARCH_CAP
+    );
 
-    DL_InvalidateCachedObject(oNpc, sCacheLocal);
-    object oResolved = DL_FindObjectByTagInAreaDeterministic(sTag, OBJECT_TYPE_WAYPOINT, oArea, DL_WAYPOINT_TAG_SEARCH_CAP);
-    if (GetIsObjectValid(oResolved))
-    {
-        DL_SetCachedObject(oNpc, sCacheLocal, oResolved, sTag, OBJECT_TYPE_WAYPOINT, oArea, nTier, nLifecycleSeq);
-        DL_RecordCacheMetric(oArea, "anchor", FALSE);
-        return oResolved;
-    }
-
-    DL_RecordCacheMetric(oArea, "anchor", FALSE);
-    return OBJECT_INVALID;
+    DL_RecordCacheMetric(oArea, "anchor", GetIsObjectValid(oWp));
+    return oWp;
 }
 object DL_ResolveEffectiveWaypointForNpc(object oNpc, object oWp)
 {

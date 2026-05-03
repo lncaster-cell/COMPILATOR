@@ -364,6 +364,27 @@ int DL_WaypointHasTransition(object oWp)
     return sKind != "" && sTransitionId != "";
 }
 
+// Public cache API: area-scoped navigation route cache.
+// Expected lifetime: current area epoch while transition waypoint topology is unchanged.
+// Invalidation triggers: explicit route metadata/tag mutation, area cache epoch reset, or forced area cache reset flag.
+void DL_InvalidateAreaNavigationRouteCache(object oArea)
+{
+    if (!GetIsObjectValid(oArea))
+    {
+        return;
+    }
+
+    int i = 0;
+    while (i < DL_AREA_NAV_ROUTE_CAP)
+    {
+        DeleteLocalObject(oArea, DL_GetAreaNavigationSlotKey(i));
+        i = i + 1;
+    }
+
+    DeleteLocalInt(oArea, DL_L_AREA_NAV_READY);
+    DeleteLocalInt(oArea, DL_L_AREA_NAV_COUNT);
+}
+
 void DL_BuildAreaNavigationRouteCache(object oArea)
 {
     if (!GetIsObjectValid(oArea))
@@ -376,12 +397,7 @@ void DL_BuildAreaNavigationRouteCache(object oArea)
         return;
     }
 
-    int i = 0;
-    while (i < DL_AREA_NAV_ROUTE_CAP)
-    {
-        DeleteLocalObject(oArea, DL_GetAreaNavigationSlotKey(i));
-        i = i + 1;
-    }
+    DL_InvalidateAreaNavigationRouteCache(oArea);
 
     int nCount = 0;
     object oObj = GetFirstObjectInArea(oArea);

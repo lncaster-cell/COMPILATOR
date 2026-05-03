@@ -176,3 +176,40 @@ object DL_FindObjectByTagInAreaDeterministic(string sTag, int nObjectType, objec
 
     return DL_FindObjectByTagWithChecks(sTag, nSearchCap, nObjectType, oArea, OBJECT_INVALID, FALSE);
 }
+
+
+// Public cache API: npc-scoped cache keyed by (tag,type,area,tier,life-seq).
+// Expected lifetime: until any context component changes.
+// Invalidation triggers: explicit invalidate call, area/tier change, or NPC event-seq bump.
+object DL_ResolveCachedObjectByTagInArea(
+    object oOwner,
+    string sCacheLocal,
+    string sTag,
+    int nObjectType,
+    object oArea,
+    int nTier,
+    int nLifecycleSeq,
+    int nSearchCap
+)
+{
+    if (!GetIsObjectValid(oOwner) || !GetIsObjectValid(oArea) || sTag == "")
+    {
+        return OBJECT_INVALID;
+    }
+
+    object oCached = DL_GetCachedObject(oOwner, sCacheLocal, sTag, nObjectType, oArea, nTier, nLifecycleSeq);
+    if (GetIsObjectValid(oCached))
+    {
+        return oCached;
+    }
+
+    object oResolved = DL_FindObjectByTagInAreaDeterministic(sTag, nObjectType, oArea, nSearchCap);
+    if (GetIsObjectValid(oResolved))
+    {
+        DL_SetCachedObject(oOwner, sCacheLocal, oResolved, sTag, nObjectType, oArea, nTier, nLifecycleSeq);
+        return oResolved;
+    }
+
+    DL_InvalidateCachedObject(oOwner, sCacheLocal);
+    return OBJECT_INVALID;
+}
