@@ -40,7 +40,7 @@ void DL_TransitionPrepareAndJump(object oNpc, object oExitWp, location lExit, st
 
 int DL_ExecuteTransitionDriver(object oNpc, object oEntryWp, location lExit, object oExitWp, string sDiagContext = "", string sJumpDiagnostic = DL_TRANSITION_DIAG_IN_PROGRESS)
 {
-    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oEntryWp))
+    if (!DL_IsValidTransitionContext(oNpc, oEntryWp))
     {
         return FALSE;
     }
@@ -77,7 +77,7 @@ int DL_ExecuteTransitionDriver(object oNpc, object oEntryWp, location lExit, obj
 
 int DL_ExecuteTransitionEngine(object oNpc, object oEntryWp, string sDiagPrefix)
 {
-    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oEntryWp))
+    if (!DL_IsValidTransitionContext(oNpc, oEntryWp))
     {
         return FALSE;
     }

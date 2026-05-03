@@ -64,7 +64,7 @@ int DL_AreaCanReachTargetZoneWithinDepth(object oArea, string sFromZone, object 
 
 int DL_ScoreCrossAreaRouteCandidate(object oNpc, object oTarget, object oEntry, object oExit, object oTargetArea)
 {
-    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget) ||
+    if (!DL_IsValidNpcObject(oNpc) || !GetIsObjectValid(oTarget) ||
         !GetIsObjectValid(oEntry) || !GetIsObjectValid(oExit) || !GetIsObjectValid(oTargetArea))
     {
         return DL_SELECTION_SCORE_INF;
@@ -143,7 +143,7 @@ object DL_FindCrossAreaNavEntry(object oNpc, object oTarget, string sFromZone, s
 
 object DL_FindCrossAreaNavigationRouteEntryToTarget(object oNpc, object oTarget)
 {
-    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
+    if (!DL_IsValidNpcObject(oNpc) || !GetIsObjectValid(oTarget))
     {
         return OBJECT_INVALID;
     }

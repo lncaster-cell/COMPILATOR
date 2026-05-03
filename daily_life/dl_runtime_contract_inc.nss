@@ -300,6 +300,16 @@ int DL_IsValidWaypointObject(object oObj) { return GetIsObjectValid(oObj) && Get
 int DL_IsValidAreaObject(object oObj) { return GetIsObjectValid(oObj) && GetObjectType(oObj) == OBJECT_TYPE_AREA; }
 int DL_IsAreaObject(object oObject) { return DL_IsValidAreaObject(oObject); }
 
+int DL_IsValidTransitionContext(object oNpc, object oEntryWp)
+{
+    return DL_IsValidNpcObject(oNpc) && DL_IsValidWaypointObject(oEntryWp);
+}
+
+int DL_IsValidNpcAreaContext(object oNpc, object oArea)
+{
+    return DL_IsValidNpcObject(oNpc) && DL_IsValidAreaObject(oArea);
+}
+
 int DL_IsPipelineNpc(object oNpc)
 {
     if (!DL_IsValidNpcObject(oNpc)) return FALSE;
