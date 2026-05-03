@@ -346,37 +346,69 @@ object DL_ResolveStandaloneSocialWaypoint(object oNpc, string sKind)
 
     int nCount = GetLocalInt(oArea, DL_GetSocialIndexCountLocal(sKind));
     int nStart = DL_GetTagDeterministicOffset(GetTag(oNpc), DL_SOCIAL_POOL_SEARCH_CAP, 0);
-    object oBest = OBJECT_INVALID;
-    int nBestScore = DL_GetSelectionScoreInf();
-    string sBestTie = "";
+
+    int nWaypointIndexMask = 0;
     int i = 0;
     while (i < DL_SOCIAL_POOL_SEARCH_CAP)
     {
-        int nIndex = ((nStart + i) % DL_SOCIAL_POOL_SEARCH_CAP) + 1;
-        object oCandidate = OBJECT_INVALID;
-        if (nCount > 0)
+        int nIndex = i + 1;
+        object oIndexed = DL_FindSocialPoolWaypointByTagInArea(sPrefix + IntToString(nIndex), oArea);
+        if (GetIsObjectValid(oIndexed))
         {
-            int nSlot = (nIndex - 1) % nCount;
-            oCandidate = GetLocalObject(oArea, DL_GetSocialIndexSlotLocal(sKind, nSlot));
-        }
-        else
-        {
-            string sPrefix = DL_GetSocialPoolTagPrefix(sKind);
-            oCandidate = DL_FindSocialPoolWaypointByTagInArea(sPrefix + IntToString(nIndex), oArea);
-        }
-
-        if (GetIsObjectValid(oCandidate) && DL_IsSocialWaypointAvailableForNpc(oNpc, oCandidate))
-        {
-            int nScore = i;
-            string sTie = DL_SelectionBuildTieKey(oCandidate, OBJECT_INVALID, nIndex);
-            if (DL_SelectionCompare(nScore, nBestScore, sTie, sBestTie))
-            {
-                oBest = oCandidate;
-                nBestScore = nScore;
-                sBestTie = sTie;
-            }
+            nWaypointIndexMask = nWaypointIndexMask | (1 << i);
         }
         i = i + 1;
+    }
+
+    object oBest = OBJECT_INVALID;
+    int nBestScore = DL_GetSelectionScoreInf();
+    string sBestTie = "";
+
+    if (nWaypointIndexMask != 0)
+    {
+        i = 0;
+        while (i < DL_SOCIAL_POOL_SEARCH_CAP)
+        {
+            int nIndex = ((nStart + i) % DL_SOCIAL_POOL_SEARCH_CAP) + 1;
+            int nBit = 1 << (nIndex - 1);
+            if ((nWaypointIndexMask & nBit) != 0)
+            {
+                object oCandidate = DL_FindSocialPoolWaypointByTagInArea(sPrefix + IntToString(nIndex), oArea);
+                if (GetIsObjectValid(oCandidate) && DL_IsSocialWaypointAvailableForNpc(oNpc, oCandidate))
+                {
+                    int nScore = i;
+                    string sTie = DL_SelectionBuildTieKey(oCandidate, OBJECT_INVALID, nIndex);
+                    if (DL_SelectionCompare(nScore, nBestScore, sTie, sBestTie))
+                    {
+                        oBest = oCandidate;
+                        nBestScore = nScore;
+                        sBestTie = sTie;
+                    }
+                }
+            }
+            i = i + 1;
+        }
+    }
+    else
+    {
+        i = 0;
+        while (i < DL_SOCIAL_POOL_SEARCH_CAP)
+        {
+            int nIndex = ((nStart + i) % DL_SOCIAL_POOL_SEARCH_CAP) + 1;
+            object oCandidate = DL_FindSocialPoolWaypointByTagInArea(sPrefix + IntToString(nIndex), oArea);
+            if (GetIsObjectValid(oCandidate) && DL_IsSocialWaypointAvailableForNpc(oNpc, oCandidate))
+            {
+                int nScore = i;
+                string sTie = DL_SelectionBuildTieKey(oCandidate, OBJECT_INVALID, nIndex);
+                if (DL_SelectionCompare(nScore, nBestScore, sTie, sBestTie))
+                {
+                    oBest = oCandidate;
+                    nBestScore = nScore;
+                    sBestTie = sTie;
+                }
+            }
+            i = i + 1;
+        }
     }
 
     if (GetIsObjectValid(oBest))
