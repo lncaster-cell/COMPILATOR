@@ -451,6 +451,27 @@ void DL_SetTransitionState(object oNpc, string sStatus, string sDiagnostic, stri
     DL_SetRuntimeState(oNpc, DL_L_NPC_TRANSITION_STATUS, sStatus, DL_L_NPC_TRANSITION_DIAGNOSTIC, sDiagnosticValue);
 }
 
+void DL_HandleTransitionFailure(object oNpc, string sStatus, string sDiag, string sFallbackReason, string sCtx)
+{
+    if (!DL_IsValidNpcObject(oNpc))
+    {
+        return;
+    }
+
+    DL_SetTransitionState(oNpc, sStatus, sDiag, sCtx);
+    if (sFallbackReason != "")
+    {
+        DL_ReportFallback(oNpc, DL_FB_DOMAIN_TRANSITION, sFallbackReason, DL_FB_NEXT_WAIT_RETRY);
+    }
+
+    string sKeyContext = "status=" + sStatus + " diag=" + DL_BuildTransitionDiagnostic(sCtx, sDiag);
+    if (sFallbackReason != "")
+    {
+        sKeyContext += " fallback_reason=" + sFallbackReason;
+    }
+    DL_LogTransitionEvent(oNpc, "transition_failure", sKeyContext);
+}
+
 string DL_GetResolvedTransitionExitTag(object oEntryWp)
 {
     if (!DL_IsValidWaypointObject(oEntryWp))
@@ -830,7 +851,13 @@ object DL_TryGetTransitionExitWaypointWithDiag(object oNpc, object oEntryWp, str
     {
         if (sDiagLocal == DL_L_NPC_TRANSITION_DIAGNOSTIC)
         {
-            DL_SetTransitionState(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS), sDiagCode, "");
+            DL_HandleTransitionFailure(
+                oNpc,
+                GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS),
+                sDiagCode,
+                DL_FB_REASON_TRANSITION_EXIT_MISSING,
+                ""
+            );
         }
         else if (sDiagLocal != "")
         {
