@@ -10,6 +10,7 @@ const string DL_SOCIAL_KIND_PUBLIC = "public";
 
 const int DL_SOCIAL_POOL_SEARCH_CAP = 32;
 const int DL_SOCIAL_RESERVATION_TTL_MINUTES = 90;
+const string DL_LOOKUP_MODE_SOCIAL_POOL = "social_pool";
 
 int DL_GetSocialReservationAbsMin(object oWp)
 {
@@ -122,6 +123,87 @@ object DL_FindSocialPoolWaypointByTagInArea(string sTag, object oArea)
     DL_RecordCacheMetricBatch(oArea, "index_fallback", GetIsObjectValid(oResolved), !GetIsObjectValid(oResolved));
     DL_RecordCacheMetric(oArea, "social", GetIsObjectValid(oResolved));
     return oResolved;
+}
+
+string DL_GetSocialIndexCountLocal(string sKind)
+{
+    return DL_L_AREA_SOCIAL_INDEX_COUNT_PREFIX + sKind;
+}
+
+string DL_GetSocialIndexSlotLocal(string sKind, int nSlot)
+{
+    return DL_L_AREA_SOCIAL_INDEX_SLOT_PREFIX + sKind + "_" + IntToString(nSlot);
+}
+
+void DL_InvalidateAreaSocialWaypointIndex(object oArea)
+{
+    if (!GetIsObjectValid(oArea))
+    {
+        return;
+    }
+
+    DeleteLocalInt(oArea, DL_L_AREA_SOCIAL_INDEX_BUILD_TICK);
+    DeleteLocalInt(oArea, DL_L_AREA_SOCIAL_INDEX_BUILD_MODE);
+    DeleteLocalInt(oArea, DL_GetSocialIndexCountLocal(DL_SOCIAL_KIND_PAIRED_CHAT));
+    DeleteLocalInt(oArea, DL_GetSocialIndexCountLocal(DL_SOCIAL_KIND_THEATER));
+    DeleteLocalInt(oArea, DL_GetSocialIndexCountLocal(DL_SOCIAL_KIND_TAVERN));
+    DeleteLocalInt(oArea, DL_GetSocialIndexCountLocal(DL_SOCIAL_KIND_PUBLIC));
+}
+
+void DL_BuildAreaSocialWaypointIndexForKind(object oArea, string sKind)
+{
+    if (!GetIsObjectValid(oArea) || sKind == "")
+    {
+        return;
+    }
+
+    string sPrefix = DL_GetSocialPoolTagPrefix(sKind);
+    int nCount = 0;
+    int i = 0;
+    while (i < DL_SOCIAL_POOL_SEARCH_CAP)
+    {
+        int nIndex = i + 1;
+        object oCandidate = DL_FindSocialPoolWaypointByTagInArea(sPrefix + IntToString(nIndex), oArea);
+        if (GetIsObjectValid(oCandidate))
+        {
+            SetLocalObject(oArea, DL_GetSocialIndexSlotLocal(sKind, nCount), oCandidate);
+            nCount = nCount + 1;
+        }
+        i = i + 1;
+    }
+
+    i = nCount;
+    while (i < DL_SOCIAL_POOL_SEARCH_CAP)
+    {
+        DeleteLocalObject(oArea, DL_GetSocialIndexSlotLocal(sKind, i));
+        i = i + 1;
+    }
+
+    SetLocalInt(oArea, DL_GetSocialIndexCountLocal(sKind), nCount);
+}
+
+void DL_EnsureAreaSocialWaypointIndex(object oArea)
+{
+    if (!GetIsObjectValid(oArea))
+    {
+        return;
+    }
+
+    int nTick = GetLocalInt(oArea, DL_L_AREA_PASS_SNAPSHOT_TICK);
+    int nMode = GetLocalInt(oArea, DL_L_AREA_PASS_SNAPSHOT_MODE);
+    if (GetLocalInt(oArea, DL_L_AREA_SOCIAL_INDEX_BUILD_TICK) == nTick &&
+        GetLocalInt(oArea, DL_L_AREA_SOCIAL_INDEX_BUILD_MODE) == nMode)
+    {
+        return;
+    }
+
+    DL_InvalidateAreaSocialWaypointIndex(oArea);
+    DL_BuildAreaSocialWaypointIndexForKind(oArea, DL_SOCIAL_KIND_PAIRED_CHAT);
+    DL_BuildAreaSocialWaypointIndexForKind(oArea, DL_SOCIAL_KIND_THEATER);
+    DL_BuildAreaSocialWaypointIndexForKind(oArea, DL_SOCIAL_KIND_TAVERN);
+    DL_BuildAreaSocialWaypointIndexForKind(oArea, DL_SOCIAL_KIND_PUBLIC);
+    SetLocalInt(oArea, DL_L_AREA_SOCIAL_INDEX_BUILD_TICK, nTick);
+    SetLocalInt(oArea, DL_L_AREA_SOCIAL_INDEX_BUILD_MODE, nMode);
 }
 
 void DL_ClearSocialWaypointReservation(object oWp)
@@ -260,7 +342,9 @@ object DL_ResolveStandaloneSocialWaypoint(object oNpc, string sKind)
         return oReserved;
     }
 
-    string sPrefix = DL_GetSocialPoolTagPrefix(sKind);
+    DL_EnsureAreaSocialWaypointIndex(oArea);
+
+    int nCount = GetLocalInt(oArea, DL_GetSocialIndexCountLocal(sKind));
     int nStart = DL_GetTagDeterministicOffset(GetTag(oNpc), DL_SOCIAL_POOL_SEARCH_CAP, 0);
     object oBest = OBJECT_INVALID;
     int nBestScore = DL_GetSelectionScoreInf();
@@ -269,7 +353,18 @@ object DL_ResolveStandaloneSocialWaypoint(object oNpc, string sKind)
     while (i < DL_SOCIAL_POOL_SEARCH_CAP)
     {
         int nIndex = ((nStart + i) % DL_SOCIAL_POOL_SEARCH_CAP) + 1;
-        object oCandidate = DL_FindSocialPoolWaypointByTagInArea(sPrefix + IntToString(nIndex), oArea);
+        object oCandidate = OBJECT_INVALID;
+        if (nCount > 0)
+        {
+            int nSlot = (nIndex - 1) % nCount;
+            oCandidate = GetLocalObject(oArea, DL_GetSocialIndexSlotLocal(sKind, nSlot));
+        }
+        else
+        {
+            string sPrefix = DL_GetSocialPoolTagPrefix(sKind);
+            oCandidate = DL_FindSocialPoolWaypointByTagInArea(sPrefix + IntToString(nIndex), oArea);
+        }
+
         if (GetIsObjectValid(oCandidate) && DL_IsSocialWaypointAvailableForNpc(oNpc, oCandidate))
         {
             int nScore = i;

@@ -504,6 +504,7 @@ void DL_FreezeAreaRuntime(object oArea)
     }
 
     SetEventHandler(oArea, SCRIPT_AREA_ON_HEARTBEAT, "");
+    DL_InvalidateAreaSocialWaypointIndex(oArea);
     DL_FreezeAreaNpcRuntime(oArea);
 }
 
@@ -561,6 +562,7 @@ void DL_ThawAreaRuntime(object oArea)
     DeleteLocalInt(oArea, DL_L_AREA_FROZEN_HB_WAS_SET);
     DeleteLocalString(oArea, DL_L_AREA_FROZEN_HB_SCRIPT);
 
+    DL_InvalidateAreaSocialWaypointIndex(oArea);
     DL_ThawAreaNpcRuntime(oArea);
 }
 

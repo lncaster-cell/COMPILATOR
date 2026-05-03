@@ -1,11 +1,29 @@
-// Dispatcher/resync smoke.
+// Dispatcher/resync smoke for manual diagnostics, not for permanent heartbeat.
 
 #include "dl_core_inc"
 
 void main()
 {
-    object oNpc = GetFirstPC();
     object oModule = GetModule();
+    const string DL_SMK_L_ENABLED = "dl_smk_enabled";
+    const string DL_SMK_L_ACTOR_TAG = "dl_smk_actor_tag";
+    const string DL_SMK_NS = "dl_smk_metric_sync_";
+
+    if (GetLocalInt(oModule, DL_SMK_L_ENABLED) != TRUE)
+    {
+        return;
+    }
+
+    object oNpc = OBJECT_INVALID;
+    string sActorTag = GetLocalString(oModule, DL_SMK_L_ACTOR_TAG);
+    if (sActorTag != "")
+    {
+        oNpc = GetObjectByTag(sActorTag);
+    }
+    if (!GetIsObjectValid(oNpc))
+    {
+        oNpc = GetFirstPC();
+    }
 
     if (!GetIsObjectValid(oNpc))
     {
@@ -21,6 +39,6 @@ void main()
     DL_ProcessResync(oNpc);
     int bPendingAfter = GetLocalInt(oNpc, DL_L_NPC_RESYNC_PENDING);
 
-    SetLocalInt(oModule, "dl_smk_sync_before", bPendingBefore);
-    SetLocalInt(oModule, "dl_smk_sync_after", bPendingAfter);
+    SetLocalInt(oModule, DL_SMK_NS + "before", bPendingBefore);
+    SetLocalInt(oModule, DL_SMK_NS + "after", bPendingAfter);
 }
