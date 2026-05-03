@@ -176,13 +176,13 @@ int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
         return FALSE;
     }
 
-    if (DL_TryAdvanceViaTransitionOrRoute(oNpc, oTarget, DL_DIAG_CTX_ROUTED))
+    if (DL_TryAdvanceViaTransitionOrRoute(oNpc, oTarget, FALSE, ""))
     {
         return TRUE;
     }
 
     location lTarget = GetLocation(oTarget);
-    if (GetDistanceBetween(oNpc, oTarget) > DL_WORK_ANCHOR_RADIUS)
+    if (!DL_IsWithinAnchorRadius(oNpc, oTarget, DL_WORK_ANCHOR_RADIUS))
     {
         if (GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) != DL_STATUS_MOVING_TO_ANCHOR)
         {
@@ -195,7 +195,7 @@ int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
     DL_OnNpcArrivedAtAnchor(oNpc, oTarget, DL_L_NPC_WORK_STATUS, DL_STATUS_ON_ANCHOR, DL_L_NPC_WORK_DIAGNOSTIC, "", TRUE);
     DL_ApplyArchiveActivityPresentation(oNpc, DL_DIR_WORK);
     DL_PlayWorkAnimation(oNpc);
-    DL_LogTransitionEvent(oNpc, "on_work_anchor", "anchor=" + GetTag(oTarget));
+    DL_LogTransitionEvent(oNpc, "on_work_anchor", DL_BuildAnchorTelemetry(oNpc, oTarget, "", "work"));
     return TRUE;
 }
 void DL_ExecuteWorkDirective(object oNpc)
@@ -225,7 +225,7 @@ void DL_ExecuteWorkDirective(object oNpc)
 
         if (!GetIsObjectValid(oForge) || !GetIsObjectValid(oCraft))
         {
-            DL_SetWorkMissingState(oNpc, sKind, DL_DIAG_WORK_NEED_FORGE_AND_CRAFT_WAYPOINTS);
+            DL_SetWorkMissingState(oNpc, sKind, DL_DIAG_WORK_FORGE_AND_CRAFT_WAYPOINTS_REQUIRED);
             return;
         }
 
@@ -251,7 +251,7 @@ void DL_ExecuteWorkDirective(object oNpc)
         DL_LogTransitionEvent(
             oNpc,
             "target_work",
-            "target dir=WORK area=" + GetTag(GetArea(oTarget)) + " anchor=" + GetTag(oTarget) + " kind=" + sKind
+            DL_BuildAnchorTelemetry(oNpc, oTarget, "target dir=WORK kind=" + sKind, "work")
         );
         DL_ProgressWorkAtTarget(oNpc, oTarget);
         return;
@@ -271,7 +271,7 @@ void DL_ExecuteWorkDirective(object oNpc)
         DL_LogTransitionEvent(
             oNpc,
             "target_work",
-            "target dir=WORK area=" + GetTag(GetArea(oPost)) + " anchor=" + GetTag(oPost) + " kind=" + DL_WORK_KIND_POST
+            DL_BuildAnchorTelemetry(oNpc, oPost, "target dir=WORK kind=" + DL_WORK_KIND_POST, "work")
         );
         DL_ProgressWorkAtTarget(oNpc, oPost);
         return;
@@ -305,7 +305,7 @@ void DL_ExecuteWorkDirective(object oNpc)
         DL_LogTransitionEvent(
             oNpc,
             "target_work",
-            "target dir=WORK area=" + GetTag(GetArea(oHomeWork)) + " anchor=" + GetTag(oHomeWork) + " kind=" + sKind
+            DL_BuildAnchorTelemetry(oNpc, oHomeWork, "target dir=WORK kind=" + sKind, "work")
         );
         DL_ProgressWorkAtTarget(oNpc, oHomeWork);
         return;
@@ -323,7 +323,7 @@ void DL_ExecuteWorkDirective(object oNpc)
     DL_LogTransitionEvent(
         oNpc,
         "target_work",
-        "target dir=WORK area=" + GetTag(GetArea(oTrade)) + " anchor=" + GetTag(oTrade) + " kind=" + DL_WORK_KIND_TRADE
+        DL_BuildAnchorTelemetry(oNpc, oTrade, "target dir=WORK kind=" + DL_WORK_KIND_TRADE, "work")
     );
     DL_ProgressWorkAtTarget(oNpc, oTrade);
 }

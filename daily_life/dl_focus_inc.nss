@@ -11,8 +11,6 @@ const string DL_CHILL_ANIM_SIT_IDLE = "sitidle";
 
 const string DL_EVT_FOCUS_FALLBACK_SOCIAL_PUBLIC = "fallback_social_public";
 const string DL_EVT_FOCUS_SOCIAL_PARTNER_LOOKUP = "social_partner_lookup";
-const string DL_FOCUS_STATUS_MOVING_TO_ANCHOR = "moving_to_anchor";
-
 void DL_ClearFocusExecutionState(object oNpc)
 {
     DL_ClearNpcSocialReservation(oNpc);
@@ -98,8 +96,9 @@ object DL_GetNpcCachedPlaceableByTagInArea(object oNpc, string sCacheLocal, stri
         oNpc,
         sCacheLocal,
         sTag,
-        oArea,
         OBJECT_TYPE_PLACEABLE,
+        oArea,
+        DL_WAYPOINT_TAG_SEARCH_CAP,
         "anchor"
     );
 }
@@ -110,7 +109,7 @@ int DL_ProgressFocusAtTarget(object oNpc, object oTarget, string sOnAnchorStatus
         return FALSE;
     }
 
-    if (DL_TryAdvanceViaTransitionOrRoute(oNpc, oTarget, DL_DIAG_CTX_ROUTED))
+    if (DL_TryAdvanceViaTransitionOrRoute(oNpc, oTarget, FALSE, ""))
     {
         return TRUE;
     }
@@ -118,9 +117,9 @@ int DL_ProgressFocusAtTarget(object oNpc, object oTarget, string sOnAnchorStatus
     if (GetDistanceBetween(oNpc, oTarget) > DL_WORK_ANCHOR_RADIUS)
     {
         DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
-        if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) != DL_FOCUS_STATUS_MOVING_TO_ANCHOR)
+        if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) != DL_STATUS_MOVING_TO_ANCHOR)
         {
-            SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, DL_FOCUS_STATUS_MOVING_TO_ANCHOR);
+            SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, DL_STATUS_MOVING_TO_ANCHOR);
             SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oTarget));
             DL_QueueMoveAction(oNpc, GetLocation(oTarget), TRUE);
         }
@@ -129,7 +128,12 @@ int DL_ProgressFocusAtTarget(object oNpc, object oTarget, string sOnAnchorStatus
 
     DL_OnNpcArrivedAtAnchor(oNpc, oTarget, DL_L_NPC_FOCUS_STATUS, sOnAnchorStatus, DL_L_NPC_FOCUS_DIAGNOSTIC, sAnim, TRUE);
     SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oTarget));
-    DL_LogSocialEvent(oNpc, sOnAnchorStatus, "anchor=" + GetTag(oTarget));
+    AssignCommand(oNpc, SetFacing(GetFacing(oTarget)));
+    if (sAnim != "")
+    {
+        PlayCustomAnimation(oNpc, sAnim, TRUE);
+    }
+    DL_LogSocialEvent(oNpc, sOnAnchorStatus, DL_BuildAnchorTelemetry(oNpc, oTarget, "", "focus"));
     return TRUE;
 }
 string DL_ResolveMealKind(object oNpc)
@@ -164,46 +168,21 @@ string DL_ResolveMealKind(object oNpc)
 }
 object DL_ResolveMealWaypoint(object oNpc, string sMealKind)
 {
-    object oTargetArea = OBJECT_INVALID;
-    if (sMealKind == DL_MEAL_KIND_LUNCH)
+    object oTargetArea = DL_ResolvePreferredAreaWithFallbacks(oNpc, DL_AREA_PURPOSE_MEAL);
+    if (sMealKind == DL_MEAL_KIND_LUNCH && GetLocalString(oNpc, DL_L_NPC_MEAL_AREA_TAG) == "")
     {
-        oTargetArea = DL_GetMealArea(oNpc);
-        if (!GetIsObjectValid(oTargetArea))
+        string sReason = DL_FB_REASON_FOCUS_MISSING_MEAL_AREA;
+        if (!GetIsObjectValid(DL_GetWorkArea(oNpc)))
         {
-            oTargetArea = DL_GetWorkArea(oNpc);
-            if (GetIsObjectValid(oTargetArea))
-            {
-                DL_LogSocialEvent(
-                    oNpc,
-                    "fallback_meal_work",
-                    "reason=" + DL_FB_REASON_FOCUS_MISSING_MEAL_AREA + " kind=" + sMealKind + " area=" + GetTag(oTargetArea)
-                );
-            }
+            sReason = DL_FB_REASON_FOCUS_MISSING_MEAL_AND_WORK_AREA;
         }
+        DL_LogSocialEvent(oNpc, "fallback_meal_policy", "reason=" + sReason + " kind=" + sMealKind + " area=" + GetTag(oTargetArea));
     }
-
-    if (!GetIsObjectValid(oTargetArea))
-    {
-        oTargetArea = DL_GetHomeArea(oNpc);
-        if (GetIsObjectValid(oTargetArea) && sMealKind == DL_MEAL_KIND_LUNCH)
-        {
-            DL_LogSocialEvent(
-                oNpc,
-                "fallback_meal_home",
-                "reason=" + DL_FB_REASON_FOCUS_MISSING_MEAL_AND_WORK_AREA + " kind=" + sMealKind + " area=" + GetTag(oTargetArea)
-            );
-        }
-    }
-
     return DL_ResolveEffectiveWaypointForNpc(oNpc, DL_GetAreaAnchorWaypoint(oNpc, oTargetArea, "dl_anchor_meal", DL_L_NPC_CACHE_MEAL, TRUE));
 }
 object DL_ResolveSocialWaypoint(object oNpc)
 {
-    object oArea = DL_GetSocialArea(oNpc);
-    if (!GetIsObjectValid(oArea))
-    {
-        oArea = DL_GetWorkArea(oNpc);
-    }
+    object oArea = DL_ResolvePreferredAreaWithFallbacks(oNpc, DL_AREA_PURPOSE_SOCIAL);
 
     string sSlot = GetLocalString(oNpc, DL_L_NPC_SOCIAL_SLOT);
     string sAnchor = sSlot == "b" ? "dl_anchor_social_b" : "dl_anchor_social_a";
@@ -212,16 +191,12 @@ object DL_ResolveSocialWaypoint(object oNpc)
 }
 object DL_ResolvePublicWaypoint(object oNpc)
 {
-    object oArea = DL_GetPublicArea(oNpc);
-    if (!GetIsObjectValid(oArea))
-    {
-        oArea = DL_GetSocialArea(oNpc);
-    }
+    object oArea = DL_ResolvePreferredAreaWithFallbacks(oNpc, DL_AREA_PURPOSE_PUBLIC);
     if (!GetIsObjectValid(oArea))
     {
         DL_LogMarkupIssueOnce(
             oNpc,
-            "missing_public_area",
+            DL_DIAG_FOCUS_MISSING_PUBLIC_ANCHOR,
             "NPC " + GetTag(oNpc) + " " + DL_MSG_FOCUS_MISSING_PUBLIC_AREA
         );
         return OBJECT_INVALID;
@@ -333,7 +308,7 @@ void DL_ExecuteMealDirective(object oNpc)
     DL_LogSocialEvent(
         oNpc,
         "target_meal",
-        "target dir=MEAL area=" + GetTag(GetArea(oMeal)) + " anchor=" + GetTag(oMeal) + " kind=" + sMealKind
+        DL_BuildAnchorTelemetry(oNpc, oMeal, "target dir=MEAL kind=" + sMealKind, "focus")
     );
     DL_ProgressFocusAtTarget(oNpc, oMeal, "on_meal_anchor_" + sMealKind, sAnim);
 }
@@ -352,9 +327,9 @@ int DL_ProgressChillAtSeat(object oNpc, object oSeat)
     if (GetDistanceBetween(oNpc, oSeat) > DL_WORK_ANCHOR_RADIUS)
     {
         DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
-        if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) != DL_FOCUS_STATUS_MOVING_TO_ANCHOR)
+        if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) != DL_STATUS_MOVING_TO_ANCHOR)
         {
-            SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, DL_FOCUS_STATUS_MOVING_TO_ANCHOR);
+            SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, DL_STATUS_MOVING_TO_ANCHOR);
             SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oSeat));
             DL_QueueMoveAction(oNpc, GetLocation(oSeat), TRUE);
         }
@@ -364,7 +339,7 @@ int DL_ProgressChillAtSeat(object oNpc, object oSeat)
     DL_ClearTransitionExecutionState(oNpc);
     if (GetLocalInt(oNpc, DL_L_NPC_CHILL_WAYPOINT_MODE) == TRUE)
     {
-        return DL_ProgressFocusAtTarget(oNpc, oSeat, "on_chill_anchor", DL_CHILL_ANIM_SIT_IDLE);
+        return DL_ProgressFocusAtTarget(oNpc, oSeat, DL_STATUS_ON_CHILL_ANCHOR, DL_CHILL_ANIM_SIT_IDLE);
     }
 
     object oChair = DL_ResolveChillChairObject(oNpc, oSeat);
@@ -383,7 +358,7 @@ int DL_ProgressChillAtSeat(object oNpc, object oSeat)
         DeleteLocalInt(oNpc, DL_L_NPC_CHILL_SIT_RETRY_UNTIL);
         DL_SetRuntimeState(oNpc, DL_L_NPC_FOCUS_STATUS, DL_STATUS_ON_CHILL_ANCHOR, "", "");
         SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oSeat));
-        DL_LogSocialEvent(oNpc, "on_chill_anchor", "chair=" + GetTag(oChair));
+        DL_LogSocialEvent(oNpc, DL_STATUS_ON_CHILL_ANCHOR, "chair=" + GetTag(oChair));
         return TRUE;
     }
 
@@ -395,7 +370,7 @@ int DL_ProgressChillAtSeat(object oNpc, object oSeat)
         return TRUE;
     }
 
-    if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "sitting_chill_attempt" &&
+    if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == DL_STATUS_SITTING_CHILL_ATTEMPT &&
         DL_IsMinuteCooldownActive(oNpc, DL_L_NPC_CHILL_SIT_RETRY_UNTIL))
     {
         return TRUE;
@@ -408,7 +383,7 @@ int DL_ProgressChillAtSeat(object oNpc, object oSeat)
     SetLocalInt(oNpc, DL_L_NPC_CHILL_SIT_RETRY_UNTIL, nNowAbs + DL_CHILL_SIT_RETRY_MINUTES);
     DL_OrchestrateRuntimeAction(oNpc, DL_ORCH_ACT_NONE, OBJECT_INVALID, LOCATION_INVALID, "", TRUE, "", "", "", "", "", "", "", "", "dl_social_action", "chill_sit_attempt", nNowAbs);
     AssignCommand(oNpc, ActionSit(oChair));
-    DL_LogSocialEvent(oNpc, "sitting_chill_attempt", "chair=" + GetTag(oChair));
+    DL_LogSocialEvent(oNpc, DL_STATUS_SITTING_CHILL_ATTEMPT, "chair=" + GetTag(oChair));
     return TRUE;
 }
 void DL_ExecuteChillDirective(object oNpc)
@@ -423,7 +398,7 @@ void DL_ExecuteChillDirective(object oNpc)
     DL_LogSocialEvent(
         oNpc,
         "target_chill",
-        "target dir=CHILL area=" + GetTag(GetArea(oSeat)) + " anchor=" + GetTag(oSeat)
+        DL_BuildAnchorTelemetry(oNpc, oSeat, "target dir=CHILL", "focus")
     );
     DL_ProgressChillAtSeat(oNpc, oSeat);
 }
@@ -444,7 +419,7 @@ void DL_ExecutePublicDirective(object oNpc)
     DL_LogSocialEvent(
         oNpc,
         "target_public",
-        "target dir=PUBLIC area=" + GetTag(GetArea(oPublic)) + " anchor=" + GetTag(oPublic)
+        DL_BuildAnchorTelemetry(oNpc, oPublic, "target dir=PUBLIC", "focus")
     );
     DL_ProgressFocusAtTarget(oNpc, oPublic, "on_public_anchor", sAnim);
 }
@@ -506,7 +481,7 @@ void DL_ExecuteSocialDirective(object oNpc)
         DL_LogSocialEvent(
             oNpc,
             "target_social_" + sKind,
-            "target dir=SOCIAL kind=" + sKind + " area=" + GetTag(GetArea(oSocial)) + " anchor=" + GetTag(oSocial)
+            DL_BuildAnchorTelemetry(oNpc, oSocial, "target dir=SOCIAL kind=" + sKind, "focus")
         );
         DL_ProgressFocusAtTarget(oNpc, oSocial, "on_social_" + sKind, sAnim);
         return;
@@ -548,9 +523,7 @@ void DL_ExecuteSocialDirective(object oNpc)
     DL_LogSocialEvent(
         oNpc,
         "target_social",
-        "target dir=SOCIAL area=" + GetTag(GetArea(oMe)) + " anchor=" + GetTag(oMe) +
-            " slot=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_SLOT) +
-            " partner=" + sPartnerTag
+        DL_BuildAnchorTelemetry(oNpc, oMe, "target dir=SOCIAL slot=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_SLOT) + " partner=" + sPartnerTag, "focus")
     );
     // Execute
     DL_ProgressFocusAtTarget(oNpc, oMe, sStatus, sAnim);

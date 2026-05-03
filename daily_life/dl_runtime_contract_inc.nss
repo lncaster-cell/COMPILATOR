@@ -21,17 +21,31 @@ int GetIsInConversation(object oCreature)
 const int DL_RUNTIME_TIER_WARM = 1;
 const int DL_RUNTIME_TIER_HOT = 2;
 
+// Runtime statuses (terminal: stable until directive/phase changes).
 const string DL_STATUS_MISSING_WAYPOINTS = "missing_waypoints";
 const string DL_STATUS_MOVING_TO_ANCHOR = "moving_to_anchor";
 const string DL_STATUS_ON_ANCHOR = "on_anchor";
 const string DL_STATUS_MOVING_VIA_NAVIGATION = "moving_via_navigation";
 const string DL_STATUS_ON_BED = "on_bed";
 const string DL_STATUS_ON_CHILL_ANCHOR = "on_chill_anchor";
+
+// Runtime statuses (transitional: short-lived during sleep/focus flow).
+const string DL_STATUS_MOVING_TO_APPROACH = "moving_to_approach";
+const string DL_STATUS_APPROACH_REACHED = "approach_reached";
+const string DL_STATUS_JUMPING_TO_BED = "jumping_to_bed";
 const string DL_STATUS_SITTING_CHILL_ATTEMPT = "sitting_chill_attempt";
 
+// Transition/scheduler event statuses.
+const string DL_STATUS_TARGET_SLEEP = "target_sleep";
+const string DL_STATUS_TARGET_WORK = "target_work";
+const string DL_STATUS_ON_WORK_ANCHOR = "on_work_anchor";
+const string DL_STATUS_FALLBACK_MEAL_WORK = "fallback_meal_work";
+const string DL_STATUS_FALLBACK_MEAL_HOME = "fallback_meal_home";
+
+// Diagnostic codes (canonical: <domain>_<detail>). 
 const string DL_DIAG_SLEEP_WAYPOINTS_MISSING = "sleep_waypoints_missing";
 const string DL_DIAG_SLEEP_JUMP_INVALID_TARGET_LOCATION = "sleep_jump_invalid_target_location";
-const string DL_DIAG_WORK_NEED_FORGE_AND_CRAFT_WAYPOINTS = "need_forge_and_craft_waypoints";
+const string DL_DIAG_WORK_FORGE_AND_CRAFT_WAYPOINTS_REQUIRED = "work_forge_and_craft_waypoints_required";
 
 void DL_SetRuntimeState(object oNpc, string sStatusKey, string sStatus, string sDiagKey, string sDiagnostic)
 {
@@ -45,7 +59,7 @@ const string DL_DIAG_FOCUS_MISSING_MEAL_ANCHOR = "missing_meal_anchor";
 const string DL_DIAG_FOCUS_MISSING_CHILL_CHAIR = "missing_chill_chair";
 const string DL_DIAG_FOCUS_CHILL_CHAIR_OCCUPIED = "chill_chair_occupied";
 const string DL_DIAG_FOCUS_MISSING_CHILL_SEAT = "missing_chill_seat";
-const string DL_DIAG_FOCUS_MISSING_PUBLIC_ANCHOR = "missing_public_anchor";
+const string DL_DIAG_FOCUS_MISSING_PUBLIC_ANCHOR = "focus_missing_public_anchor";
 const string DL_DIAG_FOCUS_SOCIAL_FALLBACK_TO_PUBLIC = "social_fallback_to_public";
 const string DL_DIAG_FOCUS_MISSING_SOCIAL_POOL_PREFIX = "missing_social_pool_";
 

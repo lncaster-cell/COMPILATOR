@@ -20,14 +20,18 @@ object DL_GetNpcCachedWaypointByTag(object oNpc, string sCacheLocal, string sTag
     SetLocalObject(oNpc, sCacheLocal, oWp);
     return oWp;
 }
+// Public cache API: NPC-scoped anchor waypoint cache for (tag, area, tier, npc-event-seq).
+// Expected lifetime: one NPC lifecycle sequence within stable area/tier context.
+// Invalidation triggers: explicit invalidate, area tier change, or DL_L_NPC_EVENT_SEQ change.
 object DL_GetNpcCachedWaypointByTagInArea(object oNpc, string sCacheLocal, string sTag, object oArea)
 {
     return DL_GetNpcCachedObjectByTagInArea(
         oNpc,
         sCacheLocal,
         sTag,
-        oArea,
         OBJECT_TYPE_WAYPOINT,
+        oArea,
+        DL_WAYPOINT_TAG_SEARCH_CAP,
         "anchor"
     );
 }
@@ -238,26 +242,65 @@ object DL_GetWorkArea(object oNpc)
 {
     return DL_GetNpcAreaOrCurrentFallback(oNpc, DL_L_NPC_WORK_AREA_TAG, DL_L_NPC_CACHE_WORK_AREA);
 }
+object DL_ResolvePreferredAreaWithFallbacks(object oNpc, int nPurpose)
+{
+    if (nPurpose == DL_AREA_PURPOSE_SLEEP)
+    {
+        return DL_GetHomeArea(oNpc);
+    }
+    if (nPurpose == DL_AREA_PURPOSE_WORK)
+    {
+        return DL_GetWorkArea(oNpc);
+    }
+    if (nPurpose == DL_AREA_PURPOSE_MEAL)
+    {
+        string sMealTag = GetLocalString(oNpc, DL_L_NPC_MEAL_AREA_TAG);
+        if (sMealTag != "")
+        {
+            object oMealArea = DL_GetNpcAreaByTagCached(oNpc, DL_L_NPC_MEAL_AREA_TAG, DL_L_NPC_CACHE_MEAL_AREA);
+            if (GetIsObjectValid(oMealArea))
+            {
+                return oMealArea;
+            }
+        }
+
+        object oHomeArea = DL_GetHomeArea(oNpc);
+        if (GetIsObjectValid(oHomeArea))
+        {
+            return oHomeArea;
+        }
+
+        object oWorkArea = DL_GetWorkArea(oNpc);
+        if (GetIsObjectValid(oWorkArea))
+        {
+            return oWorkArea;
+        }
+
+        return DL_GetNpcCurrentAreaFallback(oNpc);
+    }
+    if (nPurpose == DL_AREA_PURPOSE_SOCIAL)
+    {
+        object oSocialArea = DL_GetSocialArea(oNpc);
+        if (GetIsObjectValid(oSocialArea))
+        {
+            return oSocialArea;
+        }
+        return DL_GetWorkArea(oNpc);
+    }
+    if (nPurpose == DL_AREA_PURPOSE_PUBLIC)
+    {
+        object oPublicArea = DL_GetPublicArea(oNpc);
+        if (GetIsObjectValid(oPublicArea))
+        {
+            return oPublicArea;
+        }
+        return DL_GetSocialArea(oNpc);
+    }
+    return OBJECT_INVALID;
+}
 object DL_GetMealArea(object oNpc)
 {
-    if (GetLocalString(oNpc, DL_L_NPC_MEAL_AREA_TAG) != "")
-    {
-        return DL_GetNpcAreaByTagCached(oNpc, DL_L_NPC_MEAL_AREA_TAG, DL_L_NPC_CACHE_MEAL_AREA);
-    }
-
-    object oArea = DL_GetHomeArea(oNpc);
-    if (GetIsObjectValid(oArea))
-    {
-        return oArea;
-    }
-
-    oArea = DL_GetWorkArea(oNpc);
-    if (GetIsObjectValid(oArea))
-    {
-        return oArea;
-    }
-
-    return DL_GetNpcCurrentAreaFallback(oNpc);
+    return DL_ResolvePreferredAreaWithFallbacks(oNpc, DL_AREA_PURPOSE_MEAL);
 }
 object DL_GetSocialArea(object oNpc)
 {
@@ -267,3 +310,8 @@ object DL_GetPublicArea(object oNpc)
 {
     return DL_GetNpcAreaOrCurrentFallback(oNpc, DL_L_NPC_PUBLIC_AREA_TAG, DL_L_NPC_CACHE_PUBLIC_AREA);
 }
+const int DL_AREA_PURPOSE_SLEEP = 1;
+const int DL_AREA_PURPOSE_WORK = 2;
+const int DL_AREA_PURPOSE_MEAL = 3;
+const int DL_AREA_PURPOSE_SOCIAL = 4;
+const int DL_AREA_PURPOSE_PUBLIC = 5;
