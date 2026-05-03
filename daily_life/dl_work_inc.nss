@@ -191,7 +191,7 @@ int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
 
     if (DL_WaypointHasTransition(oTarget))
     {
-        if (DL_TryExecuteRoutedTransitionEntryWaypoint(oNpc, oTarget))
+        if (DL_ExecuteTransitionViaEntryWaypoint(oNpc, oTarget, DL_DIAG_CTX_ROUTED))
         {
             return TRUE;
         }

@@ -78,6 +78,7 @@ const int DL_NAV_TAG_SEPARATOR_LENGTH = 4;
 int DL_ClampInt(int nValue, int nMin, int nMax);
 int DL_GetAreaTick(object oArea);
 int DL_TryRouteToTarget(object oNpc, object oTarget);
+int DL_ExecuteTransitionViaEntryWaypoint(object oNpc, object oEntryWp, string sDiagPrefix);
 int DL_TryExecuteRoutedTransitionEntryWaypoint(object oNpc, object oEntryWp);
 
 string DL_GetAreaNavigationSlotKey(int nSlot)
@@ -1057,5 +1058,5 @@ int DL_TryUseNavigationRouteToTarget(object oNpc, object oTarget)
         return FALSE;
     }
 
-    return DL_TryExecuteRoutedTransitionEntryWaypoint(oNpc, oBestEntry);
+    return DL_ExecuteTransitionViaEntryWaypoint(oNpc, oBestEntry, DL_DIAG_CTX_ROUTED);
 }

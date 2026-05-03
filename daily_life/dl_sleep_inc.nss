@@ -182,7 +182,7 @@ void DL_ExecuteSleepDirective(object oNpc)
 
     if (!bCommittedToBed && bMayUseNavigation && DL_WaypointHasTransition(oApproach))
     {
-        if (DL_TryExecuteRoutedTransitionEntryWaypoint(oNpc, oApproach))
+        if (DL_ExecuteTransitionViaEntryWaypoint(oNpc, oApproach, DL_DIAG_CTX_ROUTED))
         {
             DL_MarkSleepNavigationInProgress(oNpc, GetTag(oApproach));
             return;
@@ -216,7 +216,7 @@ void DL_ExecuteSleepDirective(object oNpc)
 
     if (bMayUseNavigation && DL_WaypointHasTransition(oBed))
     {
-        if (DL_TryExecuteRoutedTransitionEntryWaypoint(oNpc, oBed))
+        if (DL_ExecuteTransitionViaEntryWaypoint(oNpc, oBed, DL_DIAG_CTX_ROUTED))
         {
             DL_MarkSleepNavigationInProgress(oNpc, GetTag(oBed));
             return;
