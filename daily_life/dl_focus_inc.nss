@@ -130,7 +130,7 @@ int DL_ProgressFocusAtTarget(object oNpc, object oTarget, string sOnAnchorStatus
 
     DL_OnNpcArrivedAtAnchor(oNpc, oTarget, DL_L_NPC_FOCUS_STATUS, sOnAnchorStatus, DL_L_NPC_FOCUS_DIAGNOSTIC, sAnim, TRUE);
     SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oTarget));
-    AssignCommand(oNpc, SetFacing(GetFacing(oTarget)));
+    DL_CommandSetFacing(oNpc, GetFacing(oTarget));
     if (sAnim != "")
     {
         PlayCustomAnimation(oNpc, sAnim, TRUE);

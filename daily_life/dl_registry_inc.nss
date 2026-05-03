@@ -530,6 +530,7 @@ void DL_FreezeAreaRuntime(object oArea)
     }
 
     SetEventHandler(oArea, SCRIPT_AREA_ON_HEARTBEAT, "");
+    DL_InvalidateAreaSocialWaypointIndex(oArea);
     DL_FreezeAreaNpcRuntime(oArea);
 }
 
@@ -584,6 +585,7 @@ void DL_ThawAreaRuntime(object oArea)
     DeleteLocalInt(oArea, DL_L_AREA_FROZEN_HB_WAS_SET);
     DeleteLocalString(oArea, DL_L_AREA_FROZEN_HB_SCRIPT);
 
+    DL_InvalidateAreaSocialWaypointIndex(oArea);
     DL_ThawAreaNpcRuntime(oArea);
 }
 
@@ -887,6 +889,7 @@ void DL_RegisterNpc(object oNpc)
         SetLocalObject(oNpc, DL_L_NPC_REG_AREA, oArea);
         SetLocalInt(oArea, DL_L_AREA_REG_COUNT, nSlot + 1);
         DL_IncLocalInt(oArea, DL_L_AREA_REG_SEQ);
+        DL_InvalidateAreaIndex(oArea);
     }
 }
 
@@ -992,6 +995,7 @@ void DL_UnregisterNpc(object oNpc)
             }
         }
         DL_IncLocalInt(oArea, DL_L_AREA_REG_SEQ);
+        DL_InvalidateAreaIndex(oArea);
     }
 
     DeleteLocalObject(oNpc, DL_L_NPC_REG_AREA);
