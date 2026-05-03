@@ -11,8 +11,6 @@
 
 void DL_RequestNpcBlockedSignal(object oNpc, object oBlocker);
 
-const string DL_L_NPC_BLOCKED_DIAGNOSTIC = "dl_npc_blocked_diagnostic";
-
 const int DL_INGRESS_STAGE_VALIDATE       = 1;
 const int DL_INGRESS_STAGE_NORMALIZE      = 2;
 const int DL_INGRESS_STAGE_LIFECYCLE_SYNC = 3;
@@ -67,7 +65,6 @@ int DL_RunIngressPipeline(
     int bHandleDeathBeforeLifecycle,
     int bEmitTelemetry)
 {
-    // Stage 1: validate
     if (bRequireNpc && !DL_IngressValidateNpc(oPrimary, bRequireActiveNpc, bRequireRuntime))
     {
         return FALSE;
@@ -87,7 +84,6 @@ int DL_RunIngressPipeline(
         return FALSE;
     }
 
-    // Stage 2: normalize actor/context
     object oActor = oPrimary;
     object oArea = OBJECT_INVALID;
     if (nIngressKind == DL_INGRESS_KIND_AREA)
@@ -100,7 +96,6 @@ int DL_RunIngressPipeline(
         oArea = GetArea(oPrimary);
     }
 
-    // Stage 3: lifecycle sync
     if (nIngressKind == DL_INGRESS_KIND_LIFECYCLE)
     {
         if (bHandleDeathBeforeLifecycle && nEventKind == DL_NPC_EVENT_DEATH)
@@ -111,7 +106,6 @@ int DL_RunIngressPipeline(
         DL_RequestNpcLifecycleSignal(oPrimary, nEventKind);
     }
 
-    // Stage 4: state transition
     if (nIngressKind == DL_INGRESS_KIND_BLOCKED)
     {
         DL_RequestNpcBlockedSignal(oPrimary, oSecondary);
@@ -121,7 +115,6 @@ int DL_RunIngressPipeline(
         DL_OnAreaEnterBootstrap(oArea, oActor);
     }
 
-    // Stage 5: telemetry / diagnostics
     if (bEmitTelemetry && DL_IsRuntimeLogEnabled())
     {
         if (nIngressKind == DL_INGRESS_KIND_LIFECYCLE)
