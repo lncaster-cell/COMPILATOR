@@ -68,6 +68,9 @@ const string DL_L_AREA_NAV_SLOT_PREFIX = "dl_area_nav_";
 const int DL_AREA_NAV_ROUTE_CAP = 32;
 const int DL_TRANSITION_TAG_SEARCH_CAP = 64;
 const float DL_AREA_NAV_SIDE_BIAS = 0.50;
+const int DL_TAG_FALLBACK_NONE = 0;
+const int DL_TAG_FALLBACK_GLOBAL = 1;
+const int DL_TAG_FALLBACK_NEAREST = 2;
 
 const string DL_NAV_TAG_PREFIX = "dl_nav_";
 const int DL_NAV_TAG_PREFIX_LENGTH = 7;
@@ -179,6 +182,63 @@ object DL_GetTransitionWaypointByTag(string sTag)
     return oWp;
 }
 
+// Unified tag lookup policy for transition/nav entities.
+// Policy contract:
+// 1) Always try deterministic area-local lookup first when preferred area is valid.
+// 2) Fallback behavior is explicit and centralized:
+//    - DL_TAG_FALLBACK_NONE: area-local deterministic only.
+//    - DL_TAG_FALLBACK_GLOBAL: fallback to global typed lookup by tag.
+//    - DL_TAG_FALLBACK_NEAREST: fallback to nearest typed lookup using deterministic cap.
+// 3) New modules must reuse this helper instead of introducing ad-hoc tag lookup flows.
+object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPreferredArea, int nDeterministicCap, int nFallbackMode)
+{
+    if (sTag == "")
+    {
+        return OBJECT_INVALID;
+    }
+
+    int nCap = nDeterministicCap;
+    if (nCap <= 0)
+    {
+        nCap = 1;
+    }
+
+    if (GetIsObjectValid(oPreferredArea))
+    {
+        object oLocal = DL_FindObjectByTagInAreaDeterministic(sTag, nObjectType, oPreferredArea, nCap);
+        if (GetIsObjectValid(oLocal))
+        {
+            return oLocal;
+        }
+    }
+
+    if (nFallbackMode == DL_TAG_FALLBACK_GLOBAL)
+    {
+        return GetObjectByTagAndType(sTag, nObjectType);
+    }
+
+    if (nFallbackMode == DL_TAG_FALLBACK_NEAREST)
+    {
+        object oNearestOrigin = GetIsObjectValid(oPreferredArea) ? oPreferredArea : OBJECT_SELF;
+        int nNth = 1;
+        while (nNth <= nCap)
+        {
+            object oNearest = GetNearestObjectByTag(sTag, oNearestOrigin, nNth);
+            if (!GetIsObjectValid(oNearest))
+            {
+                break;
+            }
+            if (GetObjectType(oNearest) == nObjectType)
+            {
+                return oNearest;
+            }
+            nNth = nNth + 1;
+        }
+    }
+
+    return OBJECT_INVALID;
+}
+
 object DL_GetTransitionWaypointByTagInArea(string sTag, object oArea)
 {
     if (sTag == "" || !GetIsObjectValid(oArea))
@@ -186,7 +246,13 @@ object DL_GetTransitionWaypointByTagInArea(string sTag, object oArea)
         return OBJECT_INVALID;
     }
 
-    object oResolved = DL_FindObjectByTagInAreaDeterministic(sTag, OBJECT_TYPE_WAYPOINT, oArea, DL_TRANSITION_TAG_SEARCH_CAP);
+    object oResolved = DL_ResolveObjectByTagWithPolicy(
+        sTag,
+        OBJECT_TYPE_WAYPOINT,
+        oArea,
+        DL_TRANSITION_TAG_SEARCH_CAP,
+        DL_TAG_FALLBACK_NONE
+    );
     DL_RecordCacheMetric(oArea, "nav", GetIsObjectValid(oResolved));
     return oResolved;
 }
@@ -554,17 +620,25 @@ object DL_ResolveTransitionExitWaypointFromEntrySimple(object oEntryWp)
 
     object oExit = OBJECT_INVALID;
     object oEntryArea = GetArea(oEntryWp);
-    if (DL_IsAutoNavTag(GetTag(oEntryWp)))
+    oExit = DL_ResolveObjectByTagWithPolicy(
+        sResolvedTag,
+        OBJECT_TYPE_WAYPOINT,
+        oEntryArea,
+        DL_TRANSITION_TAG_SEARCH_CAP,
+        DL_TAG_FALLBACK_NONE
+    );
+
+    if (!DL_IsAutoNavTag(GetTag(oEntryWp)) && !GetIsObjectValid(oExit))
     {
-        oExit = DL_GetTransitionWaypointByTagInArea(sResolvedTag, oEntryArea);
-    }
-    else
-    {
-        oExit = DL_GetTransitionWaypointByTagInArea(sResolvedTag, oEntryArea);
-        if (!GetIsObjectValid(oExit))
-        {
-            oExit = DL_GetTransitionWaypointByTag(sResolvedTag);
-        }
+        // Legacy compatibility: explicit/global fallback kept intentionally for
+        // pre-nav transition metadata, but routed through unified lookup policy.
+        oExit = DL_ResolveObjectByTagWithPolicy(
+            sResolvedTag,
+            OBJECT_TYPE_WAYPOINT,
+            OBJECT_INVALID,
+            DL_TRANSITION_TAG_SEARCH_CAP,
+            DL_TAG_FALLBACK_GLOBAL
+        );
     }
 
     if (DL_IsValidWaypointObject(oExit))
@@ -729,24 +803,21 @@ object DL_ResolveTransitionDriverObject(object oEntryWp)
     }
 
     int nLookupCap = DL_GetTransitionDriverLookupCap();
-    int nNth = 1;
-    while (nNth <= nLookupCap)
+    int nDriverType = (sDriverKind == DL_TRANSITION_DRIVER_TRIGGER) ? OBJECT_TYPE_TRIGGER : OBJECT_TYPE_DOOR;
+    object oDriver = DL_ResolveObjectByTagWithPolicy(
+        sDriverTag,
+        nDriverType,
+        oArea,
+        nLookupCap,
+        DL_TAG_FALLBACK_NEAREST
+    );
+    if (GetIsObjectValid(oDriver) &&
+        GetArea(oDriver) == oArea &&
+        DL_IsTransitionDriverTypeMatch(sDriverKind, oDriver))
     {
-        object oDriver = GetNearestObjectByTag(sDriverTag, oEntryWp, nNth);
-        if (!GetIsObjectValid(oDriver))
-        {
-            break;
-        }
-
-        if (GetArea(oDriver) == oArea &&
-            DL_IsTransitionDriverTypeMatch(sDriverKind, oDriver))
-        {
-            SetLocalObject(oEntryWp, DL_L_WP_TRANSITION_DRIVER_OBJ, oDriver);
-            DeleteLocalInt(oEntryWp, DL_L_WP_TRANSITION_DRIVER_MISS_TICK);
-            return oDriver;
-        }
-
-        nNth = nNth + 1;
+        SetLocalObject(oEntryWp, DL_L_WP_TRANSITION_DRIVER_OBJ, oDriver);
+        DeleteLocalInt(oEntryWp, DL_L_WP_TRANSITION_DRIVER_MISS_TICK);
+        return oDriver;
     }
 
     SetLocalInt(oEntryWp, DL_L_WP_TRANSITION_DRIVER_MISS_TICK, nNowTick);
