@@ -621,6 +621,9 @@ void DL_CR_HandleRestrictedEntry(object oActor, object oSource)
     DL_CR_RegisterCrimeIncident(oOffender, oArea, DL_CR_EVT_RESTRICTED_ENTRY, bWitnessed, oWitness);
 }
 
+void DL_CR_HandleDetainAccepted(object oPc, object oGuard);
+void DL_CR_HandleDetainRefused(object oPc, object oGuard);
+
 void DL_CR_RunDetainDialogAction(int nActionType)
 {
     object oGuard = OBJECT_SELF;

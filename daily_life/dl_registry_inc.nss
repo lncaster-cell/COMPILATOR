@@ -494,8 +494,11 @@ void DL_FreezeAreaNpcRuntime(object oArea)
     object oCursor = GetFirstObjectInArea(oArea);
     object oNpc = OBJECT_INVALID;
     int nObjectHops = 0;
-    while (DL_GetNextActiveAreaNpc(oArea, oCursor, nObjectHops, -1, oNpc))
+    while (GetIsObjectValid(DL_GetNextActiveAreaNpc(oArea, oCursor, nObjectHops, -1, "dl_tmp_cursor", "dl_tmp_hops", "dl_tmp_npc")))
     {
+        oCursor = GetLocalObject(oArea, "dl_tmp_cursor");
+        nObjectHops = GetLocalInt(oArea, "dl_tmp_hops");
+        oNpc = GetLocalObject(oArea, "dl_tmp_npc");
         if (GetLocalInt(oNpc, DL_L_NPC_FROZEN) != TRUE)
         {
             string sHeartbeat = GetEventHandler(oNpc, CREATURE_SCRIPT_ON_HEARTBEAT);
@@ -551,8 +554,11 @@ void DL_ThawAreaNpcRuntime(object oArea)
     object oCursor = GetFirstObjectInArea(oArea);
     object oNpc = OBJECT_INVALID;
     int nObjectHops = 0;
-    while (DL_GetNextActiveAreaNpc(oArea, oCursor, nObjectHops, -1, oNpc))
+    while (GetIsObjectValid(DL_GetNextActiveAreaNpc(oArea, oCursor, nObjectHops, -1, "dl_tmp_cursor", "dl_tmp_hops", "dl_tmp_npc")))
     {
+        oCursor = GetLocalObject(oArea, "dl_tmp_cursor");
+        nObjectHops = GetLocalInt(oArea, "dl_tmp_hops");
+        oNpc = GetLocalObject(oArea, "dl_tmp_npc");
         if (GetLocalInt(oNpc, DL_L_NPC_FROZEN) == TRUE)
         {
             SetScriptHidden(oNpc, FALSE, FALSE);
