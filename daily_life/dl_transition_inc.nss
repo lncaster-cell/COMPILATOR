@@ -17,7 +17,6 @@ const string DL_L_WP_TRANSITION_DRIVER = "dl_transition_driver";
 const string DL_L_WP_TRANSITION_DRIVER_TAG = "dl_transition_driver_tag";
 const string DL_L_WP_TRANSITION_EXIT_OBJ = "dl_transition_exit_obj";
 const string DL_L_WP_TRANSITION_DRIVER_OBJ = "dl_transition_driver_obj";
-const string DL_L_WP_TRANSITION_DRIVER_MISS_TICK = "dl_transition_driver_miss_tick";
 const string DL_L_WP_NAV_ZONE = "dl_nav_zone";
 
 const string DL_L_WP_NAV_TO_AREA_TAG = "dl_nav_to_area_tag";
@@ -712,20 +711,15 @@ object DL_ResolveTransitionDriverObject(object oEntryWp)
         GetArea(oCached) == oArea &&
         DL_IsTransitionDriverTypeMatch(sDriverKind, oCached);
 
-    if (GetLocalInt(oEntryWp, DL_L_WP_TRANSITION_DRIVER_MISS_TICK) == nNowTick)
-    {
-        if (bCachedMatch)
-        {
-            DeleteLocalInt(oEntryWp, DL_L_WP_TRANSITION_DRIVER_MISS_TICK);
-            return oCached;
-        }
-        return OBJECT_INVALID;
-    }
-
     if (bCachedMatch)
     {
-        DeleteLocalInt(oEntryWp, DL_L_WP_TRANSITION_DRIVER_MISS_TICK);
+        DL_ClearCacheMissSuppressedTick(oEntryWp, DL_L_WP_TRANSITION_DRIVER_OBJ);
         return oCached;
+    }
+
+    if (DL_IsCacheMissSuppressedThisTick(oEntryWp, DL_L_WP_TRANSITION_DRIVER_OBJ, nNowTick))
+    {
+        return OBJECT_INVALID;
     }
 
     int nLookupCap = DL_GetTransitionDriverLookupCap();
@@ -742,14 +736,14 @@ object DL_ResolveTransitionDriverObject(object oEntryWp)
             DL_IsTransitionDriverTypeMatch(sDriverKind, oDriver))
         {
             SetLocalObject(oEntryWp, DL_L_WP_TRANSITION_DRIVER_OBJ, oDriver);
-            DeleteLocalInt(oEntryWp, DL_L_WP_TRANSITION_DRIVER_MISS_TICK);
+            DL_ClearCacheMissSuppressedTick(oEntryWp, DL_L_WP_TRANSITION_DRIVER_OBJ);
             return oDriver;
         }
 
         nNth = nNth + 1;
     }
 
-    SetLocalInt(oEntryWp, DL_L_WP_TRANSITION_DRIVER_MISS_TICK, nNowTick);
+    DL_MarkCacheMissThisTick(oEntryWp, DL_L_WP_TRANSITION_DRIVER_OBJ, nNowTick);
     return OBJECT_INVALID;
 }
 

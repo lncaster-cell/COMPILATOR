@@ -104,6 +104,7 @@ object DL_GetNpcCachedPlaceableByTagInArea(object oNpc, string sCacheLocal, stri
 
     int nTier = DL_GetAreaTier(oArea);
     int nLifecycleSeq = GetLocalInt(oNpc, DL_L_NPC_EVENT_SEQ);
+    int nNowTick = DL_GetAreaTick(oArea);
     object oCached = DL_GetCachedObject(oNpc, sCacheLocal, sTag, OBJECT_TYPE_PLACEABLE, oArea, nTier, nLifecycleSeq);
     if (GetIsObjectValid(oCached))
     {
@@ -111,15 +112,22 @@ object DL_GetNpcCachedPlaceableByTagInArea(object oNpc, string sCacheLocal, stri
         return oCached;
     }
     DL_InvalidateCachedObject(oNpc, sCacheLocal);
+    if (DL_IsCacheMissSuppressedThisTick(oNpc, sCacheLocal, nNowTick))
+    {
+        DL_RecordCacheMetric(oArea, "anchor", FALSE);
+        return OBJECT_INVALID;
+    }
 
     object oResolved = DL_FindObjectByTagInAreaDeterministic(sTag, OBJECT_TYPE_PLACEABLE, oArea, DL_WAYPOINT_TAG_SEARCH_CAP);
     if (GetIsObjectValid(oResolved))
     {
         DL_SetCachedObject(oNpc, sCacheLocal, oResolved, sTag, OBJECT_TYPE_PLACEABLE, oArea, nTier, nLifecycleSeq);
+        DL_ClearCacheMissSuppressedTick(oNpc, sCacheLocal);
         DL_RecordCacheMetric(oArea, "anchor", FALSE);
         return oResolved;
     }
 
+    DL_MarkCacheMissThisTick(oNpc, sCacheLocal, nNowTick);
     DL_RecordCacheMetric(oArea, "anchor", FALSE);
     return OBJECT_INVALID;
 }

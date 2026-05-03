@@ -1,5 +1,6 @@
 const string DL_L_MODULE_CACHE_METRIC_PREFIX = "dl_metric_cache_";
 const string DL_L_CACHE_CTX_PREFIX = "dl_cache_ctx_";
+const string DL_L_CACHE_MISS_TICK_SUFFIX = "miss_tick";
 
 const int DL_TAG_ENUM_DEFAULT_CAP = 32;
 
@@ -99,6 +100,36 @@ string DL_GetCachedObjectContextKey(string sCacheLocal, string sSuffix)
     return DL_L_CACHE_CTX_PREFIX + sCacheLocal + "_" + sSuffix;
 }
 
+int DL_IsCacheMissSuppressedThisTick(object oOwner, string sCacheLocal, int nNowTick)
+{
+    if (!GetIsObjectValid(oOwner) || sCacheLocal == "")
+    {
+        return FALSE;
+    }
+
+    return GetLocalInt(oOwner, DL_GetCachedObjectContextKey(sCacheLocal, DL_L_CACHE_MISS_TICK_SUFFIX)) == nNowTick;
+}
+
+void DL_MarkCacheMissThisTick(object oOwner, string sCacheLocal, int nNowTick)
+{
+    if (!GetIsObjectValid(oOwner) || sCacheLocal == "")
+    {
+        return;
+    }
+
+    SetLocalInt(oOwner, DL_GetCachedObjectContextKey(sCacheLocal, DL_L_CACHE_MISS_TICK_SUFFIX), nNowTick);
+}
+
+void DL_ClearCacheMissSuppressedTick(object oOwner, string sCacheLocal)
+{
+    if (!GetIsObjectValid(oOwner) || sCacheLocal == "")
+    {
+        return;
+    }
+
+    DeleteLocalInt(oOwner, DL_GetCachedObjectContextKey(sCacheLocal, DL_L_CACHE_MISS_TICK_SUFFIX));
+}
+
 void DL_SetCachedObject(object oOwner, string sCacheLocal, object oValue, string sTag, int nObjectType, object oArea, int nTier, int nLifecycleSeq)
 {
     if (!GetIsObjectValid(oOwner) || sCacheLocal == "")
@@ -133,6 +164,7 @@ void DL_InvalidateCachedObject(object oOwner, string sCacheLocal)
     DeleteLocalObject(oOwner, DL_GetCachedObjectContextKey(sCacheLocal, "area"));
     DeleteLocalInt(oOwner, DL_GetCachedObjectContextKey(sCacheLocal, "tier"));
     DeleteLocalInt(oOwner, DL_GetCachedObjectContextKey(sCacheLocal, "life"));
+    DL_ClearCacheMissSuppressedTick(oOwner, sCacheLocal);
 }
 
 int DL_IsCachedObjectValid(object oOwner, string sCacheLocal, string sExpectedTag, int nExpectedObjectType, object oExpectedArea, int nExpectedTier, int nExpectedLifecycleSeq)
