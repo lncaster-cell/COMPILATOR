@@ -21,8 +21,7 @@ int DL_EngineJumpNpcToTransitionExit(object oNpc, location lExit, string sStatus
         return FALSE;
     }
 
-    AssignCommand(oNpc, ClearAllActions(TRUE));
-    AssignCommand(oNpc, ActionJumpToLocation(lExit));
+    DL_DispatchJumpToLocation(oNpc, lExit);
     return TRUE;
 }
 
@@ -106,8 +105,7 @@ int DL_ExecuteTransitionEngine(object oNpc, object oEntryWp, string sDiagPrefix)
         if (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != DL_TRANSITION_STATUS_MOVING_TO_ENTRY)
         {
             DL_SetTransitionState(oNpc, DL_TRANSITION_STATUS_MOVING_TO_ENTRY, DL_TRANSITION_DIAG_MOVING_TO_ENTRY, sDiagPrefix);
-            AssignCommand(oNpc, ClearAllActions(TRUE));
-            AssignCommand(oNpc, ActionMoveToLocation(GetLocation(oEntryWp), TRUE));
+            DL_DispatchMoveToLocation(oNpc, GetLocation(oEntryWp), TRUE);
         }
         return TRUE;
     }
