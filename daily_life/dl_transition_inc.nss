@@ -305,6 +305,12 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
         return OBJECT_INVALID;
     }
 
+    object oMemo = DL_MemoLookupObject(OBJECT_SELF, oPreferredArea, sTag, nObjectType, nFallbackMode);
+    if (GetIsObjectValid(oMemo))
+    {
+        return oMemo;
+    }
+
     int nCap = nDeterministicCap;
     if (nCap <= 0)
     {
@@ -324,6 +330,7 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
         if (GetIsObjectValid(oAreaCached))
         {
             DL_ClearTransitionTagMissSuppressedTick(sTag, nObjectType, oPreferredArea, nFallbackMode);
+            DL_MemoStoreObject(OBJECT_SELF, oPreferredArea, sTag, nObjectType, nFallbackMode, oAreaCached);
             return oAreaCached;
         }
 
@@ -331,6 +338,7 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
         if (GetIsObjectValid(oLocal))
         {
             DL_ClearTransitionTagMissSuppressedTick(sTag, nObjectType, oPreferredArea, nFallbackMode);
+            DL_MemoStoreObject(OBJECT_SELF, oPreferredArea, sTag, nObjectType, nFallbackMode, oLocal);
             return oLocal;
         }
     }
@@ -341,10 +349,12 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
         if (GetIsObjectValid(oGlobal) && GetIsObjectValid(oPreferredArea))
         {
             DL_ClearTransitionTagMissSuppressedTick(sTag, nObjectType, oPreferredArea, nFallbackMode);
+            DL_MemoStoreObject(OBJECT_SELF, oPreferredArea, sTag, nObjectType, nFallbackMode, oGlobal);
         }
         else if (!GetIsObjectValid(oGlobal) && GetIsObjectValid(oPreferredArea))
         {
             DL_MarkTransitionTagMissThisTick(sTag, nObjectType, oPreferredArea, nFallbackMode, nNowTick);
+            DL_MemoStoreMiss(OBJECT_SELF, oPreferredArea, sTag, nObjectType, nFallbackMode);
         }
         return oGlobal;
     }
@@ -382,6 +392,7 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
                 if (GetIsObjectValid(oPreferredArea))
                 {
                     DL_ClearTransitionTagMissSuppressedTick(sTag, nObjectType, oPreferredArea, nFallbackMode);
+                    DL_MemoStoreObject(OBJECT_SELF, oPreferredArea, sTag, nObjectType, nFallbackMode, oNearest);
                 }
                 return oNearest;
             }
@@ -392,6 +403,7 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
     if (GetIsObjectValid(oPreferredArea))
     {
         DL_MarkTransitionTagMissThisTick(sTag, nObjectType, oPreferredArea, nFallbackMode, nNowTick);
+        DL_MemoStoreMiss(OBJECT_SELF, oPreferredArea, sTag, nObjectType, nFallbackMode);
     }
     return OBJECT_INVALID;
 }
