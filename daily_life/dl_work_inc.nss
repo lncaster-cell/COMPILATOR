@@ -169,6 +169,7 @@ void DL_SetWorkTargetState(object oNpc, string sKind, object oTarget)
     SetLocalString(oNpc, DL_L_NPC_WORK_TARGET, GetTag(oTarget));
     DeleteLocalString(oNpc, DL_L_NPC_WORK_DIAGNOSTIC);
 }
+// Domain contract: interpret navigation result only; do not mutate transition locals directly.
 int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
 {
     if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))

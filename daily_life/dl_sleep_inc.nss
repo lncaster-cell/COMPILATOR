@@ -135,6 +135,7 @@ int DL_QueueJumpAction(object oNpc, location lTarget)
     DL_DispatchJumpToLocation(oNpc, lTarget);
     return TRUE;
 }
+// Extension point: sleep-domain progress marker only; transition-state ownership stays in executor.
 void DL_MarkSleepNavigationInProgress(object oNpc, string sTargetTag)
 {
     SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_MOVING);
@@ -155,6 +156,7 @@ int DL_ShouldAttemptSleepNavigation(object oNpc)
 
     return GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) != DL_STATUS_MOVING_VIA_NAVIGATION;
 }
+// Domain contract: sleep interprets transition/router outcome and updates only sleep locals.
 void DL_ExecuteSleepDirective(object oNpc)
 {
     object oApproach = DL_ResolveSleepApproachWaypoint(oNpc);
