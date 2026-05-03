@@ -1,11 +1,9 @@
 // Unified deterministic selection/scoring helpers.
 // Domain adapters provide score and stable tie keys.
 
-const int DL_SELECTION_SCORE_INF = 1000000;
-
 int DL_GetSelectionScoreInf()
 {
-    return DL_SELECTION_SCORE_INF;
+    return 1000000;
 }
 
 int DL_SelectionCompare(int nCandidateScore, int nBestScore, string sCandidateTieKey, string sBestTieKey)
