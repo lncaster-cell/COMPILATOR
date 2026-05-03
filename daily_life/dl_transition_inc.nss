@@ -4,8 +4,10 @@
 // Transition business-logic contract:
 // - Pass-mode semantics (worker/warm/resync/fallback) are owned by worker/registry includes;
 //   this transition layer must stay mode-agnostic and preserve those runtime exceptions.
-// - All transition execution business logic lives only in
+// - Canonical transition execution path lives only in
 //   daily_life/dl_transition_engine_inc.nss::DL_ExecuteTransitionEngine.
+// - Canonical transition jump/driver path lives only in
+//   daily_life/dl_transition_engine_inc.nss::DL_Engine* helpers.
 // - This include may keep only compatibility wrappers around that engine and
 //   shared metadata/resolve helpers.
 // Backward compatible modes:
@@ -1121,16 +1123,6 @@ object DL_ResolveTransitionDriverObject(object oEntryWp)
 
     DL_MarkCacheMissThisTick(oEntryWp, DL_L_WP_TRANSITION_DRIVER_OBJ, nNowTick);
     return OBJECT_INVALID;
-}
-
-int DL_JumpNpcToTransitionExit(object oNpc, location lExit, string sStatus = "", string sDiagnostic = "")
-{
-    return DL_EngineJumpNpcToTransitionExit(oNpc, lExit, sStatus, sDiagnostic);
-}
-
-int DL_ExecuteTransitionDriver(object oNpc, object oEntryWp, location lExit, object oExitWp, string sJumpDiagnostic = DL_TRANSITION_DIAG_IN_PROGRESS)
-{
-    return DL_EngineExecuteTransitionDriver(oNpc, oEntryWp, lExit, oExitWp, sJumpDiagnostic);
 }
 
 // Backward-compatibility shim.
