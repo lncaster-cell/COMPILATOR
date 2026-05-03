@@ -182,7 +182,7 @@ int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
     }
 
     location lTarget = GetLocation(oTarget);
-    if (GetDistanceBetween(oNpc, oTarget) > DL_WORK_ANCHOR_RADIUS)
+    if (!DL_IsWithinAnchorRadius(oNpc, oTarget, DL_WORK_ANCHOR_RADIUS))
     {
         if (GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) != DL_STATUS_MOVING_TO_ANCHOR)
         {

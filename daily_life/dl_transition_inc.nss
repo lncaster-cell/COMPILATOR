@@ -498,7 +498,9 @@ string DL_InferNpcNavZoneFromAreaRoutes(object oNpc)
         if (GetIsObjectValid(oEntry) && sZone != "")
         {
             float fDistance = GetDistanceBetween(oNpc, oEntry);
-            if (!GetIsObjectValid(oBest) || fDistance < fBestDistance)
+            string sCandidateTie = DL_SelectionBuildTieKey(oEntry, OBJECT_INVALID, i);
+            string sBestTie = DL_SelectionBuildTieKey(oBest, OBJECT_INVALID, 0);
+            if (DL_SelectNearestObjectCandidate(oEntry, fDistance, sCandidateTie, oBest, fBestDistance, sBestTie))
             {
                 oBest = oEntry;
                 fBestDistance = fDistance;
@@ -840,7 +842,7 @@ int DL_TryExecuteTransitionAtWaypoint(object oNpc, object oTargetWp)
         float fTargetDist = GetDistanceBetweenLocations(GetLocation(oNpc), GetLocation(oTargetWp));
         float fPairedDist = GetDistanceBetweenLocations(GetLocation(oNpc), GetLocation(oPairedWp));
 
-        if (fTargetDist <= DL_TRANSITION_ENTRY_RADIUS)
+        if (DL_IsWithinAnchorRadius(oNpc, oTargetWp, DL_TRANSITION_ENTRY_RADIUS))
         {
             DL_ClearTransitionExecutionState(oNpc);
             return FALSE;
@@ -889,15 +891,14 @@ int DL_ShouldUseNavigationEntryForTarget(object oNpc, object oTarget, object oEn
         return FALSE;
     }
 
-    float fNpcToEntry = GetDistanceBetween(oNpc, oEntry);
-    float fNpcToExit = GetDistanceBetween(oNpc, oExit);
-    float fTargetToEntry = GetDistanceBetween(oTarget, oEntry);
-    float fTargetToExit = GetDistanceBetween(oTarget, oExit);
-
-    int bNpcOnEntrySide = (fNpcToEntry + DL_AREA_NAV_SIDE_BIAS) < fNpcToExit;
-    int bTargetOnExitSide = (fTargetToExit + DL_AREA_NAV_SIDE_BIAS) < fTargetToEntry;
-
-    return bNpcOnEntrySide && bTargetOnExitSide;
+    return DL_CompareSidesForBidirectionalPair(
+        oNpc,
+        oTarget,
+        oEntry,
+        oExit,
+        DL_AREA_NAV_SIDE_BIAS,
+        FALSE
+    );
 }
 
 int DL_TransitionConnectsNavZones(object oEntry, object oExit, string sFromZone, string sToZone)
