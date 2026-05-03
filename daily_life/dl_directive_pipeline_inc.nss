@@ -8,6 +8,17 @@ const string DL_PIPE_STEP_PREPARE = "prepare";
 const string DL_PIPE_STEP_EXECUTE = "execute";
 const string DL_PIPE_STEP_FINALIZE = "finalize";
 
+// Forward declarations for helpers defined by downstream include units.
+// NWScript requires declarations before first call in the textual include graph.
+void DL_ExecuteSleepDirective(object oNpc);
+void DL_ExecuteWorkDirective(object oNpc);
+void DL_ExecuteMealDirective(object oNpc);
+void DL_ExecuteSocialDirective(object oNpc);
+void DL_ExecutePublicDirective(object oNpc);
+void DL_ExecuteChillDirective(object oNpc);
+string DL_SelectionBuildTieKey(object oPrimary, object oSecondary, int nOrdinal);
+int DL_SelectionCompare(int nCandidateScore, int nBestScore, string sCandidateTieKey, string sBestTieKey);
+
 void DL_PipelineUpdateStatus(object oActor, string sStatusLocal, string sStatus)
 {
     if (!GetIsObjectValid(oActor) || sStatusLocal == "")
