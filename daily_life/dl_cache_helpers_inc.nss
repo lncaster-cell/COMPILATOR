@@ -167,6 +167,44 @@ object DL_GetCachedObject(object oOwner, string sCacheLocal, string sExpectedTag
     return GetLocalObject(oOwner, sCacheLocal);
 }
 
+
+object DL_GetNpcCachedObjectByTagInArea(
+    object oNpc,
+    string sCacheLocal,
+    string sTag,
+    int nObjectType,
+    object oArea,
+    int nSearchCap,
+    string sMetricScope
+)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oArea) || sTag == "")
+    {
+        return OBJECT_INVALID;
+    }
+
+    int nTier = DL_GetAreaTier(oArea);
+    int nLifecycleSeq = GetLocalInt(oNpc, DL_L_NPC_EVENT_SEQ);
+    object oCached = DL_GetCachedObject(oNpc, sCacheLocal, sTag, nObjectType, oArea, nTier, nLifecycleSeq);
+    if (GetIsObjectValid(oCached))
+    {
+        DL_RecordCacheMetric(oArea, sMetricScope, TRUE);
+        return oCached;
+    }
+
+    DL_InvalidateCachedObject(oNpc, sCacheLocal);
+
+    object oResolved = DL_FindObjectByTagInAreaDeterministic(sTag, nObjectType, oArea, nSearchCap);
+    if (GetIsObjectValid(oResolved))
+    {
+        DL_SetCachedObject(oNpc, sCacheLocal, oResolved, sTag, nObjectType, oArea, nTier, nLifecycleSeq);
+        DL_RecordCacheMetric(oArea, sMetricScope, FALSE);
+        return oResolved;
+    }
+
+    DL_RecordCacheMetric(oArea, sMetricScope, FALSE);
+    return OBJECT_INVALID;
+}
 object DL_FindObjectByTagInAreaDeterministic(string sTag, int nObjectType, object oArea, int nSearchCap)
 {
     if (!GetIsObjectValid(oArea))

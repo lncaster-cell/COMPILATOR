@@ -97,31 +97,15 @@ object DL_ResolveSocialPartnerObject(object oNpc, string sPartnerTag)
 }
 object DL_GetNpcCachedPlaceableByTagInArea(object oNpc, string sCacheLocal, string sTag, object oArea)
 {
-    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oArea) || sTag == "")
-    {
-        return OBJECT_INVALID;
-    }
-
-    int nTier = DL_GetAreaTier(oArea);
-    int nLifecycleSeq = GetLocalInt(oNpc, DL_L_NPC_EVENT_SEQ);
-    object oCached = DL_GetCachedObject(oNpc, sCacheLocal, sTag, OBJECT_TYPE_PLACEABLE, oArea, nTier, nLifecycleSeq);
-    if (GetIsObjectValid(oCached))
-    {
-        DL_RecordCacheMetric(oArea, "anchor", TRUE);
-        return oCached;
-    }
-    DL_InvalidateCachedObject(oNpc, sCacheLocal);
-
-    object oResolved = DL_FindObjectByTagInAreaDeterministic(sTag, OBJECT_TYPE_PLACEABLE, oArea, DL_WAYPOINT_TAG_SEARCH_CAP);
-    if (GetIsObjectValid(oResolved))
-    {
-        DL_SetCachedObject(oNpc, sCacheLocal, oResolved, sTag, OBJECT_TYPE_PLACEABLE, oArea, nTier, nLifecycleSeq);
-        DL_RecordCacheMetric(oArea, "anchor", FALSE);
-        return oResolved;
-    }
-
-    DL_RecordCacheMetric(oArea, "anchor", FALSE);
-    return OBJECT_INVALID;
+    return DL_GetNpcCachedObjectByTagInArea(
+        oNpc,
+        sCacheLocal,
+        sTag,
+        OBJECT_TYPE_PLACEABLE,
+        oArea,
+        DL_WAYPOINT_TAG_SEARCH_CAP,
+        "anchor"
+    );
 }
 int DL_ProgressFocusAtTarget(object oNpc, object oTarget, string sOnAnchorStatus, string sAnim)
 {
