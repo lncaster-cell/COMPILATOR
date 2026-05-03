@@ -74,5 +74,5 @@ int DL_TryRouteToTarget(object oNpc, object oTarget)
         return FALSE;
     }
 
-    return DL_TryExecuteRoutedTransitionEntryWaypoint(oNpc, oEntry);
+    return DL_ExecuteTransitionViaEntryWaypoint(oNpc, oEntry, DL_DIAG_CTX_ROUTED);
 }
