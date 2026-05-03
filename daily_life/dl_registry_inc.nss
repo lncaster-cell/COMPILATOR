@@ -334,21 +334,50 @@ void DL_ClearAreaPassSnapshot(object oArea)
     DeleteLocalInt(oArea, DL_L_AREA_PASS_SNAPSHOT_MODE);
 }
 
+
+int DL_IsAreaActiveNpcCandidate(object oObj)
+{
+    return GetIsObjectValid(oObj) &&
+           GetObjectType(oObj) == OBJECT_TYPE_CREATURE &&
+           DL_IsActivePipelineNpc(oObj);
+}
+
+int DL_GetNextActiveAreaNpc(object oArea, object &oCursor, int &nObjectHops, int nObjectHopBudget, object &oNpcOut)
+{
+    oNpcOut = OBJECT_INVALID;
+    while (GetIsObjectValid(oCursor))
+    {
+        if (nObjectHopBudget >= 0 && nObjectHops >= nObjectHopBudget)
+        {
+            return FALSE;
+        }
+
+        object oCandidate = oCursor;
+        oCursor = GetNextObjectInArea(oArea);
+        nObjectHops = nObjectHops + 1;
+
+        if (DL_IsAreaActiveNpcCandidate(oCandidate))
+        {
+            oNpcOut = oCandidate;
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
 int DL_BuildAreaPassSnapshot(object oArea, int nTickStamp, int nPassMode)
 {
     DL_ClearAreaPassSnapshot(oArea);
 
-    object oObj = GetFirstObjectInArea(oArea);
+    object oCursor = GetFirstObjectInArea(oArea);
+    object oNpc = OBJECT_INVALID;
+    int nObjectHops = 0;
     int nCount = 0;
-    while (GetIsObjectValid(oObj))
+    while (DL_GetNextActiveAreaNpc(oArea, oCursor, nObjectHops, -1, oNpc))
     {
-        if (GetObjectType(oObj) == OBJECT_TYPE_CREATURE && DL_IsActivePipelineNpc(oObj))
-        {
-            DL_SetAreaPassSnapshotNpcAtSlot(oArea, nCount, oObj);
-            nCount = nCount + 1;
-        }
-
-        oObj = GetNextObjectInArea(oArea);
+        DL_SetAreaPassSnapshotNpcAtSlot(oArea, nCount, oNpc);
+        nCount = nCount + 1;
     }
 
     SetLocalInt(oArea, DL_L_AREA_PASS_SNAPSHOT_TICK, nTickStamp);
@@ -455,32 +484,29 @@ void DL_FreezeAreaNpcRuntime(object oArea)
         return;
     }
 
-    object oNpc = GetFirstObjectInArea(oArea);
-    while (GetIsObjectValid(oNpc))
+    object oCursor = GetFirstObjectInArea(oArea);
+    object oNpc = OBJECT_INVALID;
+    int nObjectHops = 0;
+    while (DL_GetNextActiveAreaNpc(oArea, oCursor, nObjectHops, -1, oNpc))
     {
-        if (GetObjectType(oNpc) == OBJECT_TYPE_CREATURE && DL_IsActivePipelineNpc(oNpc))
+        if (GetLocalInt(oNpc, DL_L_NPC_FROZEN) != TRUE)
         {
-            if (GetLocalInt(oNpc, DL_L_NPC_FROZEN) != TRUE)
+            string sHeartbeat = GetEventHandler(oNpc, CREATURE_SCRIPT_ON_HEARTBEAT);
+            if (sHeartbeat != "")
             {
-                string sHeartbeat = GetEventHandler(oNpc, CREATURE_SCRIPT_ON_HEARTBEAT);
-                if (sHeartbeat != "")
-                {
-                    SetLocalInt(oNpc, DL_L_NPC_FROZEN_HB_WAS_SET, TRUE);
-                    SetLocalString(oNpc, DL_L_NPC_FROZEN_HB_SCRIPT, sHeartbeat);
-                }
-                else
-                {
-                    SetLocalInt(oNpc, DL_L_NPC_FROZEN_HB_WAS_SET, FALSE);
-                    DeleteLocalString(oNpc, DL_L_NPC_FROZEN_HB_SCRIPT);
-                }
-
-                SetEventHandler(oNpc, CREATURE_SCRIPT_ON_HEARTBEAT, "");
-                SetScriptHidden(oNpc, TRUE, TRUE);
-                SetLocalInt(oNpc, DL_L_NPC_FROZEN, TRUE);
+                SetLocalInt(oNpc, DL_L_NPC_FROZEN_HB_WAS_SET, TRUE);
+                SetLocalString(oNpc, DL_L_NPC_FROZEN_HB_SCRIPT, sHeartbeat);
             }
-        }
+            else
+            {
+                SetLocalInt(oNpc, DL_L_NPC_FROZEN_HB_WAS_SET, FALSE);
+                DeleteLocalString(oNpc, DL_L_NPC_FROZEN_HB_SCRIPT);
+            }
 
-        oNpc = GetNextObjectInArea(oArea);
+            SetEventHandler(oNpc, CREATURE_SCRIPT_ON_HEARTBEAT, "");
+            SetScriptHidden(oNpc, TRUE, TRUE);
+            SetLocalInt(oNpc, DL_L_NPC_FROZEN, TRUE);
+        }
     }
 }
 
@@ -504,6 +530,7 @@ void DL_FreezeAreaRuntime(object oArea)
     }
 
     SetEventHandler(oArea, SCRIPT_AREA_ON_HEARTBEAT, "");
+    DL_InvalidateAreaSocialWaypointIndex(oArea);
     DL_FreezeAreaNpcRuntime(oArea);
 }
 
@@ -514,31 +541,28 @@ void DL_ThawAreaNpcRuntime(object oArea)
         return;
     }
 
-    object oNpc = GetFirstObjectInArea(oArea);
-    while (GetIsObjectValid(oNpc))
+    object oCursor = GetFirstObjectInArea(oArea);
+    object oNpc = OBJECT_INVALID;
+    int nObjectHops = 0;
+    while (DL_GetNextActiveAreaNpc(oArea, oCursor, nObjectHops, -1, oNpc))
     {
-        if (GetObjectType(oNpc) == OBJECT_TYPE_CREATURE && DL_IsActivePipelineNpc(oNpc))
+        if (GetLocalInt(oNpc, DL_L_NPC_FROZEN) == TRUE)
         {
-            if (GetLocalInt(oNpc, DL_L_NPC_FROZEN) == TRUE)
+            SetScriptHidden(oNpc, FALSE, FALSE);
+
+            if (GetLocalInt(oNpc, DL_L_NPC_FROZEN_HB_WAS_SET) == TRUE)
             {
-                SetScriptHidden(oNpc, FALSE, FALSE);
-
-                if (GetLocalInt(oNpc, DL_L_NPC_FROZEN_HB_WAS_SET) == TRUE)
-                {
-                    SetEventHandler(oNpc, CREATURE_SCRIPT_ON_HEARTBEAT, GetLocalString(oNpc, DL_L_NPC_FROZEN_HB_SCRIPT));
-                }
-                else
-                {
-                    SetEventHandler(oNpc, CREATURE_SCRIPT_ON_HEARTBEAT, "");
-                }
-
-                DeleteLocalInt(oNpc, DL_L_NPC_FROZEN);
-                DeleteLocalInt(oNpc, DL_L_NPC_FROZEN_HB_WAS_SET);
-                DeleteLocalString(oNpc, DL_L_NPC_FROZEN_HB_SCRIPT);
+                SetEventHandler(oNpc, CREATURE_SCRIPT_ON_HEARTBEAT, GetLocalString(oNpc, DL_L_NPC_FROZEN_HB_SCRIPT));
             }
-        }
+            else
+            {
+                SetEventHandler(oNpc, CREATURE_SCRIPT_ON_HEARTBEAT, "");
+            }
 
-        oNpc = GetNextObjectInArea(oArea);
+            DeleteLocalInt(oNpc, DL_L_NPC_FROZEN);
+            DeleteLocalInt(oNpc, DL_L_NPC_FROZEN_HB_WAS_SET);
+            DeleteLocalString(oNpc, DL_L_NPC_FROZEN_HB_SCRIPT);
+        }
     }
 }
 
@@ -561,6 +585,7 @@ void DL_ThawAreaRuntime(object oArea)
     DeleteLocalInt(oArea, DL_L_AREA_FROZEN_HB_WAS_SET);
     DeleteLocalString(oArea, DL_L_AREA_FROZEN_HB_SCRIPT);
 
+    DL_InvalidateAreaSocialWaypointIndex(oArea);
     DL_ThawAreaNpcRuntime(oArea);
 }
 
@@ -864,6 +889,7 @@ void DL_RegisterNpc(object oNpc)
         SetLocalObject(oNpc, DL_L_NPC_REG_AREA, oArea);
         SetLocalInt(oArea, DL_L_AREA_REG_COUNT, nSlot + 1);
         DL_IncLocalInt(oArea, DL_L_AREA_REG_SEQ);
+        DL_InvalidateAreaIndex(oArea);
     }
 }
 
@@ -969,6 +995,7 @@ void DL_UnregisterNpc(object oNpc)
             }
         }
         DL_IncLocalInt(oArea, DL_L_AREA_REG_SEQ);
+        DL_InvalidateAreaIndex(oArea);
     }
 
     DeleteLocalObject(oNpc, DL_L_NPC_REG_AREA);
