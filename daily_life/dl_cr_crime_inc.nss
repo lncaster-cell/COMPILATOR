@@ -8,6 +8,8 @@ const string DL_L_MODULE_CR_GUARD_RESPONDERS_MAX = "dl_cr_guard_responders_max";
 const string DL_L_MODULE_CR_JAIL_WP_TAG = "dl_cr_jail_wp_tag";
 const string DL_L_OBJ_CR_LOCKPICK_MARK_ABS_MIN = "dl_cr_lockpick_mark_abs_min";
 const string DL_L_OBJ_CR_LOCKPICK_MARK_BY = "dl_cr_lockpick_mark_by";
+const string DL_L_MODULE_CR_LEGACY_LOCKPICK_MIGRATION = "dl_cr_legacy_lockpick_migration";
+const string DL_L_MODULE_CR_LEGACY_LOCKPICK_HIT_COUNT = "dl_cr_legacy_lockpick_hit_count";
 
 const int DL_CR_GUARD_RESPONDERS_MAX_CAP = 2;
 const int DL_CR_INVESTIGATE_TTL_MIN = 3;
@@ -21,6 +23,21 @@ const int DL_CR_LOCKPICK_MARK_TTL_MIN = 1;
 const int DL_CR_DETAIN_ACTION_ACCEPT = 1;
 const int DL_CR_DETAIN_ACTION_REFUSE = 2;
 
+int DL_CR_IsLegacyLockpickMigrationMode()
+{
+    object oModule = GetModule();
+    if (GetLocalInt(oModule, DL_L_MODULE_CR_LEGACY_LOCKPICK_MIGRATION) == TRUE)
+    {
+        return TRUE;
+    }
+
+    // COMPAT removal criterion:
+    // keep fallback only while module still runs A0 contract or explicit migration mode.
+    // Remove when all live saves are confirmed on DL_L_OBJ_CR_LOCKPICK_MARK_ABS_MIN
+    // and legacy hit counter stays at zero through the observation window.
+    return GetLocalString(oModule, DL_L_MODULE_CONTRACT_VERSION) == DL_CONTRACT_VERSION_A0;
+}
+
 int DL_CR_GetLockpickMarkAbsMin(object oTarget)
 {
     int nAbsMin = GetLocalInt(oTarget, DL_L_OBJ_CR_LOCKPICK_MARK_ABS_MIN);
@@ -29,13 +46,26 @@ int DL_CR_GetLockpickMarkAbsMin(object oTarget)
         return nAbsMin;
     }
 
-    // COMPAT(temporary): migrate legacy key and immediately delete alias.
-    nAbsMin = GetLocalInt(oTarget, "dl_cr_lockpick_mark_until");
-    if (nAbsMin > 0)
+    if (!DL_CR_IsLegacyLockpickMigrationMode())
     {
-        SetLocalInt(oTarget, DL_L_OBJ_CR_LOCKPICK_MARK_ABS_MIN, nAbsMin);
+        return 0;
     }
+
+    nAbsMin = GetLocalInt(oTarget, "dl_cr_lockpick_mark_until");
+    if (nAbsMin <= 0)
+    {
+        return 0;
+    }
+
+    SetLocalInt(oTarget, DL_L_OBJ_CR_LOCKPICK_MARK_ABS_MIN, nAbsMin);
     DeleteLocalInt(oTarget, "dl_cr_lockpick_mark_until");
+
+    object oModule = GetModule();
+    DL_AddLocalInt(oModule, DL_L_MODULE_CR_LEGACY_LOCKPICK_HIT_COUNT, 1);
+    if (DL_IsRuntimeLogEnabled())
+    {
+        DL_LogRuntime("crime legacy_lockpick_key_migrated target=" + GetTag(oTarget));
+    }
     return nAbsMin;
 }
 
