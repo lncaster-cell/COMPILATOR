@@ -79,6 +79,7 @@ int DL_ClampInt(int nValue, int nMin, int nMax);
 int DL_GetAreaTick(object oArea);
 int DL_TryRouteToTarget(object oNpc, object oTarget);
 int DL_TryExecuteRoutedTransitionEntryWaypoint(object oNpc, object oEntryWp);
+int DL_ParseAutoNavTag(string sTag, string &sFromOut, string &sToOut);
 
 string DL_GetAreaNavigationSlotKey(int nSlot)
 {
@@ -91,6 +92,16 @@ string DL_GetAreaNavigationSlotKey(int nSlot)
 
 int DL_IsAutoNavTag(string sTag)
 {
+    string sFrom = "";
+    string sTo = "";
+    return DL_ParseAutoNavTag(sTag, sFrom, sTo);
+}
+
+int DL_ParseAutoNavTag(string sTag, string &sFromOut, string &sToOut)
+{
+    sFromOut = "";
+    sToOut = "";
+
     if (GetStringLength(sTag) <= (DL_NAV_TAG_PREFIX_LENGTH + DL_NAV_TAG_SEPARATOR_LENGTH + 1))
     {
         return FALSE;
@@ -108,40 +119,40 @@ int DL_IsAutoNavTag(string sTag)
         return FALSE;
     }
 
-    string sFrom = GetSubString(sTail, 0, nSep);
-    string sTo = GetSubString(sTail, nSep + DL_NAV_TAG_SEPARATOR_LENGTH, GetStringLength(sTail) - nSep - DL_NAV_TAG_SEPARATOR_LENGTH);
-    return sFrom != "" && sTo != "";
+    sFromOut = GetSubString(sTail, 0, nSep);
+    sToOut = GetSubString(sTail, nSep + DL_NAV_TAG_SEPARATOR_LENGTH, GetStringLength(sTail) - nSep - DL_NAV_TAG_SEPARATOR_LENGTH);
+    return sFromOut != "" && sToOut != "";
 }
 
 string DL_GetAutoNavFromZoneFromTag(string sTag)
 {
-    if (!DL_IsAutoNavTag(sTag))
+    string sFrom = "";
+    string sTo = "";
+    if (!DL_ParseAutoNavTag(sTag, sFrom, sTo))
     {
         return "";
     }
 
-    string sTail = GetSubString(sTag, DL_NAV_TAG_PREFIX_LENGTH, GetStringLength(sTag) - DL_NAV_TAG_PREFIX_LENGTH);
-    int nSep = FindSubString(sTail, DL_NAV_TAG_SEPARATOR);
-    return GetSubString(sTail, 0, nSep);
+    return sFrom;
 }
 
 string DL_GetAutoNavToZoneFromTag(string sTag)
 {
-    if (!DL_IsAutoNavTag(sTag))
+    string sFrom = "";
+    string sTo = "";
+    if (!DL_ParseAutoNavTag(sTag, sFrom, sTo))
     {
         return "";
     }
 
-    string sTail = GetSubString(sTag, DL_NAV_TAG_PREFIX_LENGTH, GetStringLength(sTag) - DL_NAV_TAG_PREFIX_LENGTH);
-    int nSep = FindSubString(sTail, DL_NAV_TAG_SEPARATOR);
-    return GetSubString(sTail, nSep + DL_NAV_TAG_SEPARATOR_LENGTH, GetStringLength(sTail) - nSep - DL_NAV_TAG_SEPARATOR_LENGTH);
+    return sTo;
 }
 
 string DL_GetAutoNavReverseTag(string sTag)
 {
-    string sFrom = DL_GetAutoNavFromZoneFromTag(sTag);
-    string sTo = DL_GetAutoNavToZoneFromTag(sTag);
-    if (sFrom == "" || sTo == "")
+    string sFrom = "";
+    string sTo = "";
+    if (!DL_ParseAutoNavTag(sTag, sFrom, sTo))
     {
         return "";
     }
