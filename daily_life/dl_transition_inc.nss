@@ -145,20 +145,10 @@ int DL_EngineExecuteTransitionDriver(object oNpc, object oEntryWp, location lExi
 int DL_ExecuteTransitionEngine(object oNpc, object oEntryWp, string sDiagPrefix);
 void DL_MarkSleepNavigationInProgress(object oNpc, string sTargetTag);
 
-string DL_BuildTransitionDiagnostic(string sDiagnostic, string sDiagContext)
-{
-    if (sDiagnostic == "")
-    {
-        return "";
-    }
-
-    if (sDiagContext == "")
-    {
-        return sDiagnostic;
-    }
-
-    return sDiagContext + "_" + sDiagnostic;
-}
+int DL_GetAbsoluteMinute();
+void DL_LogTransitionEvent(object oNpc, string sKind, string sPayload);
+void DL_CommandSetFacing(object oObj, float fFacing);
+int DL_SelectNearestObjectCandidate(object oCandidate, float fCandidateDist, string sCandidateTie, object oBest, float fBestDist, string sBestTie);
 
 string DL_GetAreaNavigationSlotKey(int nSlot)
 {
@@ -171,15 +161,13 @@ string DL_GetAreaNavigationSlotKey(int nSlot)
 
 int DL_IsAutoNavTag(string sTag)
 {
-    string sFrom = "";
-    string sTo = "";
-    return DL_ParseAutoNavTag(sTag, sFrom, sTo);
+    return DL_ParseAutoNavTag(sTag, "dl_tmp_from", "dl_tmp_to");
 }
 
-int DL_ParseAutoNavTag(string sTag, string &sFromOut, string &sToOut)
+int DL_ParseAutoNavTag(string sTag, string sFromLocal, string sToLocal)
 {
-    sFromOut = "";
-    sToOut = "";
+    SetLocalString(GetModule(), sFromLocal, "");
+    SetLocalString(GetModule(), sToLocal, "");
 
     if (GetStringLength(sTag) <= (DL_NAV_TAG_PREFIX_LENGTH + DL_NAV_TAG_SEPARATOR_LENGTH + 1))
     {
@@ -198,45 +186,46 @@ int DL_ParseAutoNavTag(string sTag, string &sFromOut, string &sToOut)
         return FALSE;
     }
 
-    sFromOut = GetSubString(sTail, 0, nSep);
-    sToOut = GetSubString(sTail, nSep + DL_NAV_TAG_SEPARATOR_LENGTH, GetStringLength(sTail) - nSep - DL_NAV_TAG_SEPARATOR_LENGTH);
-    return sFromOut != "" && sToOut != "";
+    string sFromOut = GetSubString(sTail, 0, nSep);
+    string sToOut = GetSubString(sTail, nSep + DL_NAV_TAG_SEPARATOR_LENGTH, GetStringLength(sTail) - nSep - DL_NAV_TAG_SEPARATOR_LENGTH);
+    if (sFromOut != "" && sToOut != "") { SetLocalString(GetModule(), sFromLocal, sFromOut); SetLocalString(GetModule(), sToLocal, sToOut); return TRUE; }
+    return FALSE;
 }
 
 string DL_GetAutoNavFromZoneFromTag(string sTag)
 {
     string sFrom = "";
     string sTo = "";
-    if (!DL_ParseAutoNavTag(sTag, sFrom, sTo))
+    if (!DL_ParseAutoNavTag(sTag, "dl_tmp_from", "dl_tmp_to"))
     {
         return "";
     }
 
-    return sFrom;
+    return GetLocalString(GetModule(), "dl_tmp_from");
 }
 
 string DL_GetAutoNavToZoneFromTag(string sTag)
 {
     string sFrom = "";
     string sTo = "";
-    if (!DL_ParseAutoNavTag(sTag, sFrom, sTo))
+    if (!DL_ParseAutoNavTag(sTag, "dl_tmp_from", "dl_tmp_to"))
     {
         return "";
     }
 
-    return sTo;
+    return GetLocalString(GetModule(), "dl_tmp_to");
 }
 
 string DL_GetAutoNavReverseTag(string sTag)
 {
     string sFrom = "";
     string sTo = "";
-    if (!DL_ParseAutoNavTag(sTag, sFrom, sTo))
+    if (!DL_ParseAutoNavTag(sTag, "dl_tmp_from", "dl_tmp_to"))
     {
         return "";
     }
 
-    return DL_BuildAutoNavReverseTag(sFrom, sTo);
+    return DL_BuildAutoNavReverseTag(GetLocalString(GetModule(), "dl_tmp_to"), GetLocalString(GetModule(), "dl_tmp_from"));
 }
 
 object DL_GetTransitionWaypointByTag(string sTag)
@@ -329,7 +318,7 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
 
     if (nCap <= 0)
     {
-        nLocalCap = 1;
+        nCap = 1;
     }
 
         object oAreaCached = DL_GetAreaScopedCachedObjectByTag(OBJECT_SELF, sTag, nObjectType, oPreferredArea);
@@ -342,7 +331,7 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
 
     if (GetIsObjectValid(oPreferredArea))
     {
-        object oLocal = DL_FindObjectByTagInAreaDeterministic(sTag, nObjectType, oPreferredArea, nLocalCap);
+        object oLocal = DL_FindObjectByTagInAreaDeterministic(sTag, nObjectType, oPreferredArea, nCap);
         if (GetIsObjectValid(oLocal))
         {
             DL_ClearTransitionTagMissSuppressedTick(sTag, nObjectType, oPreferredArea, nFallbackMode);
@@ -353,7 +342,7 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
 
     if (nFallbackMode == DL_TAG_FALLBACK_GLOBAL)
     {
-        object oGlobal = GetObjectByTagAndType(sTag, nObjectType);
+        object oGlobal = GetObjectByTagAndType(sTag, nObjectType, 1);
         if (GetIsObjectValid(oGlobal) && GetIsObjectValid(oPreferredArea))
         {
             DL_ClearTransitionTagMissSuppressedTick(sTag, nObjectType, oPreferredArea, nFallbackMode);
@@ -361,21 +350,20 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
         }
         else if (!GetIsObjectValid(oGlobal) && GetIsObjectValid(oPreferredArea))
         {
-            DL_MarkTransitionTagMissThisTick(sTag, nObjectType, oPreferredArea, nFallbackMode, nNowTick);
+            DL_MarkTransitionTagMissThisTick(sTag, nObjectType, oPreferredArea, nFallbackMode, DL_GetAreaTick(oPreferredArea));
             DL_MemoStoreMiss(OBJECT_SELF, oPreferredArea, sTag, nObjectType, nFallbackMode);
         }
-        return GetObjectByTagAndType(sTag, nObjectType);
+        return GetObjectByTagAndType(sTag, nObjectType, 1);
     }
 
     if (nFallbackMode == DL_TAG_FALLBACK_NEAREST)
     {
-        int nNearestCap = nFallbackCapNearest;
+        int nNearestCap = nCap;
         if (nNearestCap <= 0)
         {
             return OBJECT_INVALID;
         }
         object oNearestOrigin = GetIsObjectValid(oPreferredArea) ? oPreferredArea : OBJECT_SELF;
-        int nNearestCap = nCap;
         if (nNearestCap > DL_TRANSITION_TAG_SEARCH_CAP_NEAREST_FALLBACK)
         {
             nNearestCap = DL_TRANSITION_TAG_SEARCH_CAP_NEAREST_FALLBACK;
@@ -415,7 +403,7 @@ object DL_ResolveObjectByTagWithPolicy(string sTag, int nObjectType, object oPre
 
     if (GetIsObjectValid(oPreferredArea))
     {
-        DL_MarkTransitionTagMissThisTick(sTag, nObjectType, oPreferredArea, nFallbackMode, nNowTick);
+        DL_MarkTransitionTagMissThisTick(sTag, nObjectType, oPreferredArea, nFallbackMode, DL_GetAreaTick(oPreferredArea));
         DL_MemoStoreMiss(OBJECT_SELF, oPreferredArea, sTag, nObjectType, nFallbackMode);
     }
     return OBJECT_INVALID;
@@ -550,21 +538,6 @@ void DL_ApplyTransitionNavZoneUpdate(object oNpc, object oExitWp, int bOnSuccess
 
 // Canonical transition state setter contract.
 // Any new transition branches must set status/diagnostic only through this helper.
-string DL_BuildTransitionDiagnostic(string sDiagnostic, string sDiagContext)
-{
-    if (sDiagnostic == "")
-    {
-        return "";
-    }
-
-    if (sDiagContext == "")
-    {
-        return sDiagnostic;
-    }
-
-    return sDiagContext + "_" + sDiagnostic;
-}
-
 void DL_SetTransitionState(object oNpc, string sStatus, string sDiagnostic, string sDiagContext)
 {
     if (!DL_IsValidNpcObject(oNpc))
@@ -842,12 +815,12 @@ object DL_GetCrossNavAreaByTag(string sAreaTag)
         return OBJECT_INVALID;
     }
 
-    int bMemoMiss = FALSE;
-    object oMemoized = DL_GetTickMemoizedLookup(GetModule(), OBJECT_SELF, DL_GetAbsoluteMinute(), sAreaTag, -1, OBJECT_INVALID, DL_LOOKUP_MODE_TRANSITION_CROSS_AREA, bMemoMiss);
+    object oMemoized = DL_GetTickMemoizedLookup(GetModule(), OBJECT_SELF, DL_GetAbsoluteMinute(), sAreaTag, -1, OBJECT_INVALID, DL_LOOKUP_MODE_TRANSITION_CROSS_AREA, "dl_tmp_memo_miss");
     if (GetIsObjectValid(oMemoized))
     {
         return oMemoized;
     }
+    int bMemoMiss = GetLocalInt(GetModule(), "dl_tmp_memo_miss");
     if (bMemoMiss)
     {
         return OBJECT_INVALID;

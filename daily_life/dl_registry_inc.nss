@@ -342,14 +342,14 @@ int DL_IsAreaActiveNpcCandidate(object oObj)
            DL_IsActivePipelineNpc(oObj);
 }
 
-int DL_GetNextActiveAreaNpc(object oArea, object &oCursor, int &nObjectHops, int nObjectHopBudget, object &oNpcOut)
+object DL_GetNextActiveAreaNpc(object oArea, object oCursor, int nObjectHops, int nObjectHopBudget, string sCursorLocal, string sHopsLocal, string sNpcLocal)
 {
-    oNpcOut = OBJECT_INVALID;
+    SetLocalObject(oArea, sNpcLocal, OBJECT_INVALID);
     while (GetIsObjectValid(oCursor))
     {
         if (nObjectHopBudget >= 0 && nObjectHops >= nObjectHopBudget)
         {
-            return FALSE;
+            return OBJECT_INVALID;
         }
 
         object oCandidate = oCursor;
@@ -358,12 +358,16 @@ int DL_GetNextActiveAreaNpc(object oArea, object &oCursor, int &nObjectHops, int
 
         if (DL_IsAreaActiveNpcCandidate(oCandidate))
         {
-            oNpcOut = oCandidate;
-            return TRUE;
+            SetLocalObject(oArea, sNpcLocal, oCandidate);
+            SetLocalObject(oArea, sCursorLocal, oCursor);
+            SetLocalInt(oArea, sHopsLocal, nObjectHops);
+            return oCandidate;
         }
     }
 
-    return FALSE;
+    SetLocalObject(oArea, sCursorLocal, oCursor);
+    SetLocalInt(oArea, sHopsLocal, nObjectHops);
+    return OBJECT_INVALID;
 }
 
 int DL_BuildAreaPassSnapshot(object oArea, int nTickStamp, int nPassMode)
@@ -374,8 +378,11 @@ int DL_BuildAreaPassSnapshot(object oArea, int nTickStamp, int nPassMode)
     object oNpc = OBJECT_INVALID;
     int nObjectHops = 0;
     int nCount = 0;
-    while (DL_GetNextActiveAreaNpc(oArea, oCursor, nObjectHops, -1, oNpc))
+    SetLocalObject(oArea, "dl_tmp_cursor", oCursor);
+    SetLocalInt(oArea, "dl_tmp_hops", nObjectHops);
+    while (GetIsObjectValid(DL_GetNextActiveAreaNpc(oArea, GetLocalObject(oArea, "dl_tmp_cursor"), GetLocalInt(oArea, "dl_tmp_hops"), -1, "dl_tmp_cursor", "dl_tmp_hops", "dl_tmp_npc")))
     {
+        oNpc = GetLocalObject(oArea, "dl_tmp_npc");
         DL_SetAreaPassSnapshotNpcAtSlot(oArea, nCount, oNpc);
         nCount = nCount + 1;
     }
