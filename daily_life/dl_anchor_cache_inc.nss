@@ -1,5 +1,31 @@
 const int DL_WAYPOINT_TAG_SEARCH_CAP = 64;
 
+void DL_LogMissingAnchorIssue(object oNpc, object oArea, string sAnchorLocal, string sReason)
+{
+    string sNpcTag = GetTag(oNpc);
+    string sAreaTag = GetTag(oArea);
+    string sKey = "markup_missing_anchor_npc_" + sNpcTag + "_area_" + sAreaTag + "_local_" + sAnchorLocal + "_tag_none_reason_" + sReason;
+    string sMessage = "Markup issue: npc='" + sNpcTag + "' area='" + sAreaTag + "' local='" + sAnchorLocal + "' tag='(none)' reason='" + sReason + "'.";
+    DL_LogMarkupIssueOnce(oNpc, sKey, sMessage);
+}
+
+void DL_LogInvalidAreaTagIssue(object oNpc, string sAreaTagLocal, string sAreaTag, string sReason)
+{
+    string sNpcTag = GetTag(oNpc);
+    string sKey = "markup_invalid_area_npc_" + sNpcTag + "_area_none_local_" + sAreaTagLocal + "_tag_" + sAreaTag + "_reason_" + sReason;
+    string sMessage = "Markup issue: npc='" + sNpcTag + "' area='(none)' local='" + sAreaTagLocal + "' tag='" + sAreaTag + "' reason='" + sReason + "'.";
+    DL_LogMarkupIssueOnce(oNpc, sKey, sMessage);
+}
+
+void DL_LogForeignWaypointIssue(object oNpc, object oArea, string sAnchorLocal, string sWpTag, string sReason)
+{
+    string sNpcTag = GetTag(oNpc);
+    string sAreaTag = GetTag(oArea);
+    string sKey = "markup_foreign_wp_npc_" + sNpcTag + "_area_" + sAreaTag + "_local_" + sAnchorLocal + "_tag_" + sWpTag + "_reason_" + sReason;
+    string sMessage = "Markup issue: npc='" + sNpcTag + "' area='" + sAreaTag + "' local='" + sAnchorLocal + "' tag='" + sWpTag + "' reason='" + sReason + "'.";
+    DL_LogMarkupIssueOnce(oNpc, sKey, sMessage);
+}
+
 object DL_GetNpcCachedWaypointByTag(object oNpc, string sCacheLocal, string sTag)
 {
     if (!GetIsObjectValid(oNpc) || sTag == "")
@@ -160,11 +186,7 @@ object DL_GetNpcAreaByTagCached(object oNpc, string sAreaTagLocal, string sAreaC
 
     if (!GetIsObjectValid(oArea))
     {
-        DL_LogMarkupIssueOnce(
-            oNpc,
-            "invalid_area_" + sAreaTagLocal + "_" + sAreaTag,
-            "NPC " + GetTag(oNpc) + ": area tag '" + sAreaTag + "' is invalid for local '" + sAreaTagLocal + "'."
-        );
+        DL_LogInvalidAreaTagIssue(oNpc, sAreaTagLocal, sAreaTag, "invalid_area_tag");
         return OBJECT_INVALID;
     }
 
@@ -212,11 +234,7 @@ object DL_GetAreaAnchorWaypoint(object oNpc, object oArea, string sAnchorLocal, 
     {
         if (bRequired)
         {
-            DL_LogMarkupIssueOnce(
-                oNpc,
-                "missing_anchor_" + GetTag(oArea) + "_" + sAnchorLocal,
-                "Area " + GetTag(oArea) + " misses required anchor '" + sAnchorLocal + "' for NPC " + GetTag(oNpc) + "."
-            );
+            DL_LogMissingAnchorIssue(oNpc, oArea, sAnchorLocal, "missing_required_anchor");
         }
         return OBJECT_INVALID;
     }
@@ -238,19 +256,11 @@ object DL_GetAreaAnchorWaypoint(object oNpc, object oArea, string sAnchorLocal, 
 
     if (!GetIsObjectValid(oLegacyWp))
     {
-        DL_LogMarkupIssueOnce(
-            oNpc,
-            "missing_wp_" + GetTag(oArea) + "_" + sAnchorLocal + "_" + sWpTag,
-            "Area " + GetTag(oArea) + " anchor '" + sAnchorLocal + "' points to missing waypoint '" + sWpTag + "'."
-        );
+        DL_LogForeignWaypointIssue(oNpc, oArea, sAnchorLocal, sWpTag, "missing_waypoint");
     }
     else
     {
-        DL_LogMarkupIssueOnce(
-            oNpc,
-            "foreign_wp_" + GetTag(oArea) + "_" + sAnchorLocal + "_" + sWpTag,
-            "Area " + GetTag(oArea) + " anchor '" + sAnchorLocal + "' points to foreign area waypoint '" + sWpTag + "'."
-        );
+        DL_LogForeignWaypointIssue(oNpc, oArea, sAnchorLocal, sWpTag, "foreign_waypoint_area");
     }
 
     return OBJECT_INVALID;
