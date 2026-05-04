@@ -50,6 +50,27 @@ void DL_AuditFail(object oNpc, string sKey)
         SetLocalString(oNpc, "dl_dbg_first_fail", sKey);
     }
 }
+void DL_AuditAddFixHint(object oNpc, string sHint)
+{
+    if (!GetIsObjectValid(oNpc) || sHint == "")
+    {
+        return;
+    }
+
+    string sNow = GetLocalString(oNpc, "dl_dbg_fix_hints");
+    if (sNow == "")
+    {
+        SetLocalString(oNpc, "dl_dbg_fix_hints", sHint);
+        return;
+    }
+
+    if (FindSubString(sNow, sHint) >= 0)
+    {
+        return;
+    }
+
+    SetLocalString(oNpc, "dl_dbg_fix_hints", sNow + " || " + sHint);
+}
 
 object DL_AuditFindWpInArea(string sTag, object oArea)
 {
@@ -67,9 +88,9 @@ void DL_AuditRuntime(object oPC, object oNpc)
     int bPipeline = DL_IsPipelineNpc(oNpc);
     int bActive = DL_IsActivePipelineNpc(oNpc);
 
-    if (!bRuntime) DL_AuditFail(oNpc, "runtime_disabled");
-    if (!bPipeline) DL_AuditFail(oNpc, "npc_not_pipeline");
-    if (!bActive) DL_AuditFail(oNpc, "npc_not_active_pipeline");
+    if (!bRuntime) { DL_AuditFail(oNpc, "runtime_disabled"); DL_AuditAddFixHint(oNpc, "runtime: enable module locals dl_enabled=1 and dl_contract_version=a0"); }
+    if (!bPipeline) { DL_AuditFail(oNpc, "npc_not_pipeline"); DL_AuditAddFixHint(oNpc, "pipeline: NPC not registered as Daily Life actor/profile"); }
+    if (!bActive) { DL_AuditFail(oNpc, "npc_not_active_pipeline"); DL_AuditAddFixHint(oNpc, "pipeline: NPC is not active in current area tier/runtime"); }
 
     DL_DbgSay(oPC, "[DL AUDIT RUNTIME] runtime=" + DL_AuditPF(bRuntime) +
                     " pipeline=" + DL_AuditPF(bPipeline) +
@@ -90,7 +111,7 @@ void DL_AuditAreas(object oPC, object oNpc)
     object oSocial = DL_GetSocialArea(oNpc);
     object oPublic = DL_GetPublicArea(oNpc);
 
-    if (!GetIsObjectValid(oHome)) DL_AuditFail(oNpc, "home_area_invalid");
+    if (!GetIsObjectValid(oHome)) { DL_AuditFail(oNpc, "home_area_invalid"); DL_AuditAddFixHint(oNpc, "areas: set npc local dl_home_area_tag or place NPC in valid area"); }
 
     DL_DbgSay(oPC, "[DL AUDIT AREA] current=" + DL_AuditAreaTag(oCurrent) +
                     " home=" + DL_AuditAreaTag(oHome) +
@@ -124,8 +145,8 @@ void DL_AuditSleep(object oPC, object oNpc)
     object oApproachResolved = DL_ResolveSleepApproachWaypoint(oNpc);
     object oBedResolved = DL_ResolveSleepBedWaypoint(oNpc);
 
-    if (!GetIsObjectValid(oApproachResolved)) DL_AuditFail(oNpc, "sleep_approach_unresolved");
-    if (!GetIsObjectValid(oBedResolved)) DL_AuditFail(oNpc, "sleep_bed_unresolved");
+    if (!GetIsObjectValid(oApproachResolved)) { DL_AuditFail(oNpc, "sleep_approach_unresolved"); DL_AuditAddFixHint(oNpc, "sleep: add/verify dl_sleep_approach_<slot> or area anchor dl_anchor_sleep_approach_<slot>"); }
+    if (!GetIsObjectValid(oBedResolved)) { DL_AuditFail(oNpc, "sleep_bed_unresolved"); DL_AuditAddFixHint(oNpc, "sleep: add/verify dl_sleep_bed_<slot> or area anchor dl_anchor_sleep_bed_<slot>"); }
 
     string sApproachAnchorValue = GetIsObjectValid(oHome) ? GetLocalString(oHome, sApproachAnchor) : "";
     string sBedAnchorValue = GetIsObjectValid(oHome) ? GetLocalString(oHome, sBedAnchor) : "";
@@ -168,7 +189,7 @@ void DL_AuditWork(object oPC, object oNpc)
         object oForge = DL_ResolveBlacksmithForgeWaypoint(oNpc);
         object oCraft = DL_ResolveBlacksmithCraftWaypoint(oNpc);
         object oFetch = DL_ResolveBlacksmithFetchWaypoint(oNpc);
-        if (!GetIsObjectValid(oForge) || !GetIsObjectValid(oCraft)) DL_AuditFail(oNpc, "work_blacksmith_required_unresolved");
+        if (!GetIsObjectValid(oForge) || !GetIsObjectValid(oCraft)) { DL_AuditFail(oNpc, "work_blacksmith_required_unresolved"); DL_AuditAddFixHint(oNpc, "work: add/verify dl_work_forge + dl_work_craft or anchors dl_anchor_work_primary/secondary in work area"); }
         DL_DbgSay(oPC, "[DL AUDIT WORK] forge_area=" + DL_AuditPF(GetIsObjectValid(oForgeArea)) +
                         " forge_legacy=" + DL_AuditPF(GetIsObjectValid(oForgeLegacy)) +
                         " craft_area=" + DL_AuditPF(GetIsObjectValid(oCraftArea)) +
@@ -186,7 +207,7 @@ void DL_AuditMealSocial(object oPC, object oNpc)
     object oMealArea = DL_GetMealArea(oNpc);
     object oMeal = DL_ResolveMealWaypoint(oNpc, sMealKind);
     string sMealAnchor = GetIsObjectValid(oMealArea) ? GetLocalString(oMealArea, "dl_anchor_meal") : "";
-    if (!GetIsObjectValid(oMeal)) DL_AuditFail(oNpc, "meal_unresolved");
+    if (!GetIsObjectValid(oMeal)) { DL_AuditFail(oNpc, "meal_unresolved"); DL_AuditAddFixHint(oNpc, "meal: add/verify dl_anchor_meal in meal/work/home fallback area"); }
 
     DL_DbgSay(oPC, "[DL AUDIT MEAL] kind=" + sMealKind +
                     " area=" + DL_AuditAreaTag(oMealArea) +
@@ -236,6 +257,7 @@ void DL_DbgRunSubsystemAudit(object oPC, object oNpc)
     }
 
     DeleteLocalString(oNpc, "dl_dbg_first_fail");
+    DeleteLocalString(oNpc, "dl_dbg_fix_hints");
     DL_AuditRuntime(oPC, oNpc);
     DL_AuditAreas(oPC, oNpc);
     DL_AuditSleep(oPC, oNpc);
@@ -251,5 +273,6 @@ void DL_DbgRunSubsystemAudit(object oPC, object oNpc)
     else
     {
         DL_DbgSay(oPC, "[DL AUDIT VERDICT] overall=FAIL first_fail=" + sFirstFail);
+        DL_DbgSay(oPC, "[DL AUDIT FIX] " + GetLocalString(oNpc, "dl_dbg_fix_hints"));
     }
 }
