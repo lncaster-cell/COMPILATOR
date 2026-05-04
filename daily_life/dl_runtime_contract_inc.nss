@@ -13,6 +13,7 @@ int DL_IsAreaObject(object oObject);
 int DL_GetAreaTier(object oArea);
 void DL_LogChatDebugEvent(object oNpc, string sKind, string sPayload);
 int DL_AddLocalInt(object oTarget, string sKey, int nDelta);
+const string DL_L_PC_CR_DETAIN_PENDING = "dl_cr_detain_pending";
 
 int GetIsInConversation(object oCreature)
 {
@@ -97,7 +98,6 @@ const string DL_MSG_RESULT_TAG_NOT_FOUND = "tag_not_found";
 
 const string DL_L_MODULE_CR_DETAIN_DIALOG = "dl_cr_detain_dialog";
 const string DL_L_MODULE_TRANSITION_DRIVER_LOOKUP_CAP = "dl_transition_driver_lookup_cap";
-const string DL_L_PC_CR_DETAIN_PENDING = "dl_cr_detain_pending";
 const string DL_L_PC_CR_DETAIN_PENDING_REASON = "dl_cr_detain_pending_reason";
 const string DL_L_PC_CR_DETAIN_PENDING_RESOLUTION = "dl_cr_detain_pending_resolution";
 const string DL_L_PC_CR_LAST_GUARD = "dl_cr_last_guard";
