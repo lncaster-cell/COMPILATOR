@@ -119,7 +119,7 @@ object DL_ResolveNpcWaypointWithFallbackTag(
     string sNpcTag = GetTag(oNpc);
     object oWp = DL_GetNpcCachedWaypointByTagInArea(
         oNpc,
-        sCacheLocal,
+        sCacheLocal + "_personal",
         sPersonalPrefix + sNpcTag + sPersonalSuffix,
         oArea
     );
@@ -128,7 +128,7 @@ object DL_ResolveNpcWaypointWithFallbackTag(
         return oWp;
     }
 
-    return DL_GetNpcCachedWaypointByTagInArea(oNpc, sCacheLocal, sFallbackTag, oArea);
+    return DL_GetNpcCachedWaypointByTagInArea(oNpc, sCacheLocal + "_fallback", sFallbackTag, oArea);
 }
 object DL_ResolveNpcWaypointWithFallbackTagInArea(
     object oNpc,
@@ -147,7 +147,7 @@ object DL_ResolveNpcWaypointWithFallbackTagInArea(
     string sNpcTag = GetTag(oNpc);
     object oWp = DL_GetNpcCachedWaypointByTagInArea(
         oNpc,
-        sCacheLocal,
+        sCacheLocal + "_personal",
         sPersonalPrefix + sNpcTag + sPersonalSuffix,
         oArea
     );
@@ -156,7 +156,7 @@ object DL_ResolveNpcWaypointWithFallbackTagInArea(
         return oWp;
     }
 
-    return DL_GetNpcCachedWaypointByTagInArea(oNpc, sCacheLocal, sFallbackTag, oArea);
+    return DL_GetNpcCachedWaypointByTagInArea(oNpc, sCacheLocal + "_fallback", sFallbackTag, oArea);
 }
 object DL_GetNpcAreaByTagCached(object oNpc, string sAreaTagLocal, string sAreaCacheLocal)
 {
