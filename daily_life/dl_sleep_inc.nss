@@ -164,10 +164,13 @@ int DL_QueueJumpAction(object oNpc, location lTarget)
     }
 
     object oTargetArea = GetAreaFromLocation(lTarget);
-    if (!GetIsObjectValid(oTargetArea) || GetObjectType(oTargetArea) != OBJECT_TYPE_AREA)
+    if (!GetIsObjectValid(oTargetArea))
     {
         DL_SetRuntimeState(oNpc, "", "", DL_L_NPC_SLEEP_DIAGNOSTIC, DL_DIAG_SLEEP_JUMP_INVALID_TARGET_LOCATION);
-        return FALSE;
+    }
+    else
+    {
+        DeleteLocalString(oNpc, DL_L_NPC_SLEEP_DIAGNOSTIC);
     }
 
     DL_DispatchJumpToLocation(oNpc, lTarget);
@@ -194,85 +197,131 @@ int DL_ShouldAttemptSleepNavigation(object oNpc)
 
     return GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) != DL_STATUS_MOVING_VIA_NAVIGATION;
 }
+
+void DL_MarkSleepFsmStep(object oNpc, string sStep)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    SetLocalString(oNpc, "dl_sleep_fsm_step", sStep);
+    SetLocalInt(oNpc, "dl_sleep_fsm_step_tick", GetTimeHour() * 3600 + GetTimeMinute() * 60 + GetTimeSecond());
+}
 // Domain contract: sleep interprets transition/router outcome and updates only sleep locals.
 void DL_ExecuteSleepDirective(object oNpc)
 {
+    DL_MarkSleepFsmStep(oNpc, "enter");
+
     object oApproach = DL_ResolveSleepApproachWaypoint(oNpc);
     object oBed = DL_ResolveSleepBedWaypoint(oNpc);
-
     if (!GetIsObjectValid(oApproach) || !GetIsObjectValid(oBed))
     {
+        DL_MarkSleepFsmStep(oNpc, "missing_waypoints_return");
         DL_SetSleepMissingState(oNpc);
         return;
     }
 
     DL_SetSleepTargetState(oNpc, oBed);
-    DL_LogTransitionEvent(
-        oNpc,
-        "target_sleep",
-        DL_BuildAnchorTelemetry(oNpc, oBed, "", "sleep")
-    );
 
     location lApproach = GetLocation(oApproach);
     location lBed = GetLocation(oBed);
     float fApproachDistance = GetDistanceBetween(oNpc, oApproach);
     float fBedDistance = GetDistanceBetween(oNpc, oBed);
-    int nPhase = GetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE);
-    int bCommittedToBed = nPhase == DL_SLEEP_PHASE_JUMPING || nPhase == DL_SLEEP_PHASE_ON_BED;
-    int bMayUseNavigation = DL_ShouldAttemptSleepNavigation(oNpc);
 
-    if (!bCommittedToBed && fApproachDistance <= DL_SLEEP_APPROACH_RADIUS)
+    int nPhase = GetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE);
+    int bMayUseNavigation = DL_ShouldAttemptSleepNavigation(oNpc);
+    int bBedInSameAreaNow = GetArea(oNpc) == GetArea(oBed);
+
+    if (nPhase != DL_SLEEP_PHASE_JUMPING && nPhase != DL_SLEEP_PHASE_ON_BED)
     {
-        if (nPhase != DL_SLEEP_PHASE_JUMPING)
+        if (bBedInSameAreaNow)
         {
             SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_JUMPING);
+            SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_APPROACH_REACHED);
+            nPhase = DL_SLEEP_PHASE_JUMPING;
+            DL_MarkSleepFsmStep(oNpc, "skip_approach_same_area");
+        }
+        else if (fApproachDistance > DL_SLEEP_APPROACH_RADIUS)
+        {
+            if (bMayUseNavigation &&
+                DL_TryAdvanceViaTransitionOrRouteEx(oNpc, oApproach, DL_DIAG_CTX_ROUTED, TRUE))
+            {
+                DL_MarkSleepFsmStep(oNpc, "route_to_approach_return");
+                DL_LogTransitionEvent(
+                    oNpc,
+                    "sleep_return_route_approach",
+                    "phase=" + IntToString(nPhase) +
+                    " status=" + GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) +
+                    " dist_approach=" + FloatToString(fApproachDistance, 1, 2) +
+                    " dist_bed=" + FloatToString(fBedDistance, 1, 2)
+                );
+                return;
+            }
+
+            if (nPhase != DL_SLEEP_PHASE_MOVING ||
+                DL_ShouldRedispatchMovement(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_MOVING_TO_APPROACH, fApproachDistance, DL_SLEEP_APPROACH_RADIUS))
+            {
+                SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_MOVING);
+                SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_MOVING_TO_APPROACH);
+                DL_QueueMoveAction(oNpc, lApproach, TRUE);
+                DL_MarkSleepFsmStep(oNpc, "dispatch_move_to_approach");
+                DL_LogTransitionEvent(
+                    oNpc,
+                    "sleep_dispatch_move_approach",
+                    "phase=" + IntToString(nPhase) +
+                    " dist_approach=" + FloatToString(fApproachDistance, 1, 2) +
+                    " dist_bed=" + FloatToString(fBedDistance, 1, 2)
+                );
+            }
+            else
+            {
+                DL_MarkSleepFsmStep(oNpc, "hold_move_to_approach");
+            }
+            return;
+        }
+        else
+        {
+            SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_JUMPING);
+            SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_APPROACH_REACHED);
             nPhase = DL_SLEEP_PHASE_JUMPING;
         }
-
-        if (GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) == DL_STATUS_MOVING_TO_APPROACH)
-        {
-            SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_APPROACH_REACHED);
-        }
-    }
-
-    if (!bCommittedToBed && fApproachDistance > DL_SLEEP_APPROACH_RADIUS && bMayUseNavigation &&
-        DL_TryAdvanceViaTransitionOrRouteEx(oNpc, oApproach, DL_DIAG_CTX_ROUTED, TRUE))
-    {
-        return;
-    }
-
-    if (!bCommittedToBed && fBedDistance > DL_SLEEP_BED_RADIUS && fApproachDistance > DL_SLEEP_APPROACH_RADIUS)
-    {
-        if (nPhase != DL_SLEEP_PHASE_MOVING || DL_ShouldRedispatchMovement(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_MOVING_TO_APPROACH, fApproachDistance, DL_SLEEP_APPROACH_RADIUS))
-        {
-            SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_MOVING);
-            SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_MOVING_TO_APPROACH);
-            DL_QueueMoveAction(oNpc, lApproach, TRUE);
-        }
-        return;
-    }
-
-    if (!bCommittedToBed)
-    {
-        SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_JUMPING);
-        SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_APPROACH_REACHED);
-        nPhase = DL_SLEEP_PHASE_JUMPING;
-    }
-
-    int bBedInSameArea = GetArea(oNpc) == GetArea(oBed);
-    if (bMayUseNavigation && !bBedInSameArea &&
-        DL_TryAdvanceViaTransitionOrRouteEx(oNpc, oBed, DL_DIAG_CTX_ROUTED, TRUE))
-    {
-        return;
     }
 
     if (fBedDistance > DL_SLEEP_BED_RADIUS)
     {
-        if (nPhase != DL_SLEEP_PHASE_JUMPING || DL_ShouldRedispatchMovement(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_JUMPING_TO_BED, fBedDistance, DL_SLEEP_BED_RADIUS))
+        if (bMayUseNavigation && !bBedInSameAreaNow &&
+            DL_TryAdvanceViaTransitionOrRouteEx(oNpc, oBed, DL_DIAG_CTX_ROUTED, TRUE))
         {
+            DL_MarkSleepFsmStep(oNpc, "route_to_bed_return");
+            DL_LogTransitionEvent(
+                oNpc,
+                "sleep_return_route_bed",
+                "phase=" + IntToString(nPhase) +
+                " status=" + GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) +
+                " dist_bed=" + FloatToString(fBedDistance, 1, 2)
+            );
+            return;
+        }
+
+        if (nPhase != DL_SLEEP_PHASE_JUMPING ||
+            DL_ShouldRedispatchMovement(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_JUMPING_TO_BED, fBedDistance, DL_SLEEP_BED_RADIUS))
+        {
+            DL_TryResetActionQueue(oNpc, TRUE, DL_RESET_REASON_ROUTINE);
             SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_JUMPING);
             SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_JUMPING_TO_BED);
             DL_QueueJumpAction(oNpc, lBed);
+            DL_MarkSleepFsmStep(oNpc, "dispatch_jump_to_bed");
+            DL_LogTransitionEvent(
+                oNpc,
+                "sleep_dispatch_jump_bed",
+                "dist_bed=" + FloatToString(fBedDistance, 1, 2) +
+                " target=" + GetTag(oBed)
+            );
+        }
+        else
+        {
+            DL_MarkSleepFsmStep(oNpc, "hold_jump_to_bed");
         }
         return;
     }
@@ -285,5 +334,7 @@ void DL_ExecuteSleepDirective(object oNpc)
     DL_ClearTransitionExecutionState(oNpc);
     SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_ON_BED);
     DL_SetRuntimeState(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_ON_BED, "", "");
+    DL_MarkSleepFsmStep(oNpc, "on_bed");
     DL_LogTransitionEvent(oNpc, "on_bed", DL_BuildAnchorTelemetry(oNpc, oBed, "", "sleep"));
 }
+
