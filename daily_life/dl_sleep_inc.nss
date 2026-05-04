@@ -235,9 +235,11 @@ void DL_ExecuteSleepDirective(object oNpc)
         fApproachDistance = fApproachLocationDistance;
     }
     float fBedDistance = GetDistanceBetween(oNpc, oBed);
+    float fDirectJumpRadius = 3.50;
     int nPhase = GetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE);
     int bCommittedToBed = nPhase == DL_SLEEP_PHASE_JUMPING || nPhase == DL_SLEEP_PHASE_ON_BED;
     int bMayUseNavigation = DL_ShouldAttemptSleepNavigation(oNpc);
+    int bBedInSameAreaNow = GetArea(oNpc) == GetArea(oBed);
 
     if (!bCommittedToBed && fApproachDistance <= DL_SLEEP_APPROACH_RADIUS)
     {
@@ -271,6 +273,23 @@ void DL_ExecuteSleepDirective(object oNpc)
 
     if (!bCommittedToBed && fBedDistance > DL_SLEEP_BED_RADIUS && fApproachDistance > DL_SLEEP_APPROACH_RADIUS)
     {
+        if (bBedInSameAreaNow && fBedDistance <= fDirectJumpRadius)
+        {
+            DL_TryResetActionQueue(oNpc, TRUE, DL_RESET_REASON_ROUTINE);
+            SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_JUMPING);
+            SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_JUMPING_TO_BED);
+            DL_QueueJumpAction(oNpc, lBed);
+            DL_MarkSleepFsmStep(oNpc, "dispatch_jump_to_bed_direct");
+            DL_LogTransitionEvent(
+                oNpc,
+                "sleep_dispatch_jump_bed_direct",
+                "dist_bed=" + FloatToString(fBedDistance, 1, 2) +
+                " dist_approach=" + FloatToString(fApproachDistance, 1, 2) +
+                " target=" + GetTag(oBed)
+            );
+            return;
+        }
+
         if (nPhase != DL_SLEEP_PHASE_MOVING || DL_ShouldRedispatchMovement(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_MOVING_TO_APPROACH, fApproachDistance, DL_SLEEP_APPROACH_RADIUS))
         {
             SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_MOVING);
@@ -300,8 +319,7 @@ void DL_ExecuteSleepDirective(object oNpc)
         nPhase = DL_SLEEP_PHASE_JUMPING;
     }
 
-    int bBedInSameArea = GetArea(oNpc) == GetArea(oBed);
-    if (bMayUseNavigation && !bBedInSameArea &&
+    if (bMayUseNavigation && !bBedInSameAreaNow &&
         DL_TryAdvanceViaTransitionOrRouteEx(oNpc, oBed, DL_DIAG_CTX_ROUTED, TRUE))
     {
         DL_MarkSleepFsmStep(oNpc, "route_to_bed_return");
