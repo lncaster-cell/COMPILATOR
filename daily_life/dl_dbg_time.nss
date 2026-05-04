@@ -128,11 +128,20 @@ void main()
                         " state=" + GetLocalString(oNpc, DL_L_NPC_STATE) +
                         " problem=" + DL_GetNpcProblemSummary(oNpc);
     DL_DbgSay(oPC, sDirective);
+    DL_DbgSay(oPC, "[DL DEBUG] sched wake=" + IntToString(DL_GetNpcWakeHour(oNpc)) +
+                    " sleep_hours=" + IntToString(DL_GetNpcSleepHours(oNpc)) +
+                    " shift_start=" + IntToString(DL_GetNpcShiftStart(oNpc)) +
+                    " shift_len=" + IntToString(DL_GetNpcShiftLength(oNpc, DL_GetWeekendType() != 0)));
 
     string sSleep = "[DL DEBUG] sleep_status=" + GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) +
                     " sleep_target=" + GetLocalString(oNpc, DL_L_NPC_SLEEP_TARGET) +
                     " sleep_diag=" + GetLocalString(oNpc, DL_L_NPC_SLEEP_DIAGNOSTIC);
     DL_DbgSay(oPC, sSleep);
+    object oSleepApproach = DL_ResolveSleepApproachWaypoint(oNpc);
+    object oSleepBed = DL_ResolveSleepBedWaypoint(oNpc);
+    DL_DbgSay(oPC, "[DL DEBUG] sleep_phase=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE)) +
+                    " dist_approach=" + (GetIsObjectValid(oSleepApproach) ? FloatToString(GetDistanceBetween(oNpc, oSleepApproach), 1, 2) : "INVALID") +
+                    " dist_bed=" + (GetIsObjectValid(oSleepBed) ? FloatToString(GetDistanceBetween(oNpc, oSleepBed), 1, 2) : "INVALID"));
 
     string sWork = "[DL DEBUG] work_status=" + GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) +
                    " work_target=" + GetLocalString(oNpc, DL_L_NPC_WORK_TARGET) +
