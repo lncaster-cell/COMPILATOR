@@ -184,6 +184,14 @@ int DL_GetNpcWakeHour(object oNpc)
     }
     if (nWake <= 0 || nWake > 23)
     {
+        string sWake = GetLocalString(oNpc, DL_L_NPC_WAKE_HOUR);
+        if (sWake != "")
+        {
+            nWake = StringToInt(sWake);
+        }
+    }
+    if (nWake <= 0 || nWake > 23)
+    {
         nWake = DL_SCHED_DEFAULT_WAKE_HOUR;
     }
     return nWake;
