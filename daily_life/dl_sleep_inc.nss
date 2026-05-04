@@ -164,10 +164,13 @@ int DL_QueueJumpAction(object oNpc, location lTarget)
     }
 
     object oTargetArea = GetAreaFromLocation(lTarget);
-    if (!GetIsObjectValid(oTargetArea) || GetObjectType(oTargetArea) != OBJECT_TYPE_AREA)
+    if (!GetIsObjectValid(oTargetArea))
     {
         DL_SetRuntimeState(oNpc, "", "", DL_L_NPC_SLEEP_DIAGNOSTIC, DL_DIAG_SLEEP_JUMP_INVALID_TARGET_LOCATION);
-        return FALSE;
+    }
+    else
+    {
+        DeleteLocalString(oNpc, DL_L_NPC_SLEEP_DIAGNOSTIC);
     }
 
     DL_DispatchJumpToLocation(oNpc, lTarget);
