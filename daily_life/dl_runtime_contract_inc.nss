@@ -4,6 +4,7 @@ const string DL_CONTRACT_VERSION_A0 = "a0";
 const string DL_L_MODULE_CHAT_LOG = "dl_chat_log";
 const string DL_L_MODULE_CHAT_LOG_INIT = "dl_chat_log_init";
 const string DL_L_MODULE_RUNTIME_LOG = "dl_runtime_log";
+const string DL_L_CITY_RESPONSE_ENABLED = "dl_city_response_enabled";
 
 const int OBJECT_TYPE_AREA = 4;
 location LOCATION_INVALID;
@@ -213,8 +214,8 @@ int DL_CanRunResyncForArea(object oArea)
 int DL_CanRunCityResponseForArea(object oArea)
 {
     if (!DL_CanRunRuntimeForArea(oArea)) return FALSE;
-    if (GetLocalInt(GetModule(), "dl_city_response_enabled") != TRUE) return FALSE;
-    return GetLocalInt(oArea, "dl_city_response_enabled") == TRUE;
+    if (GetLocalInt(GetModule(), DL_L_CITY_RESPONSE_ENABLED) != TRUE) return FALSE;
+    return GetLocalInt(oArea, DL_L_CITY_RESPONSE_ENABLED) == TRUE;
 }
 
 int DL_CanRunTransitionForArea(object oArea)
