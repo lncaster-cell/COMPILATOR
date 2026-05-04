@@ -251,9 +251,14 @@ int DL_IsRuntimeLogEnabled()
     return GetLocalInt(GetModule(), DL_L_MODULE_RUNTIME_LOG) == TRUE;
 }
 
+// Contract: runtime diagnostics are routed through the shared chat-debug telemetry
+// helper (DL_LogChatDebugEvent). Actual sink/output may be intentionally disabled
+// by that helper implementation; feature-flag gate is DL_L_MODULE_RUNTIME_LOG.
 void DL_LogRuntime(string sLog)
 {
     if (!DL_IsRuntimeLogEnabled()) return;
+
+    DL_LogChatDebugEvent(OBJECT_INVALID, "runtime", sLog);
 }
 
 const string DL_L_NPC_ORCH_LAST_STATE = "dl_orch_last_state";
