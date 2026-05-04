@@ -262,8 +262,10 @@ void DL_CR_WitnessShout(object oWitness, object oOffender)
     }
 
     string sKey = DL_CR_KEY_PREFIX_SHOUT_CD + DL_CR_GetOffenderIdentityKey(oOffender);
+    string sLegacyKey = DL_CR_KEY_PREFIX_SHOUT_CD + DL_CR_GetOffenderIdentityKeyLegacy(oOffender);
     int nNowAbsMin = DL_GetAbsoluteMinute();
-    if (DL_IsMinuteCooldownActive(oWitness, sKey))
+    if (DL_IsMinuteCooldownActive(oWitness, sKey) ||
+        DL_IsMinuteCooldownActive(oWitness, sLegacyKey))
     {
         return;
     }

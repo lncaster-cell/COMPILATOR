@@ -139,9 +139,36 @@ int DL_GetSafeTagSearchCap(int nRequestedCap)
     return nRequestedCap;
 }
 
-string DL_BuildAreaTagCacheKey(string sTag, int nObjectType, object oArea)
+string DL_GetAreaCacheScopeId(object oArea)
+{
+    if (!GetIsObjectValid(oArea))
+    {
+        return "";
+    }
+
+    string sAreaTag = GetTag(oArea);
+    if (sAreaTag != "")
+    {
+        return "tag:" + sAreaTag;
+    }
+
+    string sAreaResRef = GetResRef(oArea);
+    if (sAreaResRef != "")
+    {
+        return "resref:" + sAreaResRef;
+    }
+
+    return "obj:" + ObjectToString(oArea);
+}
+
+string DL_BuildAreaTagCacheKeyLegacy(string sTag, int nObjectType, object oArea)
 {
     return DL_L_AREA_TAG_CACHE_PREFIX + ObjectToString(oArea) + "_" + IntToString(nObjectType) + "_" + sTag;
+}
+
+string DL_BuildAreaTagCacheKey(string sTag, int nObjectType, object oArea)
+{
+    return DL_L_AREA_TAG_CACHE_PREFIX + DL_GetAreaCacheScopeId(oArea) + "_" + IntToString(nObjectType) + "_" + sTag;
 }
 
 object DL_GetAreaScopedCachedObjectByTag(object oOwner, string sTag, int nObjectType, object oArea)
@@ -163,6 +190,20 @@ object DL_GetAreaScopedCachedObjectByTag(object oOwner, string sTag, int nObject
         DeleteLocalObject(oOwner, sLocal);
     }
 
+    string sLegacyLocal = DL_BuildAreaTagCacheKeyLegacy(sTag, nObjectType, oArea);
+    object oLegacyCached = GetLocalObject(oOwner, sLegacyLocal);
+    if (DL_IsCachedObjectValidForTagInArea(oLegacyCached, sTag, nObjectType, oArea))
+    {
+        SetLocalObject(oOwner, sLocal, oLegacyCached);
+        DeleteLocalObject(oOwner, sLegacyLocal);
+        return oLegacyCached;
+    }
+
+    if (GetIsObjectValid(oLegacyCached))
+    {
+        DeleteLocalObject(oOwner, sLegacyLocal);
+    }
+
     return OBJECT_INVALID;
 }
 
@@ -174,13 +215,16 @@ void DL_SetAreaScopedCachedObjectByTag(object oOwner, string sTag, int nObjectTy
     }
 
     string sLocal = DL_BuildAreaTagCacheKey(sTag, nObjectType, oArea);
+    string sLegacyLocal = DL_BuildAreaTagCacheKeyLegacy(sTag, nObjectType, oArea);
     if (!GetIsObjectValid(oValue))
     {
         DeleteLocalObject(oOwner, sLocal);
+        DeleteLocalObject(oOwner, sLegacyLocal);
         return;
     }
 
     SetLocalObject(oOwner, sLocal, oValue);
+    DeleteLocalObject(oOwner, sLegacyLocal);
 }
 
 object DL_FindObjectByTagWithChecks(

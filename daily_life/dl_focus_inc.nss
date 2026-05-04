@@ -34,10 +34,9 @@ object DL_ResolveSocialPartnerObject(object oNpc, string sPartnerTag)
         return oCached;
     }
 
-    int bTagFound = GetIsObjectValid(GetObjectByTag(sPartnerTag, 0));
-    int bTagFoundOutsideArea = FALSE;
-
     object oSelfCandidate = DL_FindObjectByTagWithChecks(sPartnerTag, DL_SOCIAL_PARTNER_TAG_SEARCH_CAP, OBJECT_TYPE_CREATURE, OBJECT_INVALID, OBJECT_INVALID, FALSE);
+    int bTagFound = GetIsObjectValid(oSelfCandidate);
+    int bTagFoundOutsideArea = FALSE;
     if (GetIsObjectValid(oSelfCandidate) && oSelfCandidate == oNpc)
     {
         SetLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC, DL_DIAG_FOCUS_SOCIAL_PARTNER_SELF);
