@@ -128,6 +128,10 @@ void main()
                         " state=" + GetLocalString(oNpc, DL_L_NPC_STATE) +
                         " problem=" + DL_GetNpcProblemSummary(oNpc);
     DL_DbgSay(oPC, sDirective);
+    DL_DbgSay(oPC, "[DL DEBUG] sched wake=" + IntToString(DL_GetNpcWakeHour(oNpc)) +
+                    " sleep_hours=" + IntToString(DL_GetNpcSleepHours(oNpc)) +
+                    " shift_start=" + IntToString(DL_GetNpcShiftStart(oNpc)) +
+                    " shift_len=" + IntToString(DL_GetNpcShiftLength(oNpc, DL_GetWeekendType() != 0)));
 
     string sSleep = "[DL DEBUG] sleep_status=" + GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) +
                     " sleep_target=" + GetLocalString(oNpc, DL_L_NPC_SLEEP_TARGET) +
