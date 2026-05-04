@@ -102,6 +102,15 @@ void main()
         return;
     }
 
+
+    int nNowStamp = GetTimeHour() * 3600 + GetTimeMinute() * 60 + GetTimeSecond();
+    int nLastStamp = GetLocalInt(oPC, "dl_dbg_last_stamp");
+    if (nLastStamp == nNowStamp)
+    {
+        return;
+    }
+    SetLocalInt(oPC, "dl_dbg_last_stamp", nNowStamp);
+
     string sTime = "[DL DEBUG] time=" + DL_DbgPad2(GetTimeHour()) + ":" + DL_DbgPad2(GetTimeMinute()) + ":" + DL_DbgPad2(GetTimeSecond()) +
                    " date=" + IntToString(GetCalendarYear()) + "/" + IntToString(GetCalendarMonth()) + "/" + IntToString(GetCalendarDay());
     DL_DbgSay(oPC, sTime);

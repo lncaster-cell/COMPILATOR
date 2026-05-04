@@ -271,11 +271,24 @@ void DL_DbgRunSubsystemAudit(object oPC, object oNpc)
     DeleteLocalString(oNpc, "dl_dbg_first_fail");
     DeleteLocalString(oNpc, "dl_dbg_fix_hints");
     DeleteLocalString(oNpc, "dl_dbg_error_detail");
+    int nNowDirective = DL_ResolveNpcDirective(oNpc);
+
     DL_AuditRuntime(oPC, oNpc);
     DL_AuditAreas(oPC, oNpc);
-    DL_AuditSleep(oPC, oNpc);
-    DL_AuditWork(oPC, oNpc);
-    DL_AuditMealSocial(oPC, oNpc);
+
+    if (nNowDirective == DL_DIR_SLEEP)
+    {
+        DL_AuditSleep(oPC, oNpc);
+    }
+    else if (nNowDirective == DL_DIR_WORK)
+    {
+        DL_AuditWork(oPC, oNpc);
+    }
+    else if (nNowDirective == DL_DIR_MEAL || nNowDirective == DL_DIR_SOCIAL || nNowDirective == DL_DIR_PUBLIC)
+    {
+        DL_AuditMealSocial(oPC, oNpc);
+    }
+
     DL_AuditTransitionBlocked(oPC, oNpc);
 
     string sFirstFail = GetLocalString(oNpc, "dl_dbg_first_fail");

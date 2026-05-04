@@ -259,7 +259,8 @@ void DL_ExecuteSleepDirective(object oNpc)
         nPhase = DL_SLEEP_PHASE_JUMPING;
     }
 
-    if (bMayUseNavigation &&
+    int bBedInSameArea = GetArea(oNpc) == GetArea(oBed);
+    if (bMayUseNavigation && !bBedInSameArea &&
         DL_TryAdvanceViaTransitionOrRouteEx(oNpc, oBed, DL_DIAG_CTX_ROUTED, TRUE))
     {
         return;
