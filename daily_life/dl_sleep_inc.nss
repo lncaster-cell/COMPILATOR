@@ -238,6 +238,14 @@ void DL_ExecuteSleepDirective(object oNpc)
     if (!bCommittedToBed && fApproachDistance > DL_SLEEP_APPROACH_RADIUS && bMayUseNavigation &&
         DL_TryAdvanceViaTransitionOrRouteEx(oNpc, oApproach, DL_DIAG_CTX_ROUTED, TRUE))
     {
+        DL_LogTransitionEvent(
+            oNpc,
+            "sleep_return_route_approach",
+            "phase=" + IntToString(nPhase) +
+            " status=" + GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) +
+            " dist_approach=" + FloatToString(fApproachDistance, 1, 2) +
+            " dist_bed=" + FloatToString(fBedDistance, 1, 2)
+        );
         return;
     }
 
@@ -248,6 +256,13 @@ void DL_ExecuteSleepDirective(object oNpc)
             SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_MOVING);
             SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_MOVING_TO_APPROACH);
             DL_QueueMoveAction(oNpc, lApproach, TRUE);
+            DL_LogTransitionEvent(
+                oNpc,
+                "sleep_dispatch_move_approach",
+                "phase=" + IntToString(nPhase) +
+                " dist_approach=" + FloatToString(fApproachDistance, 1, 2) +
+                " dist_bed=" + FloatToString(fBedDistance, 1, 2)
+            );
         }
         return;
     }
@@ -263,6 +278,13 @@ void DL_ExecuteSleepDirective(object oNpc)
     if (bMayUseNavigation && !bBedInSameArea &&
         DL_TryAdvanceViaTransitionOrRouteEx(oNpc, oBed, DL_DIAG_CTX_ROUTED, TRUE))
     {
+        DL_LogTransitionEvent(
+            oNpc,
+            "sleep_return_route_bed",
+            "phase=" + IntToString(nPhase) +
+            " status=" + GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) +
+            " dist_bed=" + FloatToString(fBedDistance, 1, 2)
+        );
         return;
     }
 
@@ -270,9 +292,18 @@ void DL_ExecuteSleepDirective(object oNpc)
     {
         if (nPhase != DL_SLEEP_PHASE_JUMPING || DL_ShouldRedispatchMovement(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_JUMPING_TO_BED, fBedDistance, DL_SLEEP_BED_RADIUS))
         {
+            // Keep Jump-to-bed dispatch deterministic: clear stale movement queue first.
+            // NWN2 ActionJumpToLocation is queued, so an unfinished ActionMove can stall it.
+            DL_TryResetActionQueue(oNpc, TRUE, DL_RESET_REASON_ROUTINE);
             SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_JUMPING);
             SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_JUMPING_TO_BED);
             DL_QueueJumpAction(oNpc, lBed);
+            DL_LogTransitionEvent(
+                oNpc,
+                "sleep_dispatch_jump_bed",
+                "dist_bed=" + FloatToString(fBedDistance, 1, 2) +
+                " target=" + GetTag(oBed)
+            );
         }
         return;
     }
