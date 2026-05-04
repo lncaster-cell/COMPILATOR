@@ -87,7 +87,6 @@ object DL_DbgFindNearestDailyLifeNpc(object oUser)
 void DL_DbgSay(object oPC, string sText)
 {
     SendMessageToPC(oPC, sText);
-    FloatingTextStringOnCreature(sText, oPC, FALSE);
 }
 
 void main()
