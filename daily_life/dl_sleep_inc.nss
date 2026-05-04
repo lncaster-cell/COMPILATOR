@@ -229,6 +229,11 @@ void DL_ExecuteSleepDirective(object oNpc)
     location lApproach = GetLocation(oApproach);
     location lBed = GetLocation(oBed);
     float fApproachDistance = GetDistanceBetween(oNpc, oApproach);
+    float fApproachLocationDistance = GetDistanceBetweenLocations(GetLocation(oNpc), lApproach);
+    if (fApproachLocationDistance < fApproachDistance)
+    {
+        fApproachDistance = fApproachLocationDistance;
+    }
     float fBedDistance = GetDistanceBetween(oNpc, oBed);
     int nPhase = GetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE);
     int bCommittedToBed = nPhase == DL_SLEEP_PHASE_JUMPING || nPhase == DL_SLEEP_PHASE_ON_BED;
@@ -258,6 +263,7 @@ void DL_ExecuteSleepDirective(object oNpc)
             "phase=" + IntToString(nPhase) +
             " status=" + GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) +
             " dist_approach=" + FloatToString(fApproachDistance, 1, 2) +
+            " dist_approach_loc=" + FloatToString(fApproachLocationDistance, 1, 2) +
             " dist_bed=" + FloatToString(fBedDistance, 1, 2)
         );
         return;
@@ -275,6 +281,7 @@ void DL_ExecuteSleepDirective(object oNpc)
                 "sleep_dispatch_move_approach",
                 "phase=" + IntToString(nPhase) +
                 " dist_approach=" + FloatToString(fApproachDistance, 1, 2) +
+                " dist_approach_loc=" + FloatToString(fApproachLocationDistance, 1, 2) +
                 " dist_bed=" + FloatToString(fBedDistance, 1, 2)
             );
             DL_MarkSleepFsmStep(oNpc, "dispatch_move_to_approach");
