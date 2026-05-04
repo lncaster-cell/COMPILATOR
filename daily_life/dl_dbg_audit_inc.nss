@@ -161,10 +161,18 @@ void DL_AuditWork(object oPC, object oNpc)
 
     if (sProfile == DL_PROFILE_BLACKSMITH)
     {
+        object oForgeArea = DL_AuditFindWpInArea("dl_work_forge", oWork);
+        object oCraftArea = DL_AuditFindWpInArea("dl_work_craft", oWork);
+        object oForgeLegacy = GetWaypointByTag("dl_work_forge");
+        object oCraftLegacy = GetWaypointByTag("dl_work_craft");
         object oForge = DL_ResolveBlacksmithForgeWaypoint(oNpc);
         object oCraft = DL_ResolveBlacksmithCraftWaypoint(oNpc);
         object oFetch = DL_ResolveBlacksmithFetchWaypoint(oNpc);
         if (!GetIsObjectValid(oForge) || !GetIsObjectValid(oCraft)) DL_AuditFail(oNpc, "work_blacksmith_required_unresolved");
+        DL_DbgSay(oPC, "[DL AUDIT WORK] forge_area=" + DL_AuditPF(GetIsObjectValid(oForgeArea)) +
+                        " forge_legacy=" + DL_AuditPF(GetIsObjectValid(oForgeLegacy)) +
+                        " craft_area=" + DL_AuditPF(GetIsObjectValid(oCraftArea)) +
+                        " craft_legacy=" + DL_AuditPF(GetIsObjectValid(oCraftLegacy)));
         DL_DbgSay(oPC, "[DL AUDIT WORK] blacksmith forge=" + DL_AuditObjTag(oForge) +
                         " craft=" + DL_AuditObjTag(oCraft) +
                         " fetch_optional=" + DL_AuditObjTag(oFetch) +
