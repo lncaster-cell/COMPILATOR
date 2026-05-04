@@ -166,6 +166,38 @@ int DL_GetNpcSleepHours(object oNpc)
 int DL_GetNpcWakeHour(object oNpc)
 {
     int nWake = GetLocalInt(oNpc, DL_L_NPC_WAKE_HOUR);
+    if (nWake < 0 || nWake > 23)
+    {
+        string sWake = GetLocalString(oNpc, DL_L_NPC_WAKE_HOUR);
+        if (sWake != "")
+        {
+            nWake = StringToInt(sWake);
+        }
+    }
+    if (nWake <= 0 || nWake > 23)
+    {
+        string sWake = GetLocalString(oNpc, DL_L_NPC_WAKE_HOUR);
+        if (sWake != "")
+        {
+            nWake = StringToInt(sWake);
+        }
+    }
+    if (nWake <= 0 || nWake > 23)
+    {
+        string sWake = GetLocalString(oNpc, DL_L_NPC_WAKE_HOUR);
+        if (sWake != "")
+        {
+            nWake = StringToInt(sWake);
+        }
+    }
+    if (nWake <= 0 || nWake > 23)
+    {
+        string sWake = GetLocalString(oNpc, DL_L_NPC_WAKE_HOUR);
+        if (sWake != "")
+        {
+            nWake = StringToInt(sWake);
+        }
+    }
     if (nWake <= 0 || nWake > 23)
     {
         string sWake = GetLocalString(oNpc, DL_L_NPC_WAKE_HOUR);
@@ -194,7 +226,7 @@ int DL_GetNpcShiftStart(object oNpc)
     if (GetLocalString(oNpc, DL_L_NPC_PROFILE_ID) == DL_PROFILE_GATE_POST)
     {
         int nLegacyGuardStart = GetLocalInt(oNpc, DL_L_NPC_GUARD_SHIFT_START);
-        if (nLegacyGuardStart > 0 && nLegacyGuardStart <= 23)
+        if (nLegacyGuardStart >= 0 && nLegacyGuardStart <= 23)
         {
             nStart = nLegacyGuardStart;
         }
@@ -212,7 +244,7 @@ int DL_GetNpcShiftStart(object oNpc)
         }
     }
 
-    if (nStart <= 0 || nStart > 23)
+    if (nStart < 0 || nStart > 23)
     {
         nStart = DL_SCHED_DEFAULT_SHIFT_START;
     }
