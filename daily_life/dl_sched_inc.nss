@@ -158,7 +158,7 @@ int DL_GetNpcSleepHours(object oNpc)
 int DL_GetNpcWakeHour(object oNpc)
 {
     int nWake = GetLocalInt(oNpc, DL_L_NPC_WAKE_HOUR);
-    if (nWake <= 0 || nWake > 23)
+    if (nWake < 0 || nWake > 23)
     {
         nWake = DL_SCHED_DEFAULT_WAKE_HOUR;
     }
