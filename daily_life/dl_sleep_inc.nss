@@ -221,6 +221,20 @@ void DL_ExecuteSleepDirective(object oNpc)
     int bCommittedToBed = nPhase == DL_SLEEP_PHASE_JUMPING || nPhase == DL_SLEEP_PHASE_ON_BED;
     int bMayUseNavigation = DL_ShouldAttemptSleepNavigation(oNpc);
 
+    if (!bCommittedToBed && fApproachDistance <= DL_SLEEP_APPROACH_RADIUS)
+    {
+        if (nPhase != DL_SLEEP_PHASE_JUMPING)
+        {
+            SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_JUMPING);
+            nPhase = DL_SLEEP_PHASE_JUMPING;
+        }
+
+        if (GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) == DL_STATUS_MOVING_TO_APPROACH)
+        {
+            SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_APPROACH_REACHED);
+        }
+    }
+
     if (!bCommittedToBed && fApproachDistance > DL_SLEEP_APPROACH_RADIUS && bMayUseNavigation &&
         DL_TryAdvanceViaTransitionOrRouteEx(oNpc, oApproach, DL_DIAG_CTX_ROUTED, TRUE))
     {

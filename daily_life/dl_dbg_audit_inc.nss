@@ -116,10 +116,7 @@ void DL_AuditRuntime(object oPC, object oNpc)
                     " pipeline=" + DL_AuditPF(bPipeline) +
                     " active=" + DL_AuditPF(bActive) +
                     " tier=" + IntToString(DL_GetAreaTier(oArea)) +
-                    " tick=" + IntToString(DL_GetAreaTick(oArea)));
-    DL_DbgSay(oPC, "[DL AUDIT RUNTIME] resync=" + DL_AuditYN(GetLocalInt(oNpc, DL_L_NPC_RESYNC_PENDING)) +
-                    " reason=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_RESYNC_REASON)) +
-                    " worker_seq=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_WORKER_SEQ)));
+                    " resync=" + DL_AuditYN(GetLocalInt(oNpc, DL_L_NPC_RESYNC_PENDING)));
 }
 
 void DL_AuditAreas(object oPC, object oNpc)
@@ -135,13 +132,8 @@ void DL_AuditAreas(object oPC, object oNpc)
 
     DL_DbgSay(oPC, "[DL AUDIT AREA] current=" + DL_AuditAreaTag(oCurrent) +
                     " home=" + DL_AuditAreaTag(oHome) +
-                    " work=" + DL_AuditAreaTag(oWork));
-    DL_DbgSay(oPC, "[DL AUDIT AREA] meal=" + DL_AuditAreaTag(oMeal) +
-                    " social=" + DL_AuditAreaTag(oSocial) +
-                    " public=" + DL_AuditAreaTag(oPublic));
-    DL_DbgSay(oPC, "[DL AUDIT AREA] home_key=" + GetLocalString(oNpc, DL_L_NPC_HOME_AREA_TAG) +
-                    " work_key=" + GetLocalString(oNpc, DL_L_NPC_WORK_AREA_TAG) +
-                    " meal_key=" + GetLocalString(oNpc, DL_L_NPC_MEAL_AREA_TAG));
+                    " work=" + DL_AuditAreaTag(oWork) +
+                    " meal=" + DL_AuditAreaTag(oMeal));
 }
 
 void DL_AuditSleep(object oPC, object oNpc)

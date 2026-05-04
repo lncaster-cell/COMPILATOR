@@ -127,11 +127,6 @@ void main()
                         " state=" + GetLocalString(oNpc, DL_L_NPC_STATE) +
                         " problem=" + DL_GetNpcProblemSummary(oNpc);
     DL_DbgSay(oPC, sDirective);
-    DL_DbgSay(oPC, "[DL DEBUG] sched wake=" + IntToString(DL_GetNpcWakeHour(oNpc)) +
-                    " sleep_hours=" + IntToString(DL_GetNpcSleepHours(oNpc)) +
-                    " shift_start=" + IntToString(DL_GetNpcShiftStart(oNpc)) +
-                    " shift_len=" + IntToString(DL_GetNpcShiftLength(oNpc, DL_GetWeekendType() != 0)));
-
     string sSleep = "[DL DEBUG] sleep_status=" + GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) +
                     " sleep_target=" + GetLocalString(oNpc, DL_L_NPC_SLEEP_TARGET) +
                     " sleep_diag=" + GetLocalString(oNpc, DL_L_NPC_SLEEP_DIAGNOSTIC);
@@ -141,21 +136,6 @@ void main()
     DL_DbgSay(oPC, "[DL DEBUG] sleep_phase=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE)) +
                     " dist_approach=" + (GetIsObjectValid(oSleepApproach) ? FloatToString(GetDistanceBetween(oNpc, oSleepApproach), 1, 2) : "INVALID") +
                     " dist_bed=" + (GetIsObjectValid(oSleepBed) ? FloatToString(GetDistanceBetween(oNpc, oSleepBed), 1, 2) : "INVALID"));
-
-    string sWork = "[DL DEBUG] work_status=" + GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) +
-                   " work_target=" + GetLocalString(oNpc, DL_L_NPC_WORK_TARGET) +
-                   " work_diag=" + GetLocalString(oNpc, DL_L_NPC_WORK_DIAGNOSTIC);
-    DL_DbgSay(oPC, sWork);
-
-    string sFocus = "[DL DEBUG] focus_status=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) +
-                    " focus_target=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) +
-                    " focus_diag=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
-    DL_DbgSay(oPC, sFocus);
-
-    string sTransition = "[DL DEBUG] transition_status=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) +
-                         " transition_target=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) +
-                         " transition_diag=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC);
-    DL_DbgSay(oPC, sTransition);
 
     DL_DbgRunSubsystemAudit(oPC, oNpc);
 }
