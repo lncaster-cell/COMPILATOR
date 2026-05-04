@@ -69,6 +69,61 @@ object DL_ResolveSleepBedWaypoint(object oNpc)
         "dl_sleep_bed_" + IntToString(nSlot)
     );
 }
+int DL_HasSleepExitBedPlacement(object oNpc)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return FALSE;
+    }
+
+    int nPhase = GetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE);
+    string sStatus = GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS);
+
+    if (nPhase == DL_SLEEP_PHASE_JUMPING || nPhase == DL_SLEEP_PHASE_ON_BED)
+    {
+        return TRUE;
+    }
+
+    if (sStatus == "approach_reached" || sStatus == "jumping_to_bed" || sStatus == "on_bed")
+    {
+        return TRUE;
+    }
+
+    return FALSE;
+}
+int DL_TryExitSleepToApproach(object oNpc)
+{
+    if (!DL_HasSleepExitBedPlacement(oNpc))
+    {
+        return FALSE;
+    }
+
+    object oApproach = DL_ResolveSleepApproachWaypoint(oNpc);
+    if (!GetIsObjectValid(oApproach))
+    {
+        AssignCommand(oNpc, ClearAllActions(TRUE));
+        DL_ClearTransitionExecutionState(oNpc);
+        SetLocalString(oNpc, DL_L_NPC_SLEEP_DIAGNOSTIC, "sleep_exit_approach_missing");
+        DL_LogChatDebugEvent(oNpc, "sleep_exit_failed", "approach_valid=0 reason=missing_waypoint");
+        return TRUE;
+    }
+
+    AssignCommand(oNpc, ClearAllActions(TRUE));
+    AssignCommand(oNpc, ActionPlayAnimation(ANIMATION_LOOPING_PAUSE, 1.0, 0.1));
+    AssignCommand(oNpc, ActionJumpToLocation(GetLocation(oApproach)));
+    DL_ClearTransitionExecutionState(oNpc);
+    DL_LogChatDebugEvent(
+        oNpc,
+        "sleep_exit_return",
+        "approach_anchor=" + GetTag(oApproach) + " returned_to_approach=1"
+    );
+
+    DeleteLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE);
+    DeleteLocalString(oNpc, DL_L_NPC_SLEEP_STATUS);
+    DeleteLocalString(oNpc, DL_L_NPC_SLEEP_TARGET);
+    DeleteLocalString(oNpc, DL_L_NPC_SLEEP_DIAGNOSTIC);
+    return TRUE;
+}
 void DL_StopSleepPresentationIfActive(object oNpc)
 {
     if (!GetIsObjectValid(oNpc))
