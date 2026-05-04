@@ -161,30 +161,21 @@ void DL_PlayWorkAnimation(object oNpc)
         int nPhase = (nTick + DL_GetTagDeterministicOffset(GetTag(oNpc), 97, 0)) % 20;
         string sAnim = "forge01";
 
+        // dustoff is a short utility gesture. Do not select it as a looping
+        // blacksmith work animation, or the NPC can replay it many times
+        // before a real forge/craft loop starts.
         if (sKind == DL_WORK_KIND_FORGE)
         {
             sAnim = (nPhase % 2) == 0 ? "forge01" : "forge02";
-            if (nPhase == 0)
-            {
-                sAnim = "dustoff";
-            }
         }
         else if (sKind == DL_WORK_KIND_FETCH)
         {
             sAnim = (nPhase % 2) == 0 ? "gettable" : "getground";
-            if (nPhase == 0)
-            {
-                sAnim = "dustoff";
-            }
         }
         else
         {
             sAnim = "craft01";
-            if (nPhase == 0)
-            {
-                sAnim = "dustoff";
-            }
-            else if ((nPhase % 5) == 0)
+            if ((nPhase % 5) == 0)
             {
                 sAnim = "gettable";
             }
