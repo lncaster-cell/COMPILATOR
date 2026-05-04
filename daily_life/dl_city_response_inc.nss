@@ -109,6 +109,50 @@ string DL_CR_GetOffenderIdentityKey(object oOffender)
         }
     }
 
+    string sProfileId = GetLocalString(oOffender, DL_L_NPC_PROFILE_ID);
+    string sTag = GetTag(oOffender);
+    string sIdentity = "";
+
+    if (sProfileId != "" && sTag != "")
+    {
+        sIdentity = "npc:" + sProfileId + ":" + sTag;
+    }
+    else if (sTag != "")
+    {
+        sIdentity = "tag:" + sTag;
+    }
+    else if (sProfileId != "")
+    {
+        sIdentity = "profile:" + sProfileId;
+    }
+    else
+    {
+        sIdentity = ObjectToString(oOffender);
+    }
+    if (sIdentity == "")
+    {
+        sIdentity = DL_CR_KEY_UNKNOWN_IDENTITY;
+    }
+
+    return GetStringLowerCase(sIdentity);
+}
+
+string DL_CR_GetOffenderIdentityKeyLegacy(object oOffender)
+{
+    if (!DL_IsValidNpcObject(oOffender))
+    {
+        return DL_CR_KEY_UNKNOWN_IDENTITY;
+    }
+
+    if (DL_IsRuntimePlayer(oOffender))
+    {
+        string sPublicCdKey = GetPCPublicCDKey(oOffender);
+        if (sPublicCdKey != "")
+        {
+            return GetStringLowerCase(sPublicCdKey);
+        }
+    }
+
     string sIdentity = ObjectToString(oOffender);
     if (sIdentity == "")
     {
@@ -130,6 +174,16 @@ string DL_CR_GetEpisodeCooldownKey(object oOffender)
 string DL_CR_GetGuardReactionCooldownKey(object oOffender)
 {
     return DL_CR_KEY_PREFIX_GUARD_REACT + DL_CR_GetOffenderIdentityKey(oOffender);
+}
+
+string DL_CR_GetEpisodeCooldownKeyLegacy(object oOffender)
+{
+    return DL_CR_KEY_PREFIX_EPISODE + DL_CR_GetOffenderIdentityKeyLegacy(oOffender);
+}
+
+string DL_CR_GetGuardReactionCooldownKeyLegacy(object oOffender)
+{
+    return DL_CR_KEY_PREFIX_GUARD_REACT + DL_CR_GetOffenderIdentityKeyLegacy(oOffender);
 }
 
 string DL_CR_GetDetainDialogResRef()
@@ -238,8 +292,10 @@ void DL_CR_HandleNpcDamaged(object oVictim)
     }
 
     string sCooldownKey = DL_CR_GetEpisodeCooldownKey(oOffender);
+    string sLegacyCooldownKey = DL_CR_GetEpisodeCooldownKeyLegacy(oOffender);
     int nNowAbsMin = DL_GetAbsoluteMinute();
-    if (DL_IsMinuteCooldownActive(oVictim, sCooldownKey))
+    if (DL_IsMinuteCooldownActive(oVictim, sCooldownKey) ||
+        DL_IsMinuteCooldownActive(oVictim, sLegacyCooldownKey))
     {
         return;
     }
@@ -335,7 +391,9 @@ void DL_CR_HandleGuardPerception(object oGuard)
     }
 
     string sCooldownKey = DL_CR_GetGuardReactionCooldownKey(oSeen);
-    if (DL_IsMinuteCooldownActive(oGuard, sCooldownKey))
+    string sLegacyCooldownKey = DL_CR_GetGuardReactionCooldownKeyLegacy(oSeen);
+    if (DL_IsMinuteCooldownActive(oGuard, sCooldownKey) ||
+        DL_IsMinuteCooldownActive(oGuard, sLegacyCooldownKey))
     {
         return;
     }
