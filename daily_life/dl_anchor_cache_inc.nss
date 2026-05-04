@@ -7,6 +7,16 @@ const int DL_AREA_PURPOSE_PUBLIC = 5;
 object DL_GetSocialArea(object oNpc);
 object DL_GetPublicArea(object oNpc);
 
+int DL_IsResolverAreaObject(object oArea)
+{
+    if (!GetIsObjectValid(oArea))
+    {
+        return FALSE;
+    }
+
+    return GetArea(oArea) == oArea;
+}
+
 void DL_LogInvalidAreaTagIssue(object oNpc, string sContext, string sAreaTag, string sReason)
 {
     if (!GetIsObjectValid(oNpc))
@@ -164,13 +174,13 @@ object DL_GetNpcAreaByTagCached(object oNpc, string sAreaTagLocal, string sAreaC
     int nTier = 0;
     int nLifecycleSeq = GetLocalInt(oNpc, DL_L_NPC_EVENT_SEQ);
     object oCached = DL_GetCachedObject(oNpc, sAreaCacheLocal, sAreaTag, OBJECT_TYPE_AREA, OBJECT_INVALID, nTier, nLifecycleSeq);
-    if (GetIsObjectValid(oCached))
+    if (DL_IsResolverAreaObject(oCached))
     {
         return oCached;
     }
 
     object oArea = DL_FindObjectByTagWithChecks(sAreaTag, 32, -1, OBJECT_INVALID, OBJECT_INVALID, FALSE);
-    if (GetIsObjectValid(oArea) && !DL_IsAreaObject(oArea))
+    if (GetIsObjectValid(oArea) && !DL_IsResolverAreaObject(oArea))
     {
         oArea = OBJECT_INVALID;
     }
@@ -192,7 +202,7 @@ object DL_GetNpcCurrentAreaFallback(object oNpc)
     }
 
     object oArea = GetArea(oNpc);
-    if (GetIsObjectValid(oArea) && DL_IsAreaObject(oArea))
+    if (DL_IsResolverAreaObject(oArea))
     {
         return oArea;
     }
@@ -215,7 +225,7 @@ object DL_GetNpcAreaOrCurrentFallback(object oNpc, string sAreaTagLocal, string 
 }
 object DL_GetAreaAnchorWaypoint(object oNpc, object oArea, string sAnchorLocal, string sCacheLocal, int bRequired)
 {
-    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oArea))
+    if (!GetIsObjectValid(oNpc) || !DL_IsResolverAreaObject(oArea))
     {
         return OBJECT_INVALID;
     }
