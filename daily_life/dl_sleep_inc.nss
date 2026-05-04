@@ -215,18 +215,33 @@ void DL_ExecuteSleepDirective(object oNpc)
 
     location lApproach = GetLocation(oApproach);
     location lBed = GetLocation(oBed);
+    float fApproachDistance = GetDistanceBetween(oNpc, oApproach);
+    float fBedDistance = GetDistanceBetween(oNpc, oBed);
     int nPhase = GetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE);
     int bCommittedToBed = nPhase == DL_SLEEP_PHASE_JUMPING || nPhase == DL_SLEEP_PHASE_ON_BED;
     int bMayUseNavigation = DL_ShouldAttemptSleepNavigation(oNpc);
 
-    if (!bCommittedToBed && bMayUseNavigation &&
+    if (!bCommittedToBed && fApproachDistance <= DL_SLEEP_APPROACH_RADIUS)
+    {
+        if (nPhase != DL_SLEEP_PHASE_JUMPING)
+        {
+            SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_JUMPING);
+            nPhase = DL_SLEEP_PHASE_JUMPING;
+        }
+
+        if (GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) == DL_STATUS_MOVING_TO_APPROACH)
+        {
+            SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_APPROACH_REACHED);
+        }
+    }
+
+    if (!bCommittedToBed && fApproachDistance > DL_SLEEP_APPROACH_RADIUS && bMayUseNavigation &&
         DL_TryAdvanceViaTransitionOrRouteEx(oNpc, oApproach, DL_DIAG_CTX_ROUTED, TRUE))
     {
         return;
     }
 
-    float fApproachDistance = GetDistanceBetween(oNpc, oApproach);
-    if (!bCommittedToBed && fApproachDistance > DL_SLEEP_APPROACH_RADIUS)
+    if (!bCommittedToBed && fBedDistance > DL_SLEEP_BED_RADIUS && fApproachDistance > DL_SLEEP_APPROACH_RADIUS)
     {
         if (nPhase != DL_SLEEP_PHASE_MOVING || DL_ShouldRedispatchMovement(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_MOVING_TO_APPROACH, fApproachDistance, DL_SLEEP_APPROACH_RADIUS))
         {
@@ -250,7 +265,6 @@ void DL_ExecuteSleepDirective(object oNpc)
         return;
     }
 
-    float fBedDistance = GetDistanceBetween(oNpc, oBed);
     if (fBedDistance > DL_SLEEP_BED_RADIUS)
     {
         if (nPhase != DL_SLEEP_PHASE_JUMPING || DL_ShouldRedispatchMovement(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_JUMPING_TO_BED, fBedDistance, DL_SLEEP_BED_RADIUS))

@@ -50,6 +50,44 @@ void DL_AuditFail(object oNpc, string sKey)
         SetLocalString(oNpc, "dl_dbg_first_fail", sKey);
     }
 }
+void DL_AuditAddFixHint(object oNpc, string sHint)
+{
+    if (!GetIsObjectValid(oNpc) || sHint == "")
+    {
+        return;
+    }
+
+    string sNow = GetLocalString(oNpc, "dl_dbg_fix_hints");
+    if (sNow == "")
+    {
+        SetLocalString(oNpc, "dl_dbg_fix_hints", sHint);
+        return;
+    }
+
+    if (FindSubString(sNow, sHint) >= 0)
+    {
+        return;
+    }
+
+    SetLocalString(oNpc, "dl_dbg_fix_hints", sNow + " || " + sHint);
+}
+
+void DL_AuditAddErrorDetail(object oNpc, string sDetail)
+{
+    if (!GetIsObjectValid(oNpc) || sDetail == "")
+    {
+        return;
+    }
+
+    string sNow = GetLocalString(oNpc, "dl_dbg_error_detail");
+    if (sNow == "")
+    {
+        SetLocalString(oNpc, "dl_dbg_error_detail", sDetail);
+        return;
+    }
+
+    SetLocalString(oNpc, "dl_dbg_error_detail", sNow + " || " + sDetail);
+}
 
 object DL_AuditFindWpInArea(string sTag, object oArea)
 {
@@ -67,18 +105,18 @@ void DL_AuditRuntime(object oPC, object oNpc)
     int bPipeline = DL_IsPipelineNpc(oNpc);
     int bActive = DL_IsActivePipelineNpc(oNpc);
 
-    if (!bRuntime) DL_AuditFail(oNpc, "runtime_disabled");
-    if (!bPipeline) DL_AuditFail(oNpc, "npc_not_pipeline");
-    if (!bActive) DL_AuditFail(oNpc, "npc_not_active_pipeline");
+    if (!bRuntime) { DL_AuditFail(oNpc, "runtime_disabled"); DL_AuditAddFixHint(oNpc, "runtime: enable module locals dl_enabled=1 and dl_contract_version=a0"); }
+    if (!bPipeline) { DL_AuditFail(oNpc, "npc_not_pipeline"); DL_AuditAddFixHint(oNpc, "pipeline: NPC not registered as Daily Life actor/profile"); }
+    if (!bActive) { DL_AuditFail(oNpc, "npc_not_active_pipeline"); DL_AuditAddFixHint(oNpc, "pipeline: NPC is not active in current area tier/runtime"); }
+    if (!bRuntime) { DL_AuditAddErrorDetail(oNpc, "runtime module locals invalid"); }
+    if (!bPipeline) { DL_AuditAddErrorDetail(oNpc, "npc not in pipeline registry"); }
+    if (!bActive) { DL_AuditAddErrorDetail(oNpc, "npc inactive for current runtime tier"); }
 
     DL_DbgSay(oPC, "[DL AUDIT RUNTIME] runtime=" + DL_AuditPF(bRuntime) +
                     " pipeline=" + DL_AuditPF(bPipeline) +
                     " active=" + DL_AuditPF(bActive) +
                     " tier=" + IntToString(DL_GetAreaTier(oArea)) +
-                    " tick=" + IntToString(DL_GetAreaTick(oArea)));
-    DL_DbgSay(oPC, "[DL AUDIT RUNTIME] resync=" + DL_AuditYN(GetLocalInt(oNpc, DL_L_NPC_RESYNC_PENDING)) +
-                    " reason=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_RESYNC_REASON)) +
-                    " worker_seq=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_WORKER_SEQ)));
+                    " resync=" + DL_AuditYN(GetLocalInt(oNpc, DL_L_NPC_RESYNC_PENDING)));
 }
 
 void DL_AuditAreas(object oPC, object oNpc)
@@ -90,17 +128,12 @@ void DL_AuditAreas(object oPC, object oNpc)
     object oSocial = DL_GetSocialArea(oNpc);
     object oPublic = DL_GetPublicArea(oNpc);
 
-    if (!GetIsObjectValid(oHome)) DL_AuditFail(oNpc, "home_area_invalid");
+    if (!GetIsObjectValid(oHome)) { DL_AuditFail(oNpc, "home_area_invalid"); DL_AuditAddFixHint(oNpc, "areas: set npc local dl_home_area_tag or place NPC in valid area"); DL_AuditAddErrorDetail(oNpc, "home area unresolved (dl_home_area_tag=" + GetLocalString(oNpc, DL_L_NPC_HOME_AREA_TAG) + ")"); }
 
     DL_DbgSay(oPC, "[DL AUDIT AREA] current=" + DL_AuditAreaTag(oCurrent) +
                     " home=" + DL_AuditAreaTag(oHome) +
-                    " work=" + DL_AuditAreaTag(oWork));
-    DL_DbgSay(oPC, "[DL AUDIT AREA] meal=" + DL_AuditAreaTag(oMeal) +
-                    " social=" + DL_AuditAreaTag(oSocial) +
-                    " public=" + DL_AuditAreaTag(oPublic));
-    DL_DbgSay(oPC, "[DL AUDIT AREA] home_key=" + GetLocalString(oNpc, DL_L_NPC_HOME_AREA_TAG) +
-                    " work_key=" + GetLocalString(oNpc, DL_L_NPC_WORK_AREA_TAG) +
-                    " meal_key=" + GetLocalString(oNpc, DL_L_NPC_MEAL_AREA_TAG));
+                    " work=" + DL_AuditAreaTag(oWork) +
+                    " meal=" + DL_AuditAreaTag(oMeal));
 }
 
 void DL_AuditSleep(object oPC, object oNpc)
@@ -124,8 +157,8 @@ void DL_AuditSleep(object oPC, object oNpc)
     object oApproachResolved = DL_ResolveSleepApproachWaypoint(oNpc);
     object oBedResolved = DL_ResolveSleepBedWaypoint(oNpc);
 
-    if (!GetIsObjectValid(oApproachResolved)) DL_AuditFail(oNpc, "sleep_approach_unresolved");
-    if (!GetIsObjectValid(oBedResolved)) DL_AuditFail(oNpc, "sleep_bed_unresolved");
+    if (!GetIsObjectValid(oApproachResolved)) { DL_AuditFail(oNpc, "sleep_approach_unresolved"); DL_AuditAddFixHint(oNpc, "sleep: add/verify dl_sleep_approach_<slot> or area anchor dl_anchor_sleep_approach_<slot>"); DL_AuditAddErrorDetail(oNpc, "sleep approach unresolved slot=" + IntToString(nSlot)); }
+    if (!GetIsObjectValid(oBedResolved)) { DL_AuditFail(oNpc, "sleep_bed_unresolved"); DL_AuditAddFixHint(oNpc, "sleep: add/verify dl_sleep_bed_<slot> or area anchor dl_anchor_sleep_bed_<slot>"); DL_AuditAddErrorDetail(oNpc, "sleep bed unresolved slot=" + IntToString(nSlot)); }
 
     string sApproachAnchorValue = GetIsObjectValid(oHome) ? GetLocalString(oHome, sApproachAnchor) : "";
     string sBedAnchorValue = GetIsObjectValid(oHome) ? GetLocalString(oHome, sBedAnchor) : "";
@@ -161,10 +194,18 @@ void DL_AuditWork(object oPC, object oNpc)
 
     if (sProfile == DL_PROFILE_BLACKSMITH)
     {
+        object oForgeArea = DL_AuditFindWpInArea("dl_work_forge", oWork);
+        object oCraftArea = DL_AuditFindWpInArea("dl_work_craft", oWork);
+        object oForgeLegacy = GetWaypointByTag("dl_work_forge");
+        object oCraftLegacy = GetWaypointByTag("dl_work_craft");
         object oForge = DL_ResolveBlacksmithForgeWaypoint(oNpc);
         object oCraft = DL_ResolveBlacksmithCraftWaypoint(oNpc);
         object oFetch = DL_ResolveBlacksmithFetchWaypoint(oNpc);
-        if (!GetIsObjectValid(oForge) || !GetIsObjectValid(oCraft)) DL_AuditFail(oNpc, "work_blacksmith_required_unresolved");
+        if (!GetIsObjectValid(oForge) || !GetIsObjectValid(oCraft)) { DL_AuditFail(oNpc, "work_blacksmith_required_unresolved"); DL_AuditAddFixHint(oNpc, "work: add/verify dl_work_forge + dl_work_craft or anchors dl_anchor_work_primary/secondary in work area"); DL_AuditAddErrorDetail(oNpc, "work blacksmith unresolved in area=" + DL_AuditAreaTag(oWork)); }
+        DL_DbgSay(oPC, "[DL AUDIT WORK] forge_area=" + DL_AuditPF(GetIsObjectValid(oForgeArea)) +
+                        " forge_legacy=" + DL_AuditPF(GetIsObjectValid(oForgeLegacy)) +
+                        " craft_area=" + DL_AuditPF(GetIsObjectValid(oCraftArea)) +
+                        " craft_legacy=" + DL_AuditPF(GetIsObjectValid(oCraftLegacy)));
         DL_DbgSay(oPC, "[DL AUDIT WORK] blacksmith forge=" + DL_AuditObjTag(oForge) +
                         " craft=" + DL_AuditObjTag(oCraft) +
                         " fetch_optional=" + DL_AuditObjTag(oFetch) +
@@ -178,12 +219,19 @@ void DL_AuditMealSocial(object oPC, object oNpc)
     object oMealArea = DL_GetMealArea(oNpc);
     object oMeal = DL_ResolveMealWaypoint(oNpc, sMealKind);
     string sMealAnchor = GetIsObjectValid(oMealArea) ? GetLocalString(oMealArea, "dl_anchor_meal") : "";
-    if (!GetIsObjectValid(oMeal)) DL_AuditFail(oNpc, "meal_unresolved");
+    if (!GetIsObjectValid(oMeal)) { DL_AuditFail(oNpc, "meal_unresolved"); DL_AuditAddFixHint(oNpc, "meal: add/verify dl_anchor_meal in meal/work/home fallback area"); DL_AuditAddErrorDetail(oNpc, "meal unresolved kind=" + sMealKind + " area=" + DL_AuditAreaTag(oMealArea)); }
 
     DL_DbgSay(oPC, "[DL AUDIT MEAL] kind=" + sMealKind +
                     " area=" + DL_AuditAreaTag(oMealArea) +
                     " anchor=" + sMealAnchor +
                     " resolved=" + DL_AuditObjTag(oMeal));
+
+    int nNowDirective = DL_ResolveNpcDirective(oNpc);
+    if (nNowDirective != DL_DIR_SOCIAL && nNowDirective != DL_DIR_PUBLIC)
+    {
+        DL_DbgSay(oPC, "[DL AUDIT SOCIAL] skip=inactive now_dir=" + IntToString(nNowDirective));
+        return;
+    }
 
     object oPublic = DL_ResolvePublicWaypoint(oNpc);
     object oReserved = GetLocalObject(oNpc, DL_L_NPC_SOCIAL_RESERVED_WP);
@@ -195,8 +243,16 @@ void DL_AuditMealSocial(object oPC, object oNpc)
 
 void DL_AuditTransitionBlocked(object oPC, object oNpc)
 {
+    string sTransitionStatus = GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS);
+    if (sTransitionStatus == "")
+    {
+        DL_DbgSay(oPC, "[DL AUDIT TRANSITION] skip=idle");
+        DL_DbgSay(oPC, "[DL AUDIT BLOCKED] skip=idle");
+        return;
+    }
+
     object oBlocked = GetLocalObject(oNpc, DL_L_NPC_BLOCKED_OBJ);
-    DL_DbgSay(oPC, "[DL AUDIT TRANSITION] status=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) +
+    DL_DbgSay(oPC, "[DL AUDIT TRANSITION] status=" + sTransitionStatus +
                     " target=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) +
                     " diag=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC));
     DL_DbgSay(oPC, "[DL AUDIT BLOCKED] obj=" + DL_AuditObjTag(oBlocked) +
@@ -213,6 +269,8 @@ void DL_DbgRunSubsystemAudit(object oPC, object oNpc)
     }
 
     DeleteLocalString(oNpc, "dl_dbg_first_fail");
+    DeleteLocalString(oNpc, "dl_dbg_fix_hints");
+    DeleteLocalString(oNpc, "dl_dbg_error_detail");
     DL_AuditRuntime(oPC, oNpc);
     DL_AuditAreas(oPC, oNpc);
     DL_AuditSleep(oPC, oNpc);
@@ -228,5 +286,7 @@ void DL_DbgRunSubsystemAudit(object oPC, object oNpc)
     else
     {
         DL_DbgSay(oPC, "[DL AUDIT VERDICT] overall=FAIL first_fail=" + sFirstFail);
+        DL_DbgSay(oPC, "[DL AUDIT ERROR] " + GetLocalString(oNpc, "dl_dbg_error_detail"));
+        DL_DbgSay(oPC, "[DL AUDIT FIX] " + GetLocalString(oNpc, "dl_dbg_fix_hints"));
     }
 }
