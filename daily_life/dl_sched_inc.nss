@@ -151,6 +151,14 @@ int DL_GetNpcSleepHours(object oNpc)
     int nHours = GetLocalInt(oNpc, DL_L_NPC_SLEEP_HOURS);
     if (nHours <= 0)
     {
+        string sHours = GetLocalString(oNpc, DL_L_NPC_SLEEP_HOURS);
+        if (sHours != "")
+        {
+            nHours = StringToInt(sHours);
+        }
+    }
+    if (nHours <= 0)
+    {
         nHours = DL_SCHED_DEFAULT_SLEEP_HOURS;
     }
     return DL_ClampInt(nHours, DL_SCHED_MIN_SLEEP_HOURS, DL_SCHED_MAX_SLEEP_HOURS);
@@ -160,6 +168,14 @@ int DL_GetNpcWakeHour(object oNpc)
     int nWake = GetLocalInt(oNpc, DL_L_NPC_WAKE_HOUR);
     if (nWake <= 0 || nWake > 23)
     {
+        string sWake = GetLocalString(oNpc, DL_L_NPC_WAKE_HOUR);
+        if (sWake != "")
+        {
+            nWake = StringToInt(sWake);
+        }
+    }
+    if (nWake <= 0 || nWake > 23)
+    {
         nWake = DL_SCHED_DEFAULT_WAKE_HOUR;
     }
     return nWake;
@@ -167,12 +183,32 @@ int DL_GetNpcWakeHour(object oNpc)
 int DL_GetNpcShiftStart(object oNpc)
 {
     int nStart = GetLocalInt(oNpc, DL_L_NPC_SHIFT_START);
+    if (nStart <= 0 || nStart > 23)
+    {
+        string sStart = GetLocalString(oNpc, DL_L_NPC_SHIFT_START);
+        if (sStart != "")
+        {
+            nStart = StringToInt(sStart);
+        }
+    }
     if (GetLocalString(oNpc, DL_L_NPC_PROFILE_ID) == DL_PROFILE_GATE_POST)
     {
         int nLegacyGuardStart = GetLocalInt(oNpc, DL_L_NPC_GUARD_SHIFT_START);
         if (nLegacyGuardStart > 0 && nLegacyGuardStart <= 23)
         {
             nStart = nLegacyGuardStart;
+        }
+        else
+        {
+            string sLegacyGuardStart = GetLocalString(oNpc, DL_L_NPC_GUARD_SHIFT_START);
+            if (sLegacyGuardStart != "")
+            {
+                nLegacyGuardStart = StringToInt(sLegacyGuardStart);
+                if (nLegacyGuardStart > 0 && nLegacyGuardStart <= 23)
+                {
+                    nStart = nLegacyGuardStart;
+                }
+            }
         }
     }
 
@@ -185,6 +221,14 @@ int DL_GetNpcShiftStart(object oNpc)
 int DL_GetNpcShiftLength(object oNpc, int bWeekend)
 {
     int nLen = GetLocalInt(oNpc, DL_L_NPC_SHIFT_LENGTH);
+    if (nLen <= 0)
+    {
+        string sLen = GetLocalString(oNpc, DL_L_NPC_SHIFT_LENGTH);
+        if (sLen != "")
+        {
+            nLen = StringToInt(sLen);
+        }
+    }
     if (nLen <= 0)
     {
         nLen = DL_SCHED_DEFAULT_SHIFT_LENGTH;
@@ -202,7 +246,19 @@ int DL_GetNpcShiftLength(object oNpc, int bWeekend)
             }
             else
             {
-                nLen = DL_SCHED_DEFAULT_WEEKEND_SHIFT_LENGTH;
+                string sWeekendLen = GetLocalString(oNpc, DL_L_NPC_WEEKEND_SHIFT_LENGTH);
+                if (sWeekendLen != "")
+                {
+                    nWeekendLen = StringToInt(sWeekendLen);
+                }
+                if (nWeekendLen > 0)
+                {
+                    nLen = nWeekendLen;
+                }
+                else
+                {
+                    nLen = DL_SCHED_DEFAULT_WEEKEND_SHIFT_LENGTH;
+                }
             }
         }
         else if (sMode == DL_WEEKEND_MODE_OFF_PUBLIC)

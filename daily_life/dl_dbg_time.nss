@@ -87,7 +87,6 @@ object DL_DbgFindNearestDailyLifeNpc(object oUser)
 void DL_DbgSay(object oPC, string sText)
 {
     SendMessageToPC(oPC, sText);
-    FloatingTextStringOnCreature(sText, oPC, FALSE);
 }
 
 void main()
@@ -102,6 +101,15 @@ void main()
     {
         return;
     }
+
+
+    int nNowStamp = GetTimeHour() * 3600 + GetTimeMinute() * 60 + GetTimeSecond();
+    int nLastStamp = GetLocalInt(oPC, "dl_dbg_last_stamp");
+    if (nLastStamp == nNowStamp)
+    {
+        return;
+    }
+    SetLocalInt(oPC, "dl_dbg_last_stamp", nNowStamp);
 
     string sTime = "[DL DEBUG] time=" + DL_DbgPad2(GetTimeHour()) + ":" + DL_DbgPad2(GetTimeMinute()) + ":" + DL_DbgPad2(GetTimeSecond()) +
                    " date=" + IntToString(GetCalendarYear()) + "/" + IntToString(GetCalendarMonth()) + "/" + IntToString(GetCalendarDay());
@@ -128,26 +136,15 @@ void main()
                         " state=" + GetLocalString(oNpc, DL_L_NPC_STATE) +
                         " problem=" + DL_GetNpcProblemSummary(oNpc);
     DL_DbgSay(oPC, sDirective);
-
     string sSleep = "[DL DEBUG] sleep_status=" + GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) +
                     " sleep_target=" + GetLocalString(oNpc, DL_L_NPC_SLEEP_TARGET) +
                     " sleep_diag=" + GetLocalString(oNpc, DL_L_NPC_SLEEP_DIAGNOSTIC);
     DL_DbgSay(oPC, sSleep);
-
-    string sWork = "[DL DEBUG] work_status=" + GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) +
-                   " work_target=" + GetLocalString(oNpc, DL_L_NPC_WORK_TARGET) +
-                   " work_diag=" + GetLocalString(oNpc, DL_L_NPC_WORK_DIAGNOSTIC);
-    DL_DbgSay(oPC, sWork);
-
-    string sFocus = "[DL DEBUG] focus_status=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) +
-                    " focus_target=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) +
-                    " focus_diag=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
-    DL_DbgSay(oPC, sFocus);
-
-    string sTransition = "[DL DEBUG] transition_status=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) +
-                         " transition_target=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) +
-                         " transition_diag=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC);
-    DL_DbgSay(oPC, sTransition);
+    object oSleepApproach = DL_ResolveSleepApproachWaypoint(oNpc);
+    object oSleepBed = DL_ResolveSleepBedWaypoint(oNpc);
+    DL_DbgSay(oPC, "[DL DEBUG] sleep_phase=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE)) +
+                    " dist_approach=" + (GetIsObjectValid(oSleepApproach) ? FloatToString(GetDistanceBetween(oNpc, oSleepApproach), 1, 2) : "INVALID") +
+                    " dist_bed=" + (GetIsObjectValid(oSleepBed) ? FloatToString(GetDistanceBetween(oNpc, oSleepBed), 1, 2) : "INVALID"));
 
     DL_DbgRunSubsystemAudit(oPC, oNpc);
 }
