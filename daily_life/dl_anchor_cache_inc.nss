@@ -119,7 +119,7 @@ object DL_ResolveNpcWaypointWithFallbackTag(
     string sNpcTag = GetTag(oNpc);
     object oWp = DL_GetNpcCachedWaypointByTagInArea(
         oNpc,
-        sCacheLocal,
+        sCacheLocal + "_personal",
         sPersonalPrefix + sNpcTag + sPersonalSuffix,
         oArea
     );
@@ -128,7 +128,21 @@ object DL_ResolveNpcWaypointWithFallbackTag(
         return oWp;
     }
 
-    return DL_GetNpcCachedWaypointByTagInArea(oNpc, sCacheLocal, sFallbackTag, oArea);
+    oWp = DL_GetNpcCachedWaypointByTagInArea(oNpc, sCacheLocal + "_fallback", sFallbackTag, oArea);
+    if (GetIsObjectValid(oWp))
+    {
+        return oWp;
+    }
+
+    // Compatibility fallback: keep legacy global-tag lookup for existing markup
+    // when area-scoped lookup misses.
+    oWp = DL_GetNpcCachedWaypointByTag(oNpc, sCacheLocal + "_personal_legacy", sPersonalPrefix + sNpcTag + sPersonalSuffix);
+    if (GetIsObjectValid(oWp))
+    {
+        return oWp;
+    }
+
+    return DL_GetNpcCachedWaypointByTag(oNpc, sCacheLocal + "_fallback_legacy", sFallbackTag);
 }
 object DL_ResolveNpcWaypointWithFallbackTagInArea(
     object oNpc,
@@ -147,7 +161,7 @@ object DL_ResolveNpcWaypointWithFallbackTagInArea(
     string sNpcTag = GetTag(oNpc);
     object oWp = DL_GetNpcCachedWaypointByTagInArea(
         oNpc,
-        sCacheLocal,
+        sCacheLocal + "_personal",
         sPersonalPrefix + sNpcTag + sPersonalSuffix,
         oArea
     );
@@ -156,7 +170,7 @@ object DL_ResolveNpcWaypointWithFallbackTagInArea(
         return oWp;
     }
 
-    return DL_GetNpcCachedWaypointByTagInArea(oNpc, sCacheLocal, sFallbackTag, oArea);
+    return DL_GetNpcCachedWaypointByTagInArea(oNpc, sCacheLocal + "_fallback", sFallbackTag, oArea);
 }
 object DL_GetNpcAreaByTagCached(object oNpc, string sAreaTagLocal, string sAreaCacheLocal)
 {

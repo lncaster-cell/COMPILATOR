@@ -161,10 +161,18 @@ void DL_AuditWork(object oPC, object oNpc)
 
     if (sProfile == DL_PROFILE_BLACKSMITH)
     {
+        object oForgeArea = DL_AuditFindWpInArea("dl_work_forge", oWork);
+        object oCraftArea = DL_AuditFindWpInArea("dl_work_craft", oWork);
+        object oForgeLegacy = GetWaypointByTag("dl_work_forge");
+        object oCraftLegacy = GetWaypointByTag("dl_work_craft");
         object oForge = DL_ResolveBlacksmithForgeWaypoint(oNpc);
         object oCraft = DL_ResolveBlacksmithCraftWaypoint(oNpc);
         object oFetch = DL_ResolveBlacksmithFetchWaypoint(oNpc);
         if (!GetIsObjectValid(oForge) || !GetIsObjectValid(oCraft)) DL_AuditFail(oNpc, "work_blacksmith_required_unresolved");
+        DL_DbgSay(oPC, "[DL AUDIT WORK] forge_area=" + DL_AuditPF(GetIsObjectValid(oForgeArea)) +
+                        " forge_legacy=" + DL_AuditPF(GetIsObjectValid(oForgeLegacy)) +
+                        " craft_area=" + DL_AuditPF(GetIsObjectValid(oCraftArea)) +
+                        " craft_legacy=" + DL_AuditPF(GetIsObjectValid(oCraftLegacy)));
         DL_DbgSay(oPC, "[DL AUDIT WORK] blacksmith forge=" + DL_AuditObjTag(oForge) +
                         " craft=" + DL_AuditObjTag(oCraft) +
                         " fetch_optional=" + DL_AuditObjTag(oFetch) +
@@ -185,6 +193,13 @@ void DL_AuditMealSocial(object oPC, object oNpc)
                     " anchor=" + sMealAnchor +
                     " resolved=" + DL_AuditObjTag(oMeal));
 
+    int nNowDirective = DL_ResolveNpcDirective(oNpc);
+    if (nNowDirective != DL_DIR_SOCIAL && nNowDirective != DL_DIR_PUBLIC)
+    {
+        DL_DbgSay(oPC, "[DL AUDIT SOCIAL] skip=inactive now_dir=" + IntToString(nNowDirective));
+        return;
+    }
+
     object oPublic = DL_ResolvePublicWaypoint(oNpc);
     object oReserved = GetLocalObject(oNpc, DL_L_NPC_SOCIAL_RESERVED_WP);
     DL_DbgSay(oPC, "[DL AUDIT SOCIAL] kind=" + DL_GetNpcSocialKind(oNpc) +
@@ -195,8 +210,16 @@ void DL_AuditMealSocial(object oPC, object oNpc)
 
 void DL_AuditTransitionBlocked(object oPC, object oNpc)
 {
+    string sTransitionStatus = GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS);
+    if (sTransitionStatus == "")
+    {
+        DL_DbgSay(oPC, "[DL AUDIT TRANSITION] skip=idle");
+        DL_DbgSay(oPC, "[DL AUDIT BLOCKED] skip=idle");
+        return;
+    }
+
     object oBlocked = GetLocalObject(oNpc, DL_L_NPC_BLOCKED_OBJ);
-    DL_DbgSay(oPC, "[DL AUDIT TRANSITION] status=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) +
+    DL_DbgSay(oPC, "[DL AUDIT TRANSITION] status=" + sTransitionStatus +
                     " target=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) +
                     " diag=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC));
     DL_DbgSay(oPC, "[DL AUDIT BLOCKED] obj=" + DL_AuditObjTag(oBlocked) +
