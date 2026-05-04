@@ -237,7 +237,14 @@ void DL_ExecuteSleepDirective(object oNpc)
 
     if (nPhase != DL_SLEEP_PHASE_JUMPING && nPhase != DL_SLEEP_PHASE_ON_BED)
     {
-        if (fApproachDistance > DL_SLEEP_APPROACH_RADIUS)
+        if (bBedInSameAreaNow)
+        {
+            SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_JUMPING);
+            SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_APPROACH_REACHED);
+            nPhase = DL_SLEEP_PHASE_JUMPING;
+            DL_MarkSleepFsmStep(oNpc, "skip_approach_same_area");
+        }
+        else if (fApproachDistance > DL_SLEEP_APPROACH_RADIUS)
         {
             if (bMayUseNavigation &&
                 DL_TryAdvanceViaTransitionOrRouteEx(oNpc, oApproach, DL_DIAG_CTX_ROUTED, TRUE))
@@ -275,10 +282,12 @@ void DL_ExecuteSleepDirective(object oNpc)
             }
             return;
         }
-
-        SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_JUMPING);
-        SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_APPROACH_REACHED);
-        nPhase = DL_SLEEP_PHASE_JUMPING;
+        else
+        {
+            SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_JUMPING);
+            SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_APPROACH_REACHED);
+            nPhase = DL_SLEEP_PHASE_JUMPING;
+        }
     }
 
     if (fBedDistance > DL_SLEEP_BED_RADIUS)
