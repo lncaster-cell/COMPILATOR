@@ -224,6 +224,11 @@ void DL_ExecuteSleepDirective(object oNpc)
     location lApproach = GetLocation(oApproach);
     location lBed = GetLocation(oBed);
     float fApproachDistance = GetDistanceBetween(oNpc, oApproach);
+    float fApproachLocationDistance = GetDistanceBetweenLocations(GetLocation(oNpc), lApproach);
+    if (fApproachLocationDistance < fApproachDistance)
+    {
+        fApproachDistance = fApproachLocationDistance;
+    }
     float fBedDistance = GetDistanceBetween(oNpc, oBed);
 
     int nPhase = GetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE);
