@@ -194,14 +194,27 @@ int DL_ShouldAttemptSleepNavigation(object oNpc)
 
     return GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) != DL_STATUS_MOVING_VIA_NAVIGATION;
 }
+
+void DL_MarkSleepFsmStep(object oNpc, string sStep)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    SetLocalString(oNpc, "dl_sleep_fsm_step", sStep);
+    SetLocalInt(oNpc, "dl_sleep_fsm_step_tick", GetTimeHour() * 3600 + GetTimeMinute() * 60 + GetTimeSecond());
+}
 // Domain contract: sleep interprets transition/router outcome and updates only sleep locals.
 void DL_ExecuteSleepDirective(object oNpc)
 {
+    DL_MarkSleepFsmStep(oNpc, "enter");
     object oApproach = DL_ResolveSleepApproachWaypoint(oNpc);
     object oBed = DL_ResolveSleepBedWaypoint(oNpc);
 
     if (!GetIsObjectValid(oApproach) || !GetIsObjectValid(oBed))
     {
+        DL_MarkSleepFsmStep(oNpc, "missing_waypoints_return");
         DL_SetSleepMissingState(oNpc);
         return;
     }
@@ -238,6 +251,7 @@ void DL_ExecuteSleepDirective(object oNpc)
     if (!bCommittedToBed && fApproachDistance > DL_SLEEP_APPROACH_RADIUS && bMayUseNavigation &&
         DL_TryAdvanceViaTransitionOrRouteEx(oNpc, oApproach, DL_DIAG_CTX_ROUTED, TRUE))
     {
+        DL_MarkSleepFsmStep(oNpc, "route_to_approach_return");
         DL_LogTransitionEvent(
             oNpc,
             "sleep_return_route_approach",
@@ -263,6 +277,11 @@ void DL_ExecuteSleepDirective(object oNpc)
                 " dist_approach=" + FloatToString(fApproachDistance, 1, 2) +
                 " dist_bed=" + FloatToString(fBedDistance, 1, 2)
             );
+            DL_MarkSleepFsmStep(oNpc, "dispatch_move_to_approach");
+        }
+        else
+        {
+            DL_MarkSleepFsmStep(oNpc, "hold_move_to_approach");
         }
         return;
     }
@@ -278,6 +297,7 @@ void DL_ExecuteSleepDirective(object oNpc)
     if (bMayUseNavigation && !bBedInSameArea &&
         DL_TryAdvanceViaTransitionOrRouteEx(oNpc, oBed, DL_DIAG_CTX_ROUTED, TRUE))
     {
+        DL_MarkSleepFsmStep(oNpc, "route_to_bed_return");
         DL_LogTransitionEvent(
             oNpc,
             "sleep_return_route_bed",
@@ -304,6 +324,11 @@ void DL_ExecuteSleepDirective(object oNpc)
                 "dist_bed=" + FloatToString(fBedDistance, 1, 2) +
                 " target=" + GetTag(oBed)
             );
+            DL_MarkSleepFsmStep(oNpc, "dispatch_jump_to_bed");
+        }
+        else
+        {
+            DL_MarkSleepFsmStep(oNpc, "hold_jump_to_bed");
         }
         return;
     }
@@ -316,5 +341,6 @@ void DL_ExecuteSleepDirective(object oNpc)
     DL_ClearTransitionExecutionState(oNpc);
     SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_ON_BED);
     DL_SetRuntimeState(oNpc, DL_L_NPC_SLEEP_STATUS, DL_STATUS_ON_BED, "", "");
+    DL_MarkSleepFsmStep(oNpc, "on_bed");
     DL_LogTransitionEvent(oNpc, "on_bed", DL_BuildAnchorTelemetry(oNpc, oBed, "", "sleep"));
 }
