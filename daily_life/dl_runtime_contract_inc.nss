@@ -4,6 +4,7 @@ const string DL_CONTRACT_VERSION_A0 = "a0";
 const string DL_L_MODULE_CHAT_LOG = "dl_chat_log";
 const string DL_L_MODULE_CHAT_LOG_INIT = "dl_chat_log_init";
 const string DL_L_MODULE_RUNTIME_LOG = "dl_runtime_log";
+const string DL_L_CITY_RESPONSE_ENABLED = "dl_city_response_enabled";
 
 const int OBJECT_TYPE_AREA = 4;
 location LOCATION_INVALID;
@@ -15,6 +16,29 @@ int DL_AddLocalInt(object oTarget, string sKey, int nDelta);
 
 int GetIsInConversation(object oCreature)
 {
+    if (!GetIsObjectValid(oCreature))
+    {
+        return FALSE;
+    }
+
+    // NWScript builtin (see nwscript.nss: IsInConversation).
+    if (IsInConversation(oCreature))
+    {
+        return TRUE;
+    }
+
+    // Compatibility fallback for active city-response detain flow.
+    if (GetLocalInt(oCreature, DL_L_PC_CR_DETAIN_PENDING) == TRUE)
+    {
+        return TRUE;
+    }
+
+    object oMaster = GetMaster(oCreature);
+    if (GetIsObjectValid(oMaster) && GetLocalInt(oMaster, DL_L_PC_CR_DETAIN_PENDING) == TRUE)
+    {
+        return TRUE;
+    }
+
     return FALSE;
 }
 
@@ -213,8 +237,8 @@ int DL_CanRunResyncForArea(object oArea)
 int DL_CanRunCityResponseForArea(object oArea)
 {
     if (!DL_CanRunRuntimeForArea(oArea)) return FALSE;
-    if (GetLocalInt(GetModule(), "dl_city_response_enabled") != TRUE) return FALSE;
-    return GetLocalInt(oArea, "dl_city_response_enabled") == TRUE;
+    if (GetLocalInt(GetModule(), DL_L_CITY_RESPONSE_ENABLED) != TRUE) return FALSE;
+    return GetLocalInt(oArea, DL_L_CITY_RESPONSE_ENABLED) == TRUE;
 }
 
 int DL_CanRunTransitionForArea(object oArea)
@@ -227,9 +251,14 @@ int DL_IsRuntimeLogEnabled()
     return GetLocalInt(GetModule(), DL_L_MODULE_RUNTIME_LOG) == TRUE;
 }
 
+// Contract: runtime diagnostics are routed through the shared chat-debug telemetry
+// helper (DL_LogChatDebugEvent). Actual sink/output may be intentionally disabled
+// by that helper implementation; feature-flag gate is DL_L_MODULE_RUNTIME_LOG.
 void DL_LogRuntime(string sLog)
 {
     if (!DL_IsRuntimeLogEnabled()) return;
+
+    DL_LogChatDebugEvent(OBJECT_INVALID, "runtime", sLog);
 }
 
 const string DL_L_NPC_ORCH_LAST_STATE = "dl_orch_last_state";
