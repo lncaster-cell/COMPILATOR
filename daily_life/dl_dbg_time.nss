@@ -145,6 +145,8 @@ void main()
     DL_DbgSay(oPC, "[DL DEBUG] sleep_phase=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE)) +
                     " dist_approach=" + (GetIsObjectValid(oSleepApproach) ? FloatToString(GetDistanceBetween(oNpc, oSleepApproach), 1, 2) : "INVALID") +
                     " dist_bed=" + (GetIsObjectValid(oSleepBed) ? FloatToString(GetDistanceBetween(oNpc, oSleepBed), 1, 2) : "INVALID"));
+    DL_DbgSay(oPC, "[DL DEBUG] sleep_fsm_step=" + GetLocalString(oNpc, "dl_sleep_fsm_step") +
+                    " step_tick=" + IntToString(GetLocalInt(oNpc, "dl_sleep_fsm_step_tick")));
 
     DL_DbgRunSubsystemAudit(oPC, oNpc);
 }
