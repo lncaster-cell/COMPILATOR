@@ -15,6 +15,29 @@ int DL_AddLocalInt(object oTarget, string sKey, int nDelta);
 
 int GetIsInConversation(object oCreature)
 {
+    if (!GetIsObjectValid(oCreature))
+    {
+        return FALSE;
+    }
+
+    // NWScript builtin (see nwscript.nss: IsInConversation).
+    if (IsInConversation(oCreature))
+    {
+        return TRUE;
+    }
+
+    // Compatibility fallback for active city-response detain flow.
+    if (GetLocalInt(oCreature, DL_L_PC_CR_DETAIN_PENDING) == TRUE)
+    {
+        return TRUE;
+    }
+
+    object oMaster = GetMaster(oCreature);
+    if (GetIsObjectValid(oMaster) && GetLocalInt(oMaster, DL_L_PC_CR_DETAIN_PENDING) == TRUE)
+    {
+        return TRUE;
+    }
+
     return FALSE;
 }
 
