@@ -238,20 +238,12 @@ void DL_ExecuteSleepDirective(object oNpc)
     int bCommittedToBed = nPhase == DL_SLEEP_PHASE_JUMPING || nPhase == DL_SLEEP_PHASE_ON_BED;
     int bMayUseNavigation = DL_ShouldAttemptSleepNavigation(oNpc);
 
-    if (!bCommittedToBed && bMayUseNavigation && DL_WaypointHasTransition(oApproach))
-    {
-        if (DL_TryExecuteTransitionAtWaypoint(oNpc, oApproach))
-        {
-            DL_MarkSleepNavigationInProgress(oNpc, GetTag(oApproach));
-            return;
-        }
-    }
-
-    if (!bCommittedToBed && bMayUseNavigation && DL_TryUseNavigationRouteToTarget(oNpc, oApproach))
+    if (!bCommittedToBed && bMayUseNavigation && DL_NavTryAdvanceToZone(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET)))
     {
         DL_MarkSleepNavigationInProgress(oNpc, GetTag(oApproach));
         return;
     }
+
 
     if (!bCommittedToBed && GetDistanceBetween(oNpc, oApproach) > DL_SLEEP_APPROACH_RADIUS)
     {
@@ -272,16 +264,7 @@ void DL_ExecuteSleepDirective(object oNpc)
         sStatus = "approach_reached";
     }
 
-    if (bMayUseNavigation && DL_WaypointHasTransition(oBed))
-    {
-        if (DL_TryExecuteTransitionAtWaypoint(oNpc, oBed))
-        {
-            DL_MarkSleepNavigationInProgress(oNpc, GetTag(oBed));
-            return;
-        }
-    }
-
-    if (bMayUseNavigation && DL_TryUseNavigationRouteToTarget(oNpc, oBed))
+    if (bMayUseNavigation && DL_NavTryAdvanceToZone(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET)))
     {
         DL_MarkSleepNavigationInProgress(oNpc, GetTag(oBed));
         return;
