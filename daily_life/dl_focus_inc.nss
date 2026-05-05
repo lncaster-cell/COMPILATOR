@@ -136,15 +136,8 @@ int DL_ProgressFocusAtTarget(object oNpc, object oTarget, string sOnAnchorStatus
         return FALSE;
     }
 
-    if (DL_WaypointHasTransition(oTarget))
-    {
-        if (DL_TryExecuteTransitionAtWaypoint(oNpc, oTarget))
-        {
-            return TRUE;
-        }
-    }
-
-    if (DL_TryUseNavigationRouteToTarget(oNpc, oTarget))
+    DL_NavPrepareTargetZoneFromAnchor(oNpc, oTarget);
+    if (DL_NavTryAdvanceToZone(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET)))
     {
         return TRUE;
     }
@@ -388,15 +381,8 @@ int DL_ProgressChillAtSeat(object oNpc, object oSeat)
         return FALSE;
     }
 
-    if (DL_WaypointHasTransition(oSeat))
-    {
-        if (DL_TryExecuteTransitionAtWaypoint(oNpc, oSeat))
-        {
-            return TRUE;
-        }
-    }
-
-    if (DL_TryUseNavigationRouteToTarget(oNpc, oSeat))
+    DL_NavPrepareTargetZoneFromAnchor(oNpc, oSeat);
+    if (DL_NavTryAdvanceToZone(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET)))
     {
         return TRUE;
     }
