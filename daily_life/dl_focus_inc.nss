@@ -7,14 +7,18 @@ const string DL_L_NPC_CHILL_SIT_RETRY_UNTIL = "dl_chill_sit_retry_until";
 const string DL_L_NPC_MEAL_SIT_RETRY_UNTIL = "dl_meal_sit_retry_until";
 const string DL_L_NPC_CHILL_WAYPOINT_MODE = "dl_chill_waypoint_mode";
 const string DL_L_WP_CHILL_CHAIR_TAG = "dl_chill_chair_tag";
-// Optional meal seating contract: set dl_meal_chair_tag on dl_anchor_meal,
-// or tag chairs as dl_meal_<npc_tag>_chair / dl_meal_chair_<home_slot>.
+// Meal builder contract: use area local dl_anchor_meal or waypoint dl_meal_<home_slot>.
+// Optional seating: set dl_meal_chair_tag on the meal waypoint, tag chairs as
+// dl_meal_<npc_tag>_chair / dl_meal_chair_<home_slot>, or place a nearby
+// placeable with "chair"/"seat" in its tag.
 const string DL_L_WP_MEAL_CHAIR_TAG = "dl_meal_chair_tag";
 const int DL_SOCIAL_PARTNER_TAG_SEARCH_CAP = 32;
 const int DL_CHILL_MISSING_CACHE_TTL_MINUTES = 10;
 const int DL_MEAL_MISSING_CACHE_TTL_MINUTES = 10;
 const int DL_CHILL_SIT_RETRY_MINUTES = 1;
 const int DL_MEAL_SIT_RETRY_MINUTES = 1;
+const int DL_MEAL_NEAR_CHAIR_SCAN_CAP = 12;
+const float DL_MEAL_NEAR_CHAIR_RADIUS = 2.25;
 const string DL_CHILL_ANIM_SIT_IDLE = "sitidle";
 
 void DL_ClearFocusExecutionState(object oNpc)
@@ -243,7 +247,32 @@ object DL_ResolveMealWaypoint(object oNpc, string sMealKind)
         }
     }
 
-    return DL_GetAreaAnchorWaypoint(oNpc, oTargetArea, "dl_anchor_meal", DL_L_NPC_CACHE_MEAL, TRUE);
+    object oMeal = DL_GetAreaAnchorWaypoint(oNpc, oTargetArea, "dl_anchor_meal", DL_L_NPC_CACHE_MEAL, FALSE);
+    if (GetIsObjectValid(oMeal))
+    {
+        return oMeal;
+    }
+
+    int nSlot = DL_GetNpcHomeSlot(oNpc);
+    oMeal = DL_ResolveNpcWaypointWithFallbackTagInArea(
+        oNpc,
+        DL_L_NPC_CACHE_MEAL,
+        oTargetArea,
+        "dl_meal_",
+        "",
+        "dl_meal_" + IntToString(nSlot)
+    );
+    if (GetIsObjectValid(oMeal))
+    {
+        return oMeal;
+    }
+
+    DL_LogMarkupIssueOnce(
+        oNpc,
+        "missing_meal_anchor_" + GetTag(oTargetArea),
+        "Area " + GetTag(oTargetArea) + " needs area local dl_anchor_meal or waypoint dl_meal_" + IntToString(nSlot) + " for NPC " + GetTag(oNpc) + "."
+    );
+    return OBJECT_INVALID;
 }
 object DL_ResolveSocialWaypoint(object oNpc)
 {
@@ -361,6 +390,66 @@ object DL_ResolveChillChairObject(object oNpc, object oSeat)
     SetLocalInt(oNpc, DL_L_NPC_CACHE_CHILL_CHAIR_MISSING_UNTIL, nNowAbs + DL_CHILL_MISSING_CACHE_TTL_MINUTES);
     return OBJECT_INVALID;
 }
+int DL_IsMealChairTagCandidate(string sTag)
+{
+    if (sTag == "")
+    {
+        return FALSE;
+    }
+    if (FindSubString(sTag, "chair") >= 0)
+    {
+        return TRUE;
+    }
+    if (FindSubString(sTag, "Chair") >= 0)
+    {
+        return TRUE;
+    }
+    if (FindSubString(sTag, "seat") >= 0)
+    {
+        return TRUE;
+    }
+    if (FindSubString(sTag, "Seat") >= 0)
+    {
+        return TRUE;
+    }
+    return FALSE;
+}
+
+object DL_FindNearestMealChairObject(object oNpc, object oMeal)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oMeal))
+    {
+        return OBJECT_INVALID;
+    }
+
+    object oArea = GetArea(oMeal);
+    if (!GetIsObjectValid(oArea))
+    {
+        return OBJECT_INVALID;
+    }
+
+    int nNth = 1;
+    while (nNth <= DL_MEAL_NEAR_CHAIR_SCAN_CAP)
+    {
+        object oCandidate = GetNearestObjectToLocation(OBJECT_TYPE_PLACEABLE, GetLocation(oMeal), nNth);
+        if (!GetIsObjectValid(oCandidate))
+        {
+            break;
+        }
+
+        if (GetArea(oCandidate) == oArea &&
+            GetDistanceBetweenLocations(GetLocation(oCandidate), GetLocation(oMeal)) <= DL_MEAL_NEAR_CHAIR_RADIUS &&
+            DL_IsMealChairTagCandidate(GetTag(oCandidate)))
+        {
+            return oCandidate;
+        }
+
+        nNth = nNth + 1;
+    }
+
+    return OBJECT_INVALID;
+}
+
 object DL_ResolveMealChairObject(object oNpc, object oMeal)
 {
     if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oMeal))
@@ -379,6 +468,15 @@ object DL_ResolveMealChairObject(object oNpc, object oMeal)
     if (!GetIsObjectValid(oArea))
     {
         return OBJECT_INVALID;
+    }
+
+    object oCached = GetLocalObject(oNpc, DL_L_NPC_CACHE_MEAL_CHAIR_OBJ);
+    if (GetIsObjectValid(oCached) &&
+        GetObjectType(oCached) == OBJECT_TYPE_PLACEABLE &&
+        GetArea(oCached) == oArea &&
+        DL_IsMealChairTagCandidate(GetTag(oCached)))
+    {
+        return oCached;
     }
 
     string sChairTag = GetLocalString(oMeal, DL_L_WP_MEAL_CHAIR_TAG);
@@ -405,6 +503,14 @@ object DL_ResolveMealChairObject(object oNpc, object oMeal)
     oChair = DL_GetNpcCachedPlaceableByTagInArea(oNpc, DL_L_NPC_CACHE_MEAL_CHAIR_OBJ, "dl_meal_chair_" + IntToString(nSlot), oArea);
     if (GetIsObjectValid(oChair))
     {
+        DeleteLocalInt(oNpc, DL_L_NPC_CACHE_MEAL_CHAIR_MISSING_UNTIL);
+        return oChair;
+    }
+
+    oChair = DL_FindNearestMealChairObject(oNpc, oMeal);
+    if (GetIsObjectValid(oChair))
+    {
+        SetLocalObject(oNpc, DL_L_NPC_CACHE_MEAL_CHAIR_OBJ, oChair);
         DeleteLocalInt(oNpc, DL_L_NPC_CACHE_MEAL_CHAIR_MISSING_UNTIL);
         return oChair;
     }
