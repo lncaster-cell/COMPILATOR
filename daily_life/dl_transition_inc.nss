@@ -185,7 +185,7 @@ void DL_NavPrepareTargetZoneFromAnchor(object oNpc, object oTargetAnchor)
     string sTargetZone = DL_NavGetAnchorZoneId(oTargetAnchor);
     if (sTargetZone == "")
     {
-        DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET);
+        DL_NavSetState(oNpc, "failed", "", "target_zone_missing");
         return;
     }
 
@@ -241,7 +241,7 @@ int DL_NavTryAdvanceToZone(object oNpc, string sTargetZone)
 
     if (sCurrentZone == sTargetZone)
     {
-        DL_ClearTransitionExecutionState(oNpc);
+        DL_NavSetState(oNpc, "idle", sTargetZone, "same_zone");
         return FALSE;
     }
 
