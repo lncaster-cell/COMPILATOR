@@ -54,7 +54,7 @@ void DL_NavSetNpcCurrentZone(object oNpc, string sZone)
     SetLocalString(oNpc, DL_L_NPC_NAV_ZONE_CURRENT, sZone);
 }
 
-object DL_NavFindTransitionInArea(object oArea, string sFromZone, string sToZone)
+void DL_ClearTransitionExecutionState(object oNpc)
 {
     if (!GetIsObjectValid(oNpc)) return;
     DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS);
