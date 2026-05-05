@@ -22,6 +22,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+
       - name: Run compiler modes (check -> optimization -> bugfind -> build)
         id: compile
         shell: pwsh
