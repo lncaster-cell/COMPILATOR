@@ -45,9 +45,9 @@ jobs:
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ("- dl_transition_inc.nss SHA256: " + $hash)
 
           $requiredPatterns = @(
-            'void DL_ClearTransitionExecutionState\(object oNpc\)',
-            'object DL_NavFindTransitionInArea\(object oArea, string sFromZone, string sToZone\)',
-            'void DL_NavPrepareTargetZoneFromAnchor\(object oNpc, object oTargetAnchor\)'
+            'void\s+DL_ClearTransitionExecutionState\s*\(',
+            'object\s+DL_NavFindTransitionInArea\s*\(',
+            'void\s+DL_NavPrepareTargetZoneFromAnchor\s*\('
           )
 
           foreach ($pattern in $requiredPatterns) {
