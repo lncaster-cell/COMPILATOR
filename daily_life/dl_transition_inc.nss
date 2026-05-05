@@ -284,7 +284,7 @@ int DL_NavTryAdvanceToZone(object oNpc, string sTargetZone)
 
     if (sCurrentZone == sTargetZone)
     {
-        DL_NavSetState(oNpc, "idle", sTargetZone, "same_zone");
+        DL_ClearTransitionExecutionState(oNpc);
         return FALSE;
     }
 
