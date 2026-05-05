@@ -7,6 +7,9 @@ const int DL_SCHED_DEFAULT_SHIFT_LENGTH = 8;
 const int DL_SCHED_DEFAULT_WEEKEND_SHIFT_LENGTH = 6;
 const int DL_SCHED_DEFAULT_CHILL_DELAY_MINUTES = 90;
 const int DL_SCHED_DEFAULT_CHILL_DURATION_MINUTES = 180;
+const int DL_SCHED_BREAKFAST_DURATION_MINUTES = 90;
+const int DL_SCHED_LUNCH_DURATION_MINUTES = 60;
+const int DL_SCHED_DINNER_DURATION_MINUTES = 60;
 
 int DL_NormalizeHour(int nHour)
 {
@@ -233,10 +236,11 @@ int DL_ResolveNpcDirectiveAtMinute(object oNpc, int nNow)
     int nShiftEnd = DL_NormalizeMinuteOfDay(nShiftStart + (nShiftLen * 60));
     int nChillStart = DL_NormalizeMinuteOfDay(nShiftEnd + DL_SCHED_DEFAULT_CHILL_DELAY_MINUTES);
     string sTag = GetTag(oNpc);
+    int nMealOffset = DL_GetTagDeterministicOffset(sTag, 21, 10);
 
-    int nBreakfastStart = DL_NormalizeMinuteOfDay((nWake * 60) + DL_GetTagDeterministicOffset(sTag, 21, 10));
-    int nDinnerStart = DL_NormalizeMinuteOfDay(nSleepStart - 75 + DL_GetTagDeterministicOffset(sTag, 21, 10));
-    int nLunchStart = DL_NormalizeMinuteOfDay(nShiftStart + 240 + DL_GetTagDeterministicOffset(sTag, 21, 10));
+    int nBreakfastStart = DL_NormalizeMinuteOfDay((nWake * 60) - 15 + nMealOffset);
+    int nDinnerStart = DL_NormalizeMinuteOfDay(nSleepStart - 75 + nMealOffset);
+    int nLunchStart = DL_NormalizeMinuteOfDay(nShiftStart + 240 - 15 + nMealOffset);
     int nSocialStart = DL_NormalizeMinuteOfDay(nShiftEnd + 10 + DL_GetTagDeterministicOffset(sTag, 31, 15));
     int nPublicStart = DL_NormalizeMinuteOfDay((nWake * 60) + 180 + DL_GetTagDeterministicOffset(sTag, 41, 20));
     int nPublicLate = DL_NormalizeMinuteOfDay(nDinnerStart - 120 + DL_GetTagDeterministicOffset(sTag, 31, 15));
@@ -247,17 +251,17 @@ int DL_ResolveNpcDirectiveAtMinute(object oNpc, int nNow)
         return DL_DIR_SLEEP;
     }
 
-    if (DL_MinuteInWindow(nNow, nBreakfastStart, 60))
+    if (DL_MinuteInWindow(nNow, nBreakfastStart, DL_SCHED_BREAKFAST_DURATION_MINUTES))
     {
         return DL_DIR_MEAL;
     }
 
-    if (nShiftLen >= 8 && DL_MinuteInWindow(nNow, nLunchStart, 30))
+    if (nShiftLen >= 8 && DL_MinuteInWindow(nNow, nLunchStart, DL_SCHED_LUNCH_DURATION_MINUTES))
     {
         return DL_DIR_MEAL;
     }
 
-    if (DL_MinuteInWindow(nNow, nDinnerStart, 60))
+    if (DL_MinuteInWindow(nNow, nDinnerStart, DL_SCHED_DINNER_DURATION_MINUTES))
     {
         return DL_DIR_MEAL;
     }
