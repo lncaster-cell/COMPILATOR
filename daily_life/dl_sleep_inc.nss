@@ -262,7 +262,7 @@ int DL_ShouldAttemptSleepNavigation(object oNpc)
         return FALSE;
     }
 
-    return GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) != "moving_via_navigation";
+    return TRUE;
 }
 void DL_ExecuteSleepDirective(object oNpc)
 {
