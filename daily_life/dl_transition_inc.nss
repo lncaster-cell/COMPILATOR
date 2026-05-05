@@ -312,6 +312,13 @@ int DL_NavTryAdvanceToZone(object oNpc, string sTargetZone)
 
     if (GetDistanceBetween(oNpc, oEntry) > DL_NAV_ENTRY_RADIUS)
     {
+        if (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) == "moving_to_entry" &&
+            GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) == sTargetZone &&
+            GetCurrentAction(oNpc) == ACTION_MOVETOPOINT)
+        {
+            return TRUE;
+        }
+
         AssignCommand(oNpc, ClearAllActions(TRUE));
         AssignCommand(oNpc, ActionMoveToLocation(GetLocation(oEntry), TRUE));
         DL_NavSetState(oNpc, "moving_to_entry", sTargetZone, "");
