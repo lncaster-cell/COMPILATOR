@@ -54,7 +54,7 @@ void DL_NavSetNpcCurrentZone(object oNpc, string sZone)
     SetLocalString(oNpc, DL_L_NPC_NAV_ZONE_CURRENT, sZone);
 }
 
-object DL_NavFindTransitionInArea(object oArea, string sFromZone, string sToZone)
+void DL_ClearTransitionExecutionState(object oNpc)
 {
     if (!GetIsObjectValid(oNpc)) return;
     DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS);
@@ -108,6 +108,7 @@ object DL_NavFindTransitionInArea(object oArea, string sFromZone, string sToZone
 }
 
 
+
 string DL_NavGetAreaZoneId(object oArea)
 {
     if (!GetIsObjectValid(oArea)) return "";
@@ -116,6 +117,16 @@ string DL_NavGetAreaZoneId(object oArea)
     if (sZone != "") return sZone;
 
     return GetTag(oArea);
+}
+
+string DL_NavGetAnchorZoneId(object oAnchor)
+{
+    if (!GetIsObjectValid(oAnchor)) return "";
+
+    string sZone = GetLocalString(oAnchor, DL_L_AREA_NAV_ZONE_ID);
+    if (sZone != "") return sZone;
+
+    return DL_NavGetAreaZoneId(GetArea(oAnchor));
 }
 
 void DL_NavSyncCurrentZoneFromArea(object oNpc)
@@ -136,7 +147,7 @@ void DL_NavPrepareTargetZoneFromAnchor(object oNpc, object oTargetAnchor)
 
     DL_NavSyncCurrentZoneFromArea(oNpc);
 
-    string sTargetZone = DL_NavGetAreaZoneId(GetArea(oTargetAnchor));
+    string sTargetZone = DL_NavGetAnchorZoneId(oTargetAnchor);
     if (sTargetZone == "")
     {
         DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET);
