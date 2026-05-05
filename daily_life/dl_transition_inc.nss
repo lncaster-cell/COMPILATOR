@@ -17,6 +17,7 @@ const string DL_L_AREA_NAV_READY = "dl_area_nav_ready";
 const string DL_L_AREA_NAV_COUNT = "dl_area_nav_count";
 const string DL_L_AREA_NAV_SLOT_PREFIX = "dl_area_nav_";
 const int DL_AREA_NAV_ROUTE_CAP = 32;
+const string DL_L_AREA_NAV_ZONE_ID = "dl_nav_zone_id";
 
 string DL_GetAreaNavigationSlotKey(int nSlot)
 {
@@ -53,7 +54,7 @@ void DL_NavSetNpcCurrentZone(object oNpc, string sZone)
     SetLocalString(oNpc, DL_L_NPC_NAV_ZONE_CURRENT, sZone);
 }
 
-void DL_ClearTransitionExecutionState(object oNpc)
+object DL_NavFindTransitionInArea(object oArea, string sFromZone, string sToZone)
 {
     if (!GetIsObjectValid(oNpc)) return;
     DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS);
@@ -104,6 +105,45 @@ object DL_NavFindTransitionInArea(object oArea, string sFromZone, string sToZone
     }
 
     return OBJECT_INVALID;
+}
+
+
+string DL_NavGetAreaZoneId(object oArea)
+{
+    if (!GetIsObjectValid(oArea)) return "";
+
+    string sZone = GetLocalString(oArea, DL_L_AREA_NAV_ZONE_ID);
+    if (sZone != "") return sZone;
+
+    return GetTag(oArea);
+}
+
+void DL_NavSyncCurrentZoneFromArea(object oNpc)
+{
+    if (!GetIsObjectValid(oNpc)) return;
+    if (GetLocalString(oNpc, DL_L_NPC_NAV_ZONE_CURRENT) != "") return;
+
+    string sCurrentZone = DL_NavGetAreaZoneId(GetArea(oNpc));
+    if (sCurrentZone != "")
+    {
+        SetLocalString(oNpc, DL_L_NPC_NAV_ZONE_CURRENT, sCurrentZone);
+    }
+}
+
+void DL_NavPrepareTargetZoneFromAnchor(object oNpc, object oTargetAnchor)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTargetAnchor)) return;
+
+    DL_NavSyncCurrentZoneFromArea(oNpc);
+
+    string sTargetZone = DL_NavGetAreaZoneId(GetArea(oTargetAnchor));
+    if (sTargetZone == "")
+    {
+        DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET);
+        return;
+    }
+
+    SetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET, sTargetZone);
 }
 
 int DL_WaypointHasTransition(object oWp)

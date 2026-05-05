@@ -190,6 +190,7 @@ int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
         return FALSE;
     }
 
+    DL_NavPrepareTargetZoneFromAnchor(oNpc, oTarget);
     if (DL_NavTryAdvanceToZone(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET)))
     {
         return TRUE;

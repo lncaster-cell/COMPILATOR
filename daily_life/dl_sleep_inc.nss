@@ -238,6 +238,7 @@ void DL_ExecuteSleepDirective(object oNpc)
     int bCommittedToBed = nPhase == DL_SLEEP_PHASE_JUMPING || nPhase == DL_SLEEP_PHASE_ON_BED;
     int bMayUseNavigation = DL_ShouldAttemptSleepNavigation(oNpc);
 
+    DL_NavPrepareTargetZoneFromAnchor(oNpc, oApproach);
     if (!bCommittedToBed && bMayUseNavigation && DL_NavTryAdvanceToZone(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET)))
     {
         DL_MarkSleepNavigationInProgress(oNpc, GetTag(oApproach));
@@ -264,6 +265,7 @@ void DL_ExecuteSleepDirective(object oNpc)
         sStatus = "approach_reached";
     }
 
+    DL_NavPrepareTargetZoneFromAnchor(oNpc, oBed);
     if (bMayUseNavigation && DL_NavTryAdvanceToZone(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET)))
     {
         DL_MarkSleepNavigationInProgress(oNpc, GetTag(oBed));
