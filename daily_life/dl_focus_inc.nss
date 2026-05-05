@@ -182,17 +182,22 @@ string DL_ResolveMealKind(object oNpc)
     }
     int nShiftStart = nShiftStartHour * 60;
     string sTag = GetTag(oNpc);
-    int nBreakfastStart = DL_NormalizeMinuteOfDay((nWake * 60) + DL_GetTagDeterministicOffset(sTag, 21, 10));
-    int nLunchStart = DL_NormalizeMinuteOfDay(nShiftStart + 240 + DL_GetTagDeterministicOffset(sTag, 21, 10));
-    int nDinnerStart = DL_NormalizeMinuteOfDay(nSleepStart - 75 + DL_GetTagDeterministicOffset(sTag, 21, 10));
+    int nMealOffset = DL_GetTagDeterministicOffset(sTag, 21, 10);
+    int nBreakfastStart = DL_NormalizeMinuteOfDay((nWake * 60) - 15 + nMealOffset);
+    int nLunchStart = DL_NormalizeMinuteOfDay(nShiftStart + 240 - 15 + nMealOffset);
+    int nDinnerStart = DL_NormalizeMinuteOfDay(nSleepStart - 75 + nMealOffset);
 
-    if (DL_MinuteInWindow(nNow, nBreakfastStart, 60))
+    if (DL_MinuteInWindow(nNow, nBreakfastStart, DL_SCHED_BREAKFAST_DURATION_MINUTES))
     {
         return DL_MEAL_KIND_BREAKFAST;
     }
-    if (nShiftLen >= 8 && DL_MinuteInWindow(nNow, nLunchStart, 30))
+    if (nShiftLen >= 8 && DL_MinuteInWindow(nNow, nLunchStart, DL_SCHED_LUNCH_DURATION_MINUTES))
     {
         return DL_MEAL_KIND_LUNCH;
+    }
+    if (DL_MinuteInWindow(nNow, nDinnerStart, DL_SCHED_DINNER_DURATION_MINUTES))
+    {
+        return DL_MEAL_KIND_DINNER;
     }
     return DL_MEAL_KIND_DINNER;
 }
@@ -323,7 +328,7 @@ object DL_ResolveChillChairObject(object oNpc, object oSeat)
         oChair = DL_GetNpcCachedPlaceableByTagInArea(oNpc, DL_L_NPC_CACHE_CHILL_CHAIR_OBJ, sChairTag, oArea);
         if (GetIsObjectValid(oChair))
         {
-            DeleteLocalInt(oNpc, DL_L_NPC_CACHE_CHILL_CHAIR_MISSING_UNTIL);
+            DeleteLocalInt(oNpc, DL_L_NPC_CHILL_SIT_RETRY_UNTIL);
             return oChair;
         }
     }
