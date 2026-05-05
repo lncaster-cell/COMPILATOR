@@ -22,64 +22,6 @@ void DL_ClearNpcBlockedBusy(object oNpc)
     }
 }
 
-int DL_IsBlockedRecoveryDirective(int nDirective)
-{
-    if (nDirective == DL_DIR_WORK)
-    {
-        return TRUE;
-    }
-    if (nDirective == DL_DIR_SLEEP)
-    {
-        return TRUE;
-    }
-    if (nDirective == DL_DIR_MEAL)
-    {
-        return TRUE;
-    }
-    if (nDirective == DL_DIR_SOCIAL)
-    {
-        return TRUE;
-    }
-    if (nDirective == DL_DIR_PUBLIC)
-    {
-        return TRUE;
-    }
-    if (nDirective == DL_DIR_CHILL)
-    {
-        return TRUE;
-    }
-    return FALSE;
-}
-
-int DL_IsBlockedRecoveryDirective(int nDirective)
-{
-    if (nDirective == DL_DIR_WORK)
-    {
-        return TRUE;
-    }
-    if (nDirective == DL_DIR_SLEEP)
-    {
-        return TRUE;
-    }
-    if (nDirective == DL_DIR_MEAL)
-    {
-        return TRUE;
-    }
-    if (nDirective == DL_DIR_SOCIAL)
-    {
-        return TRUE;
-    }
-    if (nDirective == DL_DIR_PUBLIC)
-    {
-        return TRUE;
-    }
-    if (nDirective == DL_DIR_CHILL)
-    {
-        return TRUE;
-    }
-    return FALSE;
-}
-
 void DL_ReissueNpcDirectiveAfterBlocked(object oNpc)
 {
     if (!DL_IsActivePipelineNpc(oNpc))
@@ -93,7 +35,12 @@ void DL_ReissueNpcDirectiveAfterBlocked(object oNpc)
     }
 
     int nDirective = GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE);
-    if (DL_IsBlockedRecoveryDirective(nDirective))
+    if (nDirective == DL_DIR_WORK ||
+        nDirective == DL_DIR_SLEEP ||
+        nDirective == DL_DIR_MEAL ||
+        nDirective == DL_DIR_SOCIAL ||
+        nDirective == DL_DIR_PUBLIC ||
+        nDirective == DL_DIR_CHILL)
     {
         DL_ApplyDirectiveSkeleton(oNpc, nDirective);
         return;
@@ -162,7 +109,12 @@ void DL_HandleNpcBlocked(object oNpc)
     }
 
     int nDirective = GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE);
-    if (!DL_IsBlockedRecoveryDirective(nDirective))
+    if (nDirective != DL_DIR_WORK &&
+        nDirective != DL_DIR_SLEEP &&
+        nDirective != DL_DIR_MEAL &&
+        nDirective != DL_DIR_SOCIAL &&
+        nDirective != DL_DIR_PUBLIC &&
+        nDirective != DL_DIR_CHILL)
     {
         SetLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC, "blocked_outside_route_directive");
         DL_ClearNpcBlockedSignal(oNpc);
