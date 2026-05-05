@@ -16,6 +16,39 @@ void DL_ClearNpcBlockedSignal(object oNpc)
 void DL_ClearNpcBlockedBusy(object oNpc)
 {
     DeleteLocalInt(oNpc, DL_L_NPC_BLOCKED_BUSY);
+    if (GetLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC) == "opening_blocking_door")
+    {
+        DeleteLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC);
+    }
+}
+
+int DL_IsBlockedRecoveryDirective(int nDirective)
+{
+    if (nDirective == DL_DIR_WORK)
+    {
+        return TRUE;
+    }
+    if (nDirective == DL_DIR_SLEEP)
+    {
+        return TRUE;
+    }
+    if (nDirective == DL_DIR_MEAL)
+    {
+        return TRUE;
+    }
+    if (nDirective == DL_DIR_SOCIAL)
+    {
+        return TRUE;
+    }
+    if (nDirective == DL_DIR_PUBLIC)
+    {
+        return TRUE;
+    }
+    if (nDirective == DL_DIR_CHILL)
+    {
+        return TRUE;
+    }
+    return FALSE;
 }
 
 int DL_IsBlockedRecoveryDirective(int nDirective)

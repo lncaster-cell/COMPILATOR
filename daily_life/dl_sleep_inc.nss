@@ -111,6 +111,20 @@ int DL_ShouldReissueSleepAction(object oNpc, string sKey)
 
     return FALSE;
 }
+int DL_ShouldReissueSleepMoveAction(object oNpc, string sKey)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return FALSE;
+    }
+
+    if (GetCurrentAction(oNpc) != ACTION_MOVETOPOINT)
+    {
+        return TRUE;
+    }
+
+    return DL_ShouldReissueSleepAction(oNpc, sKey);
+}
 void DL_MarkSleepActionIssued(object oNpc, string sKey)
 {
     SetLocalInt(oNpc, sKey, DL_GetSleepActionStamp());
@@ -225,6 +239,11 @@ void DL_QueueMoveAction(object oNpc, location lTarget, int bRun)
     AssignCommand(oNpc, ClearAllActions(TRUE));
     AssignCommand(oNpc, ActionMoveToLocation(lTarget, bRun));
 }
+void DL_QueueMoveToObjectAction(object oNpc, object oTarget, int bRun, float fRange)
+{
+    AssignCommand(oNpc, ClearAllActions(TRUE));
+    AssignCommand(oNpc, ActionMoveToObject(oTarget, bRun, fRange));
+}
 void DL_QueueJumpAction(object oNpc, location lTarget)
 {
     AssignCommand(oNpc, ClearAllActions(TRUE));
@@ -282,13 +301,13 @@ void DL_ExecuteSleepDirective(object oNpc)
     {
         if (nPhase != DL_SLEEP_PHASE_MOVING ||
             sStatus != "moving_to_approach" ||
-            DL_ShouldReissueSleepAction(oNpc, DL_L_NPC_SLEEP_APPROACH_ACTION_STAMP))
+            DL_ShouldReissueSleepMoveAction(oNpc, DL_L_NPC_SLEEP_APPROACH_ACTION_STAMP))
         {
             SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_MOVING);
             SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, "moving_to_approach");
             DL_ClearTransitionExecutionState(oNpc);
             DL_MarkSleepActionIssued(oNpc, DL_L_NPC_SLEEP_APPROACH_ACTION_STAMP);
-            DL_QueueMoveAction(oNpc, lApproach, TRUE);
+            DL_QueueMoveToObjectAction(oNpc, oApproach, TRUE, DL_SLEEP_APPROACH_RADIUS);
         }
         return;
     }
