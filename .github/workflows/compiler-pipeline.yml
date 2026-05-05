@@ -22,6 +22,44 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+
+      - name: Verify checkout and transition include snapshot
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          git reset --hard HEAD
+          git clean -xfd
+
+          $sha = (git rev-parse HEAD).Trim()
+          $headLine = (git log -1 --oneline).Trim()
+          Write-Host "HEAD: $headLine"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "## Checkout verification"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ("- HEAD: " + $sha)
+
+          if (-not (Test-Path 'daily_life/dl_transition_inc.nss')) {
+            throw 'Missing daily_life/dl_transition_inc.nss after checkout.'
+          }
+
+          $hash = (Get-FileHash -Path 'daily_life/dl_transition_inc.nss' -Algorithm SHA256).Hash
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ("- dl_transition_inc.nss SHA256: " + $hash)
+
+          $requiredPatterns = @(
+            'void\s+DL_ClearTransitionExecutionState\s*\(',
+            'object\s+DL_NavFindTransitionInArea\s*\(',
+            'void\s+DL_NavPrepareTargetZoneFromAnchor\s*\('
+          )
+
+          foreach ($pattern in $requiredPatterns) {
+            $match = Select-String -Path 'daily_life/dl_transition_inc.nss' -Pattern $pattern | Select-Object -First 1
+            if (-not $match) {
+              Write-Warning "Required signature missing in dl_transition_inc.nss: $pattern"
+              Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ("- Missing signature pattern: " + $pattern)
+              continue
+            }
+            Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ('- Found: ' + $match.LineNumber + ': ' + $match.Line.Trim())
+          }
+
       - name: Run compiler modes (check -> optimization -> bugfind -> build)
         id: compile
         shell: pwsh
