@@ -5,6 +5,7 @@ const string DL_L_NPC_BLOCKED_BUSY = "dl_npc_blocked_busy";
 
 const float DL_BLOCKED_OPEN_COOLDOWN = 3.0;
 const float DL_BLOCKED_REISSUE_DELAY = 2.2;
+const float DL_BLOCKED_SECOND_REISSUE_DELAY = 4.8;
 
 void DL_ClearNpcBlockedSignal(object oNpc)
 {
@@ -13,9 +14,81 @@ void DL_ClearNpcBlockedSignal(object oNpc)
     DeleteLocalInt(oNpc, DL_L_NPC_BLOCKED_TYPE);
 }
 
+void DL_ClearNpcBlockedTransientDiagnostic(object oNpc)
+{
+    string sDiagnostic = GetLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC);
+    if (sDiagnostic == "opening_blocking_door" || sDiagnostic == "blocked_busy")
+    {
+        DeleteLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC);
+    }
+}
+
 void DL_ClearNpcBlockedBusy(object oNpc)
 {
     DeleteLocalInt(oNpc, DL_L_NPC_BLOCKED_BUSY);
+    DL_ClearNpcBlockedTransientDiagnostic(oNpc);
+}
+
+int DL_IsBlockedRecoveryDirective(int nDirective)
+{
+    if (nDirective == DL_DIR_WORK)
+    {
+        return TRUE;
+    }
+    if (nDirective == DL_DIR_SLEEP)
+    {
+        return TRUE;
+    }
+    if (nDirective == DL_DIR_MEAL)
+    {
+        return TRUE;
+    }
+    if (nDirective == DL_DIR_SOCIAL)
+    {
+        return TRUE;
+    }
+    if (nDirective == DL_DIR_PUBLIC)
+    {
+        return TRUE;
+    }
+    if (nDirective == DL_DIR_CHILL)
+    {
+        return TRUE;
+    }
+    return FALSE;
+}
+
+void DL_PrepareNpcDirectiveReissueAfterBlocked(object oNpc, int nDirective)
+{
+    DL_ClearNpcBlockedBusy(oNpc);
+    DL_ClearNpcBlockedTransientDiagnostic(oNpc);
+
+    if (nDirective == DL_DIR_SLEEP)
+    {
+        DL_ClearSleepActionIssueState(oNpc);
+        return;
+    }
+
+    if (nDirective == DL_DIR_WORK)
+    {
+        if (GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) == "moving_to_anchor")
+        {
+            DeleteLocalString(oNpc, DL_L_NPC_WORK_STATUS);
+        }
+        return;
+    }
+
+    if (nDirective == DL_DIR_MEAL ||
+        nDirective == DL_DIR_SOCIAL ||
+        nDirective == DL_DIR_PUBLIC ||
+        nDirective == DL_DIR_CHILL)
+    {
+        string sFocusStatus = GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS);
+        if (sFocusStatus == "moving_to_anchor" || sFocusStatus == "moving_social_pair")
+        {
+            DeleteLocalString(oNpc, DL_L_NPC_FOCUS_STATUS);
+        }
+    }
 }
 
 void DL_ReissueNpcDirectiveAfterBlocked(object oNpc)
@@ -31,14 +104,9 @@ void DL_ReissueNpcDirectiveAfterBlocked(object oNpc)
     }
 
     int nDirective = GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE);
-    if (nDirective == DL_DIR_WORK)
+    if (DL_IsBlockedRecoveryDirective(nDirective))
     {
-        DL_ApplyDirectiveSkeleton(oNpc, nDirective);
-        return;
-    }
-
-    if (nDirective == DL_DIR_SLEEP)
-    {
+        DL_PrepareNpcDirectiveReissueAfterBlocked(oNpc, nDirective);
         DL_ApplyDirectiveSkeleton(oNpc, nDirective);
         return;
     }
@@ -106,7 +174,7 @@ void DL_HandleNpcBlocked(object oNpc)
     }
 
     int nDirective = GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE);
-    if (nDirective != DL_DIR_WORK && nDirective != DL_DIR_SLEEP)
+    if (!DL_IsBlockedRecoveryDirective(nDirective))
     {
         SetLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC, "blocked_outside_route_directive");
         DL_ClearNpcBlockedSignal(oNpc);
@@ -127,4 +195,5 @@ void DL_HandleNpcBlocked(object oNpc)
     AssignCommand(oNpc, DoDoorAction(oBlocker, DOOR_ACTION_OPEN));
     DelayCommand(DL_BLOCKED_REISSUE_DELAY, DL_ReissueNpcDirectiveAfterBlocked(oNpc));
     DelayCommand(DL_BLOCKED_OPEN_COOLDOWN, DL_ClearNpcBlockedBusy(oNpc));
+    DelayCommand(DL_BLOCKED_SECOND_REISSUE_DELAY, DL_ReissueNpcDirectiveAfterBlocked(oNpc));
 }
