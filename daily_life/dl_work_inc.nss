@@ -190,15 +190,8 @@ int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
         return FALSE;
     }
 
-    if (DL_WaypointHasTransition(oTarget))
-    {
-        if (DL_TryExecuteTransitionAtWaypoint(oNpc, oTarget))
-        {
-            return TRUE;
-        }
-    }
-
-    if (DL_TryUseNavigationRouteToTarget(oNpc, oTarget))
+    DL_NavPrepareTargetZoneFromAnchor(oNpc, oTarget);
+    if (DL_NavTryAdvanceToZone(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET)))
     {
         return TRUE;
     }
