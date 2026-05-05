@@ -1,12 +1,20 @@
 const string DL_L_NPC_CACHE_SOCIAL_PARTNER_OBJ = "dl_cache_social_partner_obj";
 const string DL_L_NPC_CACHE_CHILL_CHAIR_OBJ = "dl_cache_chill_chair_obj";
 const string DL_L_NPC_CACHE_CHILL_CHAIR_MISSING_UNTIL = "dl_cache_chill_chair_missing_until";
+const string DL_L_NPC_CACHE_MEAL_CHAIR_OBJ = "dl_cache_meal_chair_obj";
+const string DL_L_NPC_CACHE_MEAL_CHAIR_MISSING_UNTIL = "dl_cache_meal_chair_missing_until";
 const string DL_L_NPC_CHILL_SIT_RETRY_UNTIL = "dl_chill_sit_retry_until";
+const string DL_L_NPC_MEAL_SIT_RETRY_UNTIL = "dl_meal_sit_retry_until";
 const string DL_L_NPC_CHILL_WAYPOINT_MODE = "dl_chill_waypoint_mode";
 const string DL_L_WP_CHILL_CHAIR_TAG = "dl_chill_chair_tag";
+// Optional meal seating contract: set dl_meal_chair_tag on dl_anchor_meal,
+// or tag chairs as dl_meal_<npc_tag>_chair / dl_meal_chair_<home_slot>.
+const string DL_L_WP_MEAL_CHAIR_TAG = "dl_meal_chair_tag";
 const int DL_SOCIAL_PARTNER_TAG_SEARCH_CAP = 32;
 const int DL_CHILL_MISSING_CACHE_TTL_MINUTES = 10;
+const int DL_MEAL_MISSING_CACHE_TTL_MINUTES = 10;
 const int DL_CHILL_SIT_RETRY_MINUTES = 1;
+const int DL_MEAL_SIT_RETRY_MINUTES = 1;
 const string DL_CHILL_ANIM_SIT_IDLE = "sitidle";
 
 void DL_ClearFocusExecutionState(object oNpc)
@@ -15,6 +23,7 @@ void DL_ClearFocusExecutionState(object oNpc)
     DeleteLocalString(oNpc, DL_L_NPC_FOCUS_TARGET);
     DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
     DeleteLocalInt(oNpc, DL_L_NPC_CHILL_SIT_RETRY_UNTIL);
+    DeleteLocalInt(oNpc, DL_L_NPC_MEAL_SIT_RETRY_UNTIL);
     DL_ClearTransitionExecutionState(oNpc);
 }
 object DL_ResolveSocialPartnerObject(object oNpc, string sPartnerTag)
@@ -352,6 +361,99 @@ object DL_ResolveChillChairObject(object oNpc, object oSeat)
     SetLocalInt(oNpc, DL_L_NPC_CACHE_CHILL_CHAIR_MISSING_UNTIL, nNowAbs + DL_CHILL_MISSING_CACHE_TTL_MINUTES);
     return OBJECT_INVALID;
 }
+object DL_ResolveMealChairObject(object oNpc, object oMeal)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oMeal))
+    {
+        return OBJECT_INVALID;
+    }
+
+    int nNowAbs = DL_GetAbsoluteMinute();
+    int nMissingUntil = GetLocalInt(oNpc, DL_L_NPC_CACHE_MEAL_CHAIR_MISSING_UNTIL);
+    if (nMissingUntil > nNowAbs)
+    {
+        return OBJECT_INVALID;
+    }
+
+    object oArea = GetArea(oMeal);
+    if (!GetIsObjectValid(oArea))
+    {
+        return OBJECT_INVALID;
+    }
+
+    string sChairTag = GetLocalString(oMeal, DL_L_WP_MEAL_CHAIR_TAG);
+    object oChair = OBJECT_INVALID;
+    if (sChairTag != "")
+    {
+        oChair = DL_GetNpcCachedPlaceableByTagInArea(oNpc, DL_L_NPC_CACHE_MEAL_CHAIR_OBJ, sChairTag, oArea);
+        if (GetIsObjectValid(oChair))
+        {
+            DeleteLocalInt(oNpc, DL_L_NPC_MEAL_SIT_RETRY_UNTIL);
+            return oChair;
+        }
+    }
+
+    string sNpcTag = GetTag(oNpc);
+    oChair = DL_GetNpcCachedPlaceableByTagInArea(oNpc, DL_L_NPC_CACHE_MEAL_CHAIR_OBJ, "dl_meal_" + sNpcTag + "_chair", oArea);
+    if (GetIsObjectValid(oChair))
+    {
+        DeleteLocalInt(oNpc, DL_L_NPC_CACHE_MEAL_CHAIR_MISSING_UNTIL);
+        return oChair;
+    }
+
+    int nSlot = DL_GetNpcHomeSlot(oNpc);
+    oChair = DL_GetNpcCachedPlaceableByTagInArea(oNpc, DL_L_NPC_CACHE_MEAL_CHAIR_OBJ, "dl_meal_chair_" + IntToString(nSlot), oArea);
+    if (GetIsObjectValid(oChair))
+    {
+        DeleteLocalInt(oNpc, DL_L_NPC_CACHE_MEAL_CHAIR_MISSING_UNTIL);
+        return oChair;
+    }
+
+    SetLocalInt(oNpc, DL_L_NPC_CACHE_MEAL_CHAIR_MISSING_UNTIL, nNowAbs + DL_MEAL_MISSING_CACHE_TTL_MINUTES);
+    return OBJECT_INVALID;
+}
+
+int DL_TryProgressMealAtChair(object oNpc, object oMeal)
+{
+    object oChair = DL_ResolveMealChairObject(oNpc, oMeal);
+    if (!GetIsObjectValid(oChair))
+    {
+        return FALSE;
+    }
+
+    object oSitter = GetSittingCreature(oChair);
+    if (oSitter == oNpc)
+    {
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
+        DeleteLocalInt(oNpc, DL_L_NPC_MEAL_SIT_RETRY_UNTIL);
+        SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "on_meal_anchor_sitting");
+        SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oMeal));
+        DL_LogChatDebugEvent(oNpc, "on_meal_anchor_sitting", "on_meal_anchor_sitting chair=" + GetTag(oChair));
+        return TRUE;
+    }
+
+    if (GetIsObjectValid(oSitter) && oSitter != oNpc)
+    {
+        SetLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC, "meal_chair_occupied");
+        return FALSE;
+    }
+
+    int nNowAbs = DL_GetAbsoluteMinute();
+    int nRetryUntil = GetLocalInt(oNpc, DL_L_NPC_MEAL_SIT_RETRY_UNTIL);
+    if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "sitting_meal_attempt" && nRetryUntil > nNowAbs)
+    {
+        return TRUE;
+    }
+
+    DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
+    SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "sitting_meal_attempt");
+    SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oMeal));
+    SetLocalInt(oNpc, DL_L_NPC_MEAL_SIT_RETRY_UNTIL, nNowAbs + DL_MEAL_SIT_RETRY_MINUTES);
+    AssignCommand(oNpc, ClearAllActions(TRUE));
+    AssignCommand(oNpc, ActionSit(oChair));
+    DL_LogChatDebugEvent(oNpc, "sitting_meal_attempt", "sitting_meal_attempt chair=" + GetTag(oChair));
+    return TRUE;
+}
 void DL_ExecuteMealDirective(object oNpc)
 {
     string sMealKind = DL_ResolveMealKind(oNpc);
@@ -377,7 +479,40 @@ void DL_ExecuteMealDirective(object oNpc)
         "target_meal",
         "target dir=MEAL area=" + GetTag(GetArea(oMeal)) + " anchor=" + GetTag(oMeal) + " kind=" + sMealKind
     );
-    DL_ProgressFocusAtTarget(oNpc, oMeal, "on_meal_anchor_" + sMealKind, sAnim);
+
+    DL_NavPrepareTargetZoneFromAnchor(oNpc, oMeal);
+    if (DL_NavTryAdvanceToZone(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET)))
+    {
+        return;
+    }
+
+    if (GetDistanceBetween(oNpc, oMeal) > DL_WORK_ANCHOR_RADIUS)
+    {
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
+        if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) != "moving_to_anchor")
+        {
+            SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "moving_to_anchor");
+            SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oMeal));
+            DL_QueueMoveAction(oNpc, GetLocation(oMeal), TRUE);
+        }
+        return;
+    }
+
+    DL_ClearTransitionExecutionState(oNpc);
+    if (DL_TryProgressMealAtChair(oNpc, oMeal))
+    {
+        return;
+    }
+
+    DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
+    SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "on_meal_anchor_" + sMealKind);
+    SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oMeal));
+    AssignCommand(oNpc, SetFacing(GetFacing(oMeal)));
+    if (sAnim != "")
+    {
+        PlayCustomAnimation(oNpc, sAnim, TRUE);
+    }
+    DL_LogChatDebugEvent(oNpc, "on_meal_anchor_" + sMealKind, "on_meal_anchor_" + sMealKind + " anchor=" + GetTag(oMeal));
 }
 int DL_ProgressChillAtSeat(object oNpc, object oSeat)
 {
