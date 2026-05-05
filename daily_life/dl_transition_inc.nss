@@ -129,12 +129,47 @@ string DL_NavGetAnchorZoneId(object oAnchor)
     return DL_NavGetAreaZoneId(GetArea(oAnchor));
 }
 
+string DL_NavTryResolveZoneFromNearbyAnchors(object oNpc)
+{
+    if (!GetIsObjectValid(oNpc)) return "";
+
+    object oArea = GetArea(oNpc);
+    if (!GetIsObjectValid(oArea)) return "";
+
+    float fBestDistance = 1000000.0;
+    string sBestZone = "";
+    int nScanned = 0;
+    object oObj = GetFirstObjectInArea(oArea);
+    while (GetIsObjectValid(oObj) && nScanned < DL_NAV_AREA_SCAN_CAP)
+    {
+        if (GetObjectType(oObj) == OBJECT_TYPE_WAYPOINT)
+        {
+            string sZone = GetLocalString(oObj, DL_L_AREA_NAV_ZONE_ID);
+            if (sZone != "")
+            {
+                float fDistance = GetDistanceBetween(oNpc, oObj);
+                if (fDistance < fBestDistance)
+                {
+                    fBestDistance = fDistance;
+                    sBestZone = sZone;
+                }
+            }
+        }
+
+        oObj = GetNextObjectInArea(oArea);
+        nScanned = nScanned + 1;
+    }
+
+    return sBestZone;
+}
+
 void DL_NavSyncCurrentZoneFromArea(object oNpc)
 {
     if (!GetIsObjectValid(oNpc)) return;
     if (GetLocalString(oNpc, DL_L_NPC_NAV_ZONE_CURRENT) != "") return;
 
-    string sCurrentZone = DL_NavGetAreaZoneId(GetArea(oNpc));
+    string sCurrentZone = DL_NavTryResolveZoneFromNearbyAnchors(oNpc);
+    if (sCurrentZone == "") sCurrentZone = DL_NavGetAreaZoneId(GetArea(oNpc));
     if (sCurrentZone != "")
     {
         SetLocalString(oNpc, DL_L_NPC_NAV_ZONE_CURRENT, sCurrentZone);
