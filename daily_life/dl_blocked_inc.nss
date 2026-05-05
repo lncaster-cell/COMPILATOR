@@ -16,6 +16,10 @@ void DL_ClearNpcBlockedSignal(object oNpc)
 void DL_ClearNpcBlockedBusy(object oNpc)
 {
     DeleteLocalInt(oNpc, DL_L_NPC_BLOCKED_BUSY);
+    if (GetLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC) == "opening_blocking_door")
+    {
+        DeleteLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC);
+    }
 }
 
 void DL_ReissueNpcDirectiveAfterBlocked(object oNpc)
@@ -31,13 +35,12 @@ void DL_ReissueNpcDirectiveAfterBlocked(object oNpc)
     }
 
     int nDirective = GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE);
-    if (nDirective == DL_DIR_WORK)
-    {
-        DL_ApplyDirectiveSkeleton(oNpc, nDirective);
-        return;
-    }
-
-    if (nDirective == DL_DIR_SLEEP)
+    if (nDirective == DL_DIR_WORK ||
+        nDirective == DL_DIR_SLEEP ||
+        nDirective == DL_DIR_MEAL ||
+        nDirective == DL_DIR_SOCIAL ||
+        nDirective == DL_DIR_PUBLIC ||
+        nDirective == DL_DIR_CHILL)
     {
         DL_ApplyDirectiveSkeleton(oNpc, nDirective);
         return;
@@ -106,7 +109,12 @@ void DL_HandleNpcBlocked(object oNpc)
     }
 
     int nDirective = GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE);
-    if (nDirective != DL_DIR_WORK && nDirective != DL_DIR_SLEEP)
+    if (nDirective != DL_DIR_WORK &&
+        nDirective != DL_DIR_SLEEP &&
+        nDirective != DL_DIR_MEAL &&
+        nDirective != DL_DIR_SOCIAL &&
+        nDirective != DL_DIR_PUBLIC &&
+        nDirective != DL_DIR_CHILL)
     {
         SetLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC, "blocked_outside_route_directive");
         DL_ClearNpcBlockedSignal(oNpc);
