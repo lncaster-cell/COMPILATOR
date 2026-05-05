@@ -13,6 +13,17 @@ const string DL_NAV_ROUTE_PREFIX = "route_";
 const float DL_NAV_ENTRY_RADIUS = 1.60;
 const int DL_NAV_AREA_SCAN_CAP = 128;
 
+const string DL_L_AREA_NAV_READY = "dl_area_nav_ready";
+const string DL_L_AREA_NAV_COUNT = "dl_area_nav_count";
+const string DL_L_AREA_NAV_SLOT_PREFIX = "dl_area_nav_";
+const int DL_AREA_NAV_ROUTE_CAP = 32;
+
+string DL_GetAreaNavigationSlotKey(int nSlot)
+{
+    if (nSlot < 0) nSlot = 0;
+    return DL_L_AREA_NAV_SLOT_PREFIX + IntToString(nSlot);
+}
+
 string DL_NavMakeTransitionTag(string sFromZone, string sToZone)
 {
     if (sFromZone == "" || sToZone == "") return "";
@@ -103,6 +114,32 @@ int DL_WaypointHasTransition(object oWp)
     if (nDelimiter <= 0) return FALSE;
     if (nDelimiter >= GetStringLength(sTag) - 2) return FALSE;
     return TRUE;
+}
+
+
+object DL_ResolveTransitionExitWaypointFromEntry(object oEntryWp)
+{
+    if (!GetIsObjectValid(oEntryWp) || GetObjectType(oEntryWp) != OBJECT_TYPE_WAYPOINT)
+    {
+        return OBJECT_INVALID;
+    }
+
+    string sTag = GetTag(oEntryWp);
+    int nDelimiter = FindSubString(sTag, DL_NAV_DELIMITER);
+    if (nDelimiter <= 0 || nDelimiter >= GetStringLength(sTag) - 2)
+    {
+        return OBJECT_INVALID;
+    }
+
+    string sFrom = GetSubString(sTag, 0, nDelimiter);
+    int nToStart = nDelimiter + 2;
+    string sTo = GetSubString(sTag, nToStart, GetStringLength(sTag) - nToStart);
+    if (sFrom == "" || sTo == "")
+    {
+        return OBJECT_INVALID;
+    }
+
+    return GetWaypointByTag(DL_NavMakeTransitionTag(sTo, sFrom));
 }
 
 int DL_NavTryAdvanceToZone(object oNpc, string sTargetZone)
