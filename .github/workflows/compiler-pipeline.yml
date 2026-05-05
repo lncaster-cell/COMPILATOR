@@ -55,7 +55,7 @@ jobs:
             if (-not $match) {
               throw "Required signature missing in dl_transition_inc.nss: $pattern"
             }
-            Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- Found: `$($match.LineNumber): $($match.Line.Trim())`"
+            Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ('- Found: ' + $match.LineNumber + ': ' + $match.Line.Trim())
           }
 
       - name: Run compiler modes (check -> optimization -> bugfind -> build)
