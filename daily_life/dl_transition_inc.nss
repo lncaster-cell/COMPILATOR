@@ -39,6 +39,17 @@ void DL_NavSetDebug(object oNpc, string sCurrentZone, string sTargetZone, string
     SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_REASON, sReason);
 }
 
+void DL_NavClearFocusMoveIssueStateAfterJump(object oNpc)
+{
+    if (!GetIsObjectValid(oNpc)) return;
+
+    // Focus movement may have been prepared before a same-area pseudo-transition.
+    // After the jump, force the focus directive to issue a fresh local movement
+    // command from the exit waypoint to the final anchor.
+    DeleteLocalInt(oNpc, "dl_focus_anchor_action_stamp");
+    DeleteLocalString(oNpc, "dl_focus_anchor_action_target");
+}
+
 string DL_NavMakeTransitionTag(string sFromZone, string sToZone)
 {
     if (sFromZone == "" || sToZone == "") return "";
@@ -382,6 +393,7 @@ int DL_NavTryAdvanceToZone(object oNpc, string sTargetZone)
     AssignCommand(oNpc, ClearAllActions(TRUE));
     AssignCommand(oNpc, ActionJumpToLocation(GetLocation(oExit)));
     DL_NavSetNpcCurrentZone(oNpc, sNextZone);
+    DL_NavClearFocusMoveIssueStateAfterJump(oNpc);
     DL_NavSetDebug(oNpc, sCurrentZone, sTargetZone, sNextZone, "transitioning");
     DL_NavSetState(oNpc, "transitioning", sTargetZone, "");
     return TRUE;
