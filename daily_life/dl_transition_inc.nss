@@ -120,7 +120,7 @@ string DL_NavGetAreaZoneId(object oArea)
     return GetTag(oArea);
 }
 
-string DL_NavTryResolveZoneFromNearbyTransitionWaypoints(object oSubject)
+string DL_NavTryResolveZoneFromTransitionWaypoints(object oSubject, int bRequireNearby)
 {
     if (!GetIsObjectValid(oSubject)) return "";
 
@@ -143,7 +143,7 @@ string DL_NavTryResolveZoneFromNearbyTransitionWaypoints(object oSubject)
                 if (sFromZone != "")
                 {
                     float fDistance = GetDistanceBetween(oSubject, oObj);
-                    if (fDistance <= DL_NAV_ZONE_INFER_RADIUS && fDistance < fBestDistance)
+                    if ((!bRequireNearby || fDistance <= DL_NAV_ZONE_INFER_RADIUS) && fDistance < fBestDistance)
                     {
                         fBestDistance = fDistance;
                         sBestZone = sFromZone;
@@ -159,6 +159,16 @@ string DL_NavTryResolveZoneFromNearbyTransitionWaypoints(object oSubject)
     return sBestZone;
 }
 
+string DL_NavTryResolveCurrentZoneFromNearbyTransitionWaypoints(object oSubject)
+{
+    return DL_NavTryResolveZoneFromTransitionWaypoints(oSubject, TRUE);
+}
+
+string DL_NavTryResolveTargetZoneFromTransitionWaypoints(object oSubject)
+{
+    return DL_NavTryResolveZoneFromTransitionWaypoints(oSubject, FALSE);
+}
+
 string DL_NavGetAnchorZoneId(object oAnchor)
 {
     if (!GetIsObjectValid(oAnchor)) return "";
@@ -166,7 +176,9 @@ string DL_NavGetAnchorZoneId(object oAnchor)
     string sZone = GetLocalString(oAnchor, DL_L_AREA_NAV_ZONE_ID);
     if (sZone != "") return sZone;
 
-    string sZoneFromTransition = DL_NavTryResolveZoneFromNearbyTransitionWaypoints(oAnchor);
+    // Target anchors may be deep inside an isolated same-area pseudo-zone.
+    // Use nearest transition waypoint without the short current-zone radius.
+    string sZoneFromTransition = DL_NavTryResolveTargetZoneFromTransitionWaypoints(oAnchor);
     if (sZoneFromTransition != "") return sZoneFromTransition;
 
     return DL_NavGetAreaZoneId(GetArea(oAnchor));
@@ -216,12 +228,12 @@ void DL_NavSyncCurrentZoneFromArea(object oNpc)
     // chill seat across a walkmesh gap) from being incorrectly selected as the
     // NPC's current zone at spawn time.
     string sCurrentZone = DL_NavTryResolveZoneFromNearbyAnchors(oNpc);
-    if (sCurrentZone == "") sCurrentZone = DL_NavTryResolveZoneFromNearbyTransitionWaypoints(oNpc);
+    if (sCurrentZone == "") sCurrentZone = DL_NavTryResolveCurrentZoneFromNearbyTransitionWaypoints(oNpc);
 
     // If no nearby zone hint exists, use the area's zone id as the main/default
     // zone. This is the intended low-setup contract for same-area pseudo-zones:
-    // set area dl_nav_zone_id to the main reachable zone, and put dl_nav_zone_id
-    // only on anchors that live in isolated pseudo-zones.
+    // set area dl_nav_zone_id to the main reachable zone, while target anchors
+    // inside isolated pseudo-zones can be inferred from nearby transition pairs.
     if (sCurrentZone == "") sCurrentZone = DL_NavGetAreaZoneId(GetArea(oNpc));
     if (sCurrentZone != "")
     {
