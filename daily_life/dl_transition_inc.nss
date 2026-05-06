@@ -218,23 +218,21 @@ string DL_NavTryResolveZoneFromNearbyAnchors(object oNpc)
     return sBestZone;
 }
 
+string DL_NavResolveCurrentZoneFromPosition(object oNpc)
+{
+    if (!GetIsObjectValid(oNpc)) return "";
+
+    string sCurrentZone = DL_NavTryResolveZoneFromNearbyAnchors(oNpc);
+    if (sCurrentZone == "") sCurrentZone = DL_NavTryResolveCurrentZoneFromNearbyTransitionWaypoints(oNpc);
+    if (sCurrentZone == "") sCurrentZone = DL_NavGetAreaZoneId(GetArea(oNpc));
+    return sCurrentZone;
+}
+
 void DL_NavSyncCurrentZoneFromArea(object oNpc)
 {
     if (!GetIsObjectValid(oNpc)) return;
-    if (GetLocalString(oNpc, DL_L_NPC_NAV_ZONE_CURRENT) != "") return;
 
-    // First try an explicit nearby zone marker/anchor, but only at short range.
-    // This prevents an isolated same-area target anchor (for example a bedroom
-    // chill seat across a walkmesh gap) from being incorrectly selected as the
-    // NPC's current zone at spawn time.
-    string sCurrentZone = DL_NavTryResolveZoneFromNearbyAnchors(oNpc);
-    if (sCurrentZone == "") sCurrentZone = DL_NavTryResolveCurrentZoneFromNearbyTransitionWaypoints(oNpc);
-
-    // If no nearby zone hint exists, use the area's zone id as the main/default
-    // zone. This is the intended low-setup contract for same-area pseudo-zones:
-    // set area dl_nav_zone_id to the main reachable zone, while target anchors
-    // inside isolated pseudo-zones can be inferred from nearby transition pairs.
-    if (sCurrentZone == "") sCurrentZone = DL_NavGetAreaZoneId(GetArea(oNpc));
+    string sCurrentZone = DL_NavResolveCurrentZoneFromPosition(oNpc);
     if (sCurrentZone != "")
     {
         SetLocalString(oNpc, DL_L_NPC_NAV_ZONE_CURRENT, sCurrentZone);
