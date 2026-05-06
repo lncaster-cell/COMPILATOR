@@ -6,16 +6,15 @@ const string DL_L_NPC_CACHE_MEAL_CHAIR_MISSING_UNTIL = "dl_cache_meal_chair_miss
 const string DL_L_NPC_CHILL_SIT_RETRY_UNTIL = "dl_chill_sit_retry_until";
 const string DL_L_NPC_MEAL_SIT_RETRY_UNTIL = "dl_meal_sit_retry_until";
 const string DL_L_NPC_CHILL_WAYPOINT_MODE = "dl_chill_waypoint_mode";
-const string DL_L_NPC_MEAL_WAYPOINT_MODE = "dl_meal_waypoint_mode";
+const string DL_L_NPC_MEAL_LEGACY_ACTION_SIT = "dl_meal_legacy_action_sit";
+const string DL_L_NPC_CHILL_LEGACY_ACTION_SIT = "dl_chill_legacy_action_sit";
 const string DL_L_NPC_FOCUS_ACTION_STAMP = "dl_focus_anchor_action_stamp";
 const string DL_L_NPC_FOCUS_ACTION_TARGET = "dl_focus_anchor_action_target";
 const string DL_L_WP_CHILL_CHAIR_TAG = "dl_chill_chair_tag";
-// Chill waypoint mode uses dl_chill_seat_<slot> as the body/facing anchor;
-// chairs are decoration only unless legacy ActionSit mode is left enabled.
-// Meal waypoint seating contract: set dl_meal_waypoint_mode=1 on the NPC
-// or meal waypoint to make the waypoint the body/facing anchor and play
-// sitdrink/siteat animation there. Chairs are decoration only in
-// waypoint mode; legacy ActionSit uses dl_meal_chair_tag or verified chair tags.
+// Household seating defaults to waypoint animation: the meal/chill waypoint is
+// the NPC body position and facing anchor, and chairs are decoration only.
+// Set dl_meal_legacy_action_sit=1 or dl_chill_legacy_action_sit=1 on the NPC
+// or waypoint only for hand-verified placeables that should use ActionSit.
 const string DL_L_WP_MEAL_CHAIR_TAG = "dl_meal_chair_tag";
 const int DL_SOCIAL_PARTNER_TAG_SEARCH_CAP = 32;
 const int DL_CHILL_MISSING_CACHE_TTL_MINUTES = 10;
@@ -647,13 +646,13 @@ void DL_ApplyMealAnimationFallback(object oNpc, object oMeal, string sMealKind, 
     }
 }
 
-int DL_ShouldUseMealWaypointMode(object oNpc, object oMeal)
+int DL_ShouldUseMealLegacyActionSit(object oNpc, object oMeal)
 {
-    if (GetIsObjectValid(oNpc) && GetLocalInt(oNpc, DL_L_NPC_MEAL_WAYPOINT_MODE) == TRUE)
+    if (GetIsObjectValid(oNpc) && GetLocalInt(oNpc, DL_L_NPC_MEAL_LEGACY_ACTION_SIT) == TRUE)
     {
         return TRUE;
     }
-    if (GetIsObjectValid(oMeal) && GetLocalInt(oMeal, DL_L_NPC_MEAL_WAYPOINT_MODE) == TRUE)
+    if (GetIsObjectValid(oMeal) && GetLocalInt(oMeal, DL_L_NPC_MEAL_LEGACY_ACTION_SIT) == TRUE)
     {
         return TRUE;
     }
@@ -673,7 +672,7 @@ string DL_GetMealWaypointAnimation(object oNpc, string sMealKind)
     return "siteat";
 }
 
-int DL_ExecuteMealWaypointMode(object oNpc, object oMeal, string sMealKind, string sAnim)
+int DL_ExecuteMealWaypointAnimation(object oNpc, object oMeal, string sMealKind, string sAnim)
 {
     DeleteLocalInt(oNpc, DL_L_NPC_MEAL_SIT_RETRY_UNTIL);
     return DL_ApplyFocusWaypointAnimation(oNpc, oMeal, "on_meal_anchor_" + sMealKind, sAnim, DL_MEAL_LOOP_ANIM_DURATION);
@@ -795,20 +794,20 @@ void DL_ExecuteMealDirective(object oNpc)
         return;
     }
 
-    if (DL_ShouldUseMealWaypointMode(oNpc, oMeal))
+    if (DL_ShouldUseMealLegacyActionSit(oNpc, oMeal))
     {
-        DL_ExecuteMealWaypointMode(oNpc, oMeal, sMealKind, sAnim);
+        DL_ClearFocusMoveIssueState(oNpc);
+        DL_ClearTransitionExecutionState(oNpc);
+        if (DL_TryProgressMealLegacyChair(oNpc, oMeal, sMealKind, sAnim))
+        {
+            return;
+        }
+
+        DL_ExecuteMealWaypointAnimation(oNpc, oMeal, sMealKind, sAnim);
         return;
     }
 
-    DL_ClearFocusMoveIssueState(oNpc);
-    DL_ClearTransitionExecutionState(oNpc);
-    if (DL_TryProgressMealLegacyChair(oNpc, oMeal, sMealKind, sAnim))
-    {
-        return;
-    }
-
-    DL_ApplyMealAnimationFallback(oNpc, oMeal, sMealKind, sAnim, "");
+    DL_ExecuteMealWaypointAnimation(oNpc, oMeal, sMealKind, sAnim);
 }
 void DL_ApplyChillAnimationFallback(object oNpc, object oSeat, string sDiagnostic)
 {
@@ -827,20 +826,20 @@ void DL_ApplyChillAnimationFallback(object oNpc, object oSeat, string sDiagnosti
     }
 }
 
-int DL_ShouldUseChillWaypointMode(object oNpc, object oSeat)
+int DL_ShouldUseChillLegacyActionSit(object oNpc, object oSeat)
 {
-    if (GetIsObjectValid(oNpc) && GetLocalInt(oNpc, DL_L_NPC_CHILL_WAYPOINT_MODE) == TRUE)
+    if (GetIsObjectValid(oNpc) && GetLocalInt(oNpc, DL_L_NPC_CHILL_LEGACY_ACTION_SIT) == TRUE)
     {
         return TRUE;
     }
-    if (GetIsObjectValid(oSeat) && GetLocalInt(oSeat, DL_L_NPC_CHILL_WAYPOINT_MODE) == TRUE)
+    if (GetIsObjectValid(oSeat) && GetLocalInt(oSeat, DL_L_NPC_CHILL_LEGACY_ACTION_SIT) == TRUE)
     {
         return TRUE;
     }
     return FALSE;
 }
 
-int DL_ExecuteChillWaypointMode(object oNpc, object oSeat)
+int DL_ExecuteChillWaypointAnimation(object oNpc, object oSeat)
 {
     DeleteLocalInt(oNpc, DL_L_NPC_CHILL_SIT_RETRY_UNTIL);
     return DL_ApplyFocusWaypointAnimation(oNpc, oSeat, "on_chill_anchor", DL_CHILL_ANIM_SIT_IDLE, DL_CHILL_LOOP_ANIM_DURATION);
@@ -887,7 +886,7 @@ int DL_TryProgressChillLegacyChair(object oNpc, object oSeat)
         SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "missing_chill_chair");
         SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oSeat));
         SetLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC, "missing_chill_chair");
-        return TRUE;
+        return FALSE;
     }
 
     object oSitter = GetSittingCreature(oChair);
@@ -907,7 +906,7 @@ int DL_TryProgressChillLegacyChair(object oNpc, object oSeat)
         SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "chill_chair_occupied");
         SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oSeat));
         SetLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC, "chill_chair_occupied");
-        return TRUE;
+        return FALSE;
     }
 
     int nNowAbs = DL_GetAbsoluteMinute();
@@ -952,14 +951,17 @@ int DL_ProgressChillAtSeat(object oNpc, object oSeat)
         return TRUE;
     }
 
-    if (DL_ShouldUseChillWaypointMode(oNpc, oSeat))
+    if (DL_ShouldUseChillLegacyActionSit(oNpc, oSeat))
     {
-        return DL_ExecuteChillWaypointMode(oNpc, oSeat);
+        DL_ClearFocusMoveIssueState(oNpc);
+        DL_ClearTransitionExecutionState(oNpc);
+        if (DL_TryProgressChillLegacyChair(oNpc, oSeat))
+        {
+            return TRUE;
+        }
     }
 
-    DL_ClearFocusMoveIssueState(oNpc);
-    DL_ClearTransitionExecutionState(oNpc);
-    return DL_TryProgressChillLegacyChair(oNpc, oSeat);
+    return DL_ExecuteChillWaypointAnimation(oNpc, oSeat);
 }
 void DL_ExecuteChillDirective(object oNpc)
 {

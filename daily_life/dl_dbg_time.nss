@@ -314,11 +314,20 @@ void main()
         }
     }
 
+    int bMealLegacyNpc = GetLocalInt(oNpc, "dl_meal_legacy_action_sit");
+    int bMealLegacyWp = GetIsObjectValid(oMealModeTarget) && GetLocalInt(oMealModeTarget, "dl_meal_legacy_action_sit");
+    int bChillLegacyNpc = GetLocalInt(oNpc, "dl_chill_legacy_action_sit");
+    int bChillLegacyWp = GetIsObjectValid(oFocusTarget) && GetLocalInt(oFocusTarget, "dl_chill_legacy_action_sit");
+    string sMealMode = (bMealLegacyNpc || bMealLegacyWp) ? "legacy_action_sit" : "waypoint_default";
+    string sChillMode = (bChillLegacyNpc || bChillLegacyWp) ? "legacy_action_sit" : "waypoint_default";
+
     DL_DbgSay(oPC,
-        "[DL DEBUG] seating_modes meal_npc=" + DL_DbgBool(GetLocalInt(oNpc, "dl_meal_waypoint_mode")) +
-        " meal_wp=" + DL_DbgBool(GetIsObjectValid(oMealModeTarget) && GetLocalInt(oMealModeTarget, "dl_meal_waypoint_mode")) +
-        " chill_npc=" + DL_DbgBool(GetLocalInt(oNpc, "dl_chill_waypoint_mode")) +
-        " chill_wp=" + DL_DbgBool(GetIsObjectValid(oFocusTarget) && GetLocalInt(oFocusTarget, "dl_chill_waypoint_mode")) +
+        "[DL DEBUG] seating_modes meal_mode=" + sMealMode +
+        " meal_legacy_npc=" + DL_DbgBool(bMealLegacyNpc) +
+        " meal_legacy_wp=" + DL_DbgBool(bMealLegacyWp) +
+        " chill_mode=" + sChillMode +
+        " chill_legacy_npc=" + DL_DbgBool(bChillLegacyNpc) +
+        " chill_legacy_wp=" + DL_DbgBool(bChillLegacyWp) +
         " meal_waypoint=" + sMealWaypointTag +
         " focus_target_tag=" + sFocusTarget
     );
