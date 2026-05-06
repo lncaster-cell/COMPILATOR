@@ -186,6 +186,7 @@ void DL_StopWorkPresentationIfActive(object oNpc)
     }
 
     AssignCommand(oNpc, ClearAllActions(TRUE));
+    PlayCustomAnimation(oNpc, "%", FALSE);
     AssignCommand(oNpc, ActionPlayAnimation(ANIMATION_LOOPING_PAUSE, 1.0, 0.1));
 }
 void DL_ClearWorkExecutionState(object oNpc)
