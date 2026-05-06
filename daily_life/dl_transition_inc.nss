@@ -7,6 +7,10 @@ const string DL_L_NPC_NAV_ZONE_CURRENT = "dl_npc_nav_zone_current";
 const string DL_L_NPC_TRANSITION_STATUS = "dl_npc_transition_status";
 const string DL_L_NPC_TRANSITION_TARGET = "dl_npc_transition_target";
 const string DL_L_NPC_TRANSITION_DIAGNOSTIC = "dl_npc_transition_diagnostic";
+const string DL_L_NPC_NAV_DEBUG_CURRENT = "dl_nav_debug_current";
+const string DL_L_NPC_NAV_DEBUG_TARGET = "dl_nav_debug_target";
+const string DL_L_NPC_NAV_DEBUG_NEXT = "dl_nav_debug_next";
+const string DL_L_NPC_NAV_DEBUG_REASON = "dl_nav_debug_reason";
 
 const string DL_NAV_DELIMITER = "__";
 const string DL_NAV_ROUTE_PREFIX = "route_";
@@ -24,6 +28,15 @@ string DL_GetAreaNavigationSlotKey(int nSlot)
 {
     if (nSlot < 0) nSlot = 0;
     return DL_L_AREA_NAV_SLOT_PREFIX + IntToString(nSlot);
+}
+
+void DL_NavSetDebug(object oNpc, string sCurrentZone, string sTargetZone, string sNextZone, string sReason)
+{
+    if (!GetIsObjectValid(oNpc)) return;
+    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_CURRENT, sCurrentZone);
+    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_TARGET, sTargetZone);
+    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_NEXT, sNextZone);
+    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_REASON, sReason);
 }
 
 string DL_NavMakeTransitionTag(string sFromZone, string sToZone)
@@ -250,14 +263,17 @@ void DL_NavPrepareTargetZoneFromAnchor(object oNpc, object oTargetAnchor)
 
     DL_NavSyncCurrentZoneFromArea(oNpc);
 
+    string sCurrentZone = DL_NavGetNpcCurrentZone(oNpc);
     string sTargetZone = DL_NavGetAnchorZoneId(oTargetAnchor);
     if (sTargetZone == "")
     {
+        DL_NavSetDebug(oNpc, sCurrentZone, "", "", "target_zone_missing");
         DL_NavSetState(oNpc, "failed", "", "target_zone_missing");
         return;
     }
 
     SetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET, sTargetZone);
+    DL_NavSetDebug(oNpc, sCurrentZone, sTargetZone, "", "prepared");
 }
 
 int DL_WaypointHasTransition(object oWp)
@@ -298,17 +314,26 @@ object DL_ResolveTransitionExitWaypointFromEntry(object oEntryWp)
 
 int DL_NavTryAdvanceToZone(object oNpc, string sTargetZone)
 {
-    if (!GetIsObjectValid(oNpc) || sTargetZone == "") return FALSE;
+    if (!GetIsObjectValid(oNpc) || sTargetZone == "")
+    {
+        if (GetIsObjectValid(oNpc))
+        {
+            DL_NavSetDebug(oNpc, DL_NavGetNpcCurrentZone(oNpc), sTargetZone, "", "target_empty");
+        }
+        return FALSE;
+    }
 
     string sCurrentZone = DL_NavGetNpcCurrentZone(oNpc);
     if (sCurrentZone == "")
     {
+        DL_NavSetDebug(oNpc, sCurrentZone, sTargetZone, "", "current_zone_missing");
         DL_NavSetState(oNpc, "idle", sTargetZone, "current_zone_missing");
         return FALSE;
     }
 
     if (sCurrentZone == sTargetZone)
     {
+        DL_NavSetDebug(oNpc, sCurrentZone, sTargetZone, "", "same_zone");
         DL_ClearTransitionExecutionState(oNpc);
         return FALSE;
     }
@@ -316,6 +341,7 @@ int DL_NavTryAdvanceToZone(object oNpc, string sTargetZone)
     string sNextZone = DL_NavGetNextZone(oNpc, sTargetZone);
     if (sNextZone == "")
     {
+        DL_NavSetDebug(oNpc, sCurrentZone, sTargetZone, "", "route_missing");
         DL_NavSetState(oNpc, "failed", sTargetZone, "route_missing");
         return FALSE;
     }
@@ -331,6 +357,7 @@ int DL_NavTryAdvanceToZone(object oNpc, string sTargetZone)
 
     if (!GetIsObjectValid(oEntry) || !GetIsObjectValid(oExit))
     {
+        DL_NavSetDebug(oNpc, sCurrentZone, sTargetZone, sNextZone, "transition_missing");
         DL_NavSetState(oNpc, "failed", sTargetZone, "transition_missing");
         return FALSE;
     }
@@ -341,11 +368,13 @@ int DL_NavTryAdvanceToZone(object oNpc, string sTargetZone)
             GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) == sTargetZone &&
             GetCurrentAction(oNpc) == ACTION_MOVETOPOINT)
         {
+            DL_NavSetDebug(oNpc, sCurrentZone, sTargetZone, sNextZone, "moving_to_entry_active");
             return TRUE;
         }
 
         AssignCommand(oNpc, ClearAllActions(TRUE));
         AssignCommand(oNpc, ActionMoveToLocation(GetLocation(oEntry), TRUE));
+        DL_NavSetDebug(oNpc, sCurrentZone, sTargetZone, sNextZone, "moving_to_entry");
         DL_NavSetState(oNpc, "moving_to_entry", sTargetZone, "");
         return TRUE;
     }
@@ -353,6 +382,7 @@ int DL_NavTryAdvanceToZone(object oNpc, string sTargetZone)
     AssignCommand(oNpc, ClearAllActions(TRUE));
     AssignCommand(oNpc, ActionJumpToLocation(GetLocation(oExit)));
     DL_NavSetNpcCurrentZone(oNpc, sNextZone);
+    DL_NavSetDebug(oNpc, sCurrentZone, sTargetZone, sNextZone, "transitioning");
     DL_NavSetState(oNpc, "transitioning", sTargetZone, "");
     return TRUE;
 }
