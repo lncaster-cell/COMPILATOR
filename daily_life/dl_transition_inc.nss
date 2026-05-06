@@ -11,6 +11,7 @@ const string DL_L_NPC_TRANSITION_DIAGNOSTIC = "dl_npc_transition_diagnostic";
 const string DL_NAV_DELIMITER = "__";
 const string DL_NAV_ROUTE_PREFIX = "route_";
 const float DL_NAV_ENTRY_RADIUS = 1.60;
+const float DL_NAV_ZONE_INFER_RADIUS = 1.80;
 const int DL_NAV_AREA_SCAN_CAP = 128;
 
 const string DL_L_AREA_NAV_READY = "dl_area_nav_ready";
@@ -142,7 +143,7 @@ string DL_NavTryResolveZoneFromNearbyTransitionWaypoints(object oSubject)
                 if (sFromZone != "")
                 {
                     float fDistance = GetDistanceBetween(oSubject, oObj);
-                    if (fDistance < fBestDistance)
+                    if (fDistance <= DL_NAV_ZONE_INFER_RADIUS && fDistance < fBestDistance)
                     {
                         fBestDistance = fDistance;
                         sBestZone = sFromZone;
@@ -190,7 +191,7 @@ string DL_NavTryResolveZoneFromNearbyAnchors(object oNpc)
             if (sZone != "")
             {
                 float fDistance = GetDistanceBetween(oNpc, oObj);
-                if (fDistance < fBestDistance)
+                if (fDistance <= DL_NAV_ZONE_INFER_RADIUS && fDistance < fBestDistance)
                 {
                     fBestDistance = fDistance;
                     sBestZone = sZone;
@@ -210,8 +211,17 @@ void DL_NavSyncCurrentZoneFromArea(object oNpc)
     if (!GetIsObjectValid(oNpc)) return;
     if (GetLocalString(oNpc, DL_L_NPC_NAV_ZONE_CURRENT) != "") return;
 
+    // First try an explicit nearby zone marker/anchor, but only at short range.
+    // This prevents an isolated same-area target anchor (for example a bedroom
+    // chill seat across a walkmesh gap) from being incorrectly selected as the
+    // NPC's current zone at spawn time.
     string sCurrentZone = DL_NavTryResolveZoneFromNearbyAnchors(oNpc);
     if (sCurrentZone == "") sCurrentZone = DL_NavTryResolveZoneFromNearbyTransitionWaypoints(oNpc);
+
+    // If no nearby zone hint exists, use the area's zone id as the main/default
+    // zone. This is the intended low-setup contract for same-area pseudo-zones:
+    // set area dl_nav_zone_id to the main reachable zone, and put dl_nav_zone_id
+    // only on anchors that live in isolated pseudo-zones.
     if (sCurrentZone == "") sCurrentZone = DL_NavGetAreaZoneId(GetArea(oNpc));
     if (sCurrentZone != "")
     {
