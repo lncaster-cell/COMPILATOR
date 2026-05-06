@@ -577,6 +577,35 @@ int DL_ShouldUseDirectiveFastPath(object oNpc, int nEffectiveDirective)
     return FALSE;
 }
 
+void DL_ResetStalledFocusMoveForReissue(object oNpc)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) != "moving_to_anchor")
+    {
+        return;
+    }
+
+    if (GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) == "")
+    {
+        return;
+    }
+
+    if (GetCurrentAction(oNpc) == ACTION_MOVETOPOINT)
+    {
+        return;
+    }
+
+    string sTarget = GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET);
+    DeleteLocalString(oNpc, DL_L_NPC_FOCUS_STATUS);
+    DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
+    DL_ClearTransitionExecutionState(oNpc);
+    DL_LogChatDebugEvent(oNpc, "focus_move_reissue", "focus move reissue target=" + sTarget);
+}
+
 void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
 {
     if (!GetIsObjectValid(oNpc))
@@ -626,6 +655,7 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
     {
         DL_ClearSleepExecutionState(oNpc);
         DL_ClearWorkExecutionState(oNpc);
+        DL_ResetStalledFocusMoveForReissue(oNpc);
         SetLocalString(oNpc, DL_L_NPC_STATE, DL_STATE_MEAL);
         DL_SetInteractionModes(oNpc, DL_DIALOGUE_IDLE, DL_SERVICE_OFF);
         DL_ExecuteMealDirective(oNpc);
@@ -635,6 +665,7 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
     {
         DL_ClearSleepExecutionState(oNpc);
         DL_ClearWorkExecutionState(oNpc);
+        DL_ResetStalledFocusMoveForReissue(oNpc);
         SetLocalString(oNpc, DL_L_NPC_STATE, DL_STATE_SOCIAL);
         DL_SetInteractionModes(oNpc, DL_DIALOGUE_SOCIAL, DL_SERVICE_OFF);
         DL_ExecuteSocialDirective(oNpc);
@@ -644,6 +675,7 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
     {
         DL_ClearSleepExecutionState(oNpc);
         DL_ClearWorkExecutionState(oNpc);
+        DL_ResetStalledFocusMoveForReissue(oNpc);
         SetLocalString(oNpc, DL_L_NPC_STATE, DL_STATE_PUBLIC);
         DL_SetInteractionModes(oNpc, DL_DIALOGUE_IDLE, DL_SERVICE_OFF);
         DL_ExecutePublicDirective(oNpc);
@@ -653,6 +685,7 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
     {
         DL_ClearSleepExecutionState(oNpc);
         DL_ClearWorkExecutionState(oNpc);
+        DL_ResetStalledFocusMoveForReissue(oNpc);
         SetLocalString(oNpc, DL_L_NPC_STATE, DL_STATE_CHILL);
         DL_SetInteractionModes(oNpc, DL_DIALOGUE_IDLE, DL_SERVICE_OFF);
         DL_ExecuteChillDirective(oNpc);
