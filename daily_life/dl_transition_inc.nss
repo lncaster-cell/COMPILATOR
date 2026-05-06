@@ -4,6 +4,7 @@
 //   route local:  route_<current_zone>__<target_zone> = <next_zone>
 
 const string DL_L_NPC_NAV_ZONE_CURRENT = "dl_npc_nav_zone_current";
+const string DL_L_NPC_NAV_ZONE_AREA = "dl_npc_nav_zone_area";
 const string DL_L_NPC_TRANSITION_STATUS = "dl_npc_transition_status";
 const string DL_L_NPC_TRANSITION_TARGET = "dl_npc_transition_target";
 const string DL_L_NPC_TRANSITION_DIAGNOSTIC = "dl_npc_transition_diagnostic";
@@ -74,9 +75,17 @@ void DL_NavSetNpcCurrentZone(object oNpc, string sZone)
     if (sZone == "")
     {
         DeleteLocalString(oNpc, DL_L_NPC_NAV_ZONE_CURRENT);
+        DeleteLocalString(oNpc, DL_L_NPC_NAV_ZONE_AREA);
         return;
     }
+
     SetLocalString(oNpc, DL_L_NPC_NAV_ZONE_CURRENT, sZone);
+
+    object oArea = GetArea(oNpc);
+    if (GetIsObjectValid(oArea))
+    {
+        SetLocalString(oNpc, DL_L_NPC_NAV_ZONE_AREA, GetTag(oArea));
+    }
 }
 
 void DL_ClearTransitionExecutionState(object oNpc)
@@ -131,8 +140,6 @@ object DL_NavFindTransitionInArea(object oArea, string sFromZone, string sToZone
 
     return OBJECT_INVALID;
 }
-
-
 
 string DL_NavGetAreaZoneId(object oArea)
 {
@@ -255,16 +262,26 @@ void DL_NavSyncCurrentZoneFromArea(object oNpc)
 {
     if (!GetIsObjectValid(oNpc)) return;
 
-    if (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) == "transitioning" &&
-        GetLocalString(oNpc, DL_L_NPC_NAV_ZONE_CURRENT) != "")
+    // Same-area pseudo-zones are not discoverable from the area tag alone.
+    // Preserve runtime zone state set by actual transition jumps while the NPC
+    // remains in the same area. Without this, an NPC standing inside an isolated
+    // bedroom can be repeatedly reset back to the area's default zone (for
+    // example Hall) and try to re-enter the bedroom from inside it.
+    string sExistingZone = GetLocalString(oNpc, DL_L_NPC_NAV_ZONE_CURRENT);
+    if (sExistingZone != "")
     {
-        return;
+        object oExistingArea = GetArea(oNpc);
+        string sExistingAreaTag = GetLocalString(oNpc, DL_L_NPC_NAV_ZONE_AREA);
+        if (!GetIsObjectValid(oExistingArea) || sExistingAreaTag == "" || sExistingAreaTag == GetTag(oExistingArea))
+        {
+            return;
+        }
     }
 
     string sCurrentZone = DL_NavResolveCurrentZoneFromPosition(oNpc);
     if (sCurrentZone != "")
     {
-        SetLocalString(oNpc, DL_L_NPC_NAV_ZONE_CURRENT, sCurrentZone);
+        DL_NavSetNpcCurrentZone(oNpc, sCurrentZone);
     }
 }
 
@@ -296,7 +313,6 @@ int DL_WaypointHasTransition(object oWp)
     if (nDelimiter >= GetStringLength(sTag) - 2) return FALSE;
     return TRUE;
 }
-
 
 object DL_ResolveTransitionExitWaypointFromEntry(object oEntryWp)
 {
