@@ -224,7 +224,7 @@ void DL_IssueWorkMoveAction(object oNpc, object oTarget)
     SetLocalString(oNpc, DL_L_NPC_WORK_ACTION_TARGET, GetTag(oTarget));
     DL_ClearTransitionExecutionState(oNpc);
     DL_MarkSleepActionIssued(oNpc, DL_L_NPC_WORK_ACTION_STAMP);
-    DL_QueueMoveToObjectAction(oNpc, oTarget, TRUE, DL_WORK_ANCHOR_RADIUS);
+    DL_QueueMoveAction(oNpc, GetLocation(oTarget), TRUE);
 }
 int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
 {
