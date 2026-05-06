@@ -46,6 +46,20 @@ int DL_ShouldIssueAnchorMoveAction(
     return DL_ShouldReissueSleepMoveAction(oNpc, sStampKey);
 }
 
+void DL_ResetCustomAnimationBeforeAnchorMove(object oNpc)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    // NWN2 custom animations can survive ClearAllActions(TRUE). The stock
+    // ga_play_custom_animation script documents "%" as the reset-to-idle token.
+    // Clear it before issuing movement so old work/chill/meal loops cannot
+    // visually or behaviorally pin the NPC in place.
+    PlayCustomAnimation(oNpc, "%", FALSE);
+}
+
 void DL_IssueAnchorMoveExact(
     object oNpc,
     object oTarget,
@@ -77,6 +91,7 @@ void DL_IssueAnchorMoveExact(
 
     DL_ClearTransitionExecutionState(oNpc);
     DL_MarkSleepActionIssued(oNpc, sStampKey);
+    DL_ResetCustomAnimationBeforeAnchorMove(oNpc);
     DL_QueueMoveAction(oNpc, GetLocation(oTarget), bRun);
 }
 
@@ -112,6 +127,7 @@ void DL_IssueAnchorMoveRanged(
 
     DL_ClearTransitionExecutionState(oNpc);
     DL_MarkSleepActionIssued(oNpc, sStampKey);
+    DL_ResetCustomAnimationBeforeAnchorMove(oNpc);
     DL_QueueMoveToObjectAction(oNpc, oTarget, bRun, fRange);
 }
 
