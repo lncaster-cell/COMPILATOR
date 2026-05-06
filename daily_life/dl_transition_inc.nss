@@ -223,7 +223,6 @@ string DL_NavResolveCurrentZoneFromPosition(object oNpc)
     if (!GetIsObjectValid(oNpc)) return "";
 
     string sCurrentZone = DL_NavTryResolveZoneFromNearbyAnchors(oNpc);
-    if (sCurrentZone == "") sCurrentZone = DL_NavTryResolveCurrentZoneFromNearbyTransitionWaypoints(oNpc);
     if (sCurrentZone == "") sCurrentZone = DL_NavGetAreaZoneId(GetArea(oNpc));
     return sCurrentZone;
 }
@@ -231,6 +230,12 @@ string DL_NavResolveCurrentZoneFromPosition(object oNpc)
 void DL_NavSyncCurrentZoneFromArea(object oNpc)
 {
     if (!GetIsObjectValid(oNpc)) return;
+
+    if (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) == "transitioning" &&
+        GetLocalString(oNpc, DL_L_NPC_NAV_ZONE_CURRENT) != "")
+    {
+        return;
+    }
 
     string sCurrentZone = DL_NavResolveCurrentZoneFromPosition(oNpc);
     if (sCurrentZone != "")
