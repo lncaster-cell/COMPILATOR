@@ -157,13 +157,46 @@ void DL_ClearWorkMoveIssueState(object oNpc)
 {
     DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_WORK_ACTION_STAMP, DL_L_NPC_WORK_ACTION_TARGET);
 }
+int DL_HasWorkPresentationState(object oNpc)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return FALSE;
+    }
+
+    if (GetLocalString(oNpc, DL_L_NPC_WORK_KIND) != "" ||
+        GetLocalString(oNpc, DL_L_NPC_WORK_TARGET) != "" ||
+        GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) != "" ||
+        GetLocalString(oNpc, DL_L_NPC_WORK_DIAGNOSTIC) != "")
+    {
+        return TRUE;
+    }
+
+    int nActivity = GetLocalInt(oNpc, DL_L_NPC_ACTIVITY_ID);
+    return nActivity == DL_ARCH_ACT_NPC_FORGE ||
+           nActivity == DL_ARCH_ACT_NPC_FORGE_MULTI ||
+           nActivity == DL_ARCH_ACT_NPC_MERCHANT_MULTI ||
+           nActivity == DL_ARCH_ACT_NPC_GUARD;
+}
+void DL_StopWorkPresentationIfActive(object oNpc)
+{
+    if (!DL_HasWorkPresentationState(oNpc))
+    {
+        return;
+    }
+
+    AssignCommand(oNpc, ClearAllActions(TRUE));
+    AssignCommand(oNpc, ActionPlayAnimation(ANIMATION_LOOPING_PAUSE, 1.0, 0.1));
+}
 void DL_ClearWorkExecutionState(object oNpc)
 {
+    DL_StopWorkPresentationIfActive(oNpc);
     DeleteLocalString(oNpc, DL_L_NPC_WORK_KIND);
     DeleteLocalString(oNpc, DL_L_NPC_WORK_TARGET);
     DeleteLocalString(oNpc, DL_L_NPC_WORK_STATUS);
     DeleteLocalString(oNpc, DL_L_NPC_WORK_DIAGNOSTIC);
     DL_ClearWorkMoveIssueState(oNpc);
+    DL_ClearActivityPresentation(oNpc);
     DL_ClearTransitionExecutionState(oNpc);
 }
 string DL_ResolveBlacksmithWorkKindAtHour(object oNpc)
