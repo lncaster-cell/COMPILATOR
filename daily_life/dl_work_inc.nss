@@ -1,6 +1,8 @@
 const string DL_L_NPC_WORK_ACTION_STAMP = "dl_work_anchor_action_stamp";
 const string DL_L_NPC_WORK_ACTION_TARGET = "dl_work_anchor_action_target";
 
+#include "dl_anchor_move_inc"
+
 object DL_ResolveBlacksmithForgeWaypoint(object oNpc)
 {
     object oWork = DL_GetWorkArea(oNpc);
@@ -136,8 +138,7 @@ string DL_ResolveDomesticWorkerWorkKind(object oNpc, int bHasFetch)
 }
 void DL_ClearWorkMoveIssueState(object oNpc)
 {
-    DeleteLocalInt(oNpc, DL_L_NPC_WORK_ACTION_STAMP);
-    DeleteLocalString(oNpc, DL_L_NPC_WORK_ACTION_TARGET);
+    DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_WORK_ACTION_STAMP, DL_L_NPC_WORK_ACTION_TARGET);
 }
 void DL_ClearWorkExecutionState(object oNpc)
 {
@@ -201,30 +202,27 @@ void DL_FaceWorkTargetOrientation(object oNpc, object oTarget)
 }
 int DL_ShouldIssueWorkMoveAction(object oNpc, object oTarget)
 {
-    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
-    {
-        return FALSE;
-    }
-
-    if (GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) != "moving_to_anchor")
-    {
-        return TRUE;
-    }
-
-    if (GetLocalString(oNpc, DL_L_NPC_WORK_ACTION_TARGET) != GetTag(oTarget))
-    {
-        return TRUE;
-    }
-
-    return DL_ShouldReissueSleepMoveAction(oNpc, DL_L_NPC_WORK_ACTION_STAMP);
+    return DL_ShouldIssueAnchorMoveAction(
+        oNpc,
+        oTarget,
+        DL_L_NPC_WORK_STATUS,
+        "moving_to_anchor",
+        DL_L_NPC_WORK_ACTION_TARGET,
+        DL_L_NPC_WORK_ACTION_STAMP
+    );
 }
 void DL_IssueWorkMoveAction(object oNpc, object oTarget)
 {
-    SetLocalString(oNpc, DL_L_NPC_WORK_STATUS, "moving_to_anchor");
-    SetLocalString(oNpc, DL_L_NPC_WORK_ACTION_TARGET, GetTag(oTarget));
-    DL_ClearTransitionExecutionState(oNpc);
-    DL_MarkSleepActionIssued(oNpc, DL_L_NPC_WORK_ACTION_STAMP);
-    DL_QueueMoveAction(oNpc, GetLocation(oTarget), TRUE);
+    DL_IssueAnchorMoveExact(
+        oNpc,
+        oTarget,
+        DL_L_NPC_WORK_STATUS,
+        "moving_to_anchor",
+        DL_L_NPC_WORK_TARGET,
+        DL_L_NPC_WORK_ACTION_TARGET,
+        DL_L_NPC_WORK_ACTION_STAMP,
+        TRUE
+    );
 }
 int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
 {
