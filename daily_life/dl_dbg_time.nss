@@ -222,7 +222,7 @@ void main()
         " tag=" + GetTag(oNpc) +
         " profile=" + GetLocalString(oNpc, DL_L_NPC_PROFILE_ID) +
         " area=" + DL_DbgAreaTagOrNone(oNpc) +
-        " action=" + IntToString(GetCurrentAction(oNpc)) +
+        " current_action=" + IntToString(GetCurrentAction(oNpc)) +
         " dist=" + DL_DbgFloat(GetDistanceBetween(oPC, oNpc))
     );
 
@@ -268,6 +268,28 @@ void main()
         " focus_target_area=" + DL_DbgAreaTagOrNone(oFocusTarget) +
         " focus_dist=" + sFocusDist +
         " focus_diag=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC)
+    );
+
+    object oCachedMeal = GetLocalObject(oNpc, "dl_cache_meal");
+    object oMealModeTarget = oCachedMeal;
+    string sMealWaypointTag = DL_DbgObjTagOrNone(oCachedMeal);
+    if (!GetIsObjectValid(oCachedMeal) && GetIsObjectValid(oFocusTarget))
+    {
+        string sFocusTag = GetTag(oFocusTarget);
+        if (sFocusTag == "dl_anchor_meal" || FindSubString(sFocusTag, "dl_meal_") == 0)
+        {
+            oMealModeTarget = oFocusTarget;
+            sMealWaypointTag = sFocusTag;
+        }
+    }
+
+    DL_DbgSay(oPC,
+        "[DL DEBUG] seating_modes meal_npc=" + DL_DbgBool(GetLocalInt(oNpc, "dl_meal_waypoint_mode")) +
+        " meal_wp=" + DL_DbgBool(GetIsObjectValid(oMealModeTarget) && GetLocalInt(oMealModeTarget, "dl_meal_waypoint_mode")) +
+        " chill_npc=" + DL_DbgBool(GetLocalInt(oNpc, "dl_chill_waypoint_mode")) +
+        " chill_wp=" + DL_DbgBool(GetIsObjectValid(oFocusTarget) && GetLocalInt(oFocusTarget, "dl_chill_waypoint_mode")) +
+        " meal_waypoint=" + sMealWaypointTag +
+        " focus_target_tag=" + sFocusTarget
     );
 
     DL_DbgSay(oPC,
@@ -323,26 +345,40 @@ void main()
     if (GetIsObjectValid(oFocusTarget))
     {
         string sExplicitChairTag = GetLocalString(oFocusTarget, "dl_chill_chair_tag");
+        string sMealChairTag = GetLocalString(oFocusTarget, "dl_meal_chair_tag");
         object oCachedChair = GetLocalObject(oNpc, "dl_cache_chill_chair_obj");
+        object oCachedMealChair = GetLocalObject(oNpc, "dl_cache_meal_chair_obj");
         object oCachedSitter = OBJECT_INVALID;
+        object oCachedMealSitter = OBJECT_INVALID;
         string sCachedDist = "NA";
+        string sCachedMealDist = "NA";
         if (GetIsObjectValid(oCachedChair))
         {
             oCachedSitter = GetSittingCreature(oCachedChair);
             sCachedDist = DL_DbgFloat(GetDistanceBetweenLocations(GetLocation(oCachedChair), GetLocation(oFocusTarget)));
         }
+        if (GetIsObjectValid(oCachedMealChair))
+        {
+            oCachedMealSitter = GetSittingCreature(oCachedMealChair);
+            sCachedMealDist = DL_DbgFloat(GetDistanceBetweenLocations(GetLocation(oCachedMealChair), GetLocation(oFocusTarget)));
+        }
 
         DL_DbgSay(oPC,
-            "[DL DEBUG] chill_chair seat=" + GetTag(oFocusTarget) +
-            " seat_chair_tag=" + sExplicitChairTag +
-            " cached_chair=" + DL_DbgObjTagOrNone(oCachedChair) +
-            " cached_valid=" + DL_DbgBool(GetIsObjectValid(oCachedChair)) +
-            " cached_dist=" + sCachedDist +
-            " cached_sitter=" + DL_DbgObjTagOrNone(oCachedSitter) +
-            " cached_npc_is_sitter=" + DL_DbgBool(oCachedSitter == oNpc)
+            "[DL DEBUG] seating_secondary seat=" + GetTag(oFocusTarget) +
+            " chill_chair_tag=" + sExplicitChairTag +
+            " meal_chair_tag=" + sMealChairTag +
+            " cached_chill_chair=" + DL_DbgObjTagOrNone(oCachedChair) +
+            " cached_chill_dist=" + sCachedDist +
+            " cached_chill_sitter=" + DL_DbgObjTagOrNone(oCachedSitter) +
+            " cached_chill_npc_is_sitter=" + DL_DbgBool(oCachedSitter == oNpc) +
+            " cached_meal_chair=" + DL_DbgObjTagOrNone(oCachedMealChair) +
+            " cached_meal_dist=" + sCachedMealDist +
+            " cached_meal_sitter=" + DL_DbgObjTagOrNone(oCachedMealSitter) +
+            " cached_meal_npc_is_sitter=" + DL_DbgBool(oCachedMealSitter == oNpc)
         );
 
         DL_DbgPrintChairObject(oPC, "chill_chair_explicit", oNpc, oFocusTarget, sExplicitChairTag);
+        DL_DbgPrintChairObject(oPC, "meal_chair_explicit", oNpc, oFocusTarget, sMealChairTag);
         DL_DbgPrintChairObject(oPC, "chill_chair_by_npc", oNpc, oFocusTarget, "dl_chill_" + GetTag(oNpc) + "_chair");
         DL_DbgPrintChairObject(oPC, "chill_chair_by_slot", oNpc, oFocusTarget, "dl_chill_chair_" + IntToString(GetLocalInt(oNpc, "dl_home_slot")));
 
