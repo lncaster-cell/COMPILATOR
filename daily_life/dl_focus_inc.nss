@@ -14,7 +14,7 @@ const string DL_L_WP_CHILL_CHAIR_TAG = "dl_chill_chair_tag";
 // chairs are decoration only unless legacy ActionSit mode is left enabled.
 // Meal waypoint seating contract: set dl_meal_waypoint_mode=1 on the NPC
 // or meal waypoint to make the waypoint the body/facing anchor and play
-// sitdrink/siteat/sitidle-style animation there. Chairs are decoration only in
+// sitdrink/siteat animation there. Chairs are decoration only in
 // waypoint mode; legacy ActionSit uses dl_meal_chair_tag or verified chair tags.
 const string DL_L_WP_MEAL_CHAIR_TAG = "dl_meal_chair_tag";
 const int DL_SOCIAL_PARTNER_TAG_SEARCH_CAP = 32;
@@ -227,6 +227,7 @@ int DL_ApplyFocusWaypointAnimation(object oNpc, object oAnchor, string sStableSt
     if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == sStableStatus &&
         GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) == sAnchorTag)
     {
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
         return TRUE;
     }
 
@@ -635,8 +636,12 @@ void DL_ApplyMealAnimationFallback(object oNpc, object oMeal, string sMealKind, 
         return;
     }
 
-    DL_ApplyFocusWaypointAnimation(oNpc, oMeal, "on_meal_anchor_" + sMealKind, sAnim, DL_MEAL_LOOP_ANIM_DURATION);
-    if (sDiagnostic != "")
+    string sStableStatus = "on_meal_anchor_" + sMealKind;
+    string sMealTag = GetTag(oMeal);
+    int bAlreadyStable = GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == sStableStatus &&
+                         GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) == sMealTag;
+    if (DL_ApplyFocusWaypointAnimation(oNpc, oMeal, sStableStatus, sAnim, DL_MEAL_LOOP_ANIM_DURATION) &&
+        !bAlreadyStable && sDiagnostic != "")
     {
         SetLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC, sDiagnostic);
     }
@@ -663,7 +668,7 @@ string DL_GetMealWaypointAnimation(object oNpc, string sMealKind)
     }
     if ((DL_GetTagDeterministicOffset(GetTag(oNpc), 6, 0) % 6) == 0)
     {
-        return "sitidle";
+        return "sitdrink";
     }
     return "siteat";
 }
@@ -812,8 +817,11 @@ void DL_ApplyChillAnimationFallback(object oNpc, object oSeat, string sDiagnosti
         return;
     }
 
-    DL_ApplyFocusWaypointAnimation(oNpc, oSeat, "on_chill_anchor", DL_CHILL_ANIM_SIT_IDLE, DL_CHILL_LOOP_ANIM_DURATION);
-    if (sDiagnostic != "")
+    string sSeatTag = GetTag(oSeat);
+    int bAlreadyStable = GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "on_chill_anchor" &&
+                         GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) == sSeatTag;
+    if (DL_ApplyFocusWaypointAnimation(oNpc, oSeat, "on_chill_anchor", DL_CHILL_ANIM_SIT_IDLE, DL_CHILL_LOOP_ANIM_DURATION) &&
+        !bAlreadyStable && sDiagnostic != "")
     {
         SetLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC, sDiagnostic);
     }
