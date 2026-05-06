@@ -604,6 +604,75 @@ void DL_RefreshWorkPresentationOnFastPath(object oNpc)
     DL_PlayWorkAnimation(oNpc);
 }
 
+object DL_ResolveFocusTargetInCurrentArea(object oNpc)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return OBJECT_INVALID;
+    }
+
+    string sTarget = GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET);
+    if (sTarget == "")
+    {
+        return OBJECT_INVALID;
+    }
+
+    object oArea = GetArea(oNpc);
+    if (!GetIsObjectValid(oArea))
+    {
+        return OBJECT_INVALID;
+    }
+
+    int nIndex = 0;
+    object oCandidate = GetObjectByTag(sTarget, nIndex);
+    while (GetIsObjectValid(oCandidate) && nIndex < DL_WAYPOINT_TAG_SEARCH_CAP)
+    {
+        if (GetArea(oCandidate) == oArea)
+        {
+            return oCandidate;
+        }
+
+        nIndex = nIndex + 1;
+        oCandidate = GetObjectByTag(sTarget, nIndex);
+    }
+
+    return OBJECT_INVALID;
+}
+
+void DL_RecoverReachedFocusAnchorMoveState(object oNpc)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) != "moving_to_anchor")
+    {
+        return;
+    }
+
+    object oTarget = DL_ResolveFocusTargetInCurrentArea(oNpc);
+    if (!GetIsObjectValid(oTarget))
+    {
+        return;
+    }
+
+    if (GetDistanceBetween(oNpc, oTarget) > DL_WORK_ANCHOR_RADIUS)
+    {
+        return;
+    }
+
+    if (GetCurrentAction(oNpc) == ACTION_MOVETOPOINT)
+    {
+        return;
+    }
+
+    DL_ClearFocusMoveIssueState(oNpc);
+    DeleteLocalString(oNpc, DL_L_NPC_FOCUS_STATUS);
+    DeleteLocalString(oNpc, DL_L_NPC_FOCUS_TARGET);
+    DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
+}
+
 void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
 {
     if (!GetIsObjectValid(oNpc))
@@ -612,6 +681,7 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
     }
 
     DL_MaybeRefreshNpcCachesForEpoch(oNpc);
+    DL_RecoverReachedFocusAnchorMoveState(oNpc);
 
     int nEffectiveDirective = DL_ResolveEffectiveDirective(oNpc, nDirective);
     int nPrevDirective = GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE);
