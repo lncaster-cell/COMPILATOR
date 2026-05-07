@@ -358,11 +358,28 @@ object DL_ResolveSocialWaypoint(object oNpc)
     {
         oArea = DL_GetWorkArea(oNpc);
     }
+    if (!GetIsObjectValid(oArea))
+    {
+        return OBJECT_INVALID;
+    }
 
     string sSlot = GetLocalString(oNpc, DL_L_NPC_SOCIAL_SLOT);
-    string sAnchor = sSlot == "b" ? "dl_anchor_social_b" : "dl_anchor_social_a";
-    string sCache = sSlot == "b" ? DL_L_NPC_CACHE_SOCIAL_B : DL_L_NPC_CACHE_SOCIAL_A;
-    return DL_GetAreaAnchorWaypoint(oNpc, oArea, sAnchor, sCache, FALSE);
+    object oWaypoint = OBJECT_INVALID;
+    if (sSlot == "a")
+    {
+        oWaypoint = DL_GetAreaAnchorWaypoint(oNpc, oArea, "dl_anchor_social_a", DL_L_NPC_CACHE_SOCIAL_A, FALSE);
+    }
+    else if (sSlot == "b")
+    {
+        oWaypoint = DL_GetAreaAnchorWaypoint(oNpc, oArea, "dl_anchor_social_b", DL_L_NPC_CACHE_SOCIAL_B, FALSE);
+    }
+
+    if (GetIsObjectValid(oWaypoint))
+    {
+        return oWaypoint;
+    }
+
+    return DL_GetAreaAnchorWaypoint(oNpc, oArea, "dl_anchor_social", DL_L_NPC_CACHE_SOCIAL_A, TRUE);
 }
 object DL_ResolvePublicWaypoint(object oNpc)
 {
@@ -1003,24 +1020,9 @@ void DL_ExecutePublicDirective(object oNpc)
 int DL_ShouldFallbackSocialToPublic(object oNpc)
 {
     object oMe = DL_ResolveSocialWaypoint(oNpc);
-    string sPartnerTag = GetLocalString(oNpc, DL_L_NPC_SOCIAL_PARTNER_TAG);
-    if (!GetIsObjectValid(oMe) || sPartnerTag == "")
+    if (!GetIsObjectValid(oMe))
     {
-        DL_LogChatDebugEvent(oNpc, "fallback_social_public", "fallback social->public reason=missing_social_anchor_or_partner");
-        return TRUE;
-    }
-
-    object oPartner = DL_ResolveSocialPartnerObject(oNpc, sPartnerTag);
-    if (!GetIsObjectValid(oPartner) || GetLocalInt(oPartner, DL_L_NPC_DIRECTIVE) != DL_DIR_SOCIAL)
-    {
-        DL_LogChatDebugEvent(oNpc, "fallback_social_public", "fallback social->public reason=partner_not_social");
-        return TRUE;
-    }
-
-    object oPartnerWp = DL_ResolveSocialWaypoint(oPartner);
-    if (!GetIsObjectValid(oPartnerWp))
-    {
-        DL_LogChatDebugEvent(oNpc, "fallback_social_public", "fallback social->public reason=partner_missing_social_anchor");
+        DL_LogChatDebugEvent(oNpc, "fallback_social_public", "fallback social->public reason=missing_social_area_or_anchor");
         return TRUE;
     }
 
@@ -1033,23 +1035,39 @@ void DL_ExecuteSocialDirective(object oNpc)
     object oPartner = DL_ResolveSocialPartnerObject(oNpc, sPartnerTag);
     object oPartnerWp = DL_ResolveSocialWaypoint(oPartner);
 
-    if (!GetIsObjectValid(oMe) || !GetIsObjectValid(oPartner) || !GetIsObjectValid(oPartnerWp))
+    if (!GetIsObjectValid(oMe))
     {
-        SetLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC, "social_fallback_to_public");
+        SetLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC, "missing_social_anchor");
         return;
     }
 
     int bMeOnAnchor = GetDistanceBetween(oNpc, oMe) <= DL_WORK_ANCHOR_RADIUS;
-    int bPartnerOnAnchor = GetDistanceBetween(oPartner, oPartnerWp) <= DL_WORK_ANCHOR_RADIUS;
+    int bPartnerReady = GetIsObjectValid(oPartner) &&
+        GetLocalInt(oPartner, DL_L_NPC_DIRECTIVE) == DL_DIR_SOCIAL &&
+        GetIsObjectValid(oPartnerWp);
+    int bPartnerOnAnchor = FALSE;
+    if (bPartnerReady)
+    {
+        bPartnerOnAnchor = GetDistanceBetween(oPartner, oPartnerWp) <= DL_WORK_ANCHOR_RADIUS;
+    }
+
     string sAnim = "";
-    string sStatus = "moving_social_pair";
-    if (bMeOnAnchor && bPartnerOnAnchor)
+    string sStatus = "moving_social_anchor";
+    if (bMeOnAnchor)
     {
         sStatus = "on_social_anchor";
-        sAnim = "talk01";
-        if ((DL_GetTagDeterministicOffset(GetTag(oNpc), 100, 0) % 2) == 0)
+        sAnim = "pause";
+        if (bPartnerReady && bPartnerOnAnchor)
         {
-            sAnim = "talk02";
+            sAnim = "talk01";
+            if ((DL_GetTagDeterministicOffset(GetTag(oNpc), 100, 0) % 2) == 0)
+            {
+                sAnim = "talk02";
+            }
+        }
+        else if ((DL_GetTagDeterministicOffset(GetTag(oNpc), 100, 0) % 3) == 0)
+        {
+            sAnim = "talk01";
         }
     }
 
@@ -1057,8 +1075,10 @@ void DL_ExecuteSocialDirective(object oNpc)
         oNpc,
         "target_social",
         "target dir=SOCIAL area=" + GetTag(GetArea(oMe)) + " anchor=" + GetTag(oMe) +
-            " slot=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_SLOT) +
-            " partner=" + sPartnerTag
+            " social_anchor=" + GetTag(oMe) +
+            " social_slot=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_SLOT) +
+            " social_partner_tag=" + sPartnerTag +
+            " social_partner_valid=" + IntToString(GetIsObjectValid(oPartner))
     );
     DL_ProgressFocusAtTarget(oNpc, oMe, sStatus, sAnim);
 }
