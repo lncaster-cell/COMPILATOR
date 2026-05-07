@@ -11,6 +11,27 @@ const int DL_SCHED_BREAKFAST_DURATION_MINUTES = 90;
 const int DL_SCHED_LUNCH_DURATION_MINUTES = 60;
 const int DL_SCHED_DINNER_DURATION_MINUTES = 60;
 
+// Simple stable workweek cycle for normal 08:00-16:00 workers.
+// Weekend/custom-shift behavior intentionally stays on the legacy flexible path.
+const int DL_SCHED_WORKDAY_SLEEP_START_MINUTE = 1320;     // 22:00
+const int DL_SCHED_WORKDAY_SLEEP_DURATION_MINUTES = 480;  // 22:00-06:00
+const int DL_SCHED_WORKDAY_BREAKFAST_START_MINUTE = 360;  // 06:00
+const int DL_SCHED_WORKDAY_BREAKFAST_DURATION_MINUTES = 120;
+const int DL_SCHED_WORKDAY_MORNING_WORK_START_MINUTE = 480; // 08:00
+const int DL_SCHED_WORKDAY_MORNING_WORK_DURATION_MINUTES = 240;
+const int DL_SCHED_WORKDAY_LUNCH_START_MINUTE = 720;      // 12:00
+const int DL_SCHED_WORKDAY_LUNCH_DURATION_MINUTES = 60;
+const int DL_SCHED_WORKDAY_AFTERNOON_WORK_START_MINUTE = 780; // 13:00
+const int DL_SCHED_WORKDAY_AFTERNOON_WORK_DURATION_MINUTES = 180;
+const int DL_SCHED_WORKDAY_CHILL_START_MINUTE = 960;      // 16:00
+const int DL_SCHED_WORKDAY_CHILL_DURATION_MINUTES = 120;
+const int DL_SCHED_WORKDAY_SOCIAL_START_MINUTE = 1080;    // 18:00
+const int DL_SCHED_WORKDAY_SOCIAL_DURATION_MINUTES = 60;
+const int DL_SCHED_WORKDAY_PUBLIC_START_MINUTE = 1140;    // 19:00
+const int DL_SCHED_WORKDAY_PUBLIC_DURATION_MINUTES = 120;
+const int DL_SCHED_WORKDAY_DINNER_START_MINUTE = 1260;    // 21:00
+const int DL_SCHED_WORKDAY_DINNER_DURATION_MINUTES = 60;
+
 int DL_NormalizeHour(int nHour)
 {
     while (nHour < 0)
@@ -216,6 +237,63 @@ int DL_NpcHasWorkDirectiveWindow(object oNpc, int bWeekend)
 
     return DL_GetNpcShiftLength(oNpc, bWeekend) > 0;
 }
+int DL_ShouldUseStandardWorkdayCycle(int bWeekend, int bHasWorkWindow, int nShiftStartHour, int nShiftLen)
+{
+    if (bWeekend || !bHasWorkWindow)
+    {
+        return FALSE;
+    }
+
+    return nShiftStartHour == DL_SCHED_DEFAULT_SHIFT_START &&
+           nShiftLen == DL_SCHED_DEFAULT_SHIFT_LENGTH;
+}
+int DL_ResolveStandardWorkdayDirectiveAtMinute(object oNpc, int nNow)
+{
+    nNow = DL_NormalizeMinuteOfDay(nNow);
+
+    if (DL_MinuteInWindow(nNow, DL_SCHED_WORKDAY_SLEEP_START_MINUTE, DL_SCHED_WORKDAY_SLEEP_DURATION_MINUTES))
+    {
+        return DL_DIR_SLEEP;
+    }
+    if (DL_MinuteInWindow(nNow, DL_SCHED_WORKDAY_BREAKFAST_START_MINUTE, DL_SCHED_WORKDAY_BREAKFAST_DURATION_MINUTES))
+    {
+        return DL_DIR_MEAL;
+    }
+    if (DL_MinuteInWindow(nNow, DL_SCHED_WORKDAY_MORNING_WORK_START_MINUTE, DL_SCHED_WORKDAY_MORNING_WORK_DURATION_MINUTES))
+    {
+        return DL_DIR_WORK;
+    }
+    if (DL_MinuteInWindow(nNow, DL_SCHED_WORKDAY_LUNCH_START_MINUTE, DL_SCHED_WORKDAY_LUNCH_DURATION_MINUTES))
+    {
+        return DL_DIR_MEAL;
+    }
+    if (DL_MinuteInWindow(nNow, DL_SCHED_WORKDAY_AFTERNOON_WORK_START_MINUTE, DL_SCHED_WORKDAY_AFTERNOON_WORK_DURATION_MINUTES))
+    {
+        return DL_DIR_WORK;
+    }
+    if (DL_MinuteInWindow(nNow, DL_SCHED_WORKDAY_CHILL_START_MINUTE, DL_SCHED_WORKDAY_CHILL_DURATION_MINUTES))
+    {
+        if (GetIsObjectValid(DL_ResolveChillWaypoint(oNpc)))
+        {
+            return DL_DIR_CHILL;
+        }
+        return DL_DIR_PUBLIC;
+    }
+    if (DL_MinuteInWindow(nNow, DL_SCHED_WORKDAY_SOCIAL_START_MINUTE, DL_SCHED_WORKDAY_SOCIAL_DURATION_MINUTES))
+    {
+        return DL_DIR_SOCIAL;
+    }
+    if (DL_MinuteInWindow(nNow, DL_SCHED_WORKDAY_PUBLIC_START_MINUTE, DL_SCHED_WORKDAY_PUBLIC_DURATION_MINUTES))
+    {
+        return DL_DIR_PUBLIC;
+    }
+    if (DL_MinuteInWindow(nNow, DL_SCHED_WORKDAY_DINNER_START_MINUTE, DL_SCHED_WORKDAY_DINNER_DURATION_MINUTES))
+    {
+        return DL_DIR_MEAL;
+    }
+
+    return DL_DIR_NONE;
+}
 int DL_ResolveNpcDirectiveAtMinute(object oNpc, int nNow)
 {
     if (!GetIsObjectValid(oNpc))
@@ -245,6 +323,11 @@ int DL_ResolveNpcDirectiveAtMinute(object oNpc, int nNow)
     int nPublicStart = DL_NormalizeMinuteOfDay((nWake * 60) + 180 + DL_GetTagDeterministicOffset(sTag, 41, 20));
     int nPublicLate = DL_NormalizeMinuteOfDay(nDinnerStart - 120 + DL_GetTagDeterministicOffset(sTag, 31, 15));
     int bInWorkWindow = bHasWorkWindow && DL_MinuteInWindow(nNow, nShiftStart, nShiftLen * 60);
+
+    if (DL_ShouldUseStandardWorkdayCycle(bWeekend, bHasWorkWindow, nShiftStartHour, nShiftLen))
+    {
+        return DL_ResolveStandardWorkdayDirectiveAtMinute(oNpc, nNow);
+    }
 
     if (DL_MinuteInWindow(nNow, nSleepStart, nSleepHours * 60))
     {
