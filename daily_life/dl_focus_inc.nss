@@ -97,7 +97,11 @@ object DL_ResolveSocialPartnerObject(object oNpc, string sPartnerTag)
         if (oCandidate == oNpc)
         {
             SetLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC, "social_partner_self");
-            DL_LogChatDebugEvent(oNpc, "fallback_social_public", "fallback social->public reason=social_partner_self");
+            DL_LogChatDebugEvent(
+                oNpc,
+                "social_partner_lookup",
+                "social partner lookup tag=" + sPartnerTag + " result=self_ignored"
+            );
         }
         else if (!DL_IsActivePipelineNpc(oCandidate))
         {
@@ -1069,6 +1073,19 @@ void DL_ExecuteSocialDirective(object oNpc)
         {
             sAnim = "talk01";
         }
+        else if ((DL_GetTagDeterministicOffset(GetTag(oNpc), 100, 0) % 3) == 0)
+        {
+            sAnim = "talk01";
+        }
+    }
+
+    string sAnchorTag = GetTag(oMe);
+    if (bMeOnAnchor &&
+        GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "on_social_anchor" &&
+        GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) == sAnchorTag)
+    {
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
+        return;
     }
 
     DL_LogChatDebugEvent(
