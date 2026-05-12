@@ -195,6 +195,66 @@ object DL_DbgFindWaypointByTagInArea(object oArea, string sTag)
     return OBJECT_INVALID;
 }
 
+object DL_DbgResolveAreaByTag(string sAreaTag)
+{
+    if (sAreaTag == "") return OBJECT_INVALID;
+
+    int nIndex = 0;
+    object oObj = GetObjectByTag(sAreaTag, nIndex);
+    while (GetIsObjectValid(oObj) && nIndex < 32)
+    {
+        if (DL_IsAreaObject(oObj)) return oObj;
+        nIndex = nIndex + 1;
+        oObj = GetObjectByTag(sAreaTag, nIndex);
+    }
+    return OBJECT_INVALID;
+}
+
+object DL_DbgResolveNpcConfiguredArea(object oNpc, string sAreaLocal)
+{
+    if (!GetIsObjectValid(oNpc)) return OBJECT_INVALID;
+
+    string sAreaTag = GetLocalString(oNpc, sAreaLocal);
+    if (sAreaTag != "") return DL_DbgResolveAreaByTag(sAreaTag);
+
+    return GetArea(oNpc);
+}
+
+string DL_DbgAreaConfiguredTag(object oNpc, string sAreaLocal)
+{
+    string sAreaTag = GetLocalString(oNpc, sAreaLocal);
+    if (sAreaTag != "") return sAreaTag;
+    return "<current>";
+}
+
+string DL_DbgAnchorValidText(object oArea, string sAnchorLocal)
+{
+    string sWpTag = "";
+    if (GetIsObjectValid(oArea)) sWpTag = GetLocalString(oArea, sAnchorLocal);
+    object oWp = DL_DbgFindWaypointByTagInArea(oArea, sWpTag);
+    return sWpTag + ":" + DL_DbgBool(GetIsObjectValid(oWp));
+}
+
+void DL_DbgPrintSocialPublicConfig(object oPC, object oNpc)
+{
+    if (!GetIsObjectValid(oPC) || !GetIsObjectValid(oNpc)) return;
+
+    object oSocialArea = DL_DbgResolveNpcConfiguredArea(oNpc, DL_L_NPC_SOCIAL_AREA_TAG);
+    object oPublicArea = DL_DbgResolveNpcConfiguredArea(oNpc, DL_L_NPC_PUBLIC_AREA_TAG);
+
+    DL_DbgSay(oPC,
+        "[DL] social area=" + DL_DbgAreaConfiguredTag(oNpc, DL_L_NPC_SOCIAL_AREA_TAG) +
+        ":" + DL_DbgBool(GetIsObjectValid(oSocialArea)) +
+        " slot=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_SLOT) +
+        " a=" + DL_DbgAnchorValidText(oSocialArea, "dl_anchor_social_a") +
+        " b=" + DL_DbgAnchorValidText(oSocialArea, "dl_anchor_social_b") +
+        " any=" + DL_DbgAnchorValidText(oSocialArea, "dl_anchor_social") +
+        " public=" + DL_DbgAreaConfiguredTag(oNpc, DL_L_NPC_PUBLIC_AREA_TAG) +
+        ":" + DL_DbgBool(GetIsObjectValid(oPublicArea)) +
+        " p=" + DL_DbgAnchorValidText(oPublicArea, "dl_anchor_public")
+    );
+}
+
 void main()
 {
     object oDebug = OBJECT_SELF;
@@ -211,9 +271,8 @@ void main()
     if (!GetIsObjectValid(oNpc))
     {
         DL_DbgSay(oPC,
-            "[DL DEBUG] time=" + DL_DbgPad2(GetTimeHour()) + ":" + DL_DbgPad2(GetTimeMinute()) + ":" + DL_DbgPad2(GetTimeSecond()) +
-            " date=" + IntToString(GetCalendarYear()) + "/" + IntToString(GetCalendarMonth()) + "/" + IntToString(GetCalendarDay()) +
-            " nearest_npc=NONE within " + FloatToString(DL_DBG_NPC_SCAN_RADIUS, 1, 1) + "m"
+            "[DL] " + DL_DbgPad2(GetTimeHour()) + ":" + DL_DbgPad2(GetTimeMinute()) +
+            " npc=NONE range=" + FloatToString(DL_DBG_NPC_SCAN_RADIUS, 1, 1)
         );
         return;
     }
@@ -232,142 +291,80 @@ void main()
     if (GetIsObjectValid(oFocusTarget)) sFocusDist = DL_DbgFloat(GetDistanceBetween(oNpc, oFocusTarget));
 
     DL_DbgSay(oPC,
-        "[DL DEBUG] time=" + DL_DbgPad2(GetTimeHour()) + ":" + DL_DbgPad2(GetTimeMinute()) + ":" + DL_DbgPad2(GetTimeSecond()) +
-        " date=" + IntToString(GetCalendarYear()) + "/" + IntToString(GetCalendarMonth()) + "/" + IntToString(GetCalendarDay()) +
-        " npc=" + GetName(oNpc) +
-        " tag=" + GetTag(oNpc) +
-        " profile=" + GetLocalString(oNpc, DL_L_NPC_PROFILE_ID) +
+        "[DL] " + DL_DbgPad2(GetTimeHour()) + ":" + DL_DbgPad2(GetTimeMinute()) +
+        " npc=" + GetTag(oNpc) +
         " area=" + DL_DbgAreaTagOrNone(oNpc) +
-        " current_action=" + IntToString(GetCurrentAction(oNpc))
-    );
-
-    DL_DbgSay(oPC,
-        "[DL DEBUG] now_dir=" + DL_DbgDirectiveLabel(nNowDirective) +
-        " stored_dir=" + DL_DbgDirectiveLabel(nStoredDirective) +
+        " dir=" + DL_DbgDirectiveLabel(nNowDirective) + "/" + DL_DbgDirectiveLabel(nStoredDirective) +
         " state=" + GetLocalString(oNpc, DL_L_NPC_STATE) +
         " problem=" + DL_GetNpcProblemSummary(oNpc)
     );
 
+    DL_DbgSay(oPC,
+        "[DL] focus=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) +
+        " target=" + sFocusTarget +
+        " dist=" + sFocusDist +
+        " diag=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC) +
+        " trans=" + sTransitionStatus +
+        ":" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC) +
+        " nav=" + sCurrentZone + "->" + sNextZone + "->" + sTargetZone +
+        " reason=" + GetLocalString(oNpc, "dl_nav_debug_reason")
+    );
+
+    if (nNowDirective == DL_DIR_SOCIAL ||
+        nStoredDirective == DL_DIR_SOCIAL ||
+        nStoredDirective == DL_DIR_PUBLIC ||
+        GetLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC) == "missing_public_anchor")
+    {
+        DL_DbgPrintSocialPublicConfig(oPC, oNpc);
+    }
+
     if (bVerbose)
     {
         DL_DbgSay(oPC,
-            "[DL DEBUG] worker npc_seq=" + IntToString(GetLocalInt(oNpc, "dl_npc_worker_seq")) +
+            "[DL] worker npc_seq=" + IntToString(GetLocalInt(oNpc, "dl_npc_worker_seq")) +
             " module_seq=" + IntToString(GetLocalInt(GetModule(), "dl_module_worker_seq")) +
-            " module_ticks=" + IntToString(GetLocalInt(GetModule(), "dl_module_worker_ticks")) +
-            " area_last_processed=" + IntToString(GetLocalInt(oArea, "dl_area_worker_last_processed")) +
-            " reg_on=" + IntToString(GetLocalInt(oNpc, "dl_reg_on")) +
-            " reg_slot=" + IntToString(GetLocalInt(oNpc, "dl_npc_reg_slot")) +
-            " reg_count=" + IntToString(GetLocalInt(oArea, "dl_reg_count")) +
-            " area_tier=" + IntToString(GetLocalInt(oArea, "dl_area_tier"))
+            " ticks=" + IntToString(GetLocalInt(GetModule(), "dl_module_worker_ticks")) +
+            " processed=" + IntToString(GetLocalInt(oArea, "dl_area_worker_last_processed")) +
+            " reg=" + IntToString(GetLocalInt(oNpc, "dl_reg_on")) +
+            "/" + IntToString(GetLocalInt(oNpc, "dl_npc_reg_slot")) +
+            "/" + IntToString(GetLocalInt(oArea, "dl_reg_count")) +
+            " tier=" + IntToString(GetLocalInt(oArea, "dl_area_tier"))
         );
-    }
 
-    if (bVerbose || nNowDirective == DL_DIR_SLEEP || nStoredDirective == DL_DIR_SLEEP)
-    {
         DL_DbgSay(oPC,
-            "[DL DEBUG] sleep_status=" + GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) +
-            " sleep_target=" + GetLocalString(oNpc, DL_L_NPC_SLEEP_TARGET) +
-            " sleep_diag=" + GetLocalString(oNpc, DL_L_NPC_SLEEP_DIAGNOSTIC)
+            "[DL] sleep=" + GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) +
+            ":" + GetLocalString(oNpc, DL_L_NPC_SLEEP_TARGET) +
+            ":" + GetLocalString(oNpc, DL_L_NPC_SLEEP_DIAGNOSTIC) +
+            " work=" + GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) +
+            ":" + GetLocalString(oNpc, DL_L_NPC_WORK_TARGET) +
+            ":" + GetLocalString(oNpc, DL_L_NPC_WORK_DIAGNOSTIC)
         );
-    }
 
-    if (bVerbose || nNowDirective == DL_DIR_WORK || nStoredDirective == DL_DIR_WORK)
-    {
-        DL_DbgSay(oPC,
-            "[DL DEBUG] work_status=" + GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) +
-            " work_target=" + GetLocalString(oNpc, DL_L_NPC_WORK_TARGET) +
-            " work_diag=" + GetLocalString(oNpc, DL_L_NPC_WORK_DIAGNOSTIC)
-        );
-    }
-
-    DL_DbgSay(oPC,
-        "[DL DEBUG] focus_status=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) +
-        " focus_target=" + sFocusTarget +
-        " focus_dist=" + sFocusDist +
-        " focus_diag=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC)
-    );
-
-    DL_DbgSay(oPC,
-        "[DL DEBUG] transition_status=" + sTransitionStatus +
-        " transition_target=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) +
-        " transition_diag=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC)
-    );
-
-    DL_DbgSay(oPC,
-        "[DL DEBUG] nav_current=" + sCurrentZone +
-        " nav_target=" + sTargetZone +
-        " nav_next=" + sNextZone +
-        " nav_reason=" + GetLocalString(oNpc, "dl_nav_debug_reason") +
-        " stored_current=" + sStoredCurrent
-    );
-
-    object oCachedMeal = GetLocalObject(oNpc, "dl_cache_meal");
-    object oMealModeTarget = oCachedMeal;
-    string sMealWaypointTag = DL_DbgObjTagOrNone(oCachedMeal);
-    if (!GetIsObjectValid(oCachedMeal) && GetIsObjectValid(oFocusTarget))
-    {
-        string sFocusTag = GetTag(oFocusTarget);
-        if (sFocusTag == "dl_anchor_meal" || FindSubString(sFocusTag, "dl_meal_") == 0)
+        object oCachedMeal = GetLocalObject(oNpc, "dl_cache_meal");
+        object oMealModeTarget = oCachedMeal;
+        string sMealWaypointTag = DL_DbgObjTagOrNone(oCachedMeal);
+        if (!GetIsObjectValid(oCachedMeal) && GetIsObjectValid(oFocusTarget))
         {
-            oMealModeTarget = oFocusTarget;
-            sMealWaypointTag = sFocusTag;
+            string sFocusTag = GetTag(oFocusTarget);
+            if (sFocusTag == "dl_anchor_meal" || FindSubString(sFocusTag, "dl_meal_") == 0)
+            {
+                oMealModeTarget = oFocusTarget;
+                sMealWaypointTag = sFocusTag;
+            }
         }
-    }
 
-    int bMealLegacyNpc = GetLocalInt(oNpc, "dl_meal_legacy_action_sit");
-    int bMealLegacyWp = GetIsObjectValid(oMealModeTarget) && GetLocalInt(oMealModeTarget, "dl_meal_legacy_action_sit");
-    int bChillLegacyNpc = GetLocalInt(oNpc, "dl_chill_legacy_action_sit");
-    int bChillLegacyWp = GetIsObjectValid(oFocusTarget) && GetLocalInt(oFocusTarget, "dl_chill_legacy_action_sit");
-    string sMealMode = (bMealLegacyNpc || bMealLegacyWp) ? "legacy_action_sit" : "waypoint_default";
-    string sChillMode = (bChillLegacyNpc || bChillLegacyWp) ? "legacy_action_sit" : "waypoint_default";
+        int bMealLegacyNpc = GetLocalInt(oNpc, "dl_meal_legacy_action_sit");
+        int bMealLegacyWp = GetIsObjectValid(oMealModeTarget) && GetLocalInt(oMealModeTarget, "dl_meal_legacy_action_sit");
+        int bChillLegacyNpc = GetLocalInt(oNpc, "dl_chill_legacy_action_sit");
+        int bChillLegacyWp = GetIsObjectValid(oFocusTarget) && GetLocalInt(oFocusTarget, "dl_chill_legacy_action_sit");
 
-    DL_DbgSay(oPC,
-        "[DL DEBUG] seating_modes meal_mode=" + sMealMode +
-        " meal_legacy_npc=" + DL_DbgBool(bMealLegacyNpc) +
-        " meal_legacy_wp=" + DL_DbgBool(bMealLegacyWp) +
-        " chill_mode=" + sChillMode +
-        " chill_legacy_npc=" + DL_DbgBool(bChillLegacyNpc) +
-        " chill_legacy_wp=" + DL_DbgBool(bChillLegacyWp) +
-        " meal_waypoint=" + sMealWaypointTag +
-        " focus_target_tag=" + sFocusTarget
-    );
-
-    object oCachedChair = GetLocalObject(oNpc, "dl_cache_chill_chair_obj");
-    object oCachedMealChair = GetLocalObject(oNpc, "dl_cache_meal_chair_obj");
-    object oCachedSitter = OBJECT_INVALID;
-    object oCachedMealSitter = OBJECT_INVALID;
-    string sCachedDist = "NA";
-    string sCachedMealDist = "NA";
-    if (GetIsObjectValid(oCachedChair))
-    {
-        oCachedSitter = GetSittingCreature(oCachedChair);
-        if (GetIsObjectValid(oFocusTarget)) sCachedDist = DL_DbgFloat(GetDistanceBetweenLocations(GetLocation(oCachedChair), GetLocation(oFocusTarget)));
-    }
-    if (GetIsObjectValid(oCachedMealChair))
-    {
-        oCachedMealSitter = GetSittingCreature(oCachedMealChair);
-        if (GetIsObjectValid(oFocusTarget)) sCachedMealDist = DL_DbgFloat(GetDistanceBetweenLocations(GetLocation(oCachedMealChair), GetLocation(oFocusTarget)));
-    }
-
-    DL_DbgSay(oPC,
-        "[DL DEBUG] seating_secondary cached_chill_chair=" + DL_DbgObjTagOrNone(oCachedChair) +
-        " cached_chill_dist=" + sCachedDist +
-        " cached_chill_sitter=" + DL_DbgObjTagOrNone(oCachedSitter) +
-        " cached_chill_npc_is_sitter=" + DL_DbgBool(oCachedSitter == oNpc) +
-        " cached_meal_chair=" + DL_DbgObjTagOrNone(oCachedMealChair) +
-        " cached_meal_dist=" + sCachedMealDist +
-        " cached_meal_sitter=" + DL_DbgObjTagOrNone(oCachedMealSitter) +
-        " cached_meal_npc_is_sitter=" + DL_DbgBool(oCachedMealSitter == oNpc)
-    );
-
-    if (bVerbose)
-    {
         DL_DbgSay(oPC,
-            "[DL DEBUG] focus_issue_target=" + GetLocalString(oNpc, "dl_focus_anchor_action_target") +
-            " focus_issue_stamp=" + IntToString(GetLocalInt(oNpc, "dl_focus_anchor_action_stamp")) +
-            " chill_retry_until=" + IntToString(GetLocalInt(oNpc, "dl_chill_sit_retry_until")) +
-            " meal_retry_until=" + IntToString(GetLocalInt(oNpc, "dl_meal_sit_retry_until")) +
-            " cache_chair_missing_until=" + IntToString(GetLocalInt(oNpc, "dl_cache_chill_chair_missing_until"))
+            "[DL] seating meal=" + DL_DbgBool(bMealLegacyNpc || bMealLegacyWp) +
+            " chill=" + DL_DbgBool(bChillLegacyNpc || bChillLegacyWp) +
+            " meal_wp=" + sMealWaypointTag +
+            " focus_wp=" + sFocusTarget +
+            " issue=" + GetLocalString(oNpc, "dl_focus_anchor_action_target") +
+            ":" + IntToString(GetLocalInt(oNpc, "dl_focus_anchor_action_stamp"))
         );
     }
 
@@ -385,14 +382,11 @@ void main()
         if (GetIsObjectValid(oEntry)) sEntryDist = DL_DbgFloat(GetDistanceBetween(oNpc, oEntry));
 
         DL_DbgSay(oPC,
-            "[DL DEBUG] route_key=" + sRouteKey +
-            " route_value=" + sRouteValue +
-            " entry=" + sEntryTag +
-            " entry_valid=" + DL_DbgBool(GetIsObjectValid(oEntry)) +
-            " entry_dist=" + sEntryDist +
-            " exit=" + sExitTag +
-            " exit_valid=" + DL_DbgBool(GetIsObjectValid(oExit)) +
-            " exit_area=" + DL_DbgAreaTagOrNone(oExit)
+            "[DL] route " + sRouteKey + "=" + sRouteValue +
+            " entry=" + sEntryTag + ":" + DL_DbgBool(GetIsObjectValid(oEntry)) +
+            " d=" + sEntryDist +
+            " exit=" + sExitTag + ":" + DL_DbgBool(GetIsObjectValid(oExit)) +
+            " area=" + DL_DbgAreaTagOrNone(oExit)
         );
     }
 

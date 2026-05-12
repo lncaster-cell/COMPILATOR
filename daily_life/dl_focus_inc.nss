@@ -1,4 +1,6 @@
 const string DL_L_NPC_CACHE_SOCIAL_PARTNER_OBJ = "dl_cache_social_partner_obj";
+const string DL_L_NPC_SOCIAL_ANIM_SIG = "dl_social_anim_sig";
+const string DL_L_NPC_SOCIAL_ANIM_MINUTE = "dl_social_anim_minute";
 const string DL_L_NPC_CACHE_CHILL_CHAIR_OBJ = "dl_cache_chill_chair_obj";
 const string DL_L_NPC_CACHE_CHILL_CHAIR_MISSING_UNTIL = "dl_cache_chill_chair_missing_until";
 const string DL_L_NPC_CACHE_MEAL_CHAIR_OBJ = "dl_cache_meal_chair_obj";
@@ -64,6 +66,8 @@ void DL_ClearFocusExecutionState(object oNpc)
     DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
     DeleteLocalInt(oNpc, DL_L_NPC_CHILL_SIT_RETRY_UNTIL);
     DeleteLocalInt(oNpc, DL_L_NPC_MEAL_SIT_RETRY_UNTIL);
+    DeleteLocalString(oNpc, DL_L_NPC_SOCIAL_ANIM_SIG);
+    DeleteLocalInt(oNpc, DL_L_NPC_SOCIAL_ANIM_MINUTE);
     DL_ClearFocusMoveIssueState(oNpc);
     DL_ClearTransitionExecutionState(oNpc);
 }
@@ -1021,6 +1025,27 @@ void DL_ExecutePublicDirective(object oNpc)
     );
     DL_ProgressFocusAtTarget(oNpc, oPublic, "on_public_anchor", sAnim);
 }
+
+void DL_PlaySocialAnimationIfNeeded(object oNpc, string sAnchorTag, string sAnim, int bPartnerOnAnchor)
+{
+    if (!GetIsObjectValid(oNpc) || sAnim == "")
+    {
+        return;
+    }
+
+    int nNowAbs = DL_GetAbsoluteMinute();
+    string sSig = sAnchorTag + "|" + sAnim + "|" + IntToString(bPartnerOnAnchor);
+    if (GetLocalString(oNpc, DL_L_NPC_SOCIAL_ANIM_SIG) == sSig &&
+        GetLocalInt(oNpc, DL_L_NPC_SOCIAL_ANIM_MINUTE) == nNowAbs)
+    {
+        return;
+    }
+
+    SetLocalString(oNpc, DL_L_NPC_SOCIAL_ANIM_SIG, sSig);
+    SetLocalInt(oNpc, DL_L_NPC_SOCIAL_ANIM_MINUTE, nNowAbs);
+    PlayCustomAnimation(oNpc, sAnim, TRUE);
+}
+
 int DL_ShouldFallbackSocialToPublic(object oNpc)
 {
     object oMe = DL_ResolveSocialWaypoint(oNpc);
@@ -1081,6 +1106,7 @@ void DL_ExecuteSocialDirective(object oNpc)
         GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) == sAnchorTag)
     {
         DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
+        DL_PlaySocialAnimationIfNeeded(oNpc, sAnchorTag, sAnim, bPartnerOnAnchor);
         return;
     }
 
