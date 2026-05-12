@@ -1073,6 +1073,10 @@ void DL_ExecuteSocialDirective(object oNpc)
         {
             sAnim = "talk01";
         }
+        else if ((DL_GetTagDeterministicOffset(GetTag(oNpc), 100, 0) % 3) == 0)
+        {
+            sAnim = "talk01";
+        }
     }
 
     string sAnchorTag = GetTag(oMe);
@@ -1087,8 +1091,8 @@ void DL_ExecuteSocialDirective(object oNpc)
     DL_LogChatDebugEvent(
         oNpc,
         "target_social",
-        "target dir=SOCIAL area=" + GetTag(GetArea(oMe)) + " anchor=" + sAnchorTag +
-            " social_anchor=" + sAnchorTag +
+        "target dir=SOCIAL area=" + GetTag(GetArea(oMe)) + " anchor=" + GetTag(oMe) +
+            " social_anchor=" + GetTag(oMe) +
             " social_slot=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_SLOT) +
             " social_partner_tag=" + sPartnerTag +
             " social_partner_valid=" + IntToString(GetIsObjectValid(oPartner))
