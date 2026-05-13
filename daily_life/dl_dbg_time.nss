@@ -255,6 +255,21 @@ void DL_DbgPrintSocialPublicConfig(object oPC, object oNpc)
     );
 }
 
+
+void DL_DbgPrintSocialSceneState(object oPC, object oNpc)
+{
+    if (!GetIsObjectValid(oPC) || !GetIsObjectValid(oNpc)) return;
+
+    DL_DbgSay(oPC,
+        "[DL] social_scene id=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_SCENE_ID) +
+        " step=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_SOCIAL_SCENE_STEP)) +
+        " next=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_SOCIAL_SCENE_NEXT_MINUTE)) +
+        " role=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_SCENE_ROLE) +
+        " last=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_SCENE_LAST_ANIM) +
+        " anchor=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_SCENE_ANCHOR)
+    );
+}
+
 void main()
 {
     object oDebug = OBJECT_SELF;
@@ -310,12 +325,20 @@ void main()
         " reason=" + GetLocalString(oNpc, "dl_nav_debug_reason")
     );
 
-    if (nNowDirective == DL_DIR_SOCIAL ||
+    int bSocialRelevant = nNowDirective == DL_DIR_SOCIAL ||
         nStoredDirective == DL_DIR_SOCIAL ||
+        GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "on_social_anchor";
+
+    if (bSocialRelevant ||
         nStoredDirective == DL_DIR_PUBLIC ||
         GetLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC) == "missing_public_anchor")
     {
         DL_DbgPrintSocialPublicConfig(oPC, oNpc);
+    }
+
+    if (bVerbose || bSocialRelevant)
+    {
+        DL_DbgPrintSocialSceneState(oPC, oNpc);
     }
 
     if (bVerbose)
