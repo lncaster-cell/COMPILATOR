@@ -13,6 +13,17 @@ const string DL_L_NPC_CHILL_LEGACY_ACTION_SIT = "dl_chill_legacy_action_sit";
 const string DL_L_NPC_FOCUS_ACTION_STAMP = "dl_focus_anchor_action_stamp";
 const string DL_L_NPC_FOCUS_ACTION_TARGET = "dl_focus_anchor_action_target";
 const string DL_L_WP_CHILL_CHAIR_TAG = "dl_chill_chair_tag";
+const string DL_L_NPC_SOCIAL_PROBE_BEFORE = "dl_social_probe_before";
+const string DL_L_NPC_SOCIAL_PROBE_AFTER = "dl_social_probe_after";
+const string DL_L_NPC_SOCIAL_PROBE_RESULT = "dl_social_probe_result";
+const string DL_L_NPC_SOCIAL_PROBE_REASON = "dl_social_probe_reason";
+const string DL_L_NPC_SOCIAL_PROBE_DIST = "dl_social_probe_dist";
+const string DL_L_NPC_SOCIAL_PROBE_ACTION = "dl_social_probe_action";
+const string DL_L_NPC_SOCIAL_PROBE_SEQ = "dl_social_probe_seq";
+const string DL_L_NPC_SOCIAL_PROBE_ABS_MIN = "dl_social_probe_abs_min";
+const string DL_L_NPC_SOCIAL_PROBE_NOW_DIST = "dl_social_probe_now_dist";
+const string DL_L_NPC_SOCIAL_PROBE_FOCUS_STATUS_BEFORE = "dl_social_probe_focus_status_before";
+const string DL_L_NPC_SOCIAL_PROBE_CURRENT_ACTION = "dl_social_probe_current_action";
 // Household seating defaults to waypoint animation: the meal/chill waypoint is
 // the NPC body position and facing anchor, and chairs are decoration only.
 // Set dl_meal_legacy_action_sit=1 or dl_chill_legacy_action_sit=1 on the NPC
@@ -1036,20 +1047,46 @@ int DL_ShouldFallbackSocialToPublic(object oNpc)
 
     return FALSE;
 }
+void DL_SetSocialArrivalProbeFailure(object oNpc, object oAnchor, string sReason, float fDist)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    SetLocalString(oNpc, DL_L_NPC_SOCIAL_PROBE_REASON, sReason);
+    SetLocalFloat(oNpc, DL_L_NPC_SOCIAL_PROBE_DIST, fDist);
+    SetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_ACTION, GetCurrentAction(oNpc));
+    SetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_CURRENT_ACTION, GetCurrentAction(oNpc));
+    SetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_RESULT, FALSE);
+    SetLocalString(
+        oNpc,
+        DL_L_NPC_SOCIAL_PROBE_AFTER,
+        "social_arrival_probe " + sReason +
+            " anchor_tag=" + GetTag(oAnchor) +
+            " npc_area=" + GetTag(GetArea(oNpc)) +
+            " anchor_area=" + GetTag(GetArea(oAnchor)) +
+            " dist=" + FloatToString(fDist, 1, 2)
+    );
+}
+
 int DL_TryStartSocialSceneAtReachedAnchor(object oNpc, object oAnchor, object oPartner, int bPartnerOnAnchor)
 {
     if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oAnchor))
     {
+        DL_SetSocialArrivalProbeFailure(oNpc, oAnchor, "invalid_object", -1.0);
         return FALSE;
     }
 
     if (GetArea(oNpc) != GetArea(oAnchor))
     {
+        DL_SetSocialArrivalProbeFailure(oNpc, oAnchor, "area_mismatch", GetDistanceBetween(oNpc, oAnchor));
         return FALSE;
     }
 
     if (GetDistanceBetween(oNpc, oAnchor) > DL_WORK_ANCHOR_RADIUS)
     {
+        DL_SetSocialArrivalProbeFailure(oNpc, oAnchor, "too_far", GetDistanceBetween(oNpc, oAnchor));
         return FALSE;
     }
 
@@ -1066,6 +1103,13 @@ int DL_TryStartSocialSceneAtReachedAnchor(object oNpc, object oAnchor, object oP
 void DL_ExecuteSocialDirective(object oNpc)
 {
     object oMe = DL_ResolveSocialWaypoint(oNpc);
+    int nProbeSeq = GetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_SEQ) + 1;
+    SetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_SEQ, nProbeSeq);
+    SetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_ABS_MIN, DL_GetAbsoluteMinute());
+    SetLocalString(oNpc, DL_L_NPC_SOCIAL_PROBE_FOCUS_STATUS_BEFORE, GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS));
+    SetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_ACTION, GetCurrentAction(oNpc));
+    SetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_CURRENT_ACTION, GetCurrentAction(oNpc));
+    SetLocalFloat(oNpc, DL_L_NPC_SOCIAL_PROBE_NOW_DIST, -1.0);
     string sPartnerTag = GetLocalString(oNpc, DL_L_NPC_SOCIAL_PARTNER_TAG);
     object oPartner = DL_ResolveSocialPartnerObject(oNpc, sPartnerTag);
     object oPartnerWp = DL_ResolveSocialWaypoint(oPartner);
@@ -1073,6 +1117,9 @@ void DL_ExecuteSocialDirective(object oNpc)
     if (!GetIsObjectValid(oMe))
     {
         SetLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC, "missing_social_anchor");
+        SetLocalString(oNpc, DL_L_NPC_SOCIAL_PROBE_REASON, "missing_social_anchor");
+        SetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_RESULT, FALSE);
+        SetLocalString(oNpc, DL_L_NPC_SOCIAL_PROBE_AFTER, "missing_social_anchor");
         return;
     }
 
@@ -1089,8 +1136,44 @@ void DL_ExecuteSocialDirective(object oNpc)
     }
 
     string sAnchorTag = GetTag(oMe);
-    if (DL_TryStartSocialSceneAtReachedAnchor(oNpc, oMe, oPartner, bPartnerOnAnchor))
+    SetLocalFloat(oNpc, DL_L_NPC_SOCIAL_PROBE_DIST, GetDistanceBetween(oNpc, oMe));
+    SetLocalFloat(oNpc, DL_L_NPC_SOCIAL_PROBE_NOW_DIST, GetDistanceBetween(oNpc, oMe));
+    SetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_ACTION, GetCurrentAction(oNpc));
+    SetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_CURRENT_ACTION, GetCurrentAction(oNpc));
+    SetLocalString(
+        oNpc,
+        DL_L_NPC_SOCIAL_PROBE_BEFORE,
+        "seq=" + IntToString(nProbeSeq) +
+            " abs_min=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_ABS_MIN)) +
+            " npc_tag=" + GetTag(oNpc) +
+            " focus_status=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) +
+            " focus_target=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) +
+            " oMe_tag=" + GetTag(oMe) +
+            " npc_area=" + GetTag(GetArea(oNpc)) +
+            " oMe_area=" + GetTag(GetArea(oMe)) +
+            " dist=" + FloatToString(GetDistanceBetween(oNpc, oMe), 1, 2) +
+            " now_dist=" + FloatToString(GetLocalFloat(oNpc, DL_L_NPC_SOCIAL_PROBE_NOW_DIST), 1, 2) +
+            " current_action=" + IntToString(GetCurrentAction(oNpc)) +
+            " bPartnerOnAnchor=" + IntToString(bPartnerOnAnchor)
+    );
+    SetLocalString(oNpc, DL_L_NPC_SOCIAL_PROBE_REASON, "calling_helper");
+    SetLocalString(oNpc, DL_L_NPC_SOCIAL_PROBE_AFTER, "calling_helper");
+    int bStartedSocialScene = DL_TryStartSocialSceneAtReachedAnchor(oNpc, oMe, oPartner, bPartnerOnAnchor);
+    string sProbeFailure = GetLocalString(oNpc, DL_L_NPC_SOCIAL_PROBE_AFTER);
+    SetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_RESULT, bStartedSocialScene);
+    SetLocalString(
+        oNpc,
+        DL_L_NPC_SOCIAL_PROBE_AFTER,
+        "seq=" + IntToString(nProbeSeq) +
+            " abs_min=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_ABS_MIN)) +
+            " helper_result=" + IntToString(bStartedSocialScene) +
+            " focus_status=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) +
+            " focus_target=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) +
+            " detail=" + sProbeFailure
+    );
+    if (bStartedSocialScene)
     {
+        SetLocalString(oNpc, DL_L_NPC_SOCIAL_PROBE_REASON, "started");
         return;
     }
 
