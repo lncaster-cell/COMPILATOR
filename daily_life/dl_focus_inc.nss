@@ -24,6 +24,7 @@ const string DL_L_NPC_SOCIAL_PROBE_ABS_MIN = "dl_social_probe_abs_min";
 const string DL_L_NPC_SOCIAL_PROBE_NOW_DIST = "dl_social_probe_now_dist";
 const string DL_L_NPC_SOCIAL_PROBE_FOCUS_STATUS_BEFORE = "dl_social_probe_focus_status_before";
 const string DL_L_NPC_SOCIAL_PROBE_CURRENT_ACTION = "dl_social_probe_current_action";
+object DL_ResolveFocusTargetInCurrentArea(object oNpc);
 // Household seating defaults to waypoint animation: the meal/chill waypoint is
 // the NPC body position and facing anchor, and chairs are decoration only.
 // Set dl_meal_legacy_action_sit=1 or dl_chill_legacy_action_sit=1 on the NPC
@@ -1114,15 +1115,6 @@ void DL_ExecuteSocialDirective(object oNpc)
     object oPartner = DL_ResolveSocialPartnerObject(oNpc, sPartnerTag);
     object oPartnerWp = DL_ResolveSocialWaypoint(oPartner);
 
-    if (!GetIsObjectValid(oMe))
-    {
-        SetLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC, "missing_social_anchor");
-        SetLocalString(oNpc, DL_L_NPC_SOCIAL_PROBE_REASON, "missing_social_anchor");
-        SetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_RESULT, FALSE);
-        SetLocalString(oNpc, DL_L_NPC_SOCIAL_PROBE_AFTER, "missing_social_anchor");
-        return;
-    }
-
     int bPartnerReady = GetIsObjectValid(oPartner) &&
         GetLocalInt(oPartner, DL_L_NPC_DIRECTIVE) == DL_DIR_SOCIAL &&
         GetIsObjectValid(oPartnerWp);
@@ -1133,6 +1125,59 @@ void DL_ExecuteSocialDirective(object oNpc)
             GetLocalString(oPartner, DL_L_NPC_FOCUS_STATUS) == "on_social_anchor" &&
             GetLocalString(oPartner, DL_L_NPC_FOCUS_TARGET) == GetTag(oPartnerWp) &&
             GetDistanceBetween(oPartner, oPartnerWp) <= DL_WORK_ANCHOR_RADIUS;
+    }
+
+    object oReachedFocus = DL_ResolveFocusTargetInCurrentArea(oNpc);
+    string sFocusTargetTag = GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET);
+    int bReachedSocialAnchor = GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "moving_to_anchor" &&
+        GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE) == DL_DIR_SOCIAL &&
+        GetIsObjectValid(oReachedFocus) &&
+        GetDistanceBetween(oNpc, oReachedFocus) <= DL_WORK_ANCHOR_RADIUS &&
+        sFocusTargetTag == GetTag(oReachedFocus) &&
+        (FindSubString(sFocusTargetTag, "social") >= 0 ||
+            (GetIsObjectValid(oMe) && GetTag(oMe) == sFocusTargetTag));
+    if (bReachedSocialAnchor)
+    {
+        DL_ClearFocusMoveIssueState(oNpc);
+        DL_ClearTransitionExecutionState(oNpc);
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
+        SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "on_social_anchor");
+        SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oReachedFocus));
+        AssignCommand(oNpc, SetFacing(GetFacing(oReachedFocus)));
+        SetLocalFloat(oNpc, DL_L_NPC_SOCIAL_PROBE_DIST, GetDistanceBetween(oNpc, oReachedFocus));
+        SetLocalFloat(oNpc, DL_L_NPC_SOCIAL_PROBE_NOW_DIST, GetDistanceBetween(oNpc, oReachedFocus));
+        SetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_RESULT, TRUE);
+        SetLocalString(oNpc, DL_L_NPC_SOCIAL_PROBE_REASON, "reached_focus_recovered");
+        SetLocalString(
+            oNpc,
+            DL_L_NPC_SOCIAL_PROBE_BEFORE,
+            "seq=" + IntToString(nProbeSeq) +
+                " abs_min=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_ABS_MIN)) +
+                " focus_status=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_PROBE_FOCUS_STATUS_BEFORE) +
+                " focus_target=" + sFocusTargetTag +
+                " reached_tag=" + GetTag(oReachedFocus) +
+                " reached_dist=" + FloatToString(GetDistanceBetween(oNpc, oReachedFocus), 1, 2) +
+                " current_action=" + IntToString(GetCurrentAction(oNpc))
+        );
+        SetLocalString(
+            oNpc,
+            DL_L_NPC_SOCIAL_PROBE_AFTER,
+            "seq=" + IntToString(nProbeSeq) +
+                " abs_min=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_ABS_MIN)) +
+                " recovered_reached_focus=1 focus_status=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) +
+                " focus_target=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET)
+        );
+        DL_TickSocialScene(oNpc, oReachedFocus, oPartner, bPartnerOnAnchor);
+        return;
+    }
+
+    if (!GetIsObjectValid(oMe))
+    {
+        SetLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC, "missing_social_anchor");
+        SetLocalString(oNpc, DL_L_NPC_SOCIAL_PROBE_REASON, "missing_social_anchor");
+        SetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_RESULT, FALSE);
+        SetLocalString(oNpc, DL_L_NPC_SOCIAL_PROBE_AFTER, "missing_social_anchor");
+        return;
     }
 
     string sAnchorTag = GetTag(oMe);
