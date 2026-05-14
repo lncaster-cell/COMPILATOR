@@ -1044,9 +1044,11 @@ int DL_TryStartSocialSceneAtReachedAnchor(object oNpc, object oAnchor, object oP
         {
             DL_LogChatDebugEvent(
                 oNpc,
-                "social_start_probe_false",
-                "social_start_probe result=FALSE reason=invalid_object npc_tag=" + GetTag(oNpc) +
-                    " anchor_tag=" + GetTag(oAnchor)
+                "social_arrival_probe",
+                "social_arrival_probe invalid_object anchor_tag=" + GetTag(oAnchor) +
+                    " npc_area=" + GetTag(GetArea(oNpc)) +
+                    " anchor_area=" + GetTag(GetArea(oAnchor)) +
+                    " dist=" + FloatToString(GetDistanceBetween(oNpc, oAnchor), 1, 2)
             );
         }
         return FALSE;
@@ -1056,11 +1058,11 @@ int DL_TryStartSocialSceneAtReachedAnchor(object oNpc, object oAnchor, object oP
     {
         DL_LogChatDebugEvent(
             oNpc,
-            "social_start_probe_false",
-            "social_start_probe result=FALSE reason=area_mismatch npc_tag=" + GetTag(oNpc) +
-                " anchor_tag=" + GetTag(oAnchor) +
+            "social_arrival_probe",
+            "social_arrival_probe area_mismatch anchor_tag=" + GetTag(oAnchor) +
                 " npc_area=" + GetTag(GetArea(oNpc)) +
-                " anchor_area=" + GetTag(GetArea(oAnchor))
+                " anchor_area=" + GetTag(GetArea(oAnchor)) +
+                " dist=" + FloatToString(GetDistanceBetween(oNpc, oAnchor), 1, 2)
         );
         return FALSE;
     }
@@ -1069,11 +1071,11 @@ int DL_TryStartSocialSceneAtReachedAnchor(object oNpc, object oAnchor, object oP
     {
         DL_LogChatDebugEvent(
             oNpc,
-            "social_start_probe_false",
-            "social_start_probe result=FALSE reason=too_far npc_tag=" + GetTag(oNpc) +
-                " anchor_tag=" + GetTag(oAnchor) +
-                " dist=" + FloatToString(GetDistanceBetween(oNpc, oAnchor), 1, 2) +
-                " limit=" + FloatToString(DL_WORK_ANCHOR_RADIUS, 1, 2)
+            "social_arrival_probe",
+            "social_arrival_probe too_far anchor_tag=" + GetTag(oAnchor) +
+                " npc_area=" + GetTag(GetArea(oNpc)) +
+                " anchor_area=" + GetTag(GetArea(oAnchor)) +
+                " dist=" + FloatToString(GetDistanceBetween(oNpc, oAnchor), 1, 2)
         );
         return FALSE;
     }
@@ -1116,20 +1118,22 @@ void DL_ExecuteSocialDirective(object oNpc)
     string sAnchorTag = GetTag(oMe);
     DL_LogChatDebugEvent(
         oNpc,
-        "social_start_probe_before",
-        "social_start_probe before npc_tag=" + GetTag(oNpc) +
-            " anchor_tag=" + GetTag(oMe) +
-            " npc_area=" + GetTag(GetArea(oNpc)) +
-            " anchor_area=" + GetTag(GetArea(oMe)) +
-            " dist=" + FloatToString(GetDistanceBetween(oNpc, oMe), 1, 2) +
+        "social_arrival_probe_before",
+        "social_arrival_probe before npc_tag=" + GetTag(oNpc) +
             " focus_status=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) +
-            " current_action=" + IntToString(GetCurrentAction(oNpc))
+            " focus_target=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) +
+            " oMe_tag=" + GetTag(oMe) +
+            " npc_area=" + GetTag(GetArea(oNpc)) +
+            " oMe_area=" + GetTag(GetArea(oMe)) +
+            " dist=" + FloatToString(GetDistanceBetween(oNpc, oMe), 1, 2) +
+            " current_action=" + IntToString(GetCurrentAction(oNpc)) +
+            " bPartnerOnAnchor=" + IntToString(bPartnerOnAnchor)
     );
     int bStartedSocialScene = DL_TryStartSocialSceneAtReachedAnchor(oNpc, oMe, oPartner, bPartnerOnAnchor);
     DL_LogChatDebugEvent(
         oNpc,
-        "social_start_probe_after",
-        "social_start_probe after result=" + IntToString(bStartedSocialScene) +
+        "social_arrival_probe_after",
+        "social_arrival_probe after helper_result=" + IntToString(bStartedSocialScene) +
             " focus_status=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) +
             " focus_target=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET)
     );
