@@ -639,6 +639,22 @@ object DL_ResolveFocusTargetInCurrentArea(object oNpc)
     return OBJECT_INVALID;
 }
 
+int DL_IsFocusRecoverySocialTarget(object oNpc, object oTarget)
+{
+    if (GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE) == DL_DIR_SOCIAL)
+    {
+        return TRUE;
+    }
+
+    object oSocial = DL_ResolveSocialWaypoint(oNpc);
+    if (GetIsObjectValid(oSocial) && oSocial == oTarget)
+    {
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
 void DL_RecoverReachedFocusAnchorMoveState(object oNpc)
 {
     if (!GetIsObjectValid(oNpc))
@@ -659,6 +675,24 @@ void DL_RecoverReachedFocusAnchorMoveState(object oNpc)
 
     if (GetDistanceBetween(oNpc, oTarget) > DL_WORK_ANCHOR_RADIUS)
     {
+        return;
+    }
+
+    if (DL_IsFocusRecoverySocialTarget(oNpc, oTarget))
+    {
+        DL_ClearFocusMoveIssueState(oNpc);
+        DL_ClearTransitionExecutionState(oNpc);
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
+        SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "on_social_anchor");
+        SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oTarget));
+        AssignCommand(oNpc, SetFacing(GetFacing(oTarget)));
+        DL_LogChatDebugEvent(
+            oNpc,
+            "social_recover_reached_anchor",
+            "social_recover_reached_anchor anchor=" + GetTag(oTarget) +
+                " dist=" + FloatToString(GetDistanceBetween(oNpc, oTarget), 1, 2) +
+                " current_action=" + IntToString(GetCurrentAction(oNpc))
+        );
         return;
     }
 
