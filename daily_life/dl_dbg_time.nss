@@ -269,10 +269,14 @@ void DL_DbgPrintSocialSceneState(object oPC, object oNpc)
         " anchor=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_SCENE_ANCHOR)
     );
     DL_DbgSay(oPC,
-        "[DL] social_probe result=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_RESULT)) +
+        "[DL] social_probe seq=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_SEQ)) +
+        " abs_min=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_ABS_MIN)) +
+        " result=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_RESULT)) +
         " reason=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_PROBE_REASON) +
         " dist=" + DL_DbgFloat(GetLocalFloat(oNpc, DL_L_NPC_SOCIAL_PROBE_DIST)) +
-        " action=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_ACTION)) +
+        " now_dist=" + DL_DbgFloat(GetLocalFloat(oNpc, DL_L_NPC_SOCIAL_PROBE_NOW_DIST)) +
+        " focus_before=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_PROBE_FOCUS_STATUS_BEFORE) +
+        " action=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_CURRENT_ACTION)) +
         " before=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_PROBE_BEFORE) +
         " after=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_PROBE_AFTER)
     );
