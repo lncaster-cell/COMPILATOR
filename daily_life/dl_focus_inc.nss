@@ -1040,16 +1040,41 @@ int DL_TryStartSocialSceneAtReachedAnchor(object oNpc, object oAnchor, object oP
 {
     if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oAnchor))
     {
+        if (GetIsObjectValid(oNpc))
+        {
+            DL_LogChatDebugEvent(
+                oNpc,
+                "social_start_probe_false",
+                "social_start_probe result=FALSE reason=invalid_object npc_tag=" + GetTag(oNpc) +
+                    " anchor_tag=" + GetTag(oAnchor)
+            );
+        }
         return FALSE;
     }
 
     if (GetArea(oNpc) != GetArea(oAnchor))
     {
+        DL_LogChatDebugEvent(
+            oNpc,
+            "social_start_probe_false",
+            "social_start_probe result=FALSE reason=area_mismatch npc_tag=" + GetTag(oNpc) +
+                " anchor_tag=" + GetTag(oAnchor) +
+                " npc_area=" + GetTag(GetArea(oNpc)) +
+                " anchor_area=" + GetTag(GetArea(oAnchor))
+        );
         return FALSE;
     }
 
     if (GetDistanceBetween(oNpc, oAnchor) > DL_WORK_ANCHOR_RADIUS)
     {
+        DL_LogChatDebugEvent(
+            oNpc,
+            "social_start_probe_false",
+            "social_start_probe result=FALSE reason=too_far npc_tag=" + GetTag(oNpc) +
+                " anchor_tag=" + GetTag(oAnchor) +
+                " dist=" + FloatToString(GetDistanceBetween(oNpc, oAnchor), 1, 2) +
+                " limit=" + FloatToString(DL_WORK_ANCHOR_RADIUS, 1, 2)
+        );
         return FALSE;
     }
 
@@ -1089,7 +1114,26 @@ void DL_ExecuteSocialDirective(object oNpc)
     }
 
     string sAnchorTag = GetTag(oMe);
-    if (DL_TryStartSocialSceneAtReachedAnchor(oNpc, oMe, oPartner, bPartnerOnAnchor))
+    DL_LogChatDebugEvent(
+        oNpc,
+        "social_start_probe_before",
+        "social_start_probe before npc_tag=" + GetTag(oNpc) +
+            " anchor_tag=" + GetTag(oMe) +
+            " npc_area=" + GetTag(GetArea(oNpc)) +
+            " anchor_area=" + GetTag(GetArea(oMe)) +
+            " dist=" + FloatToString(GetDistanceBetween(oNpc, oMe), 1, 2) +
+            " focus_status=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) +
+            " current_action=" + IntToString(GetCurrentAction(oNpc))
+    );
+    int bStartedSocialScene = DL_TryStartSocialSceneAtReachedAnchor(oNpc, oMe, oPartner, bPartnerOnAnchor);
+    DL_LogChatDebugEvent(
+        oNpc,
+        "social_start_probe_after",
+        "social_start_probe after result=" + IntToString(bStartedSocialScene) +
+            " focus_status=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) +
+            " focus_target=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET)
+    );
+    if (bStartedSocialScene)
     {
         return;
     }
