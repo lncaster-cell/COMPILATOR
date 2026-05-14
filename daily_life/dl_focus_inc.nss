@@ -1036,6 +1036,33 @@ int DL_ShouldFallbackSocialToPublic(object oNpc)
 
     return FALSE;
 }
+int DL_TryStartSocialSceneAtReachedAnchor(object oNpc, object oAnchor, object oPartner, int bPartnerOnAnchor)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oAnchor))
+    {
+        return FALSE;
+    }
+
+    if (GetArea(oNpc) != GetArea(oAnchor))
+    {
+        return FALSE;
+    }
+
+    if (GetDistanceBetween(oNpc, oAnchor) > DL_WORK_ANCHOR_RADIUS)
+    {
+        return FALSE;
+    }
+
+    DL_ClearFocusMoveIssueState(oNpc);
+    DL_ClearTransitionExecutionState(oNpc);
+    DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
+    SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "on_social_anchor");
+    SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oAnchor));
+    AssignCommand(oNpc, SetFacing(GetFacing(oAnchor)));
+    DL_LogChatDebugEvent(oNpc, "on_social_anchor", "on_social_anchor anchor=" + GetTag(oAnchor));
+    DL_TickSocialScene(oNpc, oAnchor, oPartner, bPartnerOnAnchor);
+    return TRUE;
+}
 void DL_ExecuteSocialDirective(object oNpc)
 {
     object oMe = DL_ResolveSocialWaypoint(oNpc);
@@ -1062,6 +1089,11 @@ void DL_ExecuteSocialDirective(object oNpc)
     }
 
     string sAnchorTag = GetTag(oMe);
+    if (DL_TryStartSocialSceneAtReachedAnchor(oNpc, oMe, oPartner, bPartnerOnAnchor))
+    {
+        return;
+    }
+
     if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "on_social_anchor" &&
         GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) == sAnchorTag)
     {
