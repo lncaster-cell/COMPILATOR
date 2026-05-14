@@ -268,6 +268,14 @@ void DL_DbgPrintSocialSceneState(object oPC, object oNpc)
         " last=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_SCENE_LAST_ANIM) +
         " anchor=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_SCENE_ANCHOR)
     );
+    DL_DbgSay(oPC,
+        "[DL] social_probe result=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_RESULT)) +
+        " reason=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_PROBE_REASON) +
+        " dist=" + DL_DbgFloat(GetLocalFloat(oNpc, DL_L_NPC_SOCIAL_PROBE_DIST)) +
+        " action=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_SOCIAL_PROBE_ACTION)) +
+        " before=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_PROBE_BEFORE) +
+        " after=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_PROBE_AFTER)
+    );
 }
 
 void main()
