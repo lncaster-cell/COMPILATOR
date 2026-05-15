@@ -395,10 +395,24 @@ void main()
 
     if (bRegistryAreaMismatch == TRUE)
     {
+        int nRegSlot = GetLocalInt(oNpc, "dl_npc_reg_slot");
+        int bSlotContainsNpc = FALSE;
+        if (GetIsObjectValid(oRegisteredArea) && nRegSlot >= 0)
+        {
+            bSlotContainsNpc = GetLocalObject(oRegisteredArea, "dl_reg_slot_" + IntToString(nRegSlot)) == oNpc;
+        }
+
         DL_DbgSay(oPC,
             "[DL] registry_area_mismatch" +
             " npc_area=" + DL_DbgAreaTagOrNone(oNpc) +
-            " registered_area=" + sCurrentRegistryArea
+            " registered_area=" + sCurrentRegistryArea +
+            " reg_on=" + IntToString(GetLocalInt(oNpc, "dl_reg_on")) +
+            " reg_slot=" + IntToString(nRegSlot) +
+            " slot_contains_npc=" + IntToString(bSlotContainsNpc) +
+            " repair_attempted=" + IntToString(GetLocalInt(oNpc, "dl_registry_repair_attempted")) +
+            " repair_success=" + IntToString(GetLocalInt(oNpc, "dl_registry_repair_success")) +
+            " repair_failed=" + IntToString(GetLocalInt(oNpc, "dl_registry_repair_failed")) +
+            " repair_failed_reason=" + GetLocalString(oNpc, "dl_registry_repair_failed_reason")
         );
     }
 
