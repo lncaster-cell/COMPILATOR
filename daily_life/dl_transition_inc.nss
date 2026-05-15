@@ -12,6 +12,13 @@ const string DL_L_NPC_NAV_DEBUG_CURRENT = "dl_nav_debug_current";
 const string DL_L_NPC_NAV_DEBUG_TARGET = "dl_nav_debug_target";
 const string DL_L_NPC_NAV_DEBUG_NEXT = "dl_nav_debug_next";
 const string DL_L_NPC_NAV_DEBUG_REASON = "dl_nav_debug_reason";
+const string DL_L_NPC_NAV_DEBUG_NPC_AREA = "dl_nav_debug_npc_area";
+const string DL_L_NPC_NAV_DEBUG_TARGET_AREA = "dl_nav_debug_target_area";
+const string DL_L_NPC_NAV_DEBUG_CURRENT_ZONE = "dl_nav_debug_current_zone";
+const string DL_L_NPC_NAV_DEBUG_TARGET_ZONE = "dl_nav_debug_target_zone";
+const string DL_L_NPC_NAV_DEBUG_OLD_TRANSITION_STATUS = "dl_nav_debug_old_transition_status";
+const string DL_L_NPC_NAV_DEBUG_FOCUS_TARGET = "dl_nav_debug_focus_target";
+const string DL_L_NPC_NAV_DEBUG_CURRENT_ACTION = "dl_nav_debug_current_action";
 
 const string DL_NAV_DELIMITER = "__";
 const string DL_NAV_ROUTE_PREFIX = "route_";
@@ -39,6 +46,32 @@ void DL_NavSetDebug(object oNpc, string sCurrentZone, string sTargetZone, string
     SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_TARGET, sTargetZone);
     SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_NEXT, sNextZone);
     SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_REASON, sReason);
+}
+
+void DL_NavSetPostTransitionCompleteDebug(
+    object oNpc,
+    object oTargetAnchor,
+    string sCurrentZone,
+    string sTargetZone,
+    string sOldTransitionStatus
+)
+{
+    if (!GetIsObjectValid(oNpc)) return;
+
+    object oNpcArea = GetArea(oNpc);
+    object oTargetArea = GetArea(oTargetAnchor);
+    string sNpcArea = "";
+    string sTargetArea = "";
+    if (GetIsObjectValid(oNpcArea)) sNpcArea = GetTag(oNpcArea);
+    if (GetIsObjectValid(oTargetArea)) sTargetArea = GetTag(oTargetArea);
+
+    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_NPC_AREA, sNpcArea);
+    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_TARGET_AREA, sTargetArea);
+    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_CURRENT_ZONE, sCurrentZone);
+    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_TARGET_ZONE, sTargetZone);
+    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_OLD_TRANSITION_STATUS, sOldTransitionStatus);
+    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_FOCUS_TARGET, GetTag(oTargetAnchor));
+    SetLocalInt(oNpc, DL_L_NPC_NAV_DEBUG_CURRENT_ACTION, GetCurrentAction(oNpc));
 }
 
 void DL_NavClearFocusMoveIssueStateAfterJump(object oNpc)
@@ -367,6 +400,57 @@ object DL_ResolveTransitionExitWaypointFromEntry(object oEntryWp)
     }
 
     return DL_NavFindTransitionByTag(DL_NavMakeTransitionTag(sTo, sFrom));
+}
+
+int DL_NavTryFinalizeCompletedTransition(object oNpc, object oTargetAnchor)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTargetAnchor))
+    {
+        return FALSE;
+    }
+
+    string sOldTransitionStatus = GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS);
+    if (sOldTransitionStatus != "transitioning" && sOldTransitionStatus != "moving_to_entry")
+    {
+        return FALSE;
+    }
+
+    object oNpcArea = GetArea(oNpc);
+    object oTargetArea = GetArea(oTargetAnchor);
+    if (!GetIsObjectValid(oNpcArea) || !GetIsObjectValid(oTargetArea) || oNpcArea != oTargetArea)
+    {
+        return FALSE;
+    }
+
+    string sTargetZone = DL_NavGetAnchorZoneId(oTargetAnchor);
+    if (sTargetZone == "")
+    {
+        return FALSE;
+    }
+
+    string sCurrentZone = DL_NavResolveCurrentZoneFromPosition(oNpc);
+    string sAreaTag = GetTag(oNpcArea);
+    if (sCurrentZone != sTargetZone && sTargetZone != sAreaTag)
+    {
+        return FALSE;
+    }
+
+    string sFinalZone = sCurrentZone;
+    if (sFinalZone == "")
+    {
+        sFinalZone = sTargetZone;
+    }
+    if (sFinalZone != sTargetZone && sTargetZone == sAreaTag)
+    {
+        sFinalZone = sTargetZone;
+    }
+
+    DL_ClearTransitionExecutionState(oNpc);
+    DL_NavClearFocusMoveIssueStateAfterJump(oNpc);
+    DL_NavSetNpcCurrentZone(oNpc, sFinalZone);
+    DL_NavSetDebug(oNpc, sFinalZone, sTargetZone, sTargetZone, "post_transition_complete");
+    DL_NavSetPostTransitionCompleteDebug(oNpc, oTargetAnchor, sFinalZone, sTargetZone, sOldTransitionStatus);
+    return TRUE;
 }
 
 int DL_NavTryAdvanceToZone(object oNpc, string sTargetZone)

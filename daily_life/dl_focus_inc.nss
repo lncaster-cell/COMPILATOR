@@ -206,7 +206,23 @@ int DL_ProgressFocusAtTarget(object oNpc, object oTarget, string sOnAnchorStatus
     }
 
     DL_NavPrepareTargetZoneFromAnchor(oNpc, oTarget);
-    if (DL_NavTryAdvanceToZone(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET)))
+    int bFinalizedTransition = DL_NavTryFinalizeCompletedTransition(oNpc, oTarget);
+    if (bFinalizedTransition)
+    {
+        DL_LogChatDebugEvent(
+            oNpc,
+            "post_transition_complete",
+            "post_transition_complete" +
+                " npc_area=" + GetLocalString(oNpc, "dl_nav_debug_npc_area") +
+                " target_area=" + GetLocalString(oNpc, "dl_nav_debug_target_area") +
+                " current_zone=" + GetLocalString(oNpc, "dl_nav_debug_current_zone") +
+                " target_zone=" + GetLocalString(oNpc, "dl_nav_debug_target_zone") +
+                " old_transition_status=" + GetLocalString(oNpc, "dl_nav_debug_old_transition_status") +
+                " focus_target=" + GetLocalString(oNpc, "dl_nav_debug_focus_target") +
+                " current_action=" + IntToString(GetLocalInt(oNpc, "dl_nav_debug_current_action"))
+        );
+    }
+    if (!bFinalizedTransition && DL_NavTryAdvanceToZone(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET)))
     {
         return TRUE;
     }
