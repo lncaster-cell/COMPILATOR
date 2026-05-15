@@ -757,9 +757,36 @@ void DL_ReconcileNpcAreaRegistration(object oNpc)
     }
 
     object oCurrentArea = GetArea(oNpc);
+    if (!GetIsObjectValid(oCurrentArea))
+    {
+        return;
+    }
+
     object oRegisteredArea = GetLocalObject(oNpc, DL_L_NPC_REG_AREA);
     if (oCurrentArea == oRegisteredArea)
     {
+        int nSlot = GetLocalInt(oNpc, DL_L_NPC_REG_SLOT);
+        int nCount = GetLocalInt(oCurrentArea, DL_L_AREA_REG_COUNT);
+        if (GetIsObjectValid(oCurrentArea) &&
+            nSlot >= 0 &&
+            nSlot < nCount &&
+            DL_GetAreaRegistryNpcAtSlot(oCurrentArea, nSlot) == oNpc)
+        {
+            return;
+        }
+
+        // The NPC claims to be registered in its current area, but the area
+        // registry does not contain that slot.  Clear only the NPC-side claim
+        // and append it through the normal registration path so empty or
+        // rebuilt registries can recover materialized NPCs.
+        DeleteLocalInt(oNpc, DL_L_NPC_REG_ON);
+        DeleteLocalObject(oNpc, DL_L_NPC_REG_AREA);
+        DeleteLocalInt(oNpc, DL_L_NPC_REG_SLOT);
+
+        if (GetIsObjectValid(oCurrentArea) && DL_IsActivePipelineNpc(oNpc))
+        {
+            DL_RegisterNpc(oNpc);
+        }
         return;
     }
 
@@ -804,10 +831,10 @@ void DL_UnregisterNpc(object oNpc)
     int nNpcSlot = GetLocalInt(oNpc, DL_L_NPC_REG_SLOT);
     DeleteLocalInt(oNpc, DL_L_NPC_REG_ON);
 
-    object oArea = GetArea(oNpc);
+    object oArea = GetLocalObject(oNpc, DL_L_NPC_REG_AREA);
     if (!GetIsObjectValid(oArea))
     {
-        oArea = GetLocalObject(oNpc, DL_L_NPC_REG_AREA);
+        oArea = GetArea(oNpc);
     }
 
     if (GetIsObjectValid(oArea))
