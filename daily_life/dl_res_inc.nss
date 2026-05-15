@@ -1,4 +1,5 @@
 #include "dl_activity_archive_anim_inc"
+#include "dl_move_job_decl_inc"
 #include "dl_transition_inc"
 
 // Step 05+: resolver/materialization skeleton.
@@ -76,6 +77,28 @@ const string DL_L_AREA_CACHE_EPOCH = "dl_area_cache_epoch";
 const string DL_L_AREA_FORCE_CACHE_RESET = "dl_force_area_cache_reset";
 const string DL_L_NPC_CACHE_EPOCH = "dl_npc_cache_epoch";
 const string DL_L_NPC_FORCE_CACHE_RESET = "dl_force_npc_cache_reset";
+
+const string DL_L_NPC_MOVE_OWNER = "dl_move_owner";
+const string DL_L_NPC_MOVE_PHASE = "dl_move_phase";
+const string DL_L_NPC_MOVE_TARGET_TAG = "dl_move_target_tag";
+const string DL_L_NPC_MOVE_TARGET_AREA = "dl_move_target_area";
+const string DL_L_NPC_MOVE_RADIUS = "dl_move_radius";
+const string DL_L_NPC_MOVE_TICKET = "dl_move_ticket";
+const string DL_L_NPC_MOVE_RESULT = "dl_move_result";
+const string DL_L_NPC_MOVE_DIAGNOSTIC = "dl_move_diagnostic";
+const string DL_L_NPC_MOVE_TARGET_OBJ = "dl_move_target_obj";
+
+const string DL_MOVE_RESULT_RUNNING = "running";
+const string DL_MOVE_RESULT_REACHED = "reached";
+const string DL_MOVE_RESULT_FAILED = "failed";
+
+const string DL_MOVE_OWNER_SLEEP = "sleep";
+const string DL_MOVE_OWNER_WORK = "work";
+const string DL_MOVE_OWNER_MEAL = "meal";
+const string DL_MOVE_OWNER_SOCIAL = "social";
+const string DL_MOVE_OWNER_PUBLIC = "public";
+const string DL_MOVE_OWNER_CHILL = "chill";
+const string DL_MOVE_OWNER_TRANSITION = "transition";
 
 const string DL_PROFILE_BLACKSMITH = "blacksmith";
 const string DL_PROFILE_GATE_POST = "gate_post";
@@ -381,6 +404,8 @@ void DL_ApplyMaterializationSkeleton(object oNpc, int nDirective)
 #include "dl_anchor_cache_inc"
 #include "dl_presentation_inc"
 #include "dl_sleep_inc"
+#include "dl_anchor_move_inc"
+#include "dl_move_job_inc"
 #include "dl_work_inc"
 #include "dl_focus_inc"
 
@@ -520,6 +545,7 @@ int DL_IsProfileServiceAvailable(string sProfile)
 }
 void DL_ApplyIdleLikeDirectiveState(object oNpc, int bSocial)
 {
+    DL_ClearMoveJob(oNpc);
     SetLocalString(oNpc, DL_L_NPC_STATE, bSocial ? DL_STATE_SOCIAL : DL_STATE_IDLE);
     DL_SetInteractionModes(
         oNpc,
@@ -728,6 +754,19 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
 
     int nEffectiveDirective = DL_ResolveEffectiveDirective(oNpc, nDirective);
     int nPrevDirective = GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE);
+
+    if (nPrevDirective != nEffectiveDirective)
+    {
+        DL_ClearMoveJob(oNpc);
+    }
+
+    int bMoveJobTicked = DL_TickMoveJob(oNpc);
+    if (bMoveJobTicked && DL_GetMoveJobResult(oNpc) == DL_MOVE_RESULT_RUNNING)
+    {
+        DL_ApplyMaterializationSkeleton(oNpc, nEffectiveDirective);
+        DL_LogStuckState(oNpc, nEffectiveDirective);
+        return;
+    }
 
     if (nPrevDirective == nEffectiveDirective && DL_ShouldUseDirectiveFastPath(oNpc, nEffectiveDirective))
     {
