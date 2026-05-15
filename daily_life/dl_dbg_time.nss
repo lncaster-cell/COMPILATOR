@@ -265,7 +265,11 @@ void DL_DbgPrintSocialSceneState(object oPC, object oNpc)
         " step=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_SOCIAL_SCENE_STEP)) +
         " next=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_SOCIAL_SCENE_NEXT_MINUTE)) +
         " role=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_SCENE_ROLE) +
-        " last=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_SCENE_LAST_ANIM) +
+        " active=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_SOCIAL_SCENE_ACTIVE)) +
+        " phase=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_SOCIAL_SCENE_PHASE)) +
+        " pool=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_SCENE_LAST_POOL) +
+        " anim=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_SCENE_LAST_ANIM) +
+        " play_result=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_SOCIAL_SCENE_PLAY_RESULT)) +
         " anchor=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_SCENE_ANCHOR)
     );
     DL_DbgSay(oPC,
