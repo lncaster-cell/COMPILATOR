@@ -299,22 +299,17 @@ void DL_ExecuteSleepDirective(object oNpc)
 
     if (!bCommittedToBed && GetDistanceBetween(oNpc, oApproach) > DL_SLEEP_APPROACH_RADIUS)
     {
-        if (nPhase != DL_SLEEP_PHASE_MOVING ||
-            sStatus != "moving_to_approach" ||
-            DL_ShouldReissueSleepMoveAction(oNpc, DL_L_NPC_SLEEP_APPROACH_ACTION_STAMP))
-        {
-            SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_MOVING);
-            SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, "moving_to_approach");
-            DL_ClearTransitionExecutionState(oNpc);
-            DL_MarkSleepActionIssued(oNpc, DL_L_NPC_SLEEP_APPROACH_ACTION_STAMP);
-            DL_QueueMoveToObjectAction(oNpc, oApproach, TRUE, DL_SLEEP_APPROACH_RADIUS);
-        }
+        SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_MOVING);
+        SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, "moving_to_approach");
+        SetLocalString(oNpc, DL_L_NPC_SLEEP_TARGET, GetTag(oApproach));
+        DL_BeginMoveJob(oNpc, DL_MOVE_OWNER_SLEEP, "approach", GetTag(oApproach), DL_SLEEP_APPROACH_RADIUS);
         return;
     }
 
     if (!bCommittedToBed)
     {
         DeleteLocalInt(oNpc, DL_L_NPC_SLEEP_APPROACH_ACTION_STAMP);
+        DL_ClearMoveJob(oNpc);
         SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_JUMPING);
         SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, "approach_reached");
         nPhase = DL_SLEEP_PHASE_JUMPING;
@@ -349,6 +344,7 @@ void DL_ExecuteSleepDirective(object oNpc)
     }
 
     DL_ClearSleepActionIssueState(oNpc);
+    DL_ClearMoveJob(oNpc);
     DL_ClearTransitionExecutionState(oNpc);
     SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_ON_BED);
     SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, "on_bed");

@@ -578,8 +578,7 @@ int DL_NavTryAdvanceToZone(object oNpc, string sTargetZone)
             return TRUE;
         }
 
-        AssignCommand(oNpc, ClearAllActions(TRUE));
-        AssignCommand(oNpc, ActionMoveToLocation(GetLocation(oEntry), TRUE));
+        DL_BeginMoveJob(oNpc, "transition", sTargetZone, GetTag(oEntry), DL_NAV_ENTRY_RADIUS);
         DL_NavSetDebug(oNpc, sCurrentZone, sTargetZone, sNextZone, "moving_to_entry");
         DL_NavSetState(oNpc, "moving_to_entry", sTargetZone, "");
         return TRUE;
@@ -588,6 +587,7 @@ int DL_NavTryAdvanceToZone(object oNpc, string sTargetZone)
     object oOldArea = GetArea(oNpc);
     object oTargetArea = GetArea(oExit);
 
+    DL_ClearMoveJob(oNpc);
     AssignCommand(oNpc, ClearAllActions(TRUE));
     AssignCommand(oNpc, ActionJumpToLocation(GetLocation(oExit)));
     DL_RequestTransitionRegistryHandoff(oNpc, oOldArea, oTargetArea);

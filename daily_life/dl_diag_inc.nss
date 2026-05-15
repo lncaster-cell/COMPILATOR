@@ -36,6 +36,12 @@ string DL_GetDirectiveLabel(int nDirective)
 
 string DL_GetNpcProblemSummary(object oNpc)
 {
+    string sMoveDiag = GetLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC);
+    if (sMoveDiag != "")
+    {
+        return "move:" + sMoveDiag;
+    }
+
     string sTransitionDiag = GetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC);
     if (sTransitionDiag != "")
     {
@@ -64,6 +70,12 @@ string DL_GetNpcProblemSummary(object oNpc)
     if (sBlockedDiag != "")
     {
         return "blocked:" + sBlockedDiag;
+    }
+
+    string sMoveResult = GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT);
+    if (sMoveResult != "" && sMoveResult != DL_MOVE_RESULT_REACHED)
+    {
+        return "move_status:" + sMoveResult;
     }
 
     string sTransitionStatus = GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS);

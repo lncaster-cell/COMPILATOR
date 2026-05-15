@@ -1,7 +1,6 @@
 const string DL_L_NPC_WORK_ACTION_STAMP = "dl_work_anchor_action_stamp";
 const string DL_L_NPC_WORK_ACTION_TARGET = "dl_work_anchor_action_target";
 
-#include "dl_anchor_move_inc"
 
 void DL_ExecuteWorkDirective(object oNpc);
 
@@ -264,17 +263,15 @@ int DL_ShouldIssueWorkMoveAction(object oNpc, object oTarget)
 }
 void DL_IssueWorkMoveAction(object oNpc, object oTarget)
 {
-    DL_IssueAnchorMoveExact(
-        oNpc,
-        oTarget,
-        DL_L_NPC_WORK_STATUS,
-        "moving_to_anchor",
-        DL_L_NPC_WORK_TARGET,
-        DL_L_NPC_WORK_ACTION_TARGET,
-        DL_L_NPC_WORK_ACTION_STAMP,
-        TRUE
-    );
-    AssignCommand(oNpc, ActionDoCommand(DL_RecheckWorkDirectiveAfterMove(oNpc)));
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
+    {
+        return;
+    }
+
+    SetLocalString(oNpc, DL_L_NPC_WORK_STATUS, "moving_to_anchor");
+    SetLocalString(oNpc, DL_L_NPC_WORK_TARGET, GetTag(oTarget));
+    SetLocalString(oNpc, DL_L_NPC_WORK_ACTION_TARGET, GetTag(oTarget));
+    DL_BeginMoveJob(oNpc, DL_MOVE_OWNER_WORK, GetLocalString(oNpc, DL_L_NPC_WORK_KIND), GetTag(oTarget), DL_WORK_ANCHOR_RADIUS);
 }
 int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
 {
@@ -299,6 +296,7 @@ int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
     }
 
     DL_ClearWorkMoveIssueState(oNpc);
+    DL_ClearMoveJob(oNpc);
     DL_ClearTransitionExecutionState(oNpc);
     SetLocalString(oNpc, DL_L_NPC_WORK_STATUS, "on_anchor");
     DL_FaceWorkTargetOrientation(oNpc, oTarget);
