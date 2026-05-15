@@ -19,6 +19,8 @@ const string DL_L_NPC_NAV_DEBUG_TARGET_ZONE = "dl_nav_debug_target_zone";
 const string DL_L_NPC_NAV_DEBUG_OLD_TRANSITION_STATUS = "dl_nav_debug_old_transition_status";
 const string DL_L_NPC_NAV_DEBUG_FOCUS_TARGET = "dl_nav_debug_focus_target";
 const string DL_L_NPC_NAV_DEBUG_CURRENT_ACTION = "dl_nav_debug_current_action";
+const string DL_L_NPC_NAV_DEBUG_TRANSITION_TARGET = "dl_nav_debug_transition_target";
+const string DL_L_NPC_NAV_DEBUG_ANCHOR_TAG = "dl_nav_debug_anchor_tag";
 
 const string DL_NAV_DELIMITER = "__";
 const string DL_NAV_ROUTE_PREFIX = "route_";
@@ -101,6 +103,44 @@ string DL_NavGetNpcCurrentZone(object oNpc)
 {
     if (!GetIsObjectValid(oNpc)) return "";
     return GetLocalString(oNpc, DL_L_NPC_NAV_ZONE_CURRENT);
+}
+
+void DL_NavSetTransitionFinalizeSkippedDebug(
+    object oNpc,
+    object oTargetAnchor,
+    string sReason,
+    string sTransitionStatus
+)
+{
+    if (!GetIsObjectValid(oNpc)) return;
+
+    object oNpcArea = GetArea(oNpc);
+    object oTargetArea = OBJECT_INVALID;
+    if (GetIsObjectValid(oTargetAnchor)) oTargetArea = GetArea(oTargetAnchor);
+
+    string sNpcArea = "";
+    string sTargetArea = "";
+    string sTransitionTarget = GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET);
+    string sAnchorTag = "";
+
+    if (GetIsObjectValid(oNpcArea)) sNpcArea = GetTag(oNpcArea);
+    if (GetIsObjectValid(oTargetArea)) sTargetArea = GetTag(oTargetArea);
+    if (GetIsObjectValid(oTargetAnchor)) sAnchorTag = GetTag(oTargetAnchor);
+
+    DL_NavSetDebug(oNpc, DL_NavGetNpcCurrentZone(oNpc), sTransitionTarget, "", sReason);
+    SetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC,
+        sReason +
+        " npc_area=" + sNpcArea +
+        " target_area=" + sTargetArea +
+        " transition_status=" + sTransitionStatus +
+        " transition_target=" + sTransitionTarget +
+        " anchor_tag=" + sAnchorTag
+    );
+    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_NPC_AREA, sNpcArea);
+    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_TARGET_AREA, sTargetArea);
+    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_OLD_TRANSITION_STATUS, sTransitionStatus);
+    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_TRANSITION_TARGET, sTransitionTarget);
+    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_ANCHOR_TAG, sAnchorTag);
 }
 
 void DL_NavSetNpcCurrentZone(object oNpc, string sZone)
@@ -404,12 +444,21 @@ object DL_ResolveTransitionExitWaypointFromEntry(object oEntryWp)
 
 int DL_NavTryFinalizeCompletedTransition(object oNpc, object oTargetAnchor)
 {
-    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTargetAnchor))
+    if (!GetIsObjectValid(oNpc))
     {
         return FALSE;
     }
 
     string sOldTransitionStatus = GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS);
+    if (!GetIsObjectValid(oTargetAnchor))
+    {
+        if (sOldTransitionStatus == "transitioning")
+        {
+            DL_NavSetTransitionFinalizeSkippedDebug(oNpc, oTargetAnchor, "finalize_skip_target_invalid", sOldTransitionStatus);
+        }
+        return FALSE;
+    }
+
     if (sOldTransitionStatus != "transitioning" && sOldTransitionStatus != "moving_to_entry")
     {
         return FALSE;
@@ -417,21 +466,38 @@ int DL_NavTryFinalizeCompletedTransition(object oNpc, object oTargetAnchor)
 
     object oNpcArea = GetArea(oNpc);
     object oTargetArea = GetArea(oTargetAnchor);
-    if (!GetIsObjectValid(oNpcArea) || !GetIsObjectValid(oTargetArea) || oNpcArea != oTargetArea)
+    if (!GetIsObjectValid(oNpcArea) || !GetIsObjectValid(oTargetArea))
     {
+        if (sOldTransitionStatus == "transitioning")
+        {
+            DL_NavSetTransitionFinalizeSkippedDebug(oNpc, oTargetAnchor, "finalize_skip_area_invalid", sOldTransitionStatus);
+        }
         return FALSE;
     }
 
-    string sFinalZone = DL_NavGetAnchorZoneId(oTargetAnchor);
+    if (oNpcArea != oTargetArea)
+    {
+        if (sOldTransitionStatus == "transitioning")
+        {
+            DL_NavSetTransitionFinalizeSkippedDebug(oNpc, oTargetAnchor, "finalize_skip_area_mismatch", sOldTransitionStatus);
+        }
+        return FALSE;
+    }
+
+    string sFinalZone = GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET);
     if (sFinalZone == "")
     {
-        sFinalZone = DL_NavGetAreaZoneId(oNpcArea);
+        sFinalZone = DL_NavGetAnchorZoneId(oTargetAnchor);
+    }
+    if (sFinalZone == "")
+    {
+        sFinalZone = DL_NavGetAreaZoneId(oTargetArea);
     }
 
     DL_ClearTransitionExecutionState(oNpc);
     DL_NavClearFocusMoveIssueStateAfterJump(oNpc);
     DL_NavSetNpcCurrentZone(oNpc, sFinalZone);
-    DL_NavSetDebug(oNpc, sFinalZone, sFinalZone, sFinalZone, "post_transition_complete");
+    DL_NavSetDebug(oNpc, sFinalZone, sFinalZone, "", "post_transition_complete");
     DL_NavSetPostTransitionCompleteDebug(oNpc, oTargetAnchor, sFinalZone, sFinalZone, sOldTransitionStatus);
     return TRUE;
 }

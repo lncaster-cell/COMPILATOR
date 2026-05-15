@@ -315,6 +315,7 @@ void main()
     string sCurrentZone = GetLocalString(oNpc, "dl_nav_debug_current");
     string sTargetZone = GetLocalString(oNpc, "dl_nav_debug_target");
     string sNextZone = GetLocalString(oNpc, "dl_nav_debug_next");
+    string sNavReason = GetLocalString(oNpc, "dl_nav_debug_reason");
     string sStoredCurrent = GetLocalString(oNpc, "dl_npc_nav_zone_current");
     string sFocusTarget = GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET);
     object oFocusTarget = DL_DbgFindObjectByTagInArea(oArea, sFocusTarget);
@@ -338,10 +339,25 @@ void main()
         " trans=" + sTransitionStatus +
         ":" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC) +
         " nav=" + sCurrentZone + "->" + sNextZone + "->" + sTargetZone +
-        " reason=" + GetLocalString(oNpc, "dl_nav_debug_reason")
+        " reason=" + sNavReason
     );
 
-    if (GetLocalString(oNpc, "dl_nav_debug_reason") == "post_transition_complete")
+    if (sNavReason == "finalize_skip_target_invalid" ||
+        sNavReason == "finalize_skip_area_invalid" ||
+        sNavReason == "finalize_skip_area_mismatch")
+    {
+        DL_DbgSay(oPC,
+            "[DL] transition_finalize_skip" +
+            " reason=" + sNavReason +
+            " npc_area=" + GetLocalString(oNpc, "dl_nav_debug_npc_area") +
+            " target_area=" + GetLocalString(oNpc, "dl_nav_debug_target_area") +
+            " transition_status=" + GetLocalString(oNpc, "dl_nav_debug_old_transition_status") +
+            " transition_target=" + GetLocalString(oNpc, "dl_nav_debug_transition_target") +
+            " anchor_tag=" + GetLocalString(oNpc, "dl_nav_debug_anchor_tag")
+        );
+    }
+
+    if (sNavReason == "post_transition_complete")
     {
         DL_DbgSay(oPC,
             "[DL] post_transition_complete" +
