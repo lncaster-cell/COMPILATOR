@@ -36,6 +36,14 @@ string DL_GetDirectiveLabel(int nDirective)
 
 string DL_GetNpcProblemSummary(object oNpc)
 {
+    object oCurrentArea = GetArea(oNpc);
+    object oRegisteredArea = GetLocalObject(oNpc, "dl_npc_reg_area");
+    if (GetIsObjectValid(oCurrentArea) &&
+        oCurrentArea != oRegisteredArea)
+    {
+        return "registry_area_mismatch";
+    }
+
     string sMoveDiag = GetLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC);
     if (sMoveDiag != "")
     {
@@ -129,10 +137,25 @@ void DL_LogNpcDiagnostic(object oNpc, string sSource)
     }
 
     string sProblem = DL_GetNpcProblemSummary(oNpc);
+    object oCurrentArea = GetArea(oNpc);
+    object oRegisteredArea = GetLocalObject(oNpc, "dl_npc_reg_area");
+    string sCurrentArea = "";
+    string sRegisteredArea = "";
+    if (GetIsObjectValid(oCurrentArea))
+    {
+        sCurrentArea = GetTag(oCurrentArea);
+    }
+    if (GetIsObjectValid(oRegisteredArea))
+    {
+        sRegisteredArea = GetTag(oRegisteredArea);
+    }
+
     string sLog = "[DL][NPC] src=" + sSource +
                   " npc=" + GetName(oNpc) +
                   " hour=" + IntToString(GetTimeHour()) +
                   " profile=" + GetLocalString(oNpc, DL_L_NPC_PROFILE_ID) +
+                  " npc_area=" + sCurrentArea +
+                  " registered_area=" + sRegisteredArea +
                   " directive=" + DL_GetDirectiveLabel(GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE)) +
                   " state=" + GetLocalString(oNpc, DL_L_NPC_STATE) +
                   " problem=" + sProblem +

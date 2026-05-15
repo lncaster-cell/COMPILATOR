@@ -381,15 +381,46 @@ void main()
         );
     }
 
+    object oRegisteredArea = GetLocalObject(oNpc, "dl_npc_reg_area");
+    string sCurrentRegistryArea = "";
+    int bRegistryAreaMismatch = FALSE;
+    if (GetIsObjectValid(oRegisteredArea))
+    {
+        sCurrentRegistryArea = GetTag(oRegisteredArea);
+    }
+    if (GetIsObjectValid(GetArea(oNpc)) && GetArea(oNpc) != oRegisteredArea)
+    {
+        bRegistryAreaMismatch = TRUE;
+    }
+
+    if (bRegistryAreaMismatch == TRUE)
+    {
+        DL_DbgSay(oPC,
+            "[DL] registry_area_mismatch" +
+            " npc_area=" + DL_DbgAreaTagOrNone(oNpc) +
+            " registered_area=" + sCurrentRegistryArea
+        );
+    }
+
     if (GetLocalString(oNpc, "dl_transition_registry_handoff") == "transition_registry_handoff")
     {
         DL_DbgSay(oPC,
             "[DL] transition_registry_handoff" +
-            " old_area=" + GetLocalString(oNpc, "dl_transition_registry_old_area") +
             " target_area=" + GetLocalString(oNpc, "dl_transition_registry_target_area") +
+            " queued_npc=" + GetLocalString(oNpc, "dl_transition_registry_npc_tag") +
+            " npc_area=" + GetLocalString(oNpc, "dl_transition_registry_npc_area") +
+            " old_area=" + GetLocalString(oNpc, "dl_transition_registry_old_area") +
+            " reg_area_before=" + GetLocalString(oNpc, "dl_transition_registry_reg_area_before") +
+            " reg_area_after=" + GetLocalString(oNpc, "dl_transition_registry_reg_area_after") +
             " registered_area=" + GetLocalString(oNpc, "dl_transition_registry_registered_area") +
+            " current_registered_area=" + sCurrentRegistryArea +
             " reg_on=" + IntToString(GetLocalInt(oNpc, "dl_transition_registry_reg_on")) +
             " reg_slot=" + IntToString(GetLocalInt(oNpc, "dl_transition_registry_reg_slot")) +
+            " worker_tick_area=" + GetLocalString(oNpc, "dl_transition_registry_worker_tick_area") +
+            " handoff_slot=" + IntToString(GetLocalInt(oNpc, "dl_transition_registry_handoff_slot")) +
+            " handoff_seen=" + IntToString(GetLocalInt(oNpc, "dl_transition_registry_handoff_seen")) +
+            " handoff_touch_called=" + IntToString(GetLocalInt(oNpc, "dl_transition_registry_handoff_touch_called")) +
+            " registry_area_mismatch=" + IntToString(bRegistryAreaMismatch) +
             " target_area_rebuild_pending=" + IntToString(GetLocalInt(oNpc, "dl_transition_registry_rebuild_pending")) +
             " target_area_resync_pending=" + IntToString(GetLocalInt(oNpc, "dl_transition_registry_resync_pending"))
         );
