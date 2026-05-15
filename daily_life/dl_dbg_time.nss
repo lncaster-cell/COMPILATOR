@@ -371,6 +371,20 @@ void main()
         );
     }
 
+    if (GetLocalString(oNpc, "dl_transition_registry_handoff") == "transition_registry_handoff")
+    {
+        DL_DbgSay(oPC,
+            "[DL] transition_registry_handoff" +
+            " old_area=" + GetLocalString(oNpc, "dl_transition_registry_old_area") +
+            " target_area=" + GetLocalString(oNpc, "dl_transition_registry_target_area") +
+            " registered_area=" + GetLocalString(oNpc, "dl_transition_registry_registered_area") +
+            " reg_on=" + IntToString(GetLocalInt(oNpc, "dl_transition_registry_reg_on")) +
+            " reg_slot=" + IntToString(GetLocalInt(oNpc, "dl_transition_registry_reg_slot")) +
+            " target_area_rebuild_pending=" + IntToString(GetLocalInt(oNpc, "dl_transition_registry_rebuild_pending")) +
+            " target_area_resync_pending=" + IntToString(GetLocalInt(oNpc, "dl_transition_registry_resync_pending"))
+        );
+    }
+
     int bSocialRelevant = nNowDirective == DL_DIR_SOCIAL ||
         nStoredDirective == DL_DIR_SOCIAL ||
         GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "on_social_anchor";

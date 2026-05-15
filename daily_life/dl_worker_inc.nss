@@ -16,8 +16,11 @@ const string DL_L_AREA_PASS_FALLBACK_LAST_TICK = "dl_area_pass_fallback_last_tic
 const string DL_L_AREA_REGISTRY_REBUILD_PENDING = "dl_area_registry_rebuild_pending";
 const string DL_L_AREA_REGISTRY_REBUILD_OBJ_CURSOR = "dl_area_registry_rebuild_obj_cursor";
 const string DL_L_AREA_REGISTRY_REPAIR_CURSOR = "dl_area_registry_repair_cursor";
+const string DL_L_AREA_TRANSITION_HANDOFF_SLOT_PREFIX = "dl_area_transition_handoff_slot_";
+const string DL_L_AREA_TRANSITION_HANDOFF_CURSOR = "dl_area_transition_handoff_cursor";
 
 const int DL_FALLBACK_OBJECT_HOP_MULTIPLIER = 8;
+const int DL_TRANSITION_HANDOFF_SLOT_COUNT = 4;
 
 void DL_WorkerTouchNpc(object oNpc);
 
@@ -54,6 +57,110 @@ void DL_ClearAreaRegistryRebuildPending(object oArea)
     DeleteLocalInt(oArea, DL_L_AREA_REGISTRY_REBUILD_PENDING);
     DeleteLocalInt(oArea, DL_L_AREA_REGISTRY_REBUILD_OBJ_CURSOR);
     DeleteLocalInt(oArea, DL_L_AREA_REGISTRY_REPAIR_CURSOR);
+}
+
+string DL_GetAreaTransitionHandoffSlotKey(int nSlot)
+{
+    if (nSlot < 0)
+    {
+        nSlot = 0;
+    }
+    return DL_L_AREA_TRANSITION_HANDOFF_SLOT_PREFIX + IntToString(nSlot);
+}
+
+void DL_SetTransitionRegistryHandoffDebug(object oNpc, object oOldArea, object oTargetArea)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    object oRegisteredArea = GetLocalObject(oNpc, DL_L_NPC_REG_AREA);
+    string sOldArea = "";
+    string sTargetArea = "";
+    string sRegisteredArea = "";
+
+    if (GetIsObjectValid(oOldArea))
+    {
+        sOldArea = GetTag(oOldArea);
+    }
+    else
+    {
+        sOldArea = GetLocalString(oNpc, "dl_transition_registry_old_area");
+    }
+    if (GetIsObjectValid(oTargetArea))
+    {
+        sTargetArea = GetTag(oTargetArea);
+    }
+    if (GetIsObjectValid(oRegisteredArea))
+    {
+        sRegisteredArea = GetTag(oRegisteredArea);
+    }
+
+    SetLocalString(oNpc, "dl_transition_registry_handoff", "transition_registry_handoff");
+    SetLocalString(oNpc, "dl_transition_registry_old_area", sOldArea);
+    SetLocalString(oNpc, "dl_transition_registry_target_area", sTargetArea);
+    SetLocalString(oNpc, "dl_transition_registry_registered_area", sRegisteredArea);
+    SetLocalInt(oNpc, "dl_transition_registry_reg_on", GetLocalInt(oNpc, DL_L_NPC_REG_ON));
+    SetLocalInt(oNpc, "dl_transition_registry_reg_slot", GetLocalInt(oNpc, DL_L_NPC_REG_SLOT));
+    SetLocalInt(oNpc, "dl_transition_registry_rebuild_pending", GetLocalInt(oTargetArea, DL_L_AREA_REGISTRY_REBUILD_PENDING));
+    SetLocalInt(oNpc, "dl_transition_registry_resync_pending", GetLocalInt(oTargetArea, DL_L_AREA_ENTER_RESYNC_PENDING));
+}
+
+void DL_QueueTransitionRegistryHandoff(object oTargetArea, object oNpc)
+{
+    if (!DL_IsAreaObject(oTargetArea) || !GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    int nSlot = -1;
+    int i = 0;
+    while (i < DL_TRANSITION_HANDOFF_SLOT_COUNT)
+    {
+        object oQueued = GetLocalObject(oTargetArea, DL_GetAreaTransitionHandoffSlotKey(i));
+        if (oQueued == oNpc)
+        {
+            nSlot = i;
+            i = DL_TRANSITION_HANDOFF_SLOT_COUNT;
+        }
+        else if (nSlot < 0 && !GetIsObjectValid(oQueued))
+        {
+            nSlot = i;
+        }
+        i = i + 1;
+    }
+
+    if (nSlot < 0)
+    {
+        nSlot = GetLocalInt(oTargetArea, DL_L_AREA_TRANSITION_HANDOFF_CURSOR);
+        if (nSlot < 0 || nSlot >= DL_TRANSITION_HANDOFF_SLOT_COUNT)
+        {
+            nSlot = 0;
+        }
+        SetLocalInt(oTargetArea, DL_L_AREA_TRANSITION_HANDOFF_CURSOR, (nSlot + 1) % DL_TRANSITION_HANDOFF_SLOT_COUNT);
+    }
+
+    SetLocalObject(oTargetArea, DL_GetAreaTransitionHandoffSlotKey(nSlot), oNpc);
+}
+
+void DL_RequestTransitionRegistryHandoff(object oNpc, object oOldArea, object oTargetArea)
+{
+    if (!GetIsObjectValid(oNpc) || !DL_IsAreaObject(oTargetArea))
+    {
+        return;
+    }
+
+    DL_MarkAreaRegistryRebuildPending(oTargetArea);
+    DL_QueueTransitionRegistryHandoff(oTargetArea, oNpc);
+
+    DL_EnsureAreaPlayerCountSeeded(oTargetArea);
+    if (DL_GetAreaTier(oTargetArea) == DL_TIER_HOT || DL_GetAreaPlayerCount(oTargetArea) > 0)
+    {
+        DL_TransitionAreaToHot(oTargetArea, TRUE);
+    }
+
+    DL_SetTransitionRegistryHandoffDebug(oNpc, oOldArea, oTargetArea);
 }
 
 void DL_RepairAreaRegistrySlot(object oArea, int nSlot, int nCount)
@@ -371,6 +478,47 @@ int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPas
     return nNpcProcessed;
 }
 
+int DL_RunTransitionRegistryHandoffTick(object oArea, int nTickStamp)
+{
+    if (!DL_IsAreaObject(oArea))
+    {
+        return 0;
+    }
+
+    int nTouched = 0;
+    int i = 0;
+    while (i < DL_TRANSITION_HANDOFF_SLOT_COUNT)
+    {
+        string sSlotKey = DL_GetAreaTransitionHandoffSlotKey(i);
+        object oNpc = GetLocalObject(oArea, sSlotKey);
+        if (GetIsObjectValid(oNpc))
+        {
+            if (GetArea(oNpc) == oArea)
+            {
+                DL_ReconcileNpcAreaRegistration(oNpc);
+                if (GetLocalInt(oNpc, DL_L_NPC_REG_ON) != TRUE)
+                {
+                    DL_RegisterNpc(oNpc);
+                }
+
+                DL_SetTransitionRegistryHandoffDebug(oNpc, OBJECT_INVALID, oArea);
+                DL_WorkerTouchNpc(oNpc);
+                SetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK, nTickStamp);
+                DL_SetTransitionRegistryHandoffDebug(oNpc, OBJECT_INVALID, oArea);
+                DeleteLocalObject(oArea, sSlotKey);
+                nTouched = nTouched + 1;
+            }
+            else
+            {
+                DL_MarkAreaRegistryRebuildPending(oArea);
+            }
+        }
+        i = i + 1;
+    }
+
+    return nTouched;
+}
+
 void DL_WorkerTouchNpc(object oNpc)
 {
     if (!DL_IsActivePipelineNpc(oNpc))
@@ -537,6 +685,8 @@ void DL_RunAreaWorkerTick(object oArea)
     DL_MaybeReconcileAreaPlayerCount(oArea);
     DL_UpdateAreaTierLifecycle(oArea);
 
+    int nHandoffTouched = DL_RunTransitionRegistryHandoffTick(oArea, DL_GetAreaTick(oArea));
+
     int nTier = DL_GetAreaTier(oArea);
     if (nTier == DL_TIER_FROZEN)
     {
@@ -563,7 +713,7 @@ void DL_RunAreaWorkerTick(object oArea)
 
     int nCursor = DL_GetAreaWorkerCursor(oArea);
     int nTickStamp = DL_GetAreaTick(oArea);
-    int nNpcProcessed = DL_RunAreaNpcRoundRobinPass(oArea, nCursor, nBudget, DL_AREA_PASS_MODE_WORKER, nTickStamp);
+    int nNpcProcessed = DL_RunAreaNpcRoundRobinPass(oArea, nCursor, nBudget, DL_AREA_PASS_MODE_WORKER, nTickStamp) + nHandoffTouched;
     int nNpcSeen = GetLocalInt(oArea, DL_L_AREA_PASS_LAST_SEEN);
 
     if (nNpcSeen <= 0)

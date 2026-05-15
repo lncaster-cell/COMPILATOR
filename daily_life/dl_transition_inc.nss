@@ -35,6 +35,11 @@ const string DL_L_AREA_NAV_SLOT_PREFIX = "dl_area_nav_";
 const int DL_AREA_NAV_ROUTE_CAP = 32;
 const string DL_L_AREA_NAV_ZONE_ID = "dl_nav_zone_id";
 
+// Implemented in dl_worker_inc; kept as a narrow local forward declaration so
+// transition code can request bounded target-area registry catchup without
+// changing include order.
+void DL_RequestTransitionRegistryHandoff(object oNpc, object oOldArea, object oTargetArea);
+
 string DL_GetAreaNavigationSlotKey(int nSlot)
 {
     if (nSlot < 0) nSlot = 0;
@@ -580,8 +585,12 @@ int DL_NavTryAdvanceToZone(object oNpc, string sTargetZone)
         return TRUE;
     }
 
+    object oOldArea = GetArea(oNpc);
+    object oTargetArea = GetArea(oExit);
+
     AssignCommand(oNpc, ClearAllActions(TRUE));
     AssignCommand(oNpc, ActionJumpToLocation(GetLocation(oExit)));
+    DL_RequestTransitionRegistryHandoff(oNpc, oOldArea, oTargetArea);
     DL_NavSetNpcCurrentZone(oNpc, sNextZone);
     DL_NavClearFocusMoveIssueStateAfterJump(oNpc);
     DL_NavSetDebug(oNpc, sCurrentZone, sTargetZone, sNextZone, "transitioning");
