@@ -342,6 +342,16 @@ void main()
         " reason=" + sNavReason
     );
 
+    DL_DbgSay(oPC,
+        "[DL] move_owner=" + GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) +
+        " move_phase=" + GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE) +
+        " move_target_tag=" + GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG) +
+        " move_target_area=" + GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_AREA) +
+        " move_result=" + GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) +
+        " move_diagnostic=" + GetLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC) +
+        " move_ticket=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET))
+    );
+
     if (sNavReason == "finalize_skip_target_invalid" ||
         sNavReason == "finalize_skip_area_invalid" ||
         sNavReason == "finalize_skip_area_mismatch")

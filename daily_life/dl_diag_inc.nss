@@ -79,6 +79,13 @@ string DL_GetNpcProblemSummary(object oNpc)
     }
 
     string sTransitionStatus = GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS);
+    if (sTransitionStatus == "transitioning" &&
+        GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) == "" &&
+        !DL_HasMoveJob(oNpc) &&
+        DL_HasDistantSameAreaDirectiveAnchor(oNpc, GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE)))
+    {
+        return "transitioning_no_focus_move_anchor";
+    }
     if (sTransitionStatus != "" && sTransitionStatus != "transitioning")
     {
         return "transition_status:" + sTransitionStatus;
