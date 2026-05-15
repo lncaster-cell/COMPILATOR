@@ -341,6 +341,20 @@ void main()
         " reason=" + GetLocalString(oNpc, "dl_nav_debug_reason")
     );
 
+    if (GetLocalString(oNpc, "dl_nav_debug_reason") == "post_transition_complete")
+    {
+        DL_DbgSay(oPC,
+            "[DL] post_transition_complete" +
+            " npc_area=" + GetLocalString(oNpc, "dl_nav_debug_npc_area") +
+            " target_area=" + GetLocalString(oNpc, "dl_nav_debug_target_area") +
+            " current_zone=" + GetLocalString(oNpc, "dl_nav_debug_current_zone") +
+            " target_zone=" + GetLocalString(oNpc, "dl_nav_debug_target_zone") +
+            " old_transition_status=" + GetLocalString(oNpc, "dl_nav_debug_old_transition_status") +
+            " focus_target=" + GetLocalString(oNpc, "dl_nav_debug_focus_target") +
+            " current_action=" + IntToString(GetLocalInt(oNpc, "dl_nav_debug_current_action"))
+        );
+    }
+
     int bSocialRelevant = nNowDirective == DL_DIR_SOCIAL ||
         nStoredDirective == DL_DIR_SOCIAL ||
         GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "on_social_anchor";
