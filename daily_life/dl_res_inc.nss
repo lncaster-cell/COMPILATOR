@@ -63,6 +63,7 @@ const string DL_L_NPC_SHIFT_START = "dl_shift_start";
 const string DL_L_NPC_SHIFT_LENGTH = "dl_shift_length";
 const string DL_L_NPC_DIAG_LAST_KEY = "dl_diag_last_key";
 const string DL_L_NPC_DIAG_LAST_MINUTE = "dl_diag_last_minute";
+const string DL_L_NPC_LAST_DIRECTIVE_CLEANUP = "dl_last_directive_cleanup";
 const string DL_L_MODULE_CHAT_DEBUG = "dl_chat_debug";
 const string DL_L_MODULE_CHAT_DEBUG_NPC_TAG = "dl_chat_debug_npc_tag";
 const string DL_L_NPC_CHAT_LAST_EVENT_SIG = "dl_chat_last_event_sig";
@@ -169,6 +170,14 @@ int DL_IsChatDebugEnabledForNpc(object oNpc)
 
     return GetTag(oNpc) == sFilterTag;
 }
+int DL_DirectiveUsesFocusState(int nDirective)
+{
+    return nDirective == DL_DIR_MEAL ||
+        nDirective == DL_DIR_SOCIAL ||
+        nDirective == DL_DIR_PUBLIC ||
+        nDirective == DL_DIR_CHILL;
+}
+
 string DL_GetDirectiveDebugLabel(int nDirective)
 {
     if (nDirective == DL_DIR_SLEEP)
@@ -730,6 +739,24 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
         DL_ApplyMaterializationSkeleton(oNpc, nEffectiveDirective);
         DL_LogStuckState(oNpc, nEffectiveDirective);
         return;
+    }
+
+    int bClearedFocus = FALSE;
+    if (nPrevDirective != nEffectiveDirective && DL_DirectiveUsesFocusState(nPrevDirective))
+    {
+        DL_ClearFocusExecutionState(oNpc);
+        bClearedFocus = TRUE;
+    }
+
+    if (nPrevDirective != nEffectiveDirective)
+    {
+        SetLocalString(
+            oNpc,
+            DL_L_NPC_LAST_DIRECTIVE_CLEANUP,
+            "prev=" + DL_GetDirectiveDebugLabel(nPrevDirective) +
+                " next=" + DL_GetDirectiveDebugLabel(nEffectiveDirective) +
+                " cleared_focus=" + IntToString(bClearedFocus)
+        );
     }
 
     SetLocalInt(oNpc, DL_L_NPC_DIRECTIVE, nEffectiveDirective);
