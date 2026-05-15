@@ -18,6 +18,7 @@ const string DL_NAV_ROUTE_PREFIX = "route_";
 const float DL_NAV_ENTRY_RADIUS = 1.60;
 const float DL_NAV_ZONE_INFER_RADIUS = 1.80;
 const int DL_NAV_AREA_SCAN_CAP = 128;
+const int DL_NAV_TRANSITION_TAG_SEARCH_CAP = 64;
 
 const string DL_L_AREA_NAV_READY = "dl_area_nav_ready";
 const string DL_L_AREA_NAV_COUNT = "dl_area_nav_count";
@@ -119,6 +120,30 @@ string DL_NavGetNextZone(object oNpc, string sTargetZone)
     return GetLocalString(GetModule(), sRouteKey);
 }
 
+object DL_NavFindTransitionByTag(string sTag)
+{
+    if (sTag == "") return OBJECT_INVALID;
+
+    int nIndex = 0;
+    while (nIndex < DL_NAV_TRANSITION_TAG_SEARCH_CAP)
+    {
+        object oCandidate = GetObjectByTag(sTag, nIndex);
+        if (!GetIsObjectValid(oCandidate))
+        {
+            break;
+        }
+
+        if (GetObjectType(oCandidate) == OBJECT_TYPE_WAYPOINT)
+        {
+            return oCandidate;
+        }
+
+        nIndex = nIndex + 1;
+    }
+
+    return OBJECT_INVALID;
+}
+
 object DL_NavFindTransitionInArea(object oArea, string sFromZone, string sToZone)
 {
     if (!GetIsObjectValid(oArea)) return OBJECT_INVALID;
@@ -126,16 +151,21 @@ object DL_NavFindTransitionInArea(object oArea, string sFromZone, string sToZone
     string sTag = DL_NavMakeTransitionTag(sFromZone, sToZone);
     if (sTag == "") return OBJECT_INVALID;
 
-    int nScanned = 0;
-    object oObj = GetFirstObjectInArea(oArea);
-    while (GetIsObjectValid(oObj) && nScanned < DL_NAV_AREA_SCAN_CAP)
+    int nIndex = 0;
+    while (nIndex < DL_NAV_TRANSITION_TAG_SEARCH_CAP)
     {
-        if (GetObjectType(oObj) == OBJECT_TYPE_WAYPOINT && GetTag(oObj) == sTag)
+        object oCandidate = GetObjectByTag(sTag, nIndex);
+        if (!GetIsObjectValid(oCandidate))
         {
-            return oObj;
+            break;
         }
-        oObj = GetNextObjectInArea(oArea);
-        nScanned = nScanned + 1;
+
+        if (GetObjectType(oCandidate) == OBJECT_TYPE_WAYPOINT && GetArea(oCandidate) == oArea)
+        {
+            return oCandidate;
+        }
+
+        nIndex = nIndex + 1;
     }
 
     return OBJECT_INVALID;
@@ -336,7 +366,7 @@ object DL_ResolveTransitionExitWaypointFromEntry(object oEntryWp)
         return OBJECT_INVALID;
     }
 
-    return GetWaypointByTag(DL_NavMakeTransitionTag(sTo, sFrom));
+    return DL_NavFindTransitionByTag(DL_NavMakeTransitionTag(sTo, sFrom));
 }
 
 int DL_NavTryAdvanceToZone(object oNpc, string sTargetZone)
@@ -374,18 +404,29 @@ int DL_NavTryAdvanceToZone(object oNpc, string sTargetZone)
     }
 
     object oArea = GetArea(oNpc);
+    string sEntryTag = DL_NavMakeTransitionTag(sCurrentZone, sNextZone);
+    string sExitTag = DL_NavMakeTransitionTag(sNextZone, sCurrentZone);
     object oEntry = DL_NavFindTransitionInArea(oArea, sCurrentZone, sNextZone);
-    object oExit = OBJECT_INVALID;
-
-    if (GetIsObjectValid(oEntry))
-    {
-        oExit = GetWaypointByTag(DL_NavMakeTransitionTag(sNextZone, sCurrentZone));
-    }
+    object oExit = DL_NavFindTransitionByTag(sExitTag);
 
     if (!GetIsObjectValid(oEntry) || !GetIsObjectValid(oExit))
     {
-        DL_NavSetDebug(oNpc, sCurrentZone, sTargetZone, sNextZone, "transition_missing");
-        DL_NavSetState(oNpc, "failed", sTargetZone, "transition_missing");
+        string sReason = "transition_missing";
+        if (!GetIsObjectValid(oEntry) && !GetIsObjectValid(oExit))
+        {
+            sReason = "transition_missing_entry_exit";
+        }
+        else if (!GetIsObjectValid(oEntry))
+        {
+            sReason = "transition_missing_entry";
+        }
+        else
+        {
+            sReason = "transition_missing_exit";
+        }
+
+        DL_NavSetDebug(oNpc, sCurrentZone, sTargetZone, sNextZone, sReason);
+        DL_NavSetState(oNpc, "failed", sTargetZone, sReason + " entry=" + sEntryTag + " exit=" + sExitTag);
         return FALSE;
     }
 
