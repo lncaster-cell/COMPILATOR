@@ -422,34 +422,17 @@ int DL_NavTryFinalizeCompletedTransition(object oNpc, object oTargetAnchor)
         return FALSE;
     }
 
-    string sTargetZone = DL_NavGetAnchorZoneId(oTargetAnchor);
-    if (sTargetZone == "")
-    {
-        return FALSE;
-    }
-
-    string sCurrentZone = DL_NavResolveCurrentZoneFromPosition(oNpc);
-    string sAreaTag = GetTag(oNpcArea);
-    if (sCurrentZone != sTargetZone && sTargetZone != sAreaTag)
-    {
-        return FALSE;
-    }
-
-    string sFinalZone = sCurrentZone;
+    string sFinalZone = DL_NavGetAnchorZoneId(oTargetAnchor);
     if (sFinalZone == "")
     {
-        sFinalZone = sTargetZone;
-    }
-    if (sFinalZone != sTargetZone && sTargetZone == sAreaTag)
-    {
-        sFinalZone = sTargetZone;
+        sFinalZone = DL_NavGetAreaZoneId(oNpcArea);
     }
 
     DL_ClearTransitionExecutionState(oNpc);
     DL_NavClearFocusMoveIssueStateAfterJump(oNpc);
     DL_NavSetNpcCurrentZone(oNpc, sFinalZone);
-    DL_NavSetDebug(oNpc, sFinalZone, sTargetZone, sTargetZone, "post_transition_complete");
-    DL_NavSetPostTransitionCompleteDebug(oNpc, oTargetAnchor, sFinalZone, sTargetZone, sOldTransitionStatus);
+    DL_NavSetDebug(oNpc, sFinalZone, sFinalZone, sFinalZone, "post_transition_complete");
+    DL_NavSetPostTransitionCompleteDebug(oNpc, oTargetAnchor, sFinalZone, sFinalZone, sOldTransitionStatus);
     return TRUE;
 }
 
