@@ -76,9 +76,11 @@ void DL_SetTransitionRegistryHandoffDebug(object oNpc, object oOldArea, object o
     }
 
     object oRegisteredArea = GetLocalObject(oNpc, DL_L_NPC_REG_AREA);
+    object oNpcArea = GetArea(oNpc);
     string sOldArea = "";
     string sTargetArea = "";
     string sRegisteredArea = "";
+    string sNpcArea = "";
 
     if (GetIsObjectValid(oOldArea))
     {
@@ -96,11 +98,18 @@ void DL_SetTransitionRegistryHandoffDebug(object oNpc, object oOldArea, object o
     {
         sRegisteredArea = GetTag(oRegisteredArea);
     }
+    if (GetIsObjectValid(oNpcArea))
+    {
+        sNpcArea = GetTag(oNpcArea);
+    }
 
     SetLocalString(oNpc, "dl_transition_registry_handoff", "transition_registry_handoff");
     SetLocalString(oNpc, "dl_transition_registry_old_area", sOldArea);
     SetLocalString(oNpc, "dl_transition_registry_target_area", sTargetArea);
     SetLocalString(oNpc, "dl_transition_registry_registered_area", sRegisteredArea);
+    SetLocalString(oNpc, "dl_transition_registry_npc_area", sNpcArea);
+    SetLocalString(oNpc, "dl_transition_registry_npc_tag", GetTag(oNpc));
+    SetLocalString(oNpc, "dl_transition_registry_reg_area_after", sRegisteredArea);
     SetLocalInt(oNpc, "dl_transition_registry_reg_on", GetLocalInt(oNpc, DL_L_NPC_REG_ON));
     SetLocalInt(oNpc, "dl_transition_registry_reg_slot", GetLocalInt(oNpc, DL_L_NPC_REG_SLOT));
     SetLocalInt(oNpc, "dl_transition_registry_rebuild_pending", GetLocalInt(oTargetArea, DL_L_AREA_REGISTRY_REBUILD_PENDING));
@@ -493,14 +502,63 @@ int DL_RunTransitionRegistryHandoffTick(object oArea, int nTickStamp)
         object oNpc = GetLocalObject(oArea, sSlotKey);
         if (GetIsObjectValid(oNpc))
         {
-            if (GetArea(oNpc) == oArea)
+            object oNpcArea = GetArea(oNpc);
+            object oRegisteredArea = GetLocalObject(oNpc, DL_L_NPC_REG_AREA);
+            string sRegisteredAreaBefore = "";
+            string sNpcArea = "";
+            if (GetIsObjectValid(oRegisteredArea))
             {
-                DL_ReconcileNpcAreaRegistration(oNpc);
+                sRegisteredAreaBefore = GetTag(oRegisteredArea);
+            }
+            if (GetIsObjectValid(oNpcArea))
+            {
+                sNpcArea = GetTag(oNpcArea);
+            }
+
+            SetLocalString(oNpc, "dl_transition_registry_worker_tick_area", GetTag(oArea));
+            SetLocalInt(oNpc, "dl_transition_registry_handoff_slot", i);
+            SetLocalInt(oNpc, "dl_transition_registry_handoff_seen", TRUE);
+            SetLocalInt(oNpc, "dl_transition_registry_handoff_touch_called", FALSE);
+            SetLocalString(oNpc, "dl_transition_registry_npc_area", sNpcArea);
+            SetLocalString(oNpc, "dl_transition_registry_reg_area_before", sRegisteredAreaBefore);
+            SetLocalString(oNpc, "dl_transition_registry_reg_area_after", sRegisteredAreaBefore);
+            DL_SetTransitionRegistryHandoffDebug(oNpc, OBJECT_INVALID, oArea);
+
+            if (oNpcArea == oArea)
+            {
+                if (oRegisteredArea != oArea)
+                {
+                    if (GetLocalInt(oNpc, DL_L_NPC_REG_ON) == TRUE && GetIsObjectValid(oRegisteredArea))
+                    {
+                        DL_UnregisterNpc(oNpc);
+                    }
+                    else
+                    {
+                        DeleteLocalInt(oNpc, DL_L_NPC_REG_ON);
+                        DeleteLocalObject(oNpc, DL_L_NPC_REG_AREA);
+                        DeleteLocalInt(oNpc, DL_L_NPC_REG_SLOT);
+                        DeleteLocalString(oNpc, DL_L_NPC_DIAG_LAST_SIG);
+                    }
+                }
+                else
+                {
+                    DL_ReconcileNpcAreaRegistration(oNpc);
+                }
+
+                if (GetLocalObject(oNpc, DL_L_NPC_REG_AREA) != oArea)
+                {
+                    DeleteLocalInt(oNpc, DL_L_NPC_REG_ON);
+                    DeleteLocalObject(oNpc, DL_L_NPC_REG_AREA);
+                    DeleteLocalInt(oNpc, DL_L_NPC_REG_SLOT);
+                    DeleteLocalString(oNpc, DL_L_NPC_DIAG_LAST_SIG);
+                }
+
                 if (GetLocalInt(oNpc, DL_L_NPC_REG_ON) != TRUE)
                 {
                     DL_RegisterNpc(oNpc);
                 }
 
+                SetLocalInt(oNpc, "dl_transition_registry_handoff_touch_called", TRUE);
                 DL_SetTransitionRegistryHandoffDebug(oNpc, OBJECT_INVALID, oArea);
                 DL_WorkerTouchNpc(oNpc);
                 SetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK, nTickStamp);
