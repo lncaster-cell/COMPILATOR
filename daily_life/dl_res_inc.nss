@@ -742,6 +742,119 @@ void DL_RecoverReachedFocusAnchorMoveState(object oNpc)
     DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
 }
 
+object DL_ResolveDirectiveAnchorForMoveBridge(object oNpc, int nDirective)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return OBJECT_INVALID;
+    }
+
+    if (nDirective == DL_DIR_PUBLIC)
+    {
+        return DL_ResolvePublicWaypoint(oNpc);
+    }
+    if (nDirective == DL_DIR_SOCIAL)
+    {
+        return DL_ResolveSocialWaypoint(oNpc);
+    }
+    if (nDirective == DL_DIR_MEAL)
+    {
+        return DL_ResolveMealWaypoint(oNpc, DL_ResolveMealKind(oNpc));
+    }
+    if (nDirective == DL_DIR_CHILL)
+    {
+        return DL_ResolveChillWaypoint(oNpc);
+    }
+
+    return OBJECT_INVALID;
+}
+
+string DL_GetDirectiveMoveOwnerForBridge(int nDirective)
+{
+    if (nDirective == DL_DIR_PUBLIC) return DL_MOVE_OWNER_PUBLIC;
+    if (nDirective == DL_DIR_SOCIAL) return DL_MOVE_OWNER_SOCIAL;
+    if (nDirective == DL_DIR_MEAL) return DL_MOVE_OWNER_MEAL;
+    if (nDirective == DL_DIR_CHILL) return DL_MOVE_OWNER_CHILL;
+    return "";
+}
+
+int DL_HasDistantSameAreaDirectiveAnchor(object oNpc, int nDirective)
+{
+    object oAnchor = DL_ResolveDirectiveAnchorForMoveBridge(oNpc, nDirective);
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oAnchor))
+    {
+        return FALSE;
+    }
+
+    object oNpcArea = GetArea(oNpc);
+    object oAnchorArea = GetArea(oAnchor);
+    if (!GetIsObjectValid(oNpcArea) || !GetIsObjectValid(oAnchorArea) || oNpcArea != oAnchorArea)
+    {
+        return FALSE;
+    }
+
+    return GetDistanceBetween(oNpc, oAnchor) > DL_WORK_ANCHOR_RADIUS;
+}
+
+int DL_BridgeLegacyDirectiveAnchorMoveJob(object oNpc, int nDirective)
+{
+    if (!GetIsObjectValid(oNpc) || DL_HasMoveJob(oNpc) || !DL_DirectiveUsesFocusState(nDirective))
+    {
+        return FALSE;
+    }
+
+    object oAnchor = DL_ResolveDirectiveAnchorForMoveBridge(oNpc, nDirective);
+    if (!GetIsObjectValid(oAnchor))
+    {
+        return FALSE;
+    }
+
+    object oNpcArea = GetArea(oNpc);
+    object oAnchorArea = GetArea(oAnchor);
+    if (!GetIsObjectValid(oNpcArea) || !GetIsObjectValid(oAnchorArea) || oNpcArea != oAnchorArea)
+    {
+        return FALSE;
+    }
+
+    if (GetDistanceBetween(oNpc, oAnchor) <= DL_WORK_ANCHOR_RADIUS)
+    {
+        return FALSE;
+    }
+
+    string sOwner = DL_GetDirectiveMoveOwnerForBridge(nDirective);
+    if (sOwner == "")
+    {
+        return FALSE;
+    }
+
+    string sReason = "bridge_" + sOwner + "_anchor";
+    if (nDirective == DL_DIR_PUBLIC &&
+        (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) == "transitioning" ||
+            GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == ""))
+    {
+        sReason = "bridge_public_anchor_after_transition";
+    }
+
+    DL_ClearTransitionExecutionState(oNpc);
+    DL_ClearFocusMoveIssueState(oNpc);
+    DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
+    SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "moving_to_anchor");
+    SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oAnchor));
+    DL_BeginMoveJob(oNpc, sOwner, "anchor", GetTag(oAnchor), DL_WORK_ANCHOR_RADIUS);
+    string sAnchorZone = DL_NavGetAnchorZoneId(oAnchor);
+    DL_NavSetDebug(oNpc, DL_NavGetNpcCurrentZone(oNpc), sAnchorZone, sAnchorZone, sReason);
+    DL_LogChatDebugEvent(
+        oNpc,
+        sReason,
+        sReason +
+            " owner=" + sOwner +
+            " anchor=" + GetTag(oAnchor) +
+            " area=" + GetTag(oAnchorArea) +
+            " dist=" + FloatToString(GetDistanceBetween(oNpc, oAnchor), 1, 2)
+    );
+    return TRUE;
+}
+
 void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
 {
     if (!GetIsObjectValid(oNpc))
@@ -758,6 +871,11 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
     if (nPrevDirective != nEffectiveDirective)
     {
         DL_ClearMoveJob(oNpc);
+    }
+
+    if (nPrevDirective == nEffectiveDirective)
+    {
+        DL_BridgeLegacyDirectiveAnchorMoveJob(oNpc, nEffectiveDirective);
     }
 
     int bMoveJobTicked = DL_TickMoveJob(oNpc);
