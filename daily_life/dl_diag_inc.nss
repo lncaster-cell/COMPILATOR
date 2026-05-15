@@ -150,12 +150,26 @@ void DL_LogNpcDiagnostic(object oNpc, string sSource)
         sRegisteredArea = GetTag(oRegisteredArea);
     }
 
+    int nRegSlot = GetLocalInt(oNpc, "dl_npc_reg_slot");
+    int bSlotContainsNpc = FALSE;
+    if (GetIsObjectValid(oRegisteredArea) && nRegSlot >= 0)
+    {
+        bSlotContainsNpc = GetLocalObject(oRegisteredArea, "dl_reg_slot_" + IntToString(nRegSlot)) == oNpc;
+    }
+
     string sLog = "[DL][NPC] src=" + sSource +
                   " npc=" + GetName(oNpc) +
                   " hour=" + IntToString(GetTimeHour()) +
                   " profile=" + GetLocalString(oNpc, DL_L_NPC_PROFILE_ID) +
                   " npc_area=" + sCurrentArea +
                   " registered_area=" + sRegisteredArea +
+                  " reg_on=" + IntToString(GetLocalInt(oNpc, "dl_reg_on")) +
+                  " reg_slot=" + IntToString(nRegSlot) +
+                  " slot_contains_npc=" + IntToString(bSlotContainsNpc) +
+                  " repair_attempted=" + IntToString(GetLocalInt(oNpc, "dl_registry_repair_attempted")) +
+                  " repair_success=" + IntToString(GetLocalInt(oNpc, "dl_registry_repair_success")) +
+                  " repair_failed=" + IntToString(GetLocalInt(oNpc, "dl_registry_repair_failed")) +
+                  " repair_failed_reason=" + GetLocalString(oNpc, "dl_registry_repair_failed_reason") +
                   " directive=" + DL_GetDirectiveLabel(GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE)) +
                   " state=" + GetLocalString(oNpc, DL_L_NPC_STATE) +
                   " problem=" + sProblem +
@@ -174,6 +188,10 @@ string DL_GetNpcDiagnosticSignature(object oNpc)
     return DL_GetDirectiveLabel(GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE)) + "|" +
            GetLocalString(oNpc, DL_L_NPC_STATE) + "|" +
            DL_GetNpcProblemSummary(oNpc) + "|" +
+           IntToString(GetLocalInt(oNpc, "dl_registry_repair_attempted")) + "|" +
+           IntToString(GetLocalInt(oNpc, "dl_registry_repair_success")) + "|" +
+           IntToString(GetLocalInt(oNpc, "dl_registry_repair_failed")) + "|" +
+           GetLocalString(oNpc, "dl_registry_repair_failed_reason") + "|" +
            GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) + "|" +
            GetLocalString(oNpc, DL_L_NPC_SLEEP_TARGET) + "|" +
            GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) + "|" +

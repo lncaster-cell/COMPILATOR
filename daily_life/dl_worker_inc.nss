@@ -311,11 +311,7 @@ int DL_RunAreaRegistryFallbackCatchupScan(object oArea, int nTickStamp, int nSca
         if (GetObjectType(oObj) == OBJECT_TYPE_CREATURE && DL_IsActivePipelineNpc(oObj))
         {
             nScannedActive = nScannedActive + 1;
-            DL_ReconcileNpcAreaRegistration(oObj);
-            if (GetLocalInt(oObj, DL_L_NPC_REG_ON) != TRUE)
-            {
-                DL_RegisterNpc(oObj);
-            }
+            DL_EnsureNpcRegisteredInCurrentArea(oObj);
         }
 
         oObj = GetNextObjectInArea(oArea);
@@ -383,9 +379,9 @@ int DL_ProcessAreaNpcByPassMode(object oNpc, int nPassMode, int nTickStamp)
             return FALSE;
         }
 
-        if (GetLocalInt(oNpc, DL_L_NPC_REG_ON) != TRUE)
+        if (!DL_EnsureNpcRegisteredInCurrentArea(oNpc))
         {
-            DL_RegisterNpc(oNpc);
+            return FALSE;
         }
 
         SetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK, nTickStamp);
@@ -458,6 +454,11 @@ int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPas
                     nNpcProcessed = nNpcProcessed + 1;
                 }
             }
+            else if (DL_IsActivePipelineNpc(oCandidate) && GetArea(oCandidate) != oArea)
+            {
+                DL_EnsureNpcRegisteredInCurrentArea(oCandidate);
+                bFallbackNeeded = TRUE;
+            }
             else if (GetLocalInt(oCandidate, DL_L_NPC_REG_ON) == TRUE)
             {
                 DL_UnregisterNpc(oCandidate);
@@ -526,45 +527,21 @@ int DL_RunTransitionRegistryHandoffTick(object oArea, int nTickStamp)
 
             if (oNpcArea == oArea)
             {
-                if (oRegisteredArea != oArea)
+                if (DL_EnsureNpcRegisteredInCurrentArea(oNpc))
                 {
-                    if (GetLocalInt(oNpc, DL_L_NPC_REG_ON) == TRUE && GetIsObjectValid(oRegisteredArea))
-                    {
-                        DL_UnregisterNpc(oNpc);
-                    }
-                    else
-                    {
-                        DeleteLocalInt(oNpc, DL_L_NPC_REG_ON);
-                        DeleteLocalObject(oNpc, DL_L_NPC_REG_AREA);
-                        DeleteLocalInt(oNpc, DL_L_NPC_REG_SLOT);
-                        DeleteLocalString(oNpc, DL_L_NPC_DIAG_LAST_SIG);
-                    }
+                    SetLocalInt(oNpc, "dl_transition_registry_handoff_touch_called", TRUE);
+                    DL_SetTransitionRegistryHandoffDebug(oNpc, OBJECT_INVALID, oArea);
+                    DL_WorkerTouchNpc(oNpc);
+                    SetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK, nTickStamp);
+                    DL_SetTransitionRegistryHandoffDebug(oNpc, OBJECT_INVALID, oArea);
+                    DeleteLocalObject(oArea, sSlotKey);
+                    nTouched = nTouched + 1;
                 }
                 else
                 {
-                    DL_ReconcileNpcAreaRegistration(oNpc);
+                    DL_MarkAreaRegistryRebuildPending(oArea);
+                    DL_SetTransitionRegistryHandoffDebug(oNpc, OBJECT_INVALID, oArea);
                 }
-
-                if (GetLocalObject(oNpc, DL_L_NPC_REG_AREA) != oArea)
-                {
-                    DeleteLocalInt(oNpc, DL_L_NPC_REG_ON);
-                    DeleteLocalObject(oNpc, DL_L_NPC_REG_AREA);
-                    DeleteLocalInt(oNpc, DL_L_NPC_REG_SLOT);
-                    DeleteLocalString(oNpc, DL_L_NPC_DIAG_LAST_SIG);
-                }
-
-                if (GetLocalInt(oNpc, DL_L_NPC_REG_ON) != TRUE)
-                {
-                    DL_RegisterNpc(oNpc);
-                }
-
-                SetLocalInt(oNpc, "dl_transition_registry_handoff_touch_called", TRUE);
-                DL_SetTransitionRegistryHandoffDebug(oNpc, OBJECT_INVALID, oArea);
-                DL_WorkerTouchNpc(oNpc);
-                SetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK, nTickStamp);
-                DL_SetTransitionRegistryHandoffDebug(oNpc, OBJECT_INVALID, oArea);
-                DeleteLocalObject(oArea, sSlotKey);
-                nTouched = nTouched + 1;
             }
             else
             {
@@ -584,11 +561,9 @@ void DL_WorkerTouchNpc(object oNpc)
         return;
     }
 
-    DL_ReconcileNpcAreaRegistration(oNpc);
-
-    if (GetLocalInt(oNpc, DL_L_NPC_REG_ON) != TRUE)
+    if (!DL_EnsureNpcRegisteredInCurrentArea(oNpc))
     {
-        DL_RegisterNpc(oNpc);
+        return;
     }
 
     object oModule = GetModule();
