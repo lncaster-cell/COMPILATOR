@@ -363,6 +363,14 @@ void main()
         " move_target_obj_tag=" + GetLocalString(oNpc, "move_target_obj_tag") +
         " move_target_obj_area=" + GetLocalString(oNpc, "move_target_obj_area") +
         " move_target_obj_dist=" + FloatToString(GetLocalFloat(oNpc, "move_target_obj_dist"), 1, 2) +
+        " move_last_dist=" + FloatToString(GetLocalFloat(oNpc, "dl_move_last_dist"), 1, 2) +
+        " move_dist_delta=" + FloatToString(GetLocalFloat(oNpc, "move_dist_delta"), 1, 2) +
+        " move_no_progress_count=" + IntToString(GetLocalInt(oNpc, "dl_move_no_progress_count")) +
+        " move_reissue_count=" + IntToString(GetLocalInt(oNpc, "dl_move_reissue_count")) +
+        " move_last_reissue_tick=" + IntToString(GetLocalInt(oNpc, "dl_move_last_reissue_tick")) +
+        " move_stall_reason=" + GetLocalString(oNpc, "dl_move_stall_reason") +
+        " current_action=" + IntToString(GetLocalInt(oNpc, "current_action")) +
+        " move_action_reissued=" + IntToString(GetLocalInt(oNpc, "move_action_reissued")) +
         " focus_target_obj_tag=" + GetLocalString(oNpc, "focus_target_obj_tag") +
         " focus_target_obj_area=" + GetLocalString(oNpc, "focus_target_obj_area") +
         " focus_target_obj_dist=" + FloatToString(GetLocalFloat(oNpc, "focus_target_obj_dist"), 1, 2) +
