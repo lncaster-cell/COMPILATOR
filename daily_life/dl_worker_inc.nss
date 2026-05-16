@@ -31,6 +31,10 @@ const string DL_L_AREA_HOTNESS_REPAIRED_DBG = "area_hotness_repaired";
 const string DL_L_AREA_WORKER_FORCED_HOT_PLAYER_DBG = "area_worker_forced_hot_due_to_player";
 const string DL_L_AREA_PLAYER_COUNT_STALE_REPAIRED_DBG = "area_player_count_stale_repaired";
 const string DL_L_AREA_HOTNESS_BUG_PLAYER_PRESENT_DBG = "area_hotness_bug_player_present";
+const string DL_L_NPC_CRITICAL_WORKER_TOUCH_DBG = "critical_worker_touch";
+const string DL_L_NPC_CRITICAL_REASON_DBG = "critical_reason";
+const string DL_L_NPC_CRITICAL_BYPASSED_LAST_TOUCH_DBG = "critical_bypassed_last_touch_gate";
+const string DL_L_NPC_CRITICAL_BYPASSED_WARM_DBG = "critical_bypassed_warm_gate";
 
 const int DL_AREA_PASS_MODE_WORKER = 1;
 const int DL_AREA_PASS_MODE_RESYNC = 2;
@@ -49,6 +53,7 @@ const int DL_FALLBACK_OBJECT_HOP_MULTIPLIER = 8;
 const int DL_TRANSITION_HANDOFF_SLOT_COUNT = 4;
 
 void DL_WorkerTouchNpc(object oNpc);
+int DL_ProcessAreaNpcByPassMode(object oArea, object oNpc, int nPassMode, int nTickStamp, int nBudget, int nCursorBefore, int nCursorAfter);
 
 int DL_GetCursorAdvance(int nNpcProcessed, int nCandidatesSeen, int nNpcSeen)
 {
@@ -296,6 +301,28 @@ void DL_CopyAreaHotnessDebugToNpc(object oNpc, object oArea)
     SetLocalInt(oNpc, DL_L_AREA_HOTNESS_BUG_PLAYER_PRESENT_DBG, GetLocalInt(oArea, DL_L_AREA_HOTNESS_BUG_PLAYER_PRESENT_DBG));
 }
 
+void DL_ClearCriticalWorkerDebug(object oNpc)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    SetLocalInt(oNpc, DL_L_NPC_CRITICAL_WORKER_TOUCH_DBG, FALSE);
+    DeleteLocalString(oNpc, DL_L_NPC_CRITICAL_REASON_DBG);
+}
+
+void DL_SetCriticalWorkerDebug(object oNpc, string sReason)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    SetLocalInt(oNpc, DL_L_NPC_CRITICAL_WORKER_TOUCH_DBG, TRUE);
+    SetLocalString(oNpc, DL_L_NPC_CRITICAL_REASON_DBG, sReason);
+}
+
 void DL_SetAreaWorkerPassDebug(object oArea, int nTickStamp, int nPassMode, int nBudget, int nCursorBefore, int nCursorAfter)
 {
     if (!GetIsObjectValid(oArea))
@@ -359,35 +386,133 @@ void DL_SetNpcRegularWorkerDebug(
     }
 }
 
-int DL_ShouldBypassLastTouchGate(object oNpc)
+int DL_NpcNeedsCriticalWorkerTouch(object oNpc)
 {
     if (!GetIsObjectValid(oNpc))
     {
         return FALSE;
     }
 
+    DL_ClearCriticalWorkerDebug(oNpc);
+
     int nStoredDirective = GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE);
     int nResolvedDirective = DL_ResolveEffectiveDirective(oNpc, DL_ResolveNpcDirective(oNpc));
     if (nStoredDirective != nResolvedDirective)
     {
+        DL_SetCriticalWorkerDebug(oNpc, "directive_changed");
         return TRUE;
     }
 
-    if (DL_HasMoveJob(oNpc) && GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_RUNNING)
+    if (DL_HasMoveJob(oNpc))
     {
-        object oTarget = DL_ResolveMoveJobTarget(oNpc);
-        if (GetIsObjectValid(oTarget) && GetArea(oTarget) == GetArea(oNpc))
+        if (!DL_IsMoveJobOwnerCompatibleWithDirective(oNpc, nResolvedDirective))
         {
-            float fRadius = GetLocalFloat(oNpc, DL_L_NPC_MOVE_RADIUS);
-            if (fRadius <= 0.0)
+            DL_SetCriticalWorkerDebug(oNpc, "move_owner_directive_mismatch");
+            return TRUE;
+        }
+
+        if (GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_RUNNING)
+        {
+            object oTarget = DL_ResolveMoveJobTarget(oNpc);
+            if (GetIsObjectValid(oTarget) && GetArea(oTarget) == GetArea(oNpc))
             {
-                fRadius = DL_MOVE_DEFAULT_RADIUS;
-            }
-            if (GetDistanceBetween(oNpc, oTarget) <= fRadius)
-            {
-                return TRUE;
+                float fRadius = GetLocalFloat(oNpc, DL_L_NPC_MOVE_RADIUS);
+                if (fRadius <= 0.0)
+                {
+                    fRadius = DL_MOVE_DEFAULT_RADIUS;
+                }
+                if (GetDistanceBetween(oNpc, oTarget) <= fRadius)
+                {
+                    DL_SetCriticalWorkerDebug(oNpc, "move_job_reached_target");
+                    return TRUE;
+                }
             }
         }
+    }
+
+    if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "moving_to_anchor")
+    {
+        object oFocusTarget = DL_ResolveFocusTargetInCurrentArea(oNpc);
+        if (GetIsObjectValid(oFocusTarget) && GetDistanceBetween(oNpc, oFocusTarget) <= DL_WORK_ANCHOR_RADIUS)
+        {
+            DL_SetCriticalWorkerDebug(oNpc, "focus_anchor_reached");
+            return TRUE;
+        }
+    }
+
+    if (GetLocalString(oNpc, "dl_post_jump_result") == "post_jump_finalizer_complete" &&
+        (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" ||
+            GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) != "" ||
+            GetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC) != ""))
+    {
+        DL_SetCriticalWorkerDebug(oNpc, "stale_transition_after_post_jump");
+        return TRUE;
+    }
+
+    if (GetLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC) == "regular_worker_not_touching_registered_npc")
+    {
+        DL_SetCriticalWorkerDebug(oNpc, "regular_worker_not_touching_registered_npc");
+        return TRUE;
+    }
+
+    if (DL_GetNpcProblemSummary(oNpc) == "regular_worker_not_touching_registered_npc")
+    {
+        DL_SetCriticalWorkerDebug(oNpc, "regular_worker_not_touching_registered_npc");
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+int DL_ShouldBypassLastTouchGate(object oNpc)
+{
+    return DL_NpcNeedsCriticalWorkerTouch(oNpc);
+}
+
+object DL_GetAreaWorkerCursorNpc(object oArea)
+{
+    int nCount = GetLocalInt(oArea, DL_L_AREA_REG_COUNT);
+    if (nCount <= 0)
+    {
+        return OBJECT_INVALID;
+    }
+
+    int nCursor = DL_GetAreaWorkerCursor(oArea);
+    if (nCursor < 0 || nCursor >= nCount)
+    {
+        nCursor = 0;
+    }
+
+    return DL_GetAreaRegistryNpcAtSlot(oArea, nCursor);
+}
+
+int DL_ProcessCriticalAreaCursorNpc(object oArea, int nPassMode, int nTickStamp, string sBypassKind)
+{
+    object oNpc = DL_GetAreaWorkerCursorNpc(oArea);
+    if (!GetIsObjectValid(oNpc) || !DL_IsActivePipelineNpc(oNpc) || GetArea(oNpc) != oArea)
+    {
+        return FALSE;
+    }
+
+    if (!DL_NpcNeedsCriticalWorkerTouch(oNpc))
+    {
+        return FALSE;
+    }
+
+    if (sBypassKind == "warm")
+    {
+        SetLocalInt(oNpc, DL_L_NPC_CRITICAL_BYPASSED_WARM_DBG, TRUE);
+    }
+    else if (sBypassKind == "budget")
+    {
+        SetLocalInt(oNpc, DL_L_NPC_CRITICAL_BYPASSED_WARM_DBG, TRUE);
+    }
+
+    int nCursor = DL_GetAreaWorkerCursor(oArea);
+    if (DL_ProcessAreaNpcByPassMode(oArea, oNpc, nPassMode, nTickStamp, DL_WORKER_BUDGET_MIN, nCursor, nCursor))
+    {
+        SetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK, nTickStamp);
+        return TRUE;
     }
 
     return FALSE;
@@ -634,12 +759,22 @@ int DL_ProcessAreaNpcByPassMode(object oArea, object oNpc, int nPassMode, int nT
         return FALSE;
     }
 
-    if ((nPassMode == DL_AREA_PASS_MODE_WORKER || nPassMode == DL_AREA_PASS_MODE_WARM) &&
-        GetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK) == nTickStamp &&
-        !DL_ShouldBypassLastTouchGate(oNpc))
+    SetLocalInt(oNpc, DL_L_NPC_CRITICAL_BYPASSED_LAST_TOUCH_DBG, FALSE);
+    SetLocalInt(oNpc, DL_L_NPC_CRITICAL_BYPASSED_WARM_DBG, FALSE);
+    int bCritical = DL_NpcNeedsCriticalWorkerTouch(oNpc);
+    if (bCritical && nPassMode == DL_AREA_PASS_MODE_WARM)
     {
-        DL_SetNpcRegularWorkerDebug(oNpc, oArea, nTickStamp, nPassMode, nBudget, nCursorBefore, nCursorAfter, TRUE, FALSE, "skip_last_touch_gate");
-        return FALSE;
+        SetLocalInt(oNpc, DL_L_NPC_CRITICAL_BYPASSED_WARM_DBG, TRUE);
+    }
+    if ((nPassMode == DL_AREA_PASS_MODE_WORKER || nPassMode == DL_AREA_PASS_MODE_WARM) &&
+        GetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK) == nTickStamp)
+    {
+        if (!bCritical)
+        {
+            DL_SetNpcRegularWorkerDebug(oNpc, oArea, nTickStamp, nPassMode, nBudget, nCursorBefore, nCursorAfter, TRUE, FALSE, "skip_last_touch_gate");
+            return FALSE;
+        }
+        SetLocalInt(oNpc, DL_L_NPC_CRITICAL_BYPASSED_LAST_TOUCH_DBG, TRUE);
     }
 
     if (nPassMode == DL_AREA_PASS_MODE_RESYNC)
@@ -1046,15 +1181,26 @@ void DL_RunAreaWarmMaintenanceTick(object oArea)
         return;
     }
 
+    int nTickStamp = DL_GetAreaTick(oArea);
     if (DL_GetAreaTier(oArea) != DL_TIER_WARM)
     {
-        DL_MarkAreaCursorNpcSkipped(oArea, DL_GetAreaTick(oArea), DL_AREA_PASS_MODE_WARM, 0, DL_GetAreaWorkerCursor(oArea), "skip_area_not_hot");
+        if (DL_ProcessCriticalAreaCursorNpc(oArea, DL_AREA_PASS_MODE_WARM, nTickStamp, "warm"))
+        {
+            return;
+        }
+        DL_MarkAreaCursorNpcSkipped(oArea, nTickStamp, DL_AREA_PASS_MODE_WARM, 0, DL_GetAreaWorkerCursor(oArea), "skip_area_not_hot");
         return;
     }
 
-    int nTickStamp = DL_GetAreaTick(oArea);
+    object oWarmCandidate = DL_GetAreaWorkerCursorNpc(oArea);
+    int bCriticalWarmCandidate = DL_NpcNeedsCriticalWorkerTouch(oWarmCandidate);
     int nLastTick = GetLocalInt(oArea, DL_L_AREA_LAST_WARM_MAINT_TICK);
-    if (nTickStamp >= nLastTick && (nTickStamp - nLastTick) < DL_WARM_MAINTENANCE_INTERVAL_TICKS)
+    if (bCriticalWarmCandidate)
+    {
+        SetLocalInt(oWarmCandidate, DL_L_NPC_CRITICAL_BYPASSED_WARM_DBG, TRUE);
+    }
+    if (!bCriticalWarmCandidate &&
+        nTickStamp >= nLastTick && (nTickStamp - nLastTick) < DL_WARM_MAINTENANCE_INTERVAL_TICKS)
     {
         DL_MarkAreaCursorNpcSkipped(oArea, nTickStamp, DL_AREA_PASS_MODE_WARM, 0, DL_GetAreaWorkerCursor(oArea), "skip_area_not_hot");
         return;
@@ -1062,9 +1208,16 @@ void DL_RunAreaWarmMaintenanceTick(object oArea)
     SetLocalInt(oArea, DL_L_AREA_LAST_WARM_MAINT_TICK, nTickStamp);
 
     int nBudget = DL_WORKER_BUDGET_MIN;
-    nBudget = DL_ConsumeModuleNpcBudget(nBudget);
+    if (!bCriticalWarmCandidate)
+    {
+        nBudget = DL_ConsumeModuleNpcBudget(nBudget);
+    }
     if (nBudget <= 0)
     {
+        if (DL_ProcessCriticalAreaCursorNpc(oArea, DL_AREA_PASS_MODE_WARM, nTickStamp, "budget"))
+        {
+            return;
+        }
         int nBudgetCursor = DL_GetAreaWorkerCursor(oArea);
         DL_SetAreaWorkerPassDebug(oArea, nTickStamp, DL_AREA_PASS_MODE_WARM, 0, nBudgetCursor, nBudgetCursor);
         DL_MarkAreaCursorNpcSkipped(oArea, nTickStamp, DL_AREA_PASS_MODE_WARM, 0, nBudgetCursor, "skip_budget_exhausted");
@@ -1189,6 +1342,10 @@ void DL_RunAreaWorkerTick(object oArea)
         }
         else
         {
+            if (DL_ProcessCriticalAreaCursorNpc(oArea, DL_AREA_PASS_MODE_WORKER, DL_GetAreaTick(oArea), "warm"))
+            {
+                return;
+            }
             DL_MarkAreaCursorNpcSkipped(oArea, DL_GetAreaTick(oArea), DL_AREA_PASS_MODE_WORKER, 0, DL_GetAreaWorkerCursor(oArea), "skip_area_not_hot");
             return;
         }
@@ -1215,6 +1372,10 @@ void DL_RunAreaWorkerTick(object oArea)
     nBudget = DL_ConsumeModuleNpcBudget(nBudget);
     if (nBudget <= 0)
     {
+        if (DL_ProcessCriticalAreaCursorNpc(oArea, DL_AREA_PASS_MODE_WORKER, DL_GetAreaTick(oArea), "budget"))
+        {
+            return;
+        }
         int nBudgetCursor = DL_GetAreaWorkerCursor(oArea);
         DL_SetAreaWorkerPassDebug(oArea, DL_GetAreaTick(oArea), DL_AREA_PASS_MODE_WORKER, 0, nBudgetCursor, nBudgetCursor);
         DL_MarkAreaCursorNpcSkipped(oArea, DL_GetAreaTick(oArea), DL_AREA_PASS_MODE_WORKER, 0, nBudgetCursor, "skip_budget_exhausted");
