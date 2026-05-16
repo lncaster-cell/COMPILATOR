@@ -42,6 +42,7 @@ void DL_RequestTransitionRegistryHandoff(object oNpc, object oOldArea, object oT
 int DL_EnsureNpcRegisteredInCurrentArea(object oNpc);
 void DL_ClearNpcRegistryLocals(object oNpc);
 void DL_WorkerTouchNpc(object oNpc);
+int DL_RemoveStaleNpcReferenceFromAreaRegistry(object oArea, object oNpc);
 
 string DL_GetAreaNavigationSlotKey(int nSlot)
 {
@@ -465,6 +466,16 @@ void DL_SetPendingTransitionAfterJump(object oNpc, object oOldArea, object oTarg
         sTargetArea = GetTag(oTargetArea);
     }
 
+    object oOldRegArea = GetLocalObject(oNpc, "dl_npc_reg_area");
+    int nOldRegSlot = GetLocalInt(oNpc, "dl_npc_reg_slot");
+    if (!GetIsObjectValid(oOldRegArea))
+    {
+        oOldRegArea = oOldArea;
+        nOldRegSlot = -1;
+    }
+    SetLocalObject(oNpc, "dl_transition_old_reg_area", oOldRegArea);
+    SetLocalInt(oNpc, "dl_transition_old_reg_slot", nOldRegSlot);
+
     SetLocalObject(oNpc, "dl_transition_pending_old_area", oOldArea);
     SetLocalString(oNpc, "dl_transition_pending_old_area_tag", sOldArea);
     SetLocalObject(oNpc, "dl_transition_pending_target_area", oTargetArea);
@@ -555,6 +566,11 @@ void DL_FinalizeTransitionAfterQueuedJump(object oNpc)
     }
 
     oRegisteredArea = GetLocalObject(oNpc, "dl_npc_reg_area");
+    object oOldRegArea = GetLocalObject(oNpc, "dl_transition_old_reg_area");
+    if (GetIsObjectValid(oOldRegArea) && oOldRegArea != oCurrentArea)
+    {
+        DL_RemoveStaleNpcReferenceFromAreaRegistry(oOldRegArea, oNpc);
+    }
     string sRegisteredAreaAfter = "";
     if (GetIsObjectValid(oRegisteredArea))
     {
