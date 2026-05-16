@@ -352,6 +352,27 @@ void main()
         " move_ticket=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET))
     );
 
+    DL_DbgSay(oPC,
+        "[DL] directive_preempted_old_move=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_DBG_DIRECTIVE_PREEMPTED_OLD_MOVE)) +
+        " old_move_owner=" + GetLocalString(oNpc, DL_L_NPC_DBG_OLD_MOVE_OWNER) +
+        " old_move_target=" + GetLocalString(oNpc, DL_L_NPC_DBG_OLD_MOVE_TARGET) +
+        " directive_change_prev=" + GetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_PREV) +
+        " directive_change_next=" + GetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_NEXT) +
+        " directive_change_cleanup=" + GetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_CLEANUP)
+    );
+
+    DL_DbgSay(oPC,
+        "[DL] area_worker_tick_area=" + GetLocalString(oNpc, "area_worker_tick_area") +
+        " area_worker_tick_seq=" + IntToString(GetLocalInt(oNpc, "area_worker_tick_seq")) +
+        " npc_worker_touch_seq=" + IntToString(GetLocalInt(oNpc, "npc_worker_touch_seq")) +
+        " npc_last_worker_touch_hour=" + IntToString(GetLocalInt(oNpc, "npc_last_worker_touch_hour")) +
+        " npc_last_worker_touch_minute=" + IntToString(GetLocalInt(oNpc, "npc_last_worker_touch_minute")) +
+        " npc_processed_by_round_robin=" + IntToString(GetLocalInt(oNpc, "npc_processed_by_round_robin")) +
+        " npc_registry_slot=" + IntToString(GetLocalInt(oNpc, "npc_registry_slot")) +
+        " npc_registry_count=" + IntToString(GetLocalInt(oNpc, "npc_registry_count")) +
+        " npc_slot_contains_self=" + IntToString(GetLocalInt(oNpc, "npc_slot_contains_self"))
+    );
+
     if (sNavReason == "finalize_skip_target_invalid" ||
         sNavReason == "finalize_skip_area_invalid" ||
         sNavReason == "finalize_skip_area_mismatch")
