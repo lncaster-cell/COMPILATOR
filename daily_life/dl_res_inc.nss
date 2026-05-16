@@ -78,6 +78,13 @@ const string DL_L_AREA_FORCE_CACHE_RESET = "dl_force_area_cache_reset";
 const string DL_L_NPC_CACHE_EPOCH = "dl_npc_cache_epoch";
 const string DL_L_NPC_FORCE_CACHE_RESET = "dl_force_npc_cache_reset";
 
+const string DL_L_NPC_DBG_DIRECTIVE_PREEMPTED_OLD_MOVE = "directive_preempted_old_move";
+const string DL_L_NPC_DBG_OLD_MOVE_OWNER = "old_move_owner";
+const string DL_L_NPC_DBG_OLD_MOVE_TARGET = "old_move_target";
+const string DL_L_NPC_DBG_DIRECTIVE_CHANGE_PREV = "directive_change_prev";
+const string DL_L_NPC_DBG_DIRECTIVE_CHANGE_NEXT = "directive_change_next";
+const string DL_L_NPC_DBG_DIRECTIVE_CHANGE_CLEANUP = "directive_change_cleanup";
+
 const string DL_L_NPC_MOVE_OWNER = "dl_move_owner";
 const string DL_L_NPC_MOVE_PHASE = "dl_move_phase";
 const string DL_L_NPC_MOVE_TARGET_TAG = "dl_move_target_tag";
@@ -778,6 +785,136 @@ string DL_GetDirectiveMoveOwnerForBridge(int nDirective)
     return "";
 }
 
+int DL_IsMoveJobOwnerCompatibleWithDirective(object oNpc, int nDirective)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return FALSE;
+    }
+
+    string sOwner = GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER);
+    if (sOwner == "")
+    {
+        return TRUE;
+    }
+
+    if (sOwner == DL_MOVE_OWNER_PUBLIC) return nDirective == DL_DIR_PUBLIC;
+    if (sOwner == DL_MOVE_OWNER_SOCIAL) return nDirective == DL_DIR_SOCIAL;
+    if (sOwner == DL_MOVE_OWNER_MEAL) return nDirective == DL_DIR_MEAL;
+    if (sOwner == DL_MOVE_OWNER_CHILL) return nDirective == DL_DIR_CHILL;
+    if (sOwner == DL_MOVE_OWNER_WORK) return nDirective == DL_DIR_WORK;
+    if (sOwner == DL_MOVE_OWNER_SLEEP) return nDirective == DL_DIR_SLEEP;
+    if (sOwner == DL_MOVE_OWNER_TRANSITION)
+    {
+        return GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" &&
+               GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) != "" &&
+               GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) == GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE);
+    }
+
+    return FALSE;
+}
+
+int DL_IsFocusStateCompatibleWithDirective(object oNpc, int nDirective)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return FALSE;
+    }
+
+    string sFocusStatus = GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS);
+    if (sFocusStatus == "")
+    {
+        return TRUE;
+    }
+
+    if (sFocusStatus == "on_public_anchor") return nDirective == DL_DIR_PUBLIC;
+    if (sFocusStatus == "on_social_anchor") return nDirective == DL_DIR_SOCIAL;
+    if (GetSubString(sFocusStatus, 0, 15) == "on_meal_anchor") return nDirective == DL_DIR_MEAL;
+    if (sFocusStatus == "on_chill_anchor") return nDirective == DL_DIR_CHILL;
+
+    if (sFocusStatus == "moving_to_anchor")
+    {
+        return DL_DirectiveUsesFocusState(nDirective) &&
+               DL_IsMoveJobOwnerCompatibleWithDirective(oNpc, nDirective);
+    }
+
+    return DL_DirectiveUsesFocusState(nDirective);
+}
+
+void DL_ClearDirectiveChangeDebug(object oNpc)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    SetLocalInt(oNpc, DL_L_NPC_DBG_DIRECTIVE_PREEMPTED_OLD_MOVE, FALSE);
+    DeleteLocalString(oNpc, DL_L_NPC_DBG_OLD_MOVE_OWNER);
+    DeleteLocalString(oNpc, DL_L_NPC_DBG_OLD_MOVE_TARGET);
+    DeleteLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_PREV);
+    DeleteLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_NEXT);
+    DeleteLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_CLEANUP);
+}
+
+void DL_PreemptOldDirectiveState(object oNpc, int nPrevDirective, int nEffectiveDirective)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    string sOldMoveOwner = GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER);
+    string sOldMoveTarget = GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG);
+    int bHadMoveJob = DL_HasMoveJob(oNpc);
+    int bClearedFocus = FALSE;
+    int bClearedTransition = FALSE;
+
+    SetLocalInt(oNpc, DL_L_NPC_DBG_DIRECTIVE_PREEMPTED_OLD_MOVE, bHadMoveJob);
+    SetLocalString(oNpc, DL_L_NPC_DBG_OLD_MOVE_OWNER, sOldMoveOwner);
+    SetLocalString(oNpc, DL_L_NPC_DBG_OLD_MOVE_TARGET, sOldMoveTarget);
+    SetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_PREV, DL_GetDirectiveDebugLabel(nPrevDirective));
+    SetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_NEXT, DL_GetDirectiveDebugLabel(nEffectiveDirective));
+
+    DL_ClearMoveJob(oNpc);
+
+    if (DL_DirectiveUsesFocusState(nPrevDirective) ||
+        GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) != "" ||
+        GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) != "")
+    {
+        DL_ClearFocusExecutionState(oNpc);
+        bClearedFocus = TRUE;
+        bClearedTransition = TRUE;
+    }
+
+    if (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" ||
+        GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) != "" ||
+        GetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC) != "")
+    {
+        DL_ClearTransitionExecutionState(oNpc);
+        bClearedTransition = TRUE;
+    }
+
+    if (DL_DirectiveUsesFocusState(nPrevDirective) ||
+        nPrevDirective == DL_DIR_WORK ||
+        nEffectiveDirective == DL_DIR_SLEEP)
+    {
+        DL_ClearActivityPresentation(oNpc);
+    }
+
+    SetLocalString(
+        oNpc,
+        DL_L_NPC_LAST_DIRECTIVE_CLEANUP,
+        "prev=" + DL_GetDirectiveDebugLabel(nPrevDirective) +
+            " next=" + DL_GetDirectiveDebugLabel(nEffectiveDirective) +
+            " old_move_owner=" + sOldMoveOwner +
+            " old_move_target=" + sOldMoveTarget +
+            " cleared_move=" + IntToString(bHadMoveJob) +
+            " cleared_focus=" + IntToString(bClearedFocus) +
+            " cleared_transition=" + IntToString(bClearedTransition)
+    );
+    SetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_CLEANUP, GetLocalString(oNpc, DL_L_NPC_LAST_DIRECTIVE_CLEANUP));
+}
+
 int DL_HasDistantSameAreaDirectiveAnchor(object oNpc, int nDirective)
 {
     object oAnchor = DL_ResolveDirectiveAnchorForMoveBridge(oNpc, nDirective);
@@ -863,22 +1000,43 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
     }
 
     DL_MaybeRefreshNpcCachesForEpoch(oNpc);
-    DL_RecoverReachedFocusAnchorMoveState(oNpc);
 
     int nEffectiveDirective = DL_ResolveEffectiveDirective(oNpc, nDirective);
     int nPrevDirective = GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE);
 
     if (nPrevDirective != nEffectiveDirective)
     {
-        DL_ClearMoveJob(oNpc);
+        DL_PreemptOldDirectiveState(oNpc, nPrevDirective, nEffectiveDirective);
     }
-
-    if (nPrevDirective == nEffectiveDirective)
+    else
     {
+        DL_ClearDirectiveChangeDebug(oNpc);
+        DL_RecoverReachedFocusAnchorMoveState(oNpc);
+        if (!DL_IsMoveJobOwnerCompatibleWithDirective(oNpc, nEffectiveDirective))
+        {
+            string sBadMoveOwner = GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER);
+            string sBadMoveTarget = GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG);
+            DL_ClearMoveJob(oNpc);
+            SetLocalInt(oNpc, DL_L_NPC_DBG_DIRECTIVE_PREEMPTED_OLD_MOVE, TRUE);
+            SetLocalString(oNpc, DL_L_NPC_DBG_OLD_MOVE_OWNER, sBadMoveOwner);
+            SetLocalString(oNpc, DL_L_NPC_DBG_OLD_MOVE_TARGET, sBadMoveTarget);
+            SetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_PREV, DL_GetDirectiveDebugLabel(nPrevDirective));
+            SetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_NEXT, DL_GetDirectiveDebugLabel(nEffectiveDirective));
+            SetLocalString(
+                oNpc,
+                DL_L_NPC_DBG_DIRECTIVE_CHANGE_CLEANUP,
+                "move_owner_mismatch_cleared old_move_owner=" + sBadMoveOwner +
+                    " old_move_target=" + sBadMoveTarget
+            );
+        }
         DL_BridgeLegacyDirectiveAnchorMoveJob(oNpc, nEffectiveDirective);
     }
 
-    int bMoveJobTicked = DL_TickMoveJob(oNpc);
+    int bMoveJobTicked = FALSE;
+    if (nPrevDirective == nEffectiveDirective && DL_IsMoveJobOwnerCompatibleWithDirective(oNpc, nEffectiveDirective))
+    {
+        bMoveJobTicked = DL_TickMoveJob(oNpc);
+    }
     if (bMoveJobTicked && DL_GetMoveJobResult(oNpc) == DL_MOVE_RESULT_RUNNING)
     {
         DL_ApplyMaterializationSkeleton(oNpc, nEffectiveDirective);
@@ -896,24 +1054,6 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
         DL_ApplyMaterializationSkeleton(oNpc, nEffectiveDirective);
         DL_LogStuckState(oNpc, nEffectiveDirective);
         return;
-    }
-
-    int bClearedFocus = FALSE;
-    if (nPrevDirective != nEffectiveDirective && DL_DirectiveUsesFocusState(nPrevDirective))
-    {
-        DL_ClearFocusExecutionState(oNpc);
-        bClearedFocus = TRUE;
-    }
-
-    if (nPrevDirective != nEffectiveDirective)
-    {
-        SetLocalString(
-            oNpc,
-            DL_L_NPC_LAST_DIRECTIVE_CLEANUP,
-            "prev=" + DL_GetDirectiveDebugLabel(nPrevDirective) +
-                " next=" + DL_GetDirectiveDebugLabel(nEffectiveDirective) +
-                " cleared_focus=" + IntToString(bClearedFocus)
-        );
     }
 
     SetLocalInt(oNpc, DL_L_NPC_DIRECTIVE, nEffectiveDirective);

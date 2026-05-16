@@ -50,6 +50,23 @@ string DL_GetNpcProblemSummary(object oNpc)
         return sHandoffDiag;
     }
 
+    int nStoredDirective = GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE);
+    int nResolvedDirective = DL_ResolveEffectiveDirective(oNpc, DL_ResolveNpcDirective(oNpc));
+    if (nResolvedDirective != nStoredDirective)
+    {
+        return "directive_mismatch:" + DL_GetDirectiveLabel(nStoredDirective) + "->" + DL_GetDirectiveLabel(nResolvedDirective);
+    }
+
+    if (DL_HasMoveJob(oNpc) && !DL_IsMoveJobOwnerCompatibleWithDirective(oNpc, nStoredDirective))
+    {
+        return "move_owner_directive_mismatch:" + GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) + "->" + DL_GetDirectiveLabel(nStoredDirective);
+    }
+
+    if (!DL_IsFocusStateCompatibleWithDirective(oNpc, nStoredDirective))
+    {
+        return "focus_directive_mismatch:" + GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) + "->" + DL_GetDirectiveLabel(nStoredDirective);
+    }
+
     string sMoveDiag = GetLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC);
     if (sMoveDiag != "")
     {
@@ -191,7 +208,13 @@ void DL_LogNpcDiagnostic(object oNpc, string sSource)
                   " work_status=" + GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) +
                   " work_target=" + GetLocalString(oNpc, DL_L_NPC_WORK_TARGET) +
                   " transition_status=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) +
-                  " transition_target=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET);
+                  " transition_target=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) +
+                  " directive_preempted_old_move=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_DBG_DIRECTIVE_PREEMPTED_OLD_MOVE)) +
+                  " old_move_owner=" + GetLocalString(oNpc, DL_L_NPC_DBG_OLD_MOVE_OWNER) +
+                  " old_move_target=" + GetLocalString(oNpc, DL_L_NPC_DBG_OLD_MOVE_TARGET) +
+                  " directive_change_prev=" + GetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_PREV) +
+                  " directive_change_next=" + GetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_NEXT) +
+                  " directive_change_cleanup=" + GetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_CLEANUP);
 
     DL_LogRuntime(sLog);
 }
@@ -211,7 +234,13 @@ string DL_GetNpcDiagnosticSignature(object oNpc)
            GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) + "|" +
            GetLocalString(oNpc, DL_L_NPC_WORK_TARGET) + "|" +
            GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) + "|" +
-           GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET);
+           GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) + "|" +
+           IntToString(GetLocalInt(oNpc, DL_L_NPC_DBG_DIRECTIVE_PREEMPTED_OLD_MOVE)) + "|" +
+           GetLocalString(oNpc, DL_L_NPC_DBG_OLD_MOVE_OWNER) + "|" +
+           GetLocalString(oNpc, DL_L_NPC_DBG_OLD_MOVE_TARGET) + "|" +
+           GetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_PREV) + "|" +
+           GetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_NEXT) + "|" +
+           GetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_CLEANUP);
 }
 
 void DL_MaybeLogNpcDiagnostic(object oNpc, string sSource, int bForce)
