@@ -4,6 +4,17 @@
 
 const int DL_MOVE_TARGET_SEARCH_CAP = 64;
 const float DL_MOVE_DEFAULT_RADIUS = 1.60;
+const string DL_L_NPC_MOVE_REACHED_FINALIZED_DBG = "move_reached_finalized";
+const string DL_L_NPC_REACHED_MOVE_OWNER_DBG = "reached_move_owner";
+const string DL_L_NPC_REACHED_MOVE_TARGET_DBG = "reached_move_target";
+const string DL_L_NPC_REACHED_FINALIZE_ATTEMPTED_DBG = "reached_finalize_attempted";
+const string DL_L_NPC_REACHED_FINALIZE_SUCCESS_DBG = "reached_finalize_success";
+const string DL_L_NPC_REACHED_FINALIZE_REASON_DBG = "reached_finalize_reason";
+const string DL_L_NPC_REACHED_FINALIZE_DIRECTIVE_DBG = "reached_finalize_directive";
+const string DL_L_NPC_REACHED_FINALIZE_OWNER_DBG = "reached_finalize_owner";
+const string DL_L_NPC_REACHED_FINALIZE_TARGET_DBG = "reached_finalize_target";
+const string DL_L_NPC_FOCUS_AFTER_REACHED_FINALIZE_DBG = "focus_status_after_reached_finalize";
+const string DL_L_NPC_MOVE_RESULT_AFTER_REACHED_FINALIZE_DBG = "move_result_after_reached_finalize";
 
 int DL_HasMoveJob(object oNpc)
 {
@@ -159,6 +170,8 @@ int DL_TickMoveJob(object oNpc)
         return FALSE;
     }
 
+    SetLocalInt(oNpc, DL_L_NPC_MOVE_REACHED_FINALIZED_DBG, FALSE);
+
     object oTarget = DL_ResolveMoveJobTarget(oNpc);
     if (!GetIsObjectValid(oTarget))
     {
@@ -186,6 +199,9 @@ int DL_TickMoveJob(object oNpc)
 
     if (GetDistanceBetween(oNpc, oTarget) <= fRadius)
     {
+        SetLocalString(oNpc, DL_L_NPC_REACHED_MOVE_OWNER_DBG, GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER));
+        SetLocalString(oNpc, DL_L_NPC_REACHED_MOVE_TARGET_DBG, GetTag(oTarget));
+        SetLocalInt(oNpc, DL_L_NPC_MOVE_REACHED_FINALIZED_DBG, TRUE);
         SetLocalString(oNpc, DL_L_NPC_MOVE_RESULT, DL_MOVE_RESULT_REACHED);
         DeleteLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC);
         DL_ClearTransitionExecutionState(oNpc);
