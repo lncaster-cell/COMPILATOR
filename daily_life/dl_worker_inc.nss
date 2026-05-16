@@ -23,6 +23,14 @@ const string DL_L_NPC_SEEN_BY_RR_DBG = "npc_seen_by_round_robin";
 const string DL_L_NPC_TOUCH_SKIPPED_REASON_DBG = "npc_touch_skipped_reason";
 const string DL_L_NPC_WORKER_TOUCH_SEQ_BEFORE_DBG = "npc_worker_touch_seq_before";
 const string DL_L_NPC_WORKER_TOUCH_SEQ_AFTER_DBG = "npc_worker_touch_seq_after";
+const string DL_L_AREA_CACHED_PLAYER_COUNT_DBG = "area_cached_player_count";
+const string DL_L_AREA_ACTUAL_PLAYER_COUNT_DBG = "area_actual_player_count";
+const string DL_L_AREA_TIER_BEFORE_LIFECYCLE_DBG = "area_tier_before_lifecycle";
+const string DL_L_AREA_TIER_AFTER_LIFECYCLE_DBG = "area_tier_after_lifecycle";
+const string DL_L_AREA_HOTNESS_REPAIRED_DBG = "area_hotness_repaired";
+const string DL_L_AREA_WORKER_FORCED_HOT_PLAYER_DBG = "area_worker_forced_hot_due_to_player";
+const string DL_L_AREA_PLAYER_COUNT_STALE_REPAIRED_DBG = "area_player_count_stale_repaired";
+const string DL_L_AREA_HOTNESS_BUG_PLAYER_PRESENT_DBG = "area_hotness_bug_player_present";
 
 const int DL_AREA_PASS_MODE_WORKER = 1;
 const int DL_AREA_PASS_MODE_RESYNC = 2;
@@ -238,6 +246,56 @@ string DL_GetAreaWorkerPassModeDebugLabel(int nPassMode)
     return "unknown";
 }
 
+string DL_GetAreaTierDebugLabel(int nTier)
+{
+    if (nTier == DL_TIER_HOT) return "HOT";
+    if (nTier == DL_TIER_WARM) return "WARM";
+    if (nTier == DL_TIER_FROZEN) return "FROZEN";
+    return "UNKNOWN";
+}
+
+void DL_SetAreaHotnessDebug(
+    object oArea,
+    int nCachedPlayers,
+    int nActualPlayers,
+    int nTierBefore,
+    int nTierAfter,
+    int bHotnessRepaired,
+    int bForcedHotDueToPlayer,
+    int bStaleRepaired
+)
+{
+    if (!GetIsObjectValid(oArea))
+    {
+        return;
+    }
+
+    SetLocalInt(oArea, DL_L_AREA_CACHED_PLAYER_COUNT_DBG, nCachedPlayers);
+    SetLocalInt(oArea, DL_L_AREA_ACTUAL_PLAYER_COUNT_DBG, nActualPlayers);
+    SetLocalString(oArea, DL_L_AREA_TIER_BEFORE_LIFECYCLE_DBG, DL_GetAreaTierDebugLabel(nTierBefore));
+    SetLocalString(oArea, DL_L_AREA_TIER_AFTER_LIFECYCLE_DBG, DL_GetAreaTierDebugLabel(nTierAfter));
+    SetLocalInt(oArea, DL_L_AREA_HOTNESS_REPAIRED_DBG, bHotnessRepaired);
+    SetLocalInt(oArea, DL_L_AREA_WORKER_FORCED_HOT_PLAYER_DBG, bForcedHotDueToPlayer);
+    SetLocalInt(oArea, DL_L_AREA_PLAYER_COUNT_STALE_REPAIRED_DBG, bStaleRepaired);
+}
+
+void DL_CopyAreaHotnessDebugToNpc(object oNpc, object oArea)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oArea))
+    {
+        return;
+    }
+
+    SetLocalInt(oNpc, DL_L_AREA_CACHED_PLAYER_COUNT_DBG, GetLocalInt(oArea, DL_L_AREA_CACHED_PLAYER_COUNT_DBG));
+    SetLocalInt(oNpc, DL_L_AREA_ACTUAL_PLAYER_COUNT_DBG, GetLocalInt(oArea, DL_L_AREA_ACTUAL_PLAYER_COUNT_DBG));
+    SetLocalString(oNpc, DL_L_AREA_TIER_BEFORE_LIFECYCLE_DBG, GetLocalString(oArea, DL_L_AREA_TIER_BEFORE_LIFECYCLE_DBG));
+    SetLocalString(oNpc, DL_L_AREA_TIER_AFTER_LIFECYCLE_DBG, GetLocalString(oArea, DL_L_AREA_TIER_AFTER_LIFECYCLE_DBG));
+    SetLocalInt(oNpc, DL_L_AREA_HOTNESS_REPAIRED_DBG, GetLocalInt(oArea, DL_L_AREA_HOTNESS_REPAIRED_DBG));
+    SetLocalInt(oNpc, DL_L_AREA_WORKER_FORCED_HOT_PLAYER_DBG, GetLocalInt(oArea, DL_L_AREA_WORKER_FORCED_HOT_PLAYER_DBG));
+    SetLocalInt(oNpc, DL_L_AREA_PLAYER_COUNT_STALE_REPAIRED_DBG, GetLocalInt(oArea, DL_L_AREA_PLAYER_COUNT_STALE_REPAIRED_DBG));
+    SetLocalInt(oNpc, DL_L_AREA_HOTNESS_BUG_PLAYER_PRESENT_DBG, GetLocalInt(oArea, DL_L_AREA_HOTNESS_BUG_PLAYER_PRESENT_DBG));
+}
+
 void DL_SetAreaWorkerPassDebug(object oArea, int nTickStamp, int nPassMode, int nBudget, int nCursorBefore, int nCursorAfter)
 {
     if (!GetIsObjectValid(oArea))
@@ -290,6 +348,7 @@ void DL_SetNpcRegularWorkerDebug(
     SetLocalInt(oNpc, DL_L_NPC_REGISTRY_SLOT_DBG, nSlot);
     SetLocalInt(oNpc, DL_L_NPC_REGISTRY_COUNT_DBG, nCount);
     SetLocalInt(oNpc, DL_L_NPC_SLOT_CONTAINS_SELF_DBG, bSlotContainsSelf);
+    DL_CopyAreaHotnessDebugToNpc(oNpc, oArea);
     if (sSkipReason == "")
     {
         DeleteLocalString(oNpc, DL_L_NPC_TOUCH_SKIPPED_REASON_DBG);
@@ -1056,20 +1115,98 @@ void DL_RunAreaWorkerTick(object oArea)
     SetLocalInt(oArea, DL_L_AREA_WORKER_TICK_SEQ_DBG, nAreaTickSeq);
     DL_BootstrapAreaTier(oArea);
     DL_MaybeReconcileAreaPlayerCount(oArea);
+
+    int nCachedPlayers = DL_GetAreaPlayerCount(oArea);
+    int nActualPlayers = DL_CountPlayersInArea(oArea);
+    int nTierBeforeLifecycle = DL_GetAreaTier(oArea);
+    int bStaleRepaired = FALSE;
+    int bHotnessRepaired = FALSE;
+    int bForcedHotDueToPlayer = FALSE;
+
+    if (nActualPlayers > 0)
+    {
+        if (nCachedPlayers != nActualPlayers)
+        {
+            SetLocalInt(oArea, DL_L_AREA_PLAYER_COUNT, nActualPlayers);
+            SetLocalInt(oArea, DL_L_AREA_PLAYER_COUNT_INIT, TRUE);
+            bStaleRepaired = TRUE;
+        }
+        if (nTierBeforeLifecycle != DL_TIER_HOT)
+        {
+            DL_TransitionAreaToHot(oArea, TRUE);
+            bHotnessRepaired = TRUE;
+            bForcedHotDueToPlayer = TRUE;
+        }
+    }
+
+    DL_SetAreaHotnessDebug(
+        oArea,
+        nCachedPlayers,
+        nActualPlayers,
+        nTierBeforeLifecycle,
+        DL_GetAreaTier(oArea),
+        bHotnessRepaired,
+        bForcedHotDueToPlayer,
+        bStaleRepaired
+    );
     DL_UpdateAreaTierLifecycle(oArea);
+
+    int nTierAfterLifecycle = DL_GetAreaTier(oArea);
+    if (nActualPlayers > 0 && nTierAfterLifecycle != DL_TIER_HOT)
+    {
+        SetLocalInt(oArea, DL_L_AREA_HOTNESS_BUG_PLAYER_PRESENT_DBG, TRUE);
+        DL_TransitionAreaToHot(oArea, TRUE);
+        bHotnessRepaired = TRUE;
+        bForcedHotDueToPlayer = TRUE;
+        nTierAfterLifecycle = DL_GetAreaTier(oArea);
+    }
+    else
+    {
+        SetLocalInt(oArea, DL_L_AREA_HOTNESS_BUG_PLAYER_PRESENT_DBG, FALSE);
+    }
+    DL_SetAreaHotnessDebug(
+        oArea,
+        nCachedPlayers,
+        nActualPlayers,
+        nTierBeforeLifecycle,
+        nTierAfterLifecycle,
+        bHotnessRepaired,
+        bForcedHotDueToPlayer,
+        bStaleRepaired
+    );
 
     int nHandoffTouched = DL_RunTransitionRegistryHandoffTick(oArea, DL_GetAreaTick(oArea));
 
     int nTier = DL_GetAreaTier(oArea);
     if (nTier == DL_TIER_FROZEN)
     {
-        DL_MarkAreaCursorNpcSkipped(oArea, DL_GetAreaTick(oArea), DL_AREA_PASS_MODE_WORKER, 0, DL_GetAreaWorkerCursor(oArea), "skip_area_not_hot");
-        return;
+        if (nActualPlayers > 0)
+        {
+            SetLocalInt(oArea, DL_L_AREA_HOTNESS_BUG_PLAYER_PRESENT_DBG, TRUE);
+            DL_TransitionAreaToHot(oArea, TRUE);
+            nTier = DL_GetAreaTier(oArea);
+            DL_SetAreaHotnessDebug(oArea, nCachedPlayers, nActualPlayers, nTierBeforeLifecycle, nTier, TRUE, TRUE, bStaleRepaired);
+        }
+        else
+        {
+            DL_MarkAreaCursorNpcSkipped(oArea, DL_GetAreaTick(oArea), DL_AREA_PASS_MODE_WORKER, 0, DL_GetAreaWorkerCursor(oArea), "skip_area_not_hot");
+            return;
+        }
     }
     if (nTier == DL_TIER_WARM)
     {
-        DL_RunAreaWarmMaintenanceTick(oArea);
-        return;
+        if (nActualPlayers > 0)
+        {
+            SetLocalInt(oArea, DL_L_AREA_HOTNESS_BUG_PLAYER_PRESENT_DBG, TRUE);
+            DL_TransitionAreaToHot(oArea, TRUE);
+            nTier = DL_GetAreaTier(oArea);
+            DL_SetAreaHotnessDebug(oArea, nCachedPlayers, nActualPlayers, nTierBeforeLifecycle, nTier, TRUE, TRUE, bStaleRepaired);
+        }
+        else
+        {
+            DL_RunAreaWarmMaintenanceTick(oArea);
+            return;
+        }
     }
 
     DL_RunAreaEnterResyncTick(oArea);
