@@ -366,6 +366,14 @@ void main()
         " area_worker_tick_seq=" + IntToString(GetLocalInt(oNpc, "area_worker_tick_seq")) +
         " area_worker_pass_mode=" + GetLocalString(oNpc, "area_worker_pass_mode") +
         " area_worker_budget=" + IntToString(GetLocalInt(oNpc, "area_worker_budget")) +
+        " area_cached_player_count=" + IntToString(GetLocalInt(oNpc, "area_cached_player_count")) +
+        " area_actual_player_count=" + IntToString(GetLocalInt(oNpc, "area_actual_player_count")) +
+        " area_tier_before_lifecycle=" + GetLocalString(oNpc, "area_tier_before_lifecycle") +
+        " area_tier_after_lifecycle=" + GetLocalString(oNpc, "area_tier_after_lifecycle") +
+        " area_hotness_repaired=" + IntToString(GetLocalInt(oNpc, "area_hotness_repaired")) +
+        " area_worker_forced_hot_due_to_player=" + IntToString(GetLocalInt(oNpc, "area_worker_forced_hot_due_to_player")) +
+        " area_player_count_stale_repaired=" + IntToString(GetLocalInt(oNpc, "area_player_count_stale_repaired")) +
+        " area_hotness_bug_player_present=" + IntToString(GetLocalInt(oNpc, "area_hotness_bug_player_present")) +
         " area_worker_cursor_before=" + IntToString(GetLocalInt(oNpc, "area_worker_cursor_before")) +
         " area_worker_cursor_after=" + IntToString(GetLocalInt(oNpc, "area_worker_cursor_after")) +
         " npc_seen_by_round_robin=" + IntToString(GetLocalInt(oNpc, "npc_seen_by_round_robin")) +
