@@ -360,6 +360,17 @@ void main()
         " reached_finalize_target=" + GetLocalString(oNpc, "reached_finalize_target") +
         " focus_status_after_reached_finalize=" + GetLocalString(oNpc, "focus_status_after_reached_finalize") +
         " move_result_after_reached_finalize=" + GetLocalString(oNpc, "move_result_after_reached_finalize") +
+        " move_target_obj_tag=" + GetLocalString(oNpc, "move_target_obj_tag") +
+        " move_target_obj_area=" + GetLocalString(oNpc, "move_target_obj_area") +
+        " move_target_obj_dist=" + FloatToString(GetLocalFloat(oNpc, "move_target_obj_dist"), 1, 2) +
+        " focus_target_obj_tag=" + GetLocalString(oNpc, "focus_target_obj_tag") +
+        " focus_target_obj_area=" + GetLocalString(oNpc, "focus_target_obj_area") +
+        " focus_target_obj_dist=" + FloatToString(GetLocalFloat(oNpc, "focus_target_obj_dist"), 1, 2) +
+        " move_focus_target_same_object=" + IntToString(GetLocalInt(oNpc, "move_focus_target_same_object")) +
+        " reached_finalize_used_focus_target=" + IntToString(GetLocalInt(oNpc, "reached_finalize_used_focus_target")) +
+        " duplicate_move_target_tag=" + IntToString(GetLocalInt(oNpc, "duplicate_move_target_tag")) +
+        " duplicate_move_target_tag_value=" + GetLocalString(oNpc, "duplicate_move_target_tag_value") +
+        " duplicate_move_target_area=" + GetLocalString(oNpc, "duplicate_move_target_area") +
         " move_ticket=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET))
     );
 

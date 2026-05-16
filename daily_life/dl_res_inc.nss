@@ -977,7 +977,7 @@ int DL_BridgeLegacyDirectiveAnchorMoveJob(object oNpc, int nDirective)
     DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
     SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "moving_to_anchor");
     SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oAnchor));
-    DL_BeginMoveJob(oNpc, sOwner, "anchor", GetTag(oAnchor), DL_WORK_ANCHOR_RADIUS);
+    DL_BeginMoveJobToObject(oNpc, sOwner, "anchor", oAnchor, DL_WORK_ANCHOR_RADIUS);
     string sAnchorZone = DL_NavGetAnchorZoneId(oAnchor);
     DL_NavSetDebug(oNpc, DL_NavGetNpcCurrentZone(oNpc), sAnchorZone, sAnchorZone, sReason);
     DL_LogChatDebugEvent(
@@ -1016,6 +1016,8 @@ int DL_FinalizeReachedDirectiveMoveJob(object oNpc, int nEffectiveDirective)
         return FALSE;
     }
 
+    SetLocalInt(oNpc, DL_L_NPC_REACHED_FINALIZE_USED_FOCUS_DBG, FALSE);
+
     if (!DL_HasMoveJob(oNpc))
     {
         DL_SetReachedFinalizeDebug(oNpc, FALSE, FALSE, "no_move_job", nEffectiveDirective, "", "");
@@ -1050,8 +1052,27 @@ int DL_FinalizeReachedDirectiveMoveJob(object oNpc, int nEffectiveDirective)
 
     if (GetDistanceBetween(oNpc, oTarget) > fRadius)
     {
-        DL_SetReachedFinalizeDebug(oNpc, TRUE, FALSE, "target_not_reached", nEffectiveDirective, sOwner, sTargetTag);
-        return FALSE;
+        object oFocusTarget = OBJECT_INVALID;
+        if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "moving_to_anchor" &&
+            GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) == sTargetTag)
+        {
+            oFocusTarget = DL_ResolveFocusTargetInCurrentArea(oNpc);
+        }
+
+        if (GetIsObjectValid(oFocusTarget) &&
+            GetArea(oFocusTarget) == oNpcArea &&
+            GetDistanceBetween(oNpc, oFocusTarget) <= fRadius)
+        {
+            oTarget = oFocusTarget;
+            SetLocalObject(oNpc, DL_L_NPC_MOVE_TARGET_OBJ, oTarget);
+            SetLocalInt(oNpc, DL_L_NPC_REACHED_FINALIZE_USED_FOCUS_DBG, TRUE);
+            DL_SetMoveTargetIdentityDebug(oNpc, oTarget, oFocusTarget);
+        }
+        else
+        {
+            DL_SetReachedFinalizeDebug(oNpc, TRUE, FALSE, "target_not_reached", nEffectiveDirective, sOwner, sTargetTag);
+            return FALSE;
+        }
     }
 
     SetLocalString(oNpc, DL_L_NPC_MOVE_RESULT, DL_MOVE_RESULT_REACHED);
@@ -1179,12 +1200,6 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
                 DL_FinalizeReachedDirectiveMoveJob(oNpc, nEffectiveDirective);
             }
         }
-    }
-    if (bMoveJobTicked && DL_GetMoveJobResult(oNpc) == DL_MOVE_RESULT_REACHED)
-    {
-        DL_ClearFocusMoveIssueState(oNpc);
-        DL_ClearTransitionExecutionState(oNpc);
-        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
     }
     if (bMoveJobTicked && DL_GetMoveJobResult(oNpc) == DL_MOVE_RESULT_RUNNING)
     {
