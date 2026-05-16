@@ -783,14 +783,42 @@ int DL_EnsureNpcRegisteredInCurrentArea(object oNpc)
     }
 
     object oCurrentArea = GetArea(oNpc);
+    object oRegisteredArea = GetLocalObject(oNpc, DL_L_NPC_REG_AREA);
+    string sCurrentArea = "";
+    string sRegisteredAreaBefore = "";
+    if (GetIsObjectValid(oCurrentArea))
+    {
+        sCurrentArea = GetTag(oCurrentArea);
+    }
+    if (GetIsObjectValid(oRegisteredArea))
+    {
+        sRegisteredAreaBefore = GetTag(oRegisteredArea);
+    }
+
+    SetLocalString(oNpc, "dl_registry_current_physical_area", sCurrentArea);
+    SetLocalString(oNpc, "dl_registry_area_before_repair", sRegisteredAreaBefore);
+    SetLocalString(oNpc, "dl_registry_area_after_repair", sRegisteredAreaBefore);
+    if (GetIsObjectValid(oCurrentArea))
+    {
+        SetLocalInt(oNpc, "dl_registry_repair_current_tick", DL_GetAreaTick(oCurrentArea));
+    }
+    else
+    {
+        SetLocalInt(oNpc, "dl_registry_repair_current_tick", 0);
+    }
+    SetLocalInt(oNpc, "dl_registry_repair_owner_changed", FALSE);
+
     if (!GetIsObjectValid(oCurrentArea))
     {
+        SetLocalInt(oNpc, DL_L_NPC_REG_REPAIR_ATTEMPTED, TRUE);
+        SetLocalInt(oNpc, DL_L_NPC_REG_REPAIR_SUCCESS, FALSE);
+        SetLocalInt(oNpc, DL_L_NPC_REG_REPAIR_FAILED, FALSE);
+        DeleteLocalString(oNpc, DL_L_NPC_REG_REPAIR_FAILED_REASON);
         SetLocalInt(oNpc, DL_L_NPC_REG_REPAIR_FAILED, TRUE);
         SetLocalString(oNpc, DL_L_NPC_REG_REPAIR_FAILED_REASON, "invalid_current_area");
         return FALSE;
     }
 
-    object oRegisteredArea = GetLocalObject(oNpc, DL_L_NPC_REG_AREA);
     int nRegisteredSlot = GetLocalInt(oNpc, DL_L_NPC_REG_SLOT);
     int bSlotContainsNpc = DL_VerifyNpcRegistrySlot(oNpc, oRegisteredArea);
     if (oRegisteredArea == oCurrentArea && bSlotContainsNpc == TRUE)
@@ -804,6 +832,8 @@ int DL_EnsureNpcRegisteredInCurrentArea(object oNpc)
 
     SetLocalInt(oNpc, DL_L_NPC_REG_REPAIR_ATTEMPTED, TRUE);
     SetLocalInt(oNpc, DL_L_NPC_REG_REPAIR_SUCCESS, FALSE);
+    SetLocalInt(oNpc, DL_L_NPC_REG_REPAIR_FAILED, FALSE);
+    DeleteLocalString(oNpc, DL_L_NPC_REG_REPAIR_FAILED_REASON);
 
     DL_CleanupNpcRegistrySlotIfOwned(oNpc, oRegisteredArea, nRegisteredSlot);
     DL_ClearNpcRegistryLocals(oNpc);
@@ -811,6 +841,17 @@ int DL_EnsureNpcRegisteredInCurrentArea(object oNpc)
 
     oCurrentArea = GetArea(oNpc);
     oRegisteredArea = GetLocalObject(oNpc, DL_L_NPC_REG_AREA);
+    string sRegisteredAreaAfter = "";
+    if (GetIsObjectValid(oRegisteredArea))
+    {
+        sRegisteredAreaAfter = GetTag(oRegisteredArea);
+    }
+    SetLocalString(oNpc, "dl_registry_area_after_repair", sRegisteredAreaAfter);
+    if (sRegisteredAreaAfter != sRegisteredAreaBefore)
+    {
+        SetLocalInt(oNpc, "dl_registry_repair_owner_changed", TRUE);
+    }
+
     if (GetIsObjectValid(oCurrentArea) &&
         oRegisteredArea == oCurrentArea &&
         GetLocalInt(oNpc, DL_L_NPC_REG_ON) == TRUE &&

@@ -110,10 +110,25 @@ void DL_SetTransitionRegistryHandoffDebug(object oNpc, object oOldArea, object o
     SetLocalString(oNpc, "dl_transition_registry_npc_area", sNpcArea);
     SetLocalString(oNpc, "dl_transition_registry_npc_tag", GetTag(oNpc));
     SetLocalString(oNpc, "dl_transition_registry_reg_area_after", sRegisteredArea);
+    SetLocalString(oNpc, "dl_transition_registry_current_physical_area", sNpcArea);
+    SetLocalString(oNpc, "dl_transition_registry_registry_area_before_repair", GetLocalString(oNpc, "dl_registry_area_before_repair"));
+    SetLocalString(oNpc, "dl_transition_registry_registry_area_after_repair", GetLocalString(oNpc, "dl_registry_area_after_repair"));
+    SetLocalString(oNpc, "dl_transition_registry_worker_touch_area", GetLocalString(oNpc, "dl_worker_touch_area"));
+    SetLocalInt(oNpc, "dl_transition_registry_repair_current_tick", GetLocalInt(oNpc, "dl_registry_repair_current_tick"));
+    SetLocalInt(oNpc, "dl_transition_registry_repair_owner_changed", GetLocalInt(oNpc, "dl_registry_repair_owner_changed"));
     SetLocalInt(oNpc, "dl_transition_registry_reg_on", GetLocalInt(oNpc, DL_L_NPC_REG_ON));
     SetLocalInt(oNpc, "dl_transition_registry_reg_slot", GetLocalInt(oNpc, DL_L_NPC_REG_SLOT));
     SetLocalInt(oNpc, "dl_transition_registry_rebuild_pending", GetLocalInt(oTargetArea, DL_L_AREA_REGISTRY_REBUILD_PENDING));
     SetLocalInt(oNpc, "dl_transition_registry_resync_pending", GetLocalInt(oTargetArea, DL_L_AREA_ENTER_RESYNC_PENDING));
+    if (GetLocalInt(oTargetArea, DL_L_AREA_REGISTRY_REBUILD_PENDING) == TRUE &&
+        GetLocalString(oNpc, "dl_transition_registry_worker_tick_area") != sTargetArea)
+    {
+        SetLocalString(oNpc, "dl_transition_registry_problem", "target_area_worker_not_ticking_or_not_owning_npc");
+    }
+    else if (GetLocalString(oNpc, "dl_transition_registry_problem") == "target_area_worker_not_ticking_or_not_owning_npc")
+    {
+        DeleteLocalString(oNpc, "dl_transition_registry_problem");
+    }
 }
 
 void DL_QueueTransitionRegistryHandoff(object oTargetArea, object oNpc)
@@ -527,25 +542,31 @@ int DL_RunTransitionRegistryHandoffTick(object oArea, int nTickStamp)
 
             if (oNpcArea == oArea)
             {
-                if (DL_EnsureNpcRegisteredInCurrentArea(oNpc))
+                DL_WorkerTouchNpc(oNpc);
+                SetLocalInt(oNpc, "dl_transition_registry_handoff_touch_called", TRUE);
+                SetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK, nTickStamp);
+                oRegisteredArea = GetLocalObject(oNpc, DL_L_NPC_REG_AREA);
+                string sRegisteredAreaAfterTouch = "";
+                if (GetIsObjectValid(oRegisteredArea))
                 {
-                    SetLocalInt(oNpc, "dl_transition_registry_handoff_touch_called", TRUE);
-                    DL_SetTransitionRegistryHandoffDebug(oNpc, OBJECT_INVALID, oArea);
-                    DL_WorkerTouchNpc(oNpc);
-                    SetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK, nTickStamp);
-                    DL_SetTransitionRegistryHandoffDebug(oNpc, OBJECT_INVALID, oArea);
+                    sRegisteredAreaAfterTouch = GetTag(oRegisteredArea);
+                }
+                SetLocalString(oNpc, "dl_transition_registry_reg_area_after", sRegisteredAreaAfterTouch);
+                DL_SetTransitionRegistryHandoffDebug(oNpc, OBJECT_INVALID, oArea);
+                if (oRegisteredArea == oArea)
+                {
                     DeleteLocalObject(oArea, sSlotKey);
                     nTouched = nTouched + 1;
                 }
                 else
                 {
                     DL_MarkAreaRegistryRebuildPending(oArea);
-                    DL_SetTransitionRegistryHandoffDebug(oNpc, OBJECT_INVALID, oArea);
                 }
             }
             else
             {
                 DL_MarkAreaRegistryRebuildPending(oArea);
+                DL_SetTransitionRegistryHandoffDebug(oNpc, OBJECT_INVALID, oArea);
             }
         }
         i = i + 1;
@@ -556,14 +577,54 @@ int DL_RunTransitionRegistryHandoffTick(object oArea, int nTickStamp)
 
 void DL_WorkerTouchNpc(object oNpc)
 {
+    object oCurrentArea = GetArea(oNpc);
+    object oRegisteredArea = GetLocalObject(oNpc, DL_L_NPC_REG_AREA);
+    string sCurrentArea = "";
+    string sRegisteredArea = "";
+    if (GetIsObjectValid(oCurrentArea))
+    {
+        sCurrentArea = GetTag(oCurrentArea);
+    }
+    if (GetIsObjectValid(oRegisteredArea))
+    {
+        sRegisteredArea = GetTag(oRegisteredArea);
+    }
+    SetLocalString(oNpc, "dl_registry_current_physical_area", sCurrentArea);
+    SetLocalString(oNpc, "dl_registry_area_before_repair", sRegisteredArea);
+    SetLocalString(oNpc, "dl_worker_touch_area", sCurrentArea);
+
     if (!DL_IsActivePipelineNpc(oNpc))
     {
         return;
     }
 
+    if (oRegisteredArea != oCurrentArea)
+    {
+        if (!DL_EnsureNpcRegisteredInCurrentArea(oNpc))
+        {
+            SetLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC, "registry_repair_verify_failed");
+            DL_MaybeLogNpcDiagnostic(oNpc, "worker_registry_repair", TRUE);
+            return;
+        }
+    }
+
     if (!DL_EnsureNpcRegisteredInCurrentArea(oNpc))
     {
+        SetLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC, "registry_repair_verify_failed");
+        DL_MaybeLogNpcDiagnostic(oNpc, "worker_registry_repair", TRUE);
         return;
+    }
+
+    oRegisteredArea = GetLocalObject(oNpc, DL_L_NPC_REG_AREA);
+    sRegisteredArea = "";
+    if (GetIsObjectValid(oRegisteredArea))
+    {
+        sRegisteredArea = GetTag(oRegisteredArea);
+    }
+    SetLocalString(oNpc, "dl_registry_area_after_repair", sRegisteredArea);
+    if (GetLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC) == "registry_repair_verify_failed")
+    {
+        DeleteLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC);
     }
 
     object oModule = GetModule();

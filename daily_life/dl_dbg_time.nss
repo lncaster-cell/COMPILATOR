@@ -412,7 +412,13 @@ void main()
             " repair_attempted=" + IntToString(GetLocalInt(oNpc, "dl_registry_repair_attempted")) +
             " repair_success=" + IntToString(GetLocalInt(oNpc, "dl_registry_repair_success")) +
             " repair_failed=" + IntToString(GetLocalInt(oNpc, "dl_registry_repair_failed")) +
-            " repair_failed_reason=" + GetLocalString(oNpc, "dl_registry_repair_failed_reason")
+            " repair_failed_reason=" + GetLocalString(oNpc, "dl_registry_repair_failed_reason") +
+            " current_physical_area=" + GetLocalString(oNpc, "dl_registry_current_physical_area") +
+            " registry_area_before_repair=" + GetLocalString(oNpc, "dl_registry_area_before_repair") +
+            " registry_area_after_repair=" + GetLocalString(oNpc, "dl_registry_area_after_repair") +
+            " worker_touch_area=" + GetLocalString(oNpc, "dl_worker_touch_area") +
+            " repair_current_tick=" + IntToString(GetLocalInt(oNpc, "dl_registry_repair_current_tick")) +
+            " repair_owner_changed=" + IntToString(GetLocalInt(oNpc, "dl_registry_repair_owner_changed"))
         );
     }
 
@@ -436,7 +442,14 @@ void main()
             " handoff_touch_called=" + IntToString(GetLocalInt(oNpc, "dl_transition_registry_handoff_touch_called")) +
             " registry_area_mismatch=" + IntToString(bRegistryAreaMismatch) +
             " target_area_rebuild_pending=" + IntToString(GetLocalInt(oNpc, "dl_transition_registry_rebuild_pending")) +
-            " target_area_resync_pending=" + IntToString(GetLocalInt(oNpc, "dl_transition_registry_resync_pending"))
+            " target_area_resync_pending=" + IntToString(GetLocalInt(oNpc, "dl_transition_registry_resync_pending")) +
+            " handoff_problem=" + GetLocalString(oNpc, "dl_transition_registry_problem") +
+            " current_physical_area=" + GetLocalString(oNpc, "dl_transition_registry_current_physical_area") +
+            " registry_area_before_repair=" + GetLocalString(oNpc, "dl_transition_registry_registry_area_before_repair") +
+            " registry_area_after_repair=" + GetLocalString(oNpc, "dl_transition_registry_registry_area_after_repair") +
+            " worker_touch_area=" + GetLocalString(oNpc, "dl_transition_registry_worker_touch_area") +
+            " repair_current_tick=" + IntToString(GetLocalInt(oNpc, "dl_transition_registry_repair_current_tick")) +
+            " repair_owner_changed=" + IntToString(GetLocalInt(oNpc, "dl_transition_registry_repair_owner_changed"))
         );
     }
 

@@ -44,6 +44,12 @@ string DL_GetNpcProblemSummary(object oNpc)
         return "registry_area_mismatch";
     }
 
+    string sHandoffDiag = GetLocalString(oNpc, "dl_transition_registry_problem");
+    if (sHandoffDiag != "")
+    {
+        return sHandoffDiag;
+    }
+
     string sMoveDiag = GetLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC);
     if (sMoveDiag != "")
     {
@@ -170,6 +176,13 @@ void DL_LogNpcDiagnostic(object oNpc, string sSource)
                   " repair_success=" + IntToString(GetLocalInt(oNpc, "dl_registry_repair_success")) +
                   " repair_failed=" + IntToString(GetLocalInt(oNpc, "dl_registry_repair_failed")) +
                   " repair_failed_reason=" + GetLocalString(oNpc, "dl_registry_repair_failed_reason") +
+                  " current_physical_area=" + GetLocalString(oNpc, "dl_registry_current_physical_area") +
+                  " registry_area_before_repair=" + GetLocalString(oNpc, "dl_registry_area_before_repair") +
+                  " registry_area_after_repair=" + GetLocalString(oNpc, "dl_registry_area_after_repair") +
+                  " worker_touch_area=" + GetLocalString(oNpc, "dl_worker_touch_area") +
+                  " repair_current_tick=" + IntToString(GetLocalInt(oNpc, "dl_registry_repair_current_tick")) +
+                  " repair_owner_changed=" + IntToString(GetLocalInt(oNpc, "dl_registry_repair_owner_changed")) +
+                  " handoff_problem=" + GetLocalString(oNpc, "dl_transition_registry_problem") +
                   " directive=" + DL_GetDirectiveLabel(GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE)) +
                   " state=" + GetLocalString(oNpc, DL_L_NPC_STATE) +
                   " problem=" + sProblem +
@@ -192,6 +205,7 @@ string DL_GetNpcDiagnosticSignature(object oNpc)
            IntToString(GetLocalInt(oNpc, "dl_registry_repair_success")) + "|" +
            IntToString(GetLocalInt(oNpc, "dl_registry_repair_failed")) + "|" +
            GetLocalString(oNpc, "dl_registry_repair_failed_reason") + "|" +
+           GetLocalString(oNpc, "dl_transition_registry_problem") + "|" +
            GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) + "|" +
            GetLocalString(oNpc, DL_L_NPC_SLEEP_TARGET) + "|" +
            GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) + "|" +
