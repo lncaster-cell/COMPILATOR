@@ -43,6 +43,7 @@ int DL_EnsureNpcRegisteredInCurrentArea(object oNpc);
 void DL_ClearNpcRegistryLocals(object oNpc);
 void DL_WorkerTouchNpc(object oNpc);
 int DL_RemoveStaleNpcReferenceFromAreaRegistry(object oArea, object oNpc);
+void DL_BsmithTraceStage(object oNpc, string sStage, string sNote);
 
 string DL_GetAreaNavigationSlotKey(int nSlot)
 {
@@ -532,6 +533,7 @@ void DL_FinalizeTransitionAfterQueuedJump(object oNpc)
         SetLocalString(oNpc, "dl_post_jump_result", sResult);
         SetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC, sResult);
         SetLocalString(oNpc, "dl_transition_registry_problem", sResult);
+        DL_BsmithTraceStage(oNpc, "TRANSITION_FINALIZER", sResult);
         return;
     }
 
@@ -628,6 +630,7 @@ void DL_FinalizeTransitionAfterQueuedJump(object oNpc)
     }
 
     SetLocalString(oNpc, "dl_post_jump_result", sResult);
+    DL_BsmithTraceStage(oNpc, "TRANSITION_FINALIZER", sResult);
     DeleteLocalInt(oNpc, "dl_transition_pending_finalizer_expected");
 }
 
@@ -645,6 +648,7 @@ int DL_NavTryFinalizeCompletedTransition(object oNpc, object oTargetAnchor)
         {
             DL_NavSetTransitionFinalizeSkippedDebug(oNpc, oTargetAnchor, "finalize_skip_target_invalid", sOldTransitionStatus);
         }
+        DL_BsmithTraceStage(oNpc, "TRANSITION_FINALIZER", "finalize_skip_target_invalid");
         return FALSE;
     }
 
@@ -661,6 +665,7 @@ int DL_NavTryFinalizeCompletedTransition(object oNpc, object oTargetAnchor)
         {
             DL_NavSetTransitionFinalizeSkippedDebug(oNpc, oTargetAnchor, "finalize_skip_area_invalid", sOldTransitionStatus);
         }
+        DL_BsmithTraceStage(oNpc, "TRANSITION_FINALIZER", "finalize_skip_area_invalid");
         return FALSE;
     }
 
@@ -670,6 +675,7 @@ int DL_NavTryFinalizeCompletedTransition(object oNpc, object oTargetAnchor)
         {
             DL_NavSetTransitionFinalizeSkippedDebug(oNpc, oTargetAnchor, "finalize_skip_area_mismatch", sOldTransitionStatus);
         }
+        DL_BsmithTraceStage(oNpc, "TRANSITION_FINALIZER", "finalize_skip_area_mismatch");
         return FALSE;
     }
 
@@ -688,6 +694,7 @@ int DL_NavTryFinalizeCompletedTransition(object oNpc, object oTargetAnchor)
     DL_NavSetNpcCurrentZone(oNpc, sFinalZone);
     DL_NavSetDebug(oNpc, sFinalZone, sFinalZone, "", "post_transition_complete");
     DL_NavSetPostTransitionCompleteDebug(oNpc, oTargetAnchor, sFinalZone, sFinalZone, sOldTransitionStatus);
+    DL_BsmithTraceStage(oNpc, "TRANSITION_FINALIZER", "post_transition_complete");
     return TRUE;
 }
 
