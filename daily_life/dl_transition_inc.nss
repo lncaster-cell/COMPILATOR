@@ -35,10 +35,13 @@ const string DL_L_AREA_NAV_SLOT_PREFIX = "dl_area_nav_";
 const int DL_AREA_NAV_ROUTE_CAP = 32;
 const string DL_L_AREA_NAV_ZONE_ID = "dl_nav_zone_id";
 
-// Implemented in dl_worker_inc; kept as a narrow local forward declaration so
-// transition code can request bounded target-area registry catchup without
-// changing include order.
+// Implemented in dl_worker_inc / dl_registry_inc; kept as narrow local forward
+// declarations so transition code can finalize queued jumps without changing
+// include order.
 void DL_RequestTransitionRegistryHandoff(object oNpc, object oOldArea, object oTargetArea);
+int DL_EnsureNpcRegisteredInCurrentArea(object oNpc);
+void DL_ClearNpcRegistryLocals(object oNpc);
+void DL_WorkerTouchNpc(object oNpc);
 
 string DL_GetAreaNavigationSlotKey(int nSlot)
 {
@@ -447,6 +450,171 @@ object DL_ResolveTransitionExitWaypointFromEntry(object oEntryWp)
     return DL_NavFindTransitionByTag(DL_NavMakeTransitionTag(sTo, sFrom));
 }
 
+void DL_SetPendingTransitionAfterJump(object oNpc, object oOldArea, object oTargetArea, string sTargetZone, string sExitTag)
+{
+    if (!GetIsObjectValid(oNpc)) return;
+
+    string sOldArea = "";
+    string sTargetArea = "";
+    if (GetIsObjectValid(oOldArea))
+    {
+        sOldArea = GetTag(oOldArea);
+    }
+    if (GetIsObjectValid(oTargetArea))
+    {
+        sTargetArea = GetTag(oTargetArea);
+    }
+
+    SetLocalObject(oNpc, "dl_transition_pending_old_area", oOldArea);
+    SetLocalString(oNpc, "dl_transition_pending_old_area_tag", sOldArea);
+    SetLocalObject(oNpc, "dl_transition_pending_target_area", oTargetArea);
+    SetLocalString(oNpc, "dl_transition_pending_target_area_tag", sTargetArea);
+    SetLocalString(oNpc, "dl_transition_pending_target_zone", sTargetZone);
+    SetLocalString(oNpc, "dl_transition_pending_exit_tag", sExitTag);
+    SetLocalInt(oNpc, "dl_transition_pending_finalizer_expected", TRUE);
+
+    SetLocalInt(oNpc, "dl_post_jump_finalizer_called", FALSE);
+    SetLocalString(oNpc, "dl_post_jump_current_area", "");
+    SetLocalString(oNpc, "dl_post_jump_expected_area", sTargetArea);
+    SetLocalString(oNpc, "dl_post_jump_registered_area_after", "");
+    SetLocalInt(oNpc, "dl_post_jump_worker_touch_called", FALSE);
+    SetLocalString(oNpc, "dl_post_jump_result", "queued");
+}
+
+void DL_FinalizeTransitionAfterQueuedJump(object oNpc)
+{
+    if (!GetIsObjectValid(oNpc)) return;
+
+    SetLocalInt(oNpc, "dl_post_jump_finalizer_called", TRUE);
+    SetLocalInt(oNpc, "dl_post_jump_worker_touch_called", FALSE);
+
+    object oCurrentArea = GetArea(oNpc);
+    object oExpectedArea = GetLocalObject(oNpc, "dl_transition_pending_target_area");
+    object oOldArea = GetLocalObject(oNpc, "dl_transition_pending_old_area");
+    string sTargetZone = GetLocalString(oNpc, "dl_transition_pending_target_zone");
+    string sCurrentArea = "";
+    string sExpectedArea = GetLocalString(oNpc, "dl_transition_pending_target_area_tag");
+    string sOldArea = GetLocalString(oNpc, "dl_transition_pending_old_area_tag");
+    string sResult = "post_jump_finalizer_ok";
+
+    if (GetIsObjectValid(oCurrentArea))
+    {
+        sCurrentArea = GetTag(oCurrentArea);
+    }
+    if (sExpectedArea == "" && GetIsObjectValid(oExpectedArea))
+    {
+        sExpectedArea = GetTag(oExpectedArea);
+    }
+    if (sOldArea == "" && GetIsObjectValid(oOldArea))
+    {
+        sOldArea = GetTag(oOldArea);
+    }
+
+    SetLocalString(oNpc, "dl_post_jump_current_area", sCurrentArea);
+    SetLocalString(oNpc, "dl_post_jump_expected_area", sExpectedArea);
+    SetLocalString(oNpc, "dl_transition_registry_current_physical_area", sCurrentArea);
+    SetLocalString(oNpc, "dl_transition_registry_npc_area", sCurrentArea);
+
+    if (GetLocalInt(oNpc, "dl_transition_pending_finalizer_expected") != TRUE)
+    {
+        sResult = "post_jump_finalizer_not_expected";
+        SetLocalString(oNpc, "dl_post_jump_result", sResult);
+        SetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC, sResult);
+        SetLocalString(oNpc, "dl_transition_registry_problem", sResult);
+        return;
+    }
+
+    if (!GetIsObjectValid(oCurrentArea) || oCurrentArea == oOldArea)
+    {
+        sResult = "post_jump_finalizer_area_not_changed";
+        SetLocalString(oNpc, "dl_post_jump_result", sResult);
+        SetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC,
+            sResult +
+            " current_area=" + sCurrentArea +
+            " expected_area=" + sExpectedArea +
+            " old_area=" + sOldArea +
+            " exit_tag=" + GetLocalString(oNpc, "dl_transition_pending_exit_tag")
+        );
+        SetLocalString(oNpc, "dl_transition_registry_problem", sResult);
+        return;
+    }
+
+    object oRegisteredArea = GetLocalObject(oNpc, "dl_npc_reg_area");
+    if (oRegisteredArea != oCurrentArea)
+    {
+        DL_ClearNpcRegistryLocals(oNpc);
+    }
+
+    if (!DL_EnsureNpcRegisteredInCurrentArea(oNpc))
+    {
+        sResult = "post_jump_finalizer_registry_repair_failed";
+        SetLocalString(oNpc, "dl_post_jump_result", sResult);
+        SetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC, sResult);
+        SetLocalString(oNpc, "dl_transition_registry_problem", sResult);
+        return;
+    }
+
+    oRegisteredArea = GetLocalObject(oNpc, "dl_npc_reg_area");
+    string sRegisteredAreaAfter = "";
+    if (GetIsObjectValid(oRegisteredArea))
+    {
+        sRegisteredAreaAfter = GetTag(oRegisteredArea);
+    }
+    SetLocalString(oNpc, "dl_post_jump_registered_area_after", sRegisteredAreaAfter);
+    SetLocalString(oNpc, "dl_transition_registry_registered_area", sRegisteredAreaAfter);
+    SetLocalString(oNpc, "dl_transition_registry_reg_area_after", sRegisteredAreaAfter);
+    SetLocalString(oNpc, "dl_transition_registry_registry_area_after_repair", sRegisteredAreaAfter);
+
+    if (oRegisteredArea != oCurrentArea)
+    {
+        sResult = "post_jump_finalizer_registry_area_mismatch";
+        SetLocalString(oNpc, "dl_post_jump_result", sResult);
+        SetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC, sResult);
+        SetLocalString(oNpc, "dl_transition_registry_problem", sResult);
+        return;
+    }
+
+    if (GetIsObjectValid(oExpectedArea) && oCurrentArea == oExpectedArea)
+    {
+        DL_ClearTransitionExecutionState(oNpc);
+        DL_NavClearFocusMoveIssueStateAfterJump(oNpc);
+        DL_NavSetNpcCurrentZone(oNpc, sTargetZone);
+        DL_NavSetDebug(oNpc, sTargetZone, sTargetZone, "", "post_jump_finalizer_complete");
+        if (GetLocalString(oNpc, "dl_transition_registry_problem") == "target_area_worker_not_ticking_or_not_owning_npc" ||
+            GetLocalString(oNpc, "dl_transition_registry_problem") == "post_jump_finalizer_area_not_changed" ||
+            GetLocalString(oNpc, "dl_transition_registry_problem") == "post_jump_finalizer_registry_repair_failed" ||
+            GetLocalString(oNpc, "dl_transition_registry_problem") == "post_jump_finalizer_registry_area_mismatch")
+        {
+            DeleteLocalString(oNpc, "dl_transition_registry_problem");
+        }
+    }
+    else
+    {
+        sResult = "post_jump_finalizer_unexpected_area";
+        SetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC,
+            sResult +
+            " current_area=" + sCurrentArea +
+            " expected_area=" + sExpectedArea +
+            " exit_tag=" + GetLocalString(oNpc, "dl_transition_pending_exit_tag")
+        );
+        SetLocalString(oNpc, "dl_transition_registry_problem", sResult);
+    }
+
+    DL_WorkerTouchNpc(oNpc);
+    SetLocalInt(oNpc, "dl_post_jump_worker_touch_called", TRUE);
+    SetLocalString(oNpc, "dl_transition_registry_worker_touch_area", GetLocalString(oNpc, "dl_worker_touch_area"));
+    SetLocalInt(oNpc, "dl_transition_registry_handoff_touch_called", TRUE);
+
+    if (GetIsObjectValid(oExpectedArea) && oCurrentArea == oExpectedArea)
+    {
+        DL_RequestTransitionRegistryHandoff(oNpc, oOldArea, oExpectedArea);
+        sResult = "post_jump_finalizer_complete";
+    }
+
+    SetLocalString(oNpc, "dl_post_jump_result", sResult);
+    DeleteLocalInt(oNpc, "dl_transition_pending_finalizer_expected");
+}
+
 int DL_NavTryFinalizeCompletedTransition(object oNpc, object oTargetAnchor)
 {
     if (!GetIsObjectValid(oNpc))
@@ -587,12 +755,11 @@ int DL_NavTryAdvanceToZone(object oNpc, string sTargetZone)
     object oOldArea = GetArea(oNpc);
     object oTargetArea = GetArea(oExit);
 
+    DL_SetPendingTransitionAfterJump(oNpc, oOldArea, oTargetArea, sNextZone, sExitTag);
     DL_ClearMoveJob(oNpc);
     AssignCommand(oNpc, ClearAllActions(TRUE));
     AssignCommand(oNpc, ActionJumpToLocation(GetLocation(oExit)));
-    DL_RequestTransitionRegistryHandoff(oNpc, oOldArea, oTargetArea);
-    DL_NavSetNpcCurrentZone(oNpc, sNextZone);
-    DL_NavClearFocusMoveIssueStateAfterJump(oNpc);
+    AssignCommand(oNpc, ActionDoCommand(DL_FinalizeTransitionAfterQueuedJump(oNpc)));
     DL_NavSetDebug(oNpc, sCurrentZone, sTargetZone, sNextZone, "transitioning");
     DL_NavSetState(oNpc, "transitioning", sTargetZone, "");
     return TRUE;
