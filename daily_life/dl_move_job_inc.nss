@@ -464,6 +464,70 @@ void DL_IssueMoveJobAction(object oNpc, object oTarget)
     DL_QueueMoveAction(oNpc, GetLocation(oTarget), TRUE);
 }
 
+int DL_ForceReachMoveJobIfAlreadyAtTarget(object oNpc)
+{
+    if (!DL_HasMoveJob(oNpc))
+    {
+        return FALSE;
+    }
+
+    if (GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) != DL_MOVE_RESULT_RUNNING)
+    {
+        return FALSE;
+    }
+
+    object oTarget = DL_ResolveMoveJobTarget(oNpc);
+    if (!GetIsObjectValid(oTarget))
+    {
+        return FALSE;
+    }
+
+    object oNpcArea = GetArea(oNpc);
+    object oTargetArea = GetArea(oTarget);
+    if (!GetIsObjectValid(oNpcArea) || !GetIsObjectValid(oTargetArea) || oNpcArea != oTargetArea)
+    {
+        return FALSE;
+    }
+
+    float fRadius = GetLocalFloat(oNpc, DL_L_NPC_MOVE_RADIUS);
+    if (fRadius <= 0.0)
+    {
+        fRadius = DL_MOVE_DEFAULT_RADIUS;
+        SetLocalFloat(oNpc, DL_L_NPC_MOVE_RADIUS, fRadius);
+    }
+
+    float fDistance = GetDistanceBetween(oNpc, oTarget);
+    if (fDistance > fRadius)
+    {
+        return FALSE;
+    }
+
+    string sTargetTag = GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG);
+    if (sTargetTag == "")
+    {
+        sTargetTag = GetTag(oTarget);
+    }
+
+    SetLocalObject(oNpc, DL_L_NPC_MOVE_TARGET_OBJ, oTarget);
+    DL_SetMoveJobAreaFromTarget(oNpc, oTarget);
+    SetLocalString(oNpc, DL_L_NPC_MOVE_RESULT, DL_MOVE_RESULT_REACHED);
+    DeleteLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC);
+    DeleteLocalString(oNpc, DL_L_NPC_MOVE_STALL_REASON);
+    SetLocalInt(oNpc, DL_L_NPC_REACHED_FINALIZE_ATTEMPTED_DBG, FALSE);
+    SetLocalInt(oNpc, DL_L_NPC_REACHED_FINALIZE_SUCCESS_DBG, FALSE);
+    DeleteLocalString(oNpc, DL_L_NPC_REACHED_FINALIZE_REASON_DBG);
+    SetLocalInt(oNpc, DL_L_NPC_MOVE_REACHED_FINALIZED_DBG, TRUE);
+    SetLocalString(oNpc, DL_L_NPC_REACHED_MOVE_OWNER_DBG, GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER));
+    SetLocalString(oNpc, DL_L_NPC_REACHED_MOVE_TARGET_DBG, sTargetTag);
+    SetLocalFloat(oNpc, DL_L_NPC_MOVE_DIST_DELTA_DBG, 0.0);
+    SetLocalInt(oNpc, DL_L_NPC_MOVE_CURRENT_ACTION_DBG, GetCurrentAction(oNpc));
+    SetLocalInt(oNpc, DL_L_NPC_MOVE_ACTION_REISSUED_DBG, FALSE);
+    DL_RecordMoveJobProgressSample(oNpc, fDistance, DL_GetMoveJobTickStamp());
+    DL_ClearTransitionExecutionState(oNpc);
+    DL_BsmithTraceStage(oNpc, "MOVE_REACHED", "forced_already_at_target");
+    return TRUE;
+}
+
 int DL_TickMoveJob(object oNpc)
 {
     if (!DL_HasMoveJob(oNpc))
