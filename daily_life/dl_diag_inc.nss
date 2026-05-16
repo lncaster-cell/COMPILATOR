@@ -235,6 +235,9 @@ void DL_LogNpcDiagnostic(object oNpc, string sSource)
                   " work_target=" + GetLocalString(oNpc, DL_L_NPC_WORK_TARGET) +
                   " transition_status=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) +
                   " transition_target=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) +
+                  " move_reached_finalized=" + IntToString(GetLocalInt(oNpc, "move_reached_finalized")) +
+                  " reached_move_owner=" + GetLocalString(oNpc, "reached_move_owner") +
+                  " reached_move_target=" + GetLocalString(oNpc, "reached_move_target") +
                   " directive_preempted_old_move=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_DBG_DIRECTIVE_PREEMPTED_OLD_MOVE)) +
                   " old_move_owner=" + GetLocalString(oNpc, DL_L_NPC_DBG_OLD_MOVE_OWNER) +
                   " old_move_target=" + GetLocalString(oNpc, DL_L_NPC_DBG_OLD_MOVE_TARGET) +
@@ -245,6 +248,18 @@ void DL_LogNpcDiagnostic(object oNpc, string sSource)
                   " area_worker_tick_seq=" + IntToString(GetLocalInt(oNpc, "area_worker_tick_seq")) +
                   " area_worker_pass_mode=" + GetLocalString(oNpc, "area_worker_pass_mode") +
                   " area_worker_budget=" + IntToString(GetLocalInt(oNpc, "area_worker_budget")) +
+                  " area_cached_player_count=" + IntToString(GetLocalInt(oNpc, "area_cached_player_count")) +
+                  " area_actual_player_count=" + IntToString(GetLocalInt(oNpc, "area_actual_player_count")) +
+                  " area_tier_before_lifecycle=" + GetLocalString(oNpc, "area_tier_before_lifecycle") +
+                  " area_tier_after_lifecycle=" + GetLocalString(oNpc, "area_tier_after_lifecycle") +
+                  " area_hotness_repaired=" + IntToString(GetLocalInt(oNpc, "area_hotness_repaired")) +
+                  " area_worker_forced_hot_due_to_player=" + IntToString(GetLocalInt(oNpc, "area_worker_forced_hot_due_to_player")) +
+                  " area_player_count_stale_repaired=" + IntToString(GetLocalInt(oNpc, "area_player_count_stale_repaired")) +
+                  " area_hotness_bug_player_present=" + IntToString(GetLocalInt(oNpc, "area_hotness_bug_player_present")) +
+                  " critical_worker_touch=" + IntToString(GetLocalInt(oNpc, "critical_worker_touch")) +
+                  " critical_reason=" + GetLocalString(oNpc, "critical_reason") +
+                  " critical_bypassed_last_touch_gate=" + IntToString(GetLocalInt(oNpc, "critical_bypassed_last_touch_gate")) +
+                  " critical_bypassed_warm_gate=" + IntToString(GetLocalInt(oNpc, "critical_bypassed_warm_gate")) +
                   " area_worker_cursor_before=" + IntToString(GetLocalInt(oNpc, "area_worker_cursor_before")) +
                   " area_worker_cursor_after=" + IntToString(GetLocalInt(oNpc, "area_worker_cursor_after")) +
                   " npc_seen_by_round_robin=" + IntToString(GetLocalInt(oNpc, "npc_seen_by_round_robin")) +
@@ -278,6 +293,9 @@ string DL_GetNpcDiagnosticSignature(object oNpc)
            GetLocalString(oNpc, DL_L_NPC_WORK_TARGET) + "|" +
            GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) + "|" +
            GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) + "|" +
+           IntToString(GetLocalInt(oNpc, "move_reached_finalized")) + "|" +
+           GetLocalString(oNpc, "reached_move_owner") + "|" +
+           GetLocalString(oNpc, "reached_move_target") + "|" +
            IntToString(GetLocalInt(oNpc, DL_L_NPC_DBG_DIRECTIVE_PREEMPTED_OLD_MOVE)) + "|" +
            GetLocalString(oNpc, DL_L_NPC_DBG_OLD_MOVE_OWNER) + "|" +
            GetLocalString(oNpc, DL_L_NPC_DBG_OLD_MOVE_TARGET) + "|" +
@@ -288,6 +306,18 @@ string DL_GetNpcDiagnosticSignature(object oNpc)
            IntToString(GetLocalInt(oNpc, "area_worker_tick_seq")) + "|" +
            GetLocalString(oNpc, "area_worker_pass_mode") + "|" +
            IntToString(GetLocalInt(oNpc, "area_worker_budget")) + "|" +
+           IntToString(GetLocalInt(oNpc, "area_cached_player_count")) + "|" +
+           IntToString(GetLocalInt(oNpc, "area_actual_player_count")) + "|" +
+           GetLocalString(oNpc, "area_tier_before_lifecycle") + "|" +
+           GetLocalString(oNpc, "area_tier_after_lifecycle") + "|" +
+           IntToString(GetLocalInt(oNpc, "area_hotness_repaired")) + "|" +
+           IntToString(GetLocalInt(oNpc, "area_worker_forced_hot_due_to_player")) + "|" +
+           IntToString(GetLocalInt(oNpc, "area_player_count_stale_repaired")) + "|" +
+           IntToString(GetLocalInt(oNpc, "area_hotness_bug_player_present")) + "|" +
+           IntToString(GetLocalInt(oNpc, "critical_worker_touch")) + "|" +
+           GetLocalString(oNpc, "critical_reason") + "|" +
+           IntToString(GetLocalInt(oNpc, "critical_bypassed_last_touch_gate")) + "|" +
+           IntToString(GetLocalInt(oNpc, "critical_bypassed_warm_gate")) + "|" +
            IntToString(GetLocalInt(oNpc, "area_worker_cursor_before")) + "|" +
            IntToString(GetLocalInt(oNpc, "area_worker_cursor_after")) + "|" +
            IntToString(GetLocalInt(oNpc, "npc_seen_by_round_robin")) + "|" +

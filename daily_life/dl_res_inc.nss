@@ -1037,6 +1037,12 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
     {
         bMoveJobTicked = DL_TickMoveJob(oNpc);
     }
+    if (bMoveJobTicked && DL_GetMoveJobResult(oNpc) == DL_MOVE_RESULT_REACHED)
+    {
+        DL_ClearFocusMoveIssueState(oNpc);
+        DL_ClearTransitionExecutionState(oNpc);
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
+    }
     if (bMoveJobTicked && DL_GetMoveJobResult(oNpc) == DL_MOVE_RESULT_RUNNING)
     {
         DL_ApplyMaterializationSkeleton(oNpc, nEffectiveDirective);
