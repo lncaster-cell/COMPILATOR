@@ -395,6 +395,72 @@ void DL_SetNpcRegularWorkerDebug(
     }
 }
 
+int DL_IsStaleReachedMoveJobCritical(object oNpc)
+{
+    if (!DL_HasMoveJob(oNpc))
+    {
+        return FALSE;
+    }
+
+    if (GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) != DL_MOVE_RESULT_RUNNING)
+    {
+        return FALSE;
+    }
+
+    object oNpcArea = GetArea(oNpc);
+    if (!GetIsObjectValid(oNpcArea))
+    {
+        return FALSE;
+    }
+
+    object oTarget = DL_ResolveMoveJobTarget(oNpc);
+    if (!GetIsObjectValid(oTarget) || GetArea(oTarget) != oNpcArea)
+    {
+        return FALSE;
+    }
+
+    float fRadius = GetLocalFloat(oNpc, DL_L_NPC_MOVE_RADIUS);
+    if (fRadius <= 0.0)
+    {
+        fRadius = DL_MOVE_DEFAULT_RADIUS;
+    }
+
+    float fDistance = GetDistanceBetween(oNpc, oTarget);
+    if (fDistance > fRadius)
+    {
+        return FALSE;
+    }
+
+    if (GetCurrentAction(oNpc) != ACTION_MOVETOPOINT)
+    {
+        return TRUE;
+    }
+
+    if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) != "moving_to_anchor")
+    {
+        return FALSE;
+    }
+
+    object oFocusTarget = DL_ResolveFocusTargetInCurrentArea(oNpc);
+    if (!GetIsObjectValid(oFocusTarget) || GetArea(oFocusTarget) != oNpcArea)
+    {
+        return FALSE;
+    }
+
+    int bSameTarget = oFocusTarget == oTarget;
+    if (!bSameTarget && GetTag(oFocusTarget) == GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG))
+    {
+        bSameTarget = TRUE;
+    }
+
+    if (bSameTarget && GetDistanceBetween(oNpc, oFocusTarget) <= fRadius)
+    {
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
 int DL_NpcNeedsCriticalWorkerTouch(object oNpc)
 {
     if (!GetIsObjectValid(oNpc))
@@ -420,22 +486,11 @@ int DL_NpcNeedsCriticalWorkerTouch(object oNpc)
             return TRUE;
         }
 
-        if (GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_RUNNING)
+        if (DL_IsStaleReachedMoveJobCritical(oNpc))
         {
-            object oTarget = DL_ResolveMoveJobTarget(oNpc);
-            if (GetIsObjectValid(oTarget) && GetArea(oTarget) == GetArea(oNpc))
-            {
-                float fRadius = GetLocalFloat(oNpc, DL_L_NPC_MOVE_RADIUS);
-                if (fRadius <= 0.0)
-                {
-                    fRadius = DL_MOVE_DEFAULT_RADIUS;
-                }
-                if (GetDistanceBetween(oNpc, oTarget) <= fRadius)
-                {
-                    DL_SetCriticalWorkerDebug(oNpc, "move_job_reached_target");
-                    return TRUE;
-                }
-            }
+            DL_SetCriticalWorkerDebug(oNpc, "stale_reached_move_job");
+            DL_BsmithTraceStage(oNpc, "CRITICAL_WORKER", "stale_reached_move_job");
+            return TRUE;
         }
     }
 
@@ -497,31 +552,69 @@ object DL_GetAreaWorkerCursorNpc(object oArea)
 
 int DL_ProcessCriticalAreaCursorNpc(object oArea, int nPassMode, int nTickStamp, string sBypassKind)
 {
-    object oNpc = DL_GetAreaWorkerCursorNpc(oArea);
-    if (!GetIsObjectValid(oNpc) || !DL_IsActivePipelineNpc(oNpc) || GetArea(oNpc) != oArea)
+    if (!GetIsObjectValid(oArea))
     {
         return FALSE;
     }
 
-    if (!DL_NpcNeedsCriticalWorkerTouch(oNpc))
+    int nCount = GetLocalInt(oArea, DL_L_AREA_REG_COUNT);
+    if (nCount <= 0)
     {
         return FALSE;
-    }
-
-    if (sBypassKind == "warm")
-    {
-        SetLocalInt(oNpc, DL_L_NPC_CRITICAL_BYPASSED_WARM_DBG, TRUE);
-    }
-    else if (sBypassKind == "budget")
-    {
-        SetLocalInt(oNpc, DL_L_NPC_CRITICAL_BYPASSED_WARM_DBG, TRUE);
     }
 
     int nCursor = DL_GetAreaWorkerCursor(oArea);
-    if (DL_ProcessAreaNpcByPassMode(oArea, oNpc, nPassMode, nTickStamp, DL_WORKER_BUDGET_MIN, nCursor, nCursor))
+    if (nCursor < 0 || nCursor >= nCount)
     {
-        SetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK, nTickStamp);
-        return TRUE;
+        nCursor = 0;
+    }
+
+    int nAttempts = 0;
+    while (nAttempts < nCount)
+    {
+        int nSlot = (nCursor + nAttempts) % nCount;
+        object oNpc = DL_GetAreaRegistryNpcAtSlot(oArea, nSlot);
+        if (GetIsObjectValid(oNpc))
+        {
+            DL_BsmithTraceStage(oNpc, "WORKER_REGISTRY_SEEN", "critical_scan slot=" + IntToString(nSlot) + " bypass=" + sBypassKind);
+            if (DL_IsActivePipelineNpc(oNpc) && GetArea(oNpc) == oArea && GetLocalObject(oNpc, DL_L_NPC_REG_AREA) == oArea)
+            {
+                if (DL_NpcNeedsCriticalWorkerTouch(oNpc))
+                {
+                    if (sBypassKind == "warm")
+                    {
+                        SetLocalInt(oNpc, DL_L_NPC_CRITICAL_BYPASSED_WARM_DBG, TRUE);
+                    }
+                    else if (sBypassKind == "budget")
+                    {
+                        SetLocalInt(oNpc, DL_L_NPC_CRITICAL_BYPASSED_WARM_DBG, TRUE);
+                    }
+
+                    DL_BsmithTraceStage(oNpc, "CRITICAL_BYPASS", sBypassKind + " slot=" + IntToString(nSlot));
+                    if (DL_ProcessAreaNpcByPassMode(oArea, oNpc, nPassMode, nTickStamp, DL_WORKER_BUDGET_MIN, nSlot, nSlot))
+                    {
+                        SetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK, nTickStamp);
+                        return TRUE;
+                    }
+                    DL_BsmithTraceStage(oNpc, "WORKER_SKIP", "critical_process_failed slot=" + IntToString(nSlot));
+                }
+            }
+            else if (DL_IsActivePipelineNpc(oNpc) && !DL_IsNpcRegistryOwnerForArea(oNpc, oArea))
+            {
+                DL_RemoveStaleNpcReferenceFromAreaRegistrySlot(oArea, oNpc, nSlot);
+                nCount = GetLocalInt(oArea, DL_L_AREA_REG_COUNT);
+                if (nCount <= 0)
+                {
+                    return FALSE;
+                }
+                if (nCursor >= nCount)
+                {
+                    nCursor = 0;
+                }
+            }
+        }
+
+        nAttempts = nAttempts + 1;
     }
 
     return FALSE;
@@ -914,6 +1007,7 @@ int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPas
 
         if (GetIsObjectValid(oCandidate))
         {
+            DL_BsmithTraceStage(oCandidate, "WORKER_REGISTRY_SEEN", "round_robin slot=" + IntToString(nSlot));
             if (GetObjectType(oCandidate) == OBJECT_TYPE_CREATURE &&
                 GetIsPC(oCandidate) == FALSE &&
                 GetIsDM(oCandidate) == FALSE &&
@@ -1156,7 +1250,9 @@ void DL_WorkerTouchNpc(object oNpc)
     DL_BsmithTraceStage(oNpc, "WORKER_TOUCH", "worker_touch");
 
     int nDirective = DL_ResolveNpcDirective(oNpc);
+    DL_BsmithTraceStage(oNpc, "DIRECTIVE_PROCESS", "invoke " + DL_GetDirectiveDebugLabel(nDirective));
     DL_ApplyDirectiveSkeleton(oNpc, nDirective);
+    DL_BsmithTraceStage(oNpc, "WORKER_EXIT", "after_directive");
 
     if (DL_GetNpcProblemSummary(oNpc) != "ok")
     {
