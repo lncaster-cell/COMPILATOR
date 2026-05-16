@@ -42,6 +42,8 @@ const int DL_MOVE_NO_PROGRESS_SECONDS = 8;
 const int DL_MOVE_PERSISTENT_REISSUE_COUNT = 3;
 
 object DL_ResolveFocusTargetInCurrentArea(object oNpc);
+void DL_BsmithTraceStage(object oNpc, string sStage, string sNote);
+void DL_BsmithClassify(object oNpc, string sCategory, string sConfidence, string sReason);
 
 int DL_HasMoveJob(object oNpc)
 {
@@ -167,6 +169,8 @@ void DL_ReissueMoveJobAfterNoProgress(object oNpc, object oTarget, float fRadius
     DL_ResetCustomAnimationBeforeAnchorMove(oNpc);
     SetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET, nNowTick);
     DL_QueueMoveToObjectAction(oNpc, oTarget, TRUE, fRadius);
+    DL_BsmithTraceStage(oNpc, "ACTION_MOVE_ISSUED", "reissue");
+    DL_BsmithTraceStage(oNpc, "MOVE_REISSUE", sReason);
     DL_RecordMoveJobProgressSample(oNpc, fDistance, nNowTick);
 }
 
@@ -473,10 +477,12 @@ int DL_TickMoveJob(object oNpc)
     if (!GetIsObjectValid(oTarget))
     {
         DL_SetMoveJobFailed(oNpc, "missing_target");
+        DL_BsmithTraceStage(oNpc, "TARGET_RESOLVED", "missing_target");
         return TRUE;
     }
 
     DL_SetMoveJobAreaFromTarget(oNpc, oTarget);
+    DL_BsmithTraceStage(oNpc, "TARGET_RESOLVED", "move_target");
 
     float fRadius = GetLocalFloat(oNpc, DL_L_NPC_MOVE_RADIUS);
     if (fRadius <= 0.0)
@@ -491,6 +497,7 @@ int DL_TickMoveJob(object oNpc)
     {
         SetLocalString(oNpc, DL_L_NPC_MOVE_RESULT, DL_MOVE_RESULT_RUNNING);
         SetLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC, "waiting_for_transition");
+        DL_BsmithTraceStage(oNpc, "MOVE_TICK", "waiting_for_transition");
         return TRUE;
     }
 
@@ -511,10 +518,12 @@ int DL_TickMoveJob(object oNpc)
         SetLocalFloat(oNpc, DL_L_NPC_MOVE_DIST_DELTA_DBG, 0.0);
         DL_RecordMoveJobProgressSample(oNpc, fDistance, nNowTick);
         DL_ClearTransitionExecutionState(oNpc);
+        DL_BsmithTraceStage(oNpc, "MOVE_REACHED", "within_radius");
         return TRUE;
     }
 
     SetLocalString(oNpc, DL_L_NPC_MOVE_RESULT, DL_MOVE_RESULT_RUNNING);
+    DL_BsmithTraceStage(oNpc, "MOVE_TICK", "running");
 
     int nLastProgressTick = GetLocalInt(oNpc, DL_L_NPC_MOVE_LAST_PROGRESS_TICK);
     if (nLastProgressTick <= 0)
@@ -546,6 +555,7 @@ int DL_TickMoveJob(object oNpc)
     {
         DL_IssueMoveJobAction(oNpc, oTarget);
         SetLocalInt(oNpc, DL_L_NPC_MOVE_ACTION_REISSUED_DBG, TRUE);
+        DL_BsmithTraceStage(oNpc, "ACTION_MOVE_ISSUED", "tick_issue");
     }
 
     return TRUE;
@@ -572,6 +582,7 @@ void DL_BeginMoveJobToObject(object oNpc, string sOwner, string sPhase, object o
     SetLocalFloat(oNpc, DL_L_NPC_MOVE_RADIUS, fRadius);
     SetLocalString(oNpc, DL_L_NPC_MOVE_RESULT, DL_MOVE_RESULT_RUNNING);
     DeleteLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC);
+    DL_BsmithTraceStage(oNpc, "BEGIN_MOVE", "object");
 
     DL_TickMoveJob(oNpc);
 }
@@ -593,6 +604,7 @@ void DL_BeginMoveJob(object oNpc, string sOwner, string sPhase, string sTargetTa
     SetLocalString(oNpc, DL_L_NPC_MOVE_PHASE, sPhase);
     SetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG, sTargetTag);
     SetLocalFloat(oNpc, DL_L_NPC_MOVE_RADIUS, fRadius);
+    DL_BsmithTraceStage(oNpc, "BEGIN_MOVE", "tag");
 
     object oTarget = DL_ResolveMoveJobTarget(oNpc);
     if (GetIsObjectValid(oTarget))

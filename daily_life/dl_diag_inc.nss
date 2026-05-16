@@ -180,104 +180,7 @@ void DL_LogNpcDiagnostic(object oNpc, string sSource)
         return;
     }
 
-    if (!DL_IsRuntimeLogEnabled())
-    {
-        return;
-    }
-
-    string sProblem = DL_GetNpcProblemSummary(oNpc);
-    object oCurrentArea = GetArea(oNpc);
-    object oRegisteredArea = GetLocalObject(oNpc, "dl_npc_reg_area");
-    string sCurrentArea = "";
-    string sRegisteredArea = "";
-    if (GetIsObjectValid(oCurrentArea))
-    {
-        sCurrentArea = GetTag(oCurrentArea);
-    }
-    if (GetIsObjectValid(oRegisteredArea))
-    {
-        sRegisteredArea = GetTag(oRegisteredArea);
-    }
-
-    int nRegSlot = GetLocalInt(oNpc, "dl_npc_reg_slot");
-    int bSlotContainsNpc = FALSE;
-    if (GetIsObjectValid(oRegisteredArea) && nRegSlot >= 0)
-    {
-        bSlotContainsNpc = GetLocalObject(oRegisteredArea, "dl_reg_slot_" + IntToString(nRegSlot)) == oNpc;
-    }
-
-    string sLog = "[DL][NPC] src=" + sSource +
-                  " npc=" + GetName(oNpc) +
-                  " hour=" + IntToString(GetTimeHour()) +
-                  " profile=" + GetLocalString(oNpc, DL_L_NPC_PROFILE_ID) +
-                  " npc_area=" + sCurrentArea +
-                  " registered_area=" + sRegisteredArea +
-                  " reg_on=" + IntToString(GetLocalInt(oNpc, "dl_reg_on")) +
-                  " reg_slot=" + IntToString(nRegSlot) +
-                  " slot_contains_npc=" + IntToString(bSlotContainsNpc) +
-                  " repair_attempted=" + IntToString(GetLocalInt(oNpc, "dl_registry_repair_attempted")) +
-                  " repair_success=" + IntToString(GetLocalInt(oNpc, "dl_registry_repair_success")) +
-                  " repair_failed=" + IntToString(GetLocalInt(oNpc, "dl_registry_repair_failed")) +
-                  " repair_failed_reason=" + GetLocalString(oNpc, "dl_registry_repair_failed_reason") +
-                  " current_physical_area=" + GetLocalString(oNpc, "dl_registry_current_physical_area") +
-                  " registry_area_before_repair=" + GetLocalString(oNpc, "dl_registry_area_before_repair") +
-                  " registry_area_after_repair=" + GetLocalString(oNpc, "dl_registry_area_after_repair") +
-                  " worker_touch_area=" + GetLocalString(oNpc, "dl_worker_touch_area") +
-                  " repair_current_tick=" + IntToString(GetLocalInt(oNpc, "dl_registry_repair_current_tick")) +
-                  " repair_owner_changed=" + IntToString(GetLocalInt(oNpc, "dl_registry_repair_owner_changed")) +
-                  " handoff_problem=" + GetLocalString(oNpc, "dl_transition_registry_problem") +
-                  " directive=" + DL_GetDirectiveLabel(GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE)) +
-                  " state=" + GetLocalString(oNpc, DL_L_NPC_STATE) +
-                  " problem=" + sProblem +
-                  " sleep_status=" + GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) +
-                  " sleep_target=" + GetLocalString(oNpc, DL_L_NPC_SLEEP_TARGET) +
-                  " work_status=" + GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) +
-                  " work_target=" + GetLocalString(oNpc, DL_L_NPC_WORK_TARGET) +
-                  " transition_status=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) +
-                  " transition_target=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) +
-                  " move_reached_finalized=" + IntToString(GetLocalInt(oNpc, "move_reached_finalized")) +
-                  " reached_move_owner=" + GetLocalString(oNpc, "reached_move_owner") +
-                  " reached_move_target=" + GetLocalString(oNpc, "reached_move_target") +
-                  " directive_preempted_old_move=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_DBG_DIRECTIVE_PREEMPTED_OLD_MOVE)) +
-                  " old_move_owner=" + GetLocalString(oNpc, DL_L_NPC_DBG_OLD_MOVE_OWNER) +
-                  " old_move_target=" + GetLocalString(oNpc, DL_L_NPC_DBG_OLD_MOVE_TARGET) +
-                  " directive_change_prev=" + GetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_PREV) +
-                  " directive_change_next=" + GetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_NEXT) +
-                  " directive_change_cleanup=" + GetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_CLEANUP) +
-                  " area_worker_tick_area=" + GetLocalString(oNpc, "area_worker_tick_area") +
-                  " area_worker_tick_seq=" + IntToString(GetLocalInt(oNpc, "area_worker_tick_seq")) +
-                  " area_worker_pass_mode=" + GetLocalString(oNpc, "area_worker_pass_mode") +
-                  " area_worker_budget=" + IntToString(GetLocalInt(oNpc, "area_worker_budget")) +
-                  " area_cached_player_count=" + IntToString(GetLocalInt(oNpc, "area_cached_player_count")) +
-                  " area_actual_player_count=" + IntToString(GetLocalInt(oNpc, "area_actual_player_count")) +
-                  " area_tier_before_lifecycle=" + GetLocalString(oNpc, "area_tier_before_lifecycle") +
-                  " area_tier_after_lifecycle=" + GetLocalString(oNpc, "area_tier_after_lifecycle") +
-                  " area_hotness_repaired=" + IntToString(GetLocalInt(oNpc, "area_hotness_repaired")) +
-                  " area_worker_forced_hot_due_to_player=" + IntToString(GetLocalInt(oNpc, "area_worker_forced_hot_due_to_player")) +
-                  " area_player_count_stale_repaired=" + IntToString(GetLocalInt(oNpc, "area_player_count_stale_repaired")) +
-                  " area_hotness_bug_player_present=" + IntToString(GetLocalInt(oNpc, "area_hotness_bug_player_present")) +
-                  " critical_worker_touch=" + IntToString(GetLocalInt(oNpc, "critical_worker_touch")) +
-                  " critical_reason=" + GetLocalString(oNpc, "critical_reason") +
-                  " critical_bypassed_last_touch_gate=" + IntToString(GetLocalInt(oNpc, "critical_bypassed_last_touch_gate")) +
-                  " critical_bypassed_warm_gate=" + IntToString(GetLocalInt(oNpc, "critical_bypassed_warm_gate")) +
-                  " area_worker_cursor_before=" + IntToString(GetLocalInt(oNpc, "area_worker_cursor_before")) +
-                  " area_worker_cursor_after=" + IntToString(GetLocalInt(oNpc, "area_worker_cursor_after")) +
-                  " npc_seen_by_round_robin=" + IntToString(GetLocalInt(oNpc, "npc_seen_by_round_robin")) +
-                  " npc_processed_by_round_robin=" + IntToString(GetLocalInt(oNpc, "npc_processed_by_round_robin")) +
-                  " npc_touch_skipped_reason=" + GetLocalString(oNpc, "npc_touch_skipped_reason") +
-                  " npc_worker_touch_seq_before=" + IntToString(GetLocalInt(oNpc, "npc_worker_touch_seq_before")) +
-                  " npc_worker_touch_seq_after=" + IntToString(GetLocalInt(oNpc, "npc_worker_touch_seq_after")) +
-                  " npc_worker_touch_seq=" + IntToString(GetLocalInt(oNpc, "npc_worker_touch_seq")) +
-                  " npc_last_worker_touch_hour=" + IntToString(GetLocalInt(oNpc, "npc_last_worker_touch_hour")) +
-                  " npc_last_worker_touch_minute=" + IntToString(GetLocalInt(oNpc, "npc_last_worker_touch_minute")) +
-                  " npc_registry_slot=" + IntToString(GetLocalInt(oNpc, "npc_registry_slot")) +
-                  " npc_registry_count=" + IntToString(GetLocalInt(oNpc, "npc_registry_count")) +
-                  " npc_slot_contains_self=" + IntToString(GetLocalInt(oNpc, "npc_slot_contains_self")) +
-                  " stale_old_area_slot_removed=" + IntToString(GetLocalInt(oNpc, "stale_old_area_slot_removed")) +
-                  " stale_old_area=" + GetLocalString(oNpc, "stale_old_area") +
-                  " stale_old_area_slot=" + IntToString(GetLocalInt(oNpc, "stale_old_area_slot"));
-
-    DL_LogRuntime(sLog);
+    DL_BsmithTraceStage(oNpc, "PROBLEM_SUMMARY", sSource + ":" + DL_GetNpcProblemSummary(oNpc));
 }
 
 string DL_GetNpcDiagnosticSignature(object oNpc)
@@ -285,58 +188,9 @@ string DL_GetNpcDiagnosticSignature(object oNpc)
     return DL_GetDirectiveLabel(GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE)) + "|" +
            GetLocalString(oNpc, DL_L_NPC_STATE) + "|" +
            DL_GetNpcProblemSummary(oNpc) + "|" +
-           IntToString(GetLocalInt(oNpc, "dl_registry_repair_attempted")) + "|" +
-           IntToString(GetLocalInt(oNpc, "dl_registry_repair_success")) + "|" +
-           IntToString(GetLocalInt(oNpc, "dl_registry_repair_failed")) + "|" +
-           GetLocalString(oNpc, "dl_registry_repair_failed_reason") + "|" +
-           GetLocalString(oNpc, "dl_transition_registry_problem") + "|" +
-           GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) + "|" +
-           GetLocalString(oNpc, DL_L_NPC_SLEEP_TARGET) + "|" +
-           GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) + "|" +
-           GetLocalString(oNpc, DL_L_NPC_WORK_TARGET) + "|" +
-           GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) + "|" +
-           GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) + "|" +
-           IntToString(GetLocalInt(oNpc, "move_reached_finalized")) + "|" +
-           GetLocalString(oNpc, "reached_move_owner") + "|" +
-           GetLocalString(oNpc, "reached_move_target") + "|" +
-           IntToString(GetLocalInt(oNpc, DL_L_NPC_DBG_DIRECTIVE_PREEMPTED_OLD_MOVE)) + "|" +
-           GetLocalString(oNpc, DL_L_NPC_DBG_OLD_MOVE_OWNER) + "|" +
-           GetLocalString(oNpc, DL_L_NPC_DBG_OLD_MOVE_TARGET) + "|" +
-           GetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_PREV) + "|" +
-           GetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_NEXT) + "|" +
-           GetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_CLEANUP) + "|" +
-           GetLocalString(oNpc, "area_worker_tick_area") + "|" +
-           IntToString(GetLocalInt(oNpc, "area_worker_tick_seq")) + "|" +
-           GetLocalString(oNpc, "area_worker_pass_mode") + "|" +
-           IntToString(GetLocalInt(oNpc, "area_worker_budget")) + "|" +
-           IntToString(GetLocalInt(oNpc, "area_cached_player_count")) + "|" +
-           IntToString(GetLocalInt(oNpc, "area_actual_player_count")) + "|" +
-           GetLocalString(oNpc, "area_tier_before_lifecycle") + "|" +
-           GetLocalString(oNpc, "area_tier_after_lifecycle") + "|" +
-           IntToString(GetLocalInt(oNpc, "area_hotness_repaired")) + "|" +
-           IntToString(GetLocalInt(oNpc, "area_worker_forced_hot_due_to_player")) + "|" +
-           IntToString(GetLocalInt(oNpc, "area_player_count_stale_repaired")) + "|" +
-           IntToString(GetLocalInt(oNpc, "area_hotness_bug_player_present")) + "|" +
-           IntToString(GetLocalInt(oNpc, "critical_worker_touch")) + "|" +
-           GetLocalString(oNpc, "critical_reason") + "|" +
-           IntToString(GetLocalInt(oNpc, "critical_bypassed_last_touch_gate")) + "|" +
-           IntToString(GetLocalInt(oNpc, "critical_bypassed_warm_gate")) + "|" +
-           IntToString(GetLocalInt(oNpc, "area_worker_cursor_before")) + "|" +
-           IntToString(GetLocalInt(oNpc, "area_worker_cursor_after")) + "|" +
-           IntToString(GetLocalInt(oNpc, "npc_seen_by_round_robin")) + "|" +
-           IntToString(GetLocalInt(oNpc, "npc_processed_by_round_robin")) + "|" +
-           GetLocalString(oNpc, "npc_touch_skipped_reason") + "|" +
-           IntToString(GetLocalInt(oNpc, "npc_worker_touch_seq_before")) + "|" +
-           IntToString(GetLocalInt(oNpc, "npc_worker_touch_seq_after")) + "|" +
-           IntToString(GetLocalInt(oNpc, "npc_worker_touch_seq")) + "|" +
-           IntToString(GetLocalInt(oNpc, "npc_last_worker_touch_hour")) + "|" +
-           IntToString(GetLocalInt(oNpc, "npc_last_worker_touch_minute")) + "|" +
-           IntToString(GetLocalInt(oNpc, "npc_registry_slot")) + "|" +
-           IntToString(GetLocalInt(oNpc, "npc_registry_count")) + "|" +
-           IntToString(GetLocalInt(oNpc, "npc_slot_contains_self")) + "|" +
-           IntToString(GetLocalInt(oNpc, "stale_old_area_slot_removed")) + "|" +
-           GetLocalString(oNpc, "stale_old_area") + "|" +
-           IntToString(GetLocalInt(oNpc, "stale_old_area_slot"));
+           GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) + "|" +
+           GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) + "|" +
+           GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS);
 }
 
 void DL_MaybeLogNpcDiagnostic(object oNpc, string sSource, int bForce)
