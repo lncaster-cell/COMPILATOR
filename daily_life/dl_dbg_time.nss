@@ -352,6 +352,14 @@ void main()
         " move_reached_finalized=" + IntToString(GetLocalInt(oNpc, "move_reached_finalized")) +
         " reached_move_owner=" + GetLocalString(oNpc, "reached_move_owner") +
         " reached_move_target=" + GetLocalString(oNpc, "reached_move_target") +
+        " reached_finalize_attempted=" + IntToString(GetLocalInt(oNpc, "reached_finalize_attempted")) +
+        " reached_finalize_success=" + IntToString(GetLocalInt(oNpc, "reached_finalize_success")) +
+        " reached_finalize_reason=" + GetLocalString(oNpc, "reached_finalize_reason") +
+        " reached_finalize_directive=" + GetLocalString(oNpc, "reached_finalize_directive") +
+        " reached_finalize_owner=" + GetLocalString(oNpc, "reached_finalize_owner") +
+        " reached_finalize_target=" + GetLocalString(oNpc, "reached_finalize_target") +
+        " focus_status_after_reached_finalize=" + GetLocalString(oNpc, "focus_status_after_reached_finalize") +
+        " move_result_after_reached_finalize=" + GetLocalString(oNpc, "move_result_after_reached_finalize") +
         " move_ticket=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET))
     );
 

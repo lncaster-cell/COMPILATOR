@@ -992,6 +992,138 @@ int DL_BridgeLegacyDirectiveAnchorMoveJob(object oNpc, int nDirective)
     return TRUE;
 }
 
+void DL_SetReachedFinalizeDebug(object oNpc, int bAttempted, int bSuccess, string sReason, int nDirective, string sOwner, string sTargetTag)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    SetLocalInt(oNpc, DL_L_NPC_REACHED_FINALIZE_ATTEMPTED_DBG, bAttempted);
+    SetLocalInt(oNpc, DL_L_NPC_REACHED_FINALIZE_SUCCESS_DBG, bSuccess);
+    SetLocalString(oNpc, DL_L_NPC_REACHED_FINALIZE_REASON_DBG, sReason);
+    SetLocalString(oNpc, DL_L_NPC_REACHED_FINALIZE_DIRECTIVE_DBG, DL_GetDirectiveDebugLabel(nDirective));
+    SetLocalString(oNpc, DL_L_NPC_REACHED_FINALIZE_OWNER_DBG, sOwner);
+    SetLocalString(oNpc, DL_L_NPC_REACHED_FINALIZE_TARGET_DBG, sTargetTag);
+    SetLocalString(oNpc, DL_L_NPC_FOCUS_AFTER_REACHED_FINALIZE_DBG, GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS));
+    SetLocalString(oNpc, DL_L_NPC_MOVE_RESULT_AFTER_REACHED_FINALIZE_DBG, GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT));
+}
+
+int DL_FinalizeReachedDirectiveMoveJob(object oNpc, int nEffectiveDirective)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return FALSE;
+    }
+
+    if (!DL_HasMoveJob(oNpc))
+    {
+        DL_SetReachedFinalizeDebug(oNpc, FALSE, FALSE, "no_move_job", nEffectiveDirective, "", "");
+        return FALSE;
+    }
+
+    string sOwner = GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER);
+    string sTargetTag = GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG);
+    DL_SetReachedFinalizeDebug(oNpc, TRUE, FALSE, "checking", nEffectiveDirective, sOwner, sTargetTag);
+
+    object oTarget = DL_ResolveMoveJobTarget(oNpc);
+    if (!GetIsObjectValid(oTarget))
+    {
+        DL_SetReachedFinalizeDebug(oNpc, TRUE, FALSE, "missing_target", nEffectiveDirective, sOwner, sTargetTag);
+        return FALSE;
+    }
+
+    object oNpcArea = GetArea(oNpc);
+    object oTargetArea = GetArea(oTarget);
+    if (!GetIsObjectValid(oNpcArea) || !GetIsObjectValid(oTargetArea) || oNpcArea != oTargetArea)
+    {
+        DL_SetReachedFinalizeDebug(oNpc, TRUE, FALSE, "target_area_mismatch", nEffectiveDirective, sOwner, sTargetTag);
+        return FALSE;
+    }
+
+    float fRadius = GetLocalFloat(oNpc, DL_L_NPC_MOVE_RADIUS);
+    if (fRadius <= 0.0)
+    {
+        fRadius = DL_MOVE_DEFAULT_RADIUS;
+        SetLocalFloat(oNpc, DL_L_NPC_MOVE_RADIUS, fRadius);
+    }
+
+    if (GetDistanceBetween(oNpc, oTarget) > fRadius)
+    {
+        DL_SetReachedFinalizeDebug(oNpc, TRUE, FALSE, "target_not_reached", nEffectiveDirective, sOwner, sTargetTag);
+        return FALSE;
+    }
+
+    SetLocalString(oNpc, DL_L_NPC_MOVE_RESULT, DL_MOVE_RESULT_REACHED);
+    SetLocalInt(oNpc, DL_L_NPC_MOVE_REACHED_FINALIZED_DBG, TRUE);
+    SetLocalString(oNpc, DL_L_NPC_REACHED_MOVE_OWNER_DBG, sOwner);
+    SetLocalString(oNpc, DL_L_NPC_REACHED_MOVE_TARGET_DBG, sTargetTag);
+    DeleteLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC);
+    DL_ClearTransitionExecutionState(oNpc);
+
+    if (sOwner == DL_MOVE_OWNER_PUBLIC && nEffectiveDirective == DL_DIR_PUBLIC)
+    {
+        string sAnim = "pause";
+        if ((DL_GetTagDeterministicOffset(GetTag(oNpc), 100, 0) % 2) == 0)
+        {
+            sAnim = "talk01";
+        }
+        DL_ClearMoveJob(oNpc);
+        DL_ClearFocusMoveIssueState(oNpc);
+        DL_ClearTransitionExecutionState(oNpc);
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
+        SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "on_public_anchor");
+        SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, sTargetTag);
+        AssignCommand(oNpc, SetFacing(GetFacing(oTarget)));
+        PlayCustomAnimation(oNpc, sAnim, TRUE);
+        DL_SetReachedFinalizeDebug(oNpc, TRUE, TRUE, "public_anchor_finalized", nEffectiveDirective, sOwner, sTargetTag);
+        return TRUE;
+    }
+
+    if (sOwner == DL_MOVE_OWNER_SOCIAL && nEffectiveDirective == DL_DIR_SOCIAL)
+    {
+        DL_ClearMoveJob(oNpc);
+        DL_ExecuteSocialDirective(oNpc);
+        DL_SetReachedFinalizeDebug(oNpc, TRUE, TRUE, "social_anchor_finalized", nEffectiveDirective, sOwner, sTargetTag);
+        return TRUE;
+    }
+
+    if (sOwner == DL_MOVE_OWNER_MEAL && nEffectiveDirective == DL_DIR_MEAL)
+    {
+        DL_ClearMoveJob(oNpc);
+        DL_ExecuteMealDirective(oNpc);
+        DL_SetReachedFinalizeDebug(oNpc, TRUE, TRUE, "meal_anchor_finalized", nEffectiveDirective, sOwner, sTargetTag);
+        return TRUE;
+    }
+
+    if (sOwner == DL_MOVE_OWNER_CHILL && nEffectiveDirective == DL_DIR_CHILL)
+    {
+        DL_ClearMoveJob(oNpc);
+        DL_ExecuteChillDirective(oNpc);
+        DL_SetReachedFinalizeDebug(oNpc, TRUE, TRUE, "chill_anchor_finalized", nEffectiveDirective, sOwner, sTargetTag);
+        return TRUE;
+    }
+
+    if (sOwner == DL_MOVE_OWNER_WORK && nEffectiveDirective == DL_DIR_WORK)
+    {
+        DL_ClearMoveJob(oNpc);
+        DL_ExecuteWorkDirective(oNpc);
+        DL_SetReachedFinalizeDebug(oNpc, TRUE, TRUE, "work_anchor_finalized", nEffectiveDirective, sOwner, sTargetTag);
+        return TRUE;
+    }
+
+    if (sOwner == DL_MOVE_OWNER_SLEEP && nEffectiveDirective == DL_DIR_SLEEP)
+    {
+        DL_ClearMoveJob(oNpc);
+        DL_ExecuteSleepDirective(oNpc);
+        DL_SetReachedFinalizeDebug(oNpc, TRUE, TRUE, "sleep_anchor_finalized", nEffectiveDirective, sOwner, sTargetTag);
+        return TRUE;
+    }
+
+    DL_SetReachedFinalizeDebug(oNpc, TRUE, FALSE, "owner_directive_mismatch", nEffectiveDirective, sOwner, sTargetTag);
+    return FALSE;
+}
+
 void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
 {
     if (!GetIsObjectValid(oNpc))
@@ -1035,7 +1167,18 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
     int bMoveJobTicked = FALSE;
     if (nPrevDirective == nEffectiveDirective && DL_IsMoveJobOwnerCompatibleWithDirective(oNpc, nEffectiveDirective))
     {
-        bMoveJobTicked = DL_TickMoveJob(oNpc);
+        if (DL_FinalizeReachedDirectiveMoveJob(oNpc, nEffectiveDirective))
+        {
+            bMoveJobTicked = TRUE;
+        }
+        else
+        {
+            bMoveJobTicked = DL_TickMoveJob(oNpc);
+            if (bMoveJobTicked && DL_GetMoveJobResult(oNpc) == DL_MOVE_RESULT_REACHED)
+            {
+                DL_FinalizeReachedDirectiveMoveJob(oNpc, nEffectiveDirective);
+            }
+        }
     }
     if (bMoveJobTicked && DL_GetMoveJobResult(oNpc) == DL_MOVE_RESULT_REACHED)
     {
@@ -1045,9 +1188,16 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
     }
     if (bMoveJobTicked && DL_GetMoveJobResult(oNpc) == DL_MOVE_RESULT_RUNNING)
     {
-        DL_ApplyMaterializationSkeleton(oNpc, nEffectiveDirective);
-        DL_LogStuckState(oNpc, nEffectiveDirective);
-        return;
+        if (DL_FinalizeReachedDirectiveMoveJob(oNpc, nEffectiveDirective))
+        {
+            bMoveJobTicked = TRUE;
+        }
+        else
+        {
+            DL_ApplyMaterializationSkeleton(oNpc, nEffectiveDirective);
+            DL_LogStuckState(oNpc, nEffectiveDirective);
+            return;
+        }
     }
 
     if (nPrevDirective == nEffectiveDirective && DL_ShouldUseDirectiveFastPath(oNpc, nEffectiveDirective))
