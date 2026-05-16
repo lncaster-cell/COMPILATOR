@@ -1305,6 +1305,11 @@ int DL_FinalizeReachedDirectiveMoveJob(object oNpc, int nEffectiveDirective)
         SetLocalFloat(oNpc, DL_L_NPC_MOVE_RADIUS, fRadius);
     }
 
+    if (DL_ForceReachMoveJobIfAlreadyAtTarget(oNpc))
+    {
+        oTarget = DL_ResolveMoveJobTarget(oNpc);
+    }
+
     if (GetDistanceBetween(oNpc, oTarget) > fRadius)
     {
         object oFocusTarget = OBJECT_INVALID;
