@@ -24,7 +24,6 @@ const string DL_L_NPC_SOCIAL_PROBE_ABS_MIN = "dl_social_probe_abs_min";
 const string DL_L_NPC_SOCIAL_PROBE_NOW_DIST = "dl_social_probe_now_dist";
 const string DL_L_NPC_SOCIAL_PROBE_FOCUS_STATUS_BEFORE = "dl_social_probe_focus_status_before";
 const string DL_L_NPC_SOCIAL_PROBE_CURRENT_ACTION = "dl_social_probe_current_action";
-object DL_ResolveFocusTargetInCurrentArea(object oNpc);
 // Household seating defaults to waypoint animation: the meal/chill waypoint is
 // the NPC body position and facing anchor, and chairs are decoration only.
 // Set dl_meal_legacy_action_sit=1 or dl_chill_legacy_action_sit=1 on the NPC
@@ -77,7 +76,7 @@ void DL_IssueFocusMoveAction(object oNpc, object oTarget)
     SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "moving_to_anchor");
     SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oTarget));
     SetLocalString(oNpc, DL_L_NPC_FOCUS_ACTION_TARGET, GetTag(oTarget));
-    DL_BeginMoveJob(oNpc, DL_GetFocusMoveOwner(oNpc), "anchor", GetTag(oTarget), DL_WORK_ANCHOR_RADIUS);
+    DL_BeginMoveJobToObject(oNpc, DL_GetFocusMoveOwner(oNpc), "anchor", oTarget, DL_WORK_ANCHOR_RADIUS);
 }
 void DL_ClearFocusExecutionState(object oNpc)
 {

@@ -349,6 +349,28 @@ void main()
         " move_target_area=" + GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_AREA) +
         " move_result=" + GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) +
         " move_diagnostic=" + GetLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC) +
+        " move_reached_finalized=" + IntToString(GetLocalInt(oNpc, "move_reached_finalized")) +
+        " reached_move_owner=" + GetLocalString(oNpc, "reached_move_owner") +
+        " reached_move_target=" + GetLocalString(oNpc, "reached_move_target") +
+        " reached_finalize_attempted=" + IntToString(GetLocalInt(oNpc, "reached_finalize_attempted")) +
+        " reached_finalize_success=" + IntToString(GetLocalInt(oNpc, "reached_finalize_success")) +
+        " reached_finalize_reason=" + GetLocalString(oNpc, "reached_finalize_reason") +
+        " reached_finalize_directive=" + GetLocalString(oNpc, "reached_finalize_directive") +
+        " reached_finalize_owner=" + GetLocalString(oNpc, "reached_finalize_owner") +
+        " reached_finalize_target=" + GetLocalString(oNpc, "reached_finalize_target") +
+        " focus_status_after_reached_finalize=" + GetLocalString(oNpc, "focus_status_after_reached_finalize") +
+        " move_result_after_reached_finalize=" + GetLocalString(oNpc, "move_result_after_reached_finalize") +
+        " move_target_obj_tag=" + GetLocalString(oNpc, "move_target_obj_tag") +
+        " move_target_obj_area=" + GetLocalString(oNpc, "move_target_obj_area") +
+        " move_target_obj_dist=" + FloatToString(GetLocalFloat(oNpc, "move_target_obj_dist"), 1, 2) +
+        " focus_target_obj_tag=" + GetLocalString(oNpc, "focus_target_obj_tag") +
+        " focus_target_obj_area=" + GetLocalString(oNpc, "focus_target_obj_area") +
+        " focus_target_obj_dist=" + FloatToString(GetLocalFloat(oNpc, "focus_target_obj_dist"), 1, 2) +
+        " move_focus_target_same_object=" + IntToString(GetLocalInt(oNpc, "move_focus_target_same_object")) +
+        " reached_finalize_used_focus_target=" + IntToString(GetLocalInt(oNpc, "reached_finalize_used_focus_target")) +
+        " duplicate_move_target_tag=" + IntToString(GetLocalInt(oNpc, "duplicate_move_target_tag")) +
+        " duplicate_move_target_tag_value=" + GetLocalString(oNpc, "duplicate_move_target_tag_value") +
+        " duplicate_move_target_area=" + GetLocalString(oNpc, "duplicate_move_target_area") +
         " move_ticket=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET))
     );
 
@@ -366,6 +388,18 @@ void main()
         " area_worker_tick_seq=" + IntToString(GetLocalInt(oNpc, "area_worker_tick_seq")) +
         " area_worker_pass_mode=" + GetLocalString(oNpc, "area_worker_pass_mode") +
         " area_worker_budget=" + IntToString(GetLocalInt(oNpc, "area_worker_budget")) +
+        " area_cached_player_count=" + IntToString(GetLocalInt(oNpc, "area_cached_player_count")) +
+        " area_actual_player_count=" + IntToString(GetLocalInt(oNpc, "area_actual_player_count")) +
+        " area_tier_before_lifecycle=" + GetLocalString(oNpc, "area_tier_before_lifecycle") +
+        " area_tier_after_lifecycle=" + GetLocalString(oNpc, "area_tier_after_lifecycle") +
+        " area_hotness_repaired=" + IntToString(GetLocalInt(oNpc, "area_hotness_repaired")) +
+        " area_worker_forced_hot_due_to_player=" + IntToString(GetLocalInt(oNpc, "area_worker_forced_hot_due_to_player")) +
+        " area_player_count_stale_repaired=" + IntToString(GetLocalInt(oNpc, "area_player_count_stale_repaired")) +
+        " area_hotness_bug_player_present=" + IntToString(GetLocalInt(oNpc, "area_hotness_bug_player_present")) +
+        " critical_worker_touch=" + IntToString(GetLocalInt(oNpc, "critical_worker_touch")) +
+        " critical_reason=" + GetLocalString(oNpc, "critical_reason") +
+        " critical_bypassed_last_touch_gate=" + IntToString(GetLocalInt(oNpc, "critical_bypassed_last_touch_gate")) +
+        " critical_bypassed_warm_gate=" + IntToString(GetLocalInt(oNpc, "critical_bypassed_warm_gate")) +
         " area_worker_cursor_before=" + IntToString(GetLocalInt(oNpc, "area_worker_cursor_before")) +
         " area_worker_cursor_after=" + IntToString(GetLocalInt(oNpc, "area_worker_cursor_after")) +
         " npc_seen_by_round_robin=" + IntToString(GetLocalInt(oNpc, "npc_seen_by_round_robin")) +
@@ -378,7 +412,10 @@ void main()
         " npc_last_worker_touch_minute=" + IntToString(GetLocalInt(oNpc, "npc_last_worker_touch_minute")) +
         " npc_registry_slot=" + IntToString(GetLocalInt(oNpc, "npc_registry_slot")) +
         " npc_registry_count=" + IntToString(GetLocalInt(oNpc, "npc_registry_count")) +
-        " npc_slot_contains_self=" + IntToString(GetLocalInt(oNpc, "npc_slot_contains_self"))
+        " npc_slot_contains_self=" + IntToString(GetLocalInt(oNpc, "npc_slot_contains_self")) +
+        " stale_old_area_slot_removed=" + IntToString(GetLocalInt(oNpc, "stale_old_area_slot_removed")) +
+        " stale_old_area=" + GetLocalString(oNpc, "stale_old_area") +
+        " stale_old_area_slot=" + IntToString(GetLocalInt(oNpc, "stale_old_area_slot"))
     );
 
     if (sNavReason == "finalize_skip_target_invalid" ||
