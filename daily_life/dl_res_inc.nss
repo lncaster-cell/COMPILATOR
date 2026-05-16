@@ -238,19 +238,7 @@ string DL_GetDirectiveDebugLabel(int nDirective)
 }
 void DL_LogChatDebugEvent(object oNpc, string sKind, string sPayload)
 {
-    if (!GetIsObjectValid(oNpc) || !DL_IsChatDebugEnabledForNpc(oNpc))
-    {
-        return;
-    }
-
-    string sSig = sKind + "|" + sPayload;
-    if (GetLocalString(oNpc, DL_L_NPC_CHAT_LAST_EVENT_SIG) == sSig)
-    {
-        return;
-    }
-
-    SetLocalString(oNpc, DL_L_NPC_CHAT_LAST_EVENT_SIG, sSig);
-    DL_LogChat("npc=" + GetTag(oNpc) + " " + sPayload);
+    // Old broad Daily Life chat/debug output was removed; use DL_BsmithTraceStage for the temporary blacksmith trace.
 }
 void DL_LogDirectiveChange(object oNpc, int nPrevDirective, int nDirective)
 {
@@ -415,6 +403,268 @@ void DL_ApplyMaterializationSkeleton(object oNpc, int nDirective)
 #include "dl_move_job_inc"
 #include "dl_work_inc"
 #include "dl_focus_inc"
+
+string DL_BsmithAreaTag(object oObj)
+{
+    if (!GetIsObjectValid(oObj))
+    {
+        return "";
+    }
+    object oArea = GetArea(oObj);
+    if (GetIsObjectValid(oArea))
+    {
+        return GetTag(oArea);
+    }
+    return "";
+}
+
+string DL_BsmithObjectValid(object oObj)
+{
+    if (GetIsObjectValid(oObj))
+    {
+        return "1";
+    }
+    return "0";
+}
+
+int DL_BsmithTraceEnabled(object oNpc)
+{
+    if (!GetIsObjectValid(oNpc) || GetTag(oNpc) != "blacksmith01")
+    {
+        return FALSE;
+    }
+    return GetLocalInt(GetModule(), "dl_bsmith_trace") == TRUE || GetLocalInt(oNpc, "dl_bsmith_trace") == TRUE;
+}
+
+void DL_BsmithEmit(string sLine)
+{
+    object oPC = GetFirstPC();
+    while (GetIsObjectValid(oPC))
+    {
+        SendMessageToPC(oPC, sLine);
+        oPC = GetNextPC();
+    }
+}
+
+void DL_BsmithContradiction(object oNpc, string sType, string sEvidence)
+{
+    if (!DL_BsmithTraceEnabled(oNpc))
+    {
+        return;
+    }
+    DL_BsmithEmit("BSMITH_CONTRADICTION type=" + sType + " evidence=" + sEvidence);
+}
+
+void DL_BsmithClassify(object oNpc, string sCategory, string sConfidence, string sReason)
+{
+    if (!DL_BsmithTraceEnabled(oNpc))
+    {
+        return;
+    }
+    string sSig = sCategory + "|" + sConfidence + "|" + sReason;
+    if (GetLocalString(oNpc, "dl_bsmith_last_classify") == sSig)
+    {
+        return;
+    }
+    SetLocalString(oNpc, "dl_bsmith_last_classify", sSig);
+    DL_BsmithEmit("BSMITH_CLASSIFY category=" + sCategory + " confidence=" + sConfidence + " reason=" + sReason);
+}
+
+object DL_BsmithFallbackObjectByTag(string sTag)
+{
+    if (sTag == "")
+    {
+        return OBJECT_INVALID;
+    }
+    return GetObjectByTag(sTag, 0);
+}
+
+object DL_BsmithMoveObject(object oNpc)
+{
+    return GetLocalObject(oNpc, DL_L_NPC_MOVE_TARGET_OBJ);
+}
+
+object DL_BsmithFocusObject(object oNpc)
+{
+    return DL_BsmithFallbackObjectByTag(GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET));
+}
+
+void DL_BsmithDetectContradictions(object oNpc, string sStage, object oMoveObj, object oFocusObj, float fMoveDist, float fFocusDist)
+{
+    object oNpcArea = GetArea(oNpc);
+    object oRegArea = GetLocalObject(oNpc, "dl_npc_reg_area");
+    string sMoveTag = GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG);
+    string sFocusTag = GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET);
+    string sMoveResult = GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT);
+    string sFocusStatus = GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS);
+    float fRadius = GetLocalFloat(oNpc, DL_L_NPC_MOVE_RADIUS);
+    if (fRadius <= 0.0)
+    {
+        fRadius = DL_MOVE_DEFAULT_RADIUS;
+    }
+
+    if (GetLocalInt(oNpc, DL_L_NPC_MOVE_LAST_PROGRESS_TICK) > 0 && GetLocalFloat(oNpc, DL_L_NPC_MOVE_LAST_DIST) == 0.0 && fMoveDist > fRadius)
+    {
+        DL_BsmithContradiction(oNpc, "DISTANCE_MISMATCH_ZERO_VS_REAL", "simple=0 real=" + FloatToString(fMoveDist, 1, 2));
+        DL_BsmithClassify(oNpc, "DISTANCE_REPORTING_BUG", "high", "zero_vs_real_distance");
+    }
+    if (sMoveTag != "" && !GetIsObjectValid(oMoveObj))
+    {
+        DL_BsmithContradiction(oNpc, "MOVE_TARGET_INVALID", "tag=" + sMoveTag);
+        DL_BsmithClassify(oNpc, "TARGET_RESOLUTION_BUG", "high", "move_target_invalid");
+    }
+    if (sFocusTag != "" && !GetIsObjectValid(oFocusObj))
+    {
+        DL_BsmithContradiction(oNpc, "FOCUS_TARGET_INVALID", "tag=" + sFocusTag);
+        DL_BsmithClassify(oNpc, "TARGET_RESOLUTION_BUG", "high", "focus_target_invalid");
+    }
+    if (sMoveResult == DL_MOVE_RESULT_RUNNING && GetIsObjectValid(oMoveObj) && GetArea(oMoveObj) != oNpcArea)
+    {
+        DL_BsmithContradiction(oNpc, "MOVE_TARGET_WRONG_AREA", "npc_area=" + DL_BsmithAreaTag(oNpc) + " target_area=" + DL_BsmithAreaTag(oMoveObj));
+    }
+    if (sFocusStatus == "moving_to_anchor" && GetIsObjectValid(oFocusObj) && GetArea(oFocusObj) != oNpcArea)
+    {
+        DL_BsmithContradiction(oNpc, "FOCUS_TARGET_WRONG_AREA", "npc_area=" + DL_BsmithAreaTag(oNpc) + " target_area=" + DL_BsmithAreaTag(oFocusObj));
+    }
+    if (GetIsObjectValid(oRegArea) && GetIsObjectValid(oNpcArea) && oRegArea != oNpcArea)
+    {
+        DL_BsmithContradiction(oNpc, "REGISTRY_AREA_MISMATCH", "reg=" + GetTag(oRegArea) + " actual=" + GetTag(oNpcArea));
+    }
+    if (GetLocalString(oNpc, "dl_worker_touch_area") != "" && GetLocalString(oNpc, "dl_worker_touch_area") != DL_BsmithAreaTag(oNpc))
+    {
+        DL_BsmithContradiction(oNpc, "WORKER_AREA_MISMATCH", "worker=" + GetLocalString(oNpc, "dl_worker_touch_area") + " actual=" + DL_BsmithAreaTag(oNpc));
+    }
+    if (sMoveResult == DL_MOVE_RESULT_RUNNING && GetLocalInt(oNpc, DL_L_NPC_MOVE_CURRENT_ACTION_DBG) != ACTION_MOVETOPOINT)
+    {
+        int nBad = GetLocalInt(oNpc, "dl_bsmith_bad_action_samples") + 1;
+        SetLocalInt(oNpc, "dl_bsmith_bad_action_samples", nBad);
+        if (nBad >= 2)
+        {
+            DL_BsmithContradiction(oNpc, "ACTION_QUEUE_NOT_RUNNING", "result=running action=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_MOVE_CURRENT_ACTION_DBG)) + " samples=" + IntToString(nBad));
+        }
+    }
+    else
+    {
+        DeleteLocalInt(oNpc, "dl_bsmith_bad_action_samples");
+    }
+    if (GetLocalString(oNpc, DL_L_NPC_REACHED_FINALIZE_REASON_DBG) == "target_not_reached" && GetLocalInt(oNpc, DL_L_NPC_MOVE_LAST_PROGRESS_TICK) > 0 && GetLocalFloat(oNpc, DL_L_NPC_MOVE_LAST_DIST) == 0.0)
+    {
+        DL_BsmithContradiction(oNpc, "FINALIZE_DISTANCE_CONFLICT", "finalize=target_not_reached simple=0 real=" + FloatToString(fMoveDist, 1, 2));
+    }
+    if (sMoveTag != "" && GetIsObjectValid(oMoveObj))
+    {
+        object oPrev = GetLocalObject(oNpc, "dl_bsmith_last_target_obj");
+        if (GetLocalString(oNpc, "dl_bsmith_last_target_tag") == sMoveTag && GetIsObjectValid(oPrev) && oPrev != oMoveObj)
+        {
+            DL_BsmithContradiction(oNpc, "TARGET_IDENTITY_CHANGED", "tag=" + sMoveTag + " prev_area=" + GetLocalString(oNpc, "dl_bsmith_last_target_area") + " new_area=" + DL_BsmithAreaTag(oMoveObj));
+            DL_BsmithClassify(oNpc, "TARGET_RESOLUTION_BUG", "medium", "target_identity_changed");
+        }
+        SetLocalString(oNpc, "dl_bsmith_last_target_tag", sMoveTag);
+        SetLocalString(oNpc, "dl_bsmith_last_target_area", DL_BsmithAreaTag(oMoveObj));
+        SetLocalObject(oNpc, "dl_bsmith_last_target_obj", oMoveObj);
+    }
+}
+
+void DL_BsmithMaybeClassify(object oNpc, string sProblem)
+{
+    if (GetLocalInt(oNpc, DL_L_NPC_MOVE_NO_PROGRESS_COUNT) >= 3)
+    {
+        DL_BsmithClassify(oNpc, "PATHFINDING_OR_COLLISION_BLOCKED", "medium", "no_progress_reissues=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_MOVE_REISSUE_COUNT)));
+    }
+    if (GetLocalInt(oNpc, "dl_bsmith_bad_action_samples") >= 3)
+    {
+        DL_BsmithClassify(oNpc, "ACTION_QUEUE_NOT_RUNNING", "high", "running_without_moveto");
+    }
+    if (sProblem == "regular_worker_not_touching_registered_npc")
+    {
+        DL_BsmithClassify(oNpc, "WORKER_NOT_TOUCHING_NPC", "high", sProblem);
+    }
+    if (GetLocalString(oNpc, DL_L_NPC_REACHED_FINALIZE_REASON_DBG) == "target_not_reached")
+    {
+        DL_BsmithClassify(oNpc, "FINALIZE_REACHED_FAILED", "medium", "target_not_reached");
+    }
+    object oRegArea = GetLocalObject(oNpc, "dl_npc_reg_area");
+    if (GetIsObjectValid(oRegArea) && oRegArea != GetArea(oNpc))
+    {
+        DL_BsmithClassify(oNpc, "AREA_REGISTRY_STALE", "high", "registry_area_mismatch");
+    }
+    if (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" && GetLocalString(oNpc, "dl_post_jump_result") == "post_jump_finalizer_complete")
+    {
+        DL_BsmithClassify(oNpc, "TRANSITION_HANDOFF_STALE", "medium", "post_jump_with_transition_state");
+    }
+    if (sProblem != "ok" && GetLocalString(oNpc, "dl_bsmith_last_classify") == "")
+    {
+        DL_BsmithClassify(oNpc, "UNKNOWN_NEEDS_MORE_TRACE", "low", sProblem);
+    }
+}
+
+/*
+How to use:
+1. Set dl_bsmith_trace=1.
+2. Reproduce blacksmith01 behavior around 19:00 -> 21:00 in gotha_tavern.
+3. Collect only BSMITH_TRACE / BSMITH_CONTRADICTION / BSMITH_CLASSIFY lines.
+4. Do not use old Daily Life debug output; it has been removed because it obscured the bug.
+*/
+void DL_BsmithTraceStage(object oNpc, string sStage, string sNote)
+{
+    if (!DL_BsmithTraceEnabled(oNpc))
+    {
+        return;
+    }
+
+    object oMoveObj = DL_BsmithMoveObject(oNpc);
+    object oFocusObj = DL_BsmithFocusObject(oNpc);
+    float fMoveDist = -1.0;
+    float fFocusDist = -1.0;
+    if (GetIsObjectValid(oMoveObj) && GetArea(oMoveObj) == GetArea(oNpc))
+    {
+        fMoveDist = GetDistanceBetween(oNpc, oMoveObj);
+    }
+    if (GetIsObjectValid(oFocusObj) && GetArea(oFocusObj) == GetArea(oNpc))
+    {
+        fFocusDist = GetDistanceBetween(oNpc, oFocusObj);
+    }
+
+    string sProblem = DL_GetNpcProblemSummary(oNpc);
+    int nSeq = GetLocalInt(GetModule(), "dl_bsmith_trace_seq") + 1;
+    SetLocalInt(GetModule(), "dl_bsmith_trace_seq", nSeq);
+    vector vPos = GetPosition(oNpc);
+    object oRegArea = GetLocalObject(oNpc, "dl_npc_reg_area");
+    string sRegArea = "";
+    if (GetIsObjectValid(oRegArea))
+    {
+        sRegArea = GetTag(oRegArea);
+    }
+    int nRegSlot = GetLocalInt(oNpc, "dl_npc_reg_slot");
+    int bSlotSelf = FALSE;
+    if (GetIsObjectValid(oRegArea) && nRegSlot >= 0)
+    {
+        bSlotSelf = GetLocalObject(oRegArea, "dl_reg_slot_" + IntToString(nRegSlot)) == oNpc;
+    }
+
+    string sLine = "BSMITH_TRACE seq=" + IntToString(nSeq) +
+        " stage=" + sStage +
+        " t=" + IntToString(GetTimeHour()) + ":" + IntToString(GetTimeMinute()) +
+        " npc=" + GetTag(oNpc) +
+        " area=" + DL_BsmithAreaTag(oNpc) +
+        " pos=" + FloatToString(vPos.x, 1, 1) + "," + FloatToString(vPos.y, 1, 1) + "," + FloatToString(vPos.z, 1, 1) +
+        " dir=" + DL_GetDirectiveLabel(GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE)) +
+        " state=" + GetLocalString(oNpc, DL_L_NPC_STATE) +
+        " problem=" + sProblem +
+        " move=" + GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) + "/" + GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE) + "/" + GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG) + "/" + GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) +
+        " mobj=" + DL_BsmithObjectValid(oMoveObj) + "/" + DL_BsmithAreaTag(oMoveObj) + "/" + FloatToString(fMoveDist, 1, 2) +
+        " focus=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) + "/" + GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) +
+        " fobj=" + DL_BsmithObjectValid(oFocusObj) + "/" + DL_BsmithAreaTag(oFocusObj) + "/" + FloatToString(fFocusDist, 1, 2) +
+        " action=" + IntToString(GetCurrentAction(oNpc)) +
+        " worker=" + IntToString(GetLocalInt(oNpc, "npc_worker_touch_seq")) + "/" + GetLocalString(oNpc, "npc_touch_skipped_reason") +
+        " reg=" + sRegArea + "/" + IntToString(nRegSlot) + "/" + IntToString(bSlotSelf) +
+        " trans=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) + "/" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) +
+        " note=" + sNote;
+
+    DL_BsmithEmit(sLine);
+    DL_BsmithDetectContradictions(oNpc, sStage, oMoveObj, oFocusObj, fMoveDist, fFocusDist);
+    DL_BsmithMaybeClassify(oNpc, sProblem);
+}
 
 int DL_GetModuleCacheEpoch()
 {
@@ -1018,9 +1268,12 @@ int DL_FinalizeReachedDirectiveMoveJob(object oNpc, int nEffectiveDirective)
 
     SetLocalInt(oNpc, DL_L_NPC_REACHED_FINALIZE_USED_FOCUS_DBG, FALSE);
 
+    DL_BsmithTraceStage(oNpc, "FINALIZE_ENTER", DL_GetDirectiveLabel(nEffectiveDirective));
+
     if (!DL_HasMoveJob(oNpc))
     {
         DL_SetReachedFinalizeDebug(oNpc, FALSE, FALSE, "no_move_job", nEffectiveDirective, "", "");
+        DL_BsmithTraceStage(oNpc, "FINALIZE_RESULT", "no_move_job");
         return FALSE;
     }
 
@@ -1032,6 +1285,7 @@ int DL_FinalizeReachedDirectiveMoveJob(object oNpc, int nEffectiveDirective)
     if (!GetIsObjectValid(oTarget))
     {
         DL_SetReachedFinalizeDebug(oNpc, TRUE, FALSE, "missing_target", nEffectiveDirective, sOwner, sTargetTag);
+        DL_BsmithTraceStage(oNpc, "FINALIZE_RESULT", "missing_target");
         return FALSE;
     }
 
@@ -1040,6 +1294,7 @@ int DL_FinalizeReachedDirectiveMoveJob(object oNpc, int nEffectiveDirective)
     if (!GetIsObjectValid(oNpcArea) || !GetIsObjectValid(oTargetArea) || oNpcArea != oTargetArea)
     {
         DL_SetReachedFinalizeDebug(oNpc, TRUE, FALSE, "target_area_mismatch", nEffectiveDirective, sOwner, sTargetTag);
+        DL_BsmithTraceStage(oNpc, "FINALIZE_RESULT", "target_area_mismatch");
         return FALSE;
     }
 
@@ -1071,6 +1326,7 @@ int DL_FinalizeReachedDirectiveMoveJob(object oNpc, int nEffectiveDirective)
         else
         {
             DL_SetReachedFinalizeDebug(oNpc, TRUE, FALSE, "target_not_reached", nEffectiveDirective, sOwner, sTargetTag);
+            DL_BsmithTraceStage(oNpc, "FINALIZE_RESULT", "target_not_reached");
             return FALSE;
         }
     }
@@ -1098,6 +1354,7 @@ int DL_FinalizeReachedDirectiveMoveJob(object oNpc, int nEffectiveDirective)
         AssignCommand(oNpc, SetFacing(GetFacing(oTarget)));
         PlayCustomAnimation(oNpc, sAnim, TRUE);
         DL_SetReachedFinalizeDebug(oNpc, TRUE, TRUE, "public_anchor_finalized", nEffectiveDirective, sOwner, sTargetTag);
+        DL_BsmithTraceStage(oNpc, "FINALIZE_RESULT", "public_anchor_finalized");
         return TRUE;
     }
 
@@ -1106,6 +1363,7 @@ int DL_FinalizeReachedDirectiveMoveJob(object oNpc, int nEffectiveDirective)
         DL_ClearMoveJob(oNpc);
         DL_ExecuteSocialDirective(oNpc);
         DL_SetReachedFinalizeDebug(oNpc, TRUE, TRUE, "social_anchor_finalized", nEffectiveDirective, sOwner, sTargetTag);
+        DL_BsmithTraceStage(oNpc, "FINALIZE_RESULT", "social_anchor_finalized");
         return TRUE;
     }
 
@@ -1114,6 +1372,7 @@ int DL_FinalizeReachedDirectiveMoveJob(object oNpc, int nEffectiveDirective)
         DL_ClearMoveJob(oNpc);
         DL_ExecuteMealDirective(oNpc);
         DL_SetReachedFinalizeDebug(oNpc, TRUE, TRUE, "meal_anchor_finalized", nEffectiveDirective, sOwner, sTargetTag);
+        DL_BsmithTraceStage(oNpc, "FINALIZE_RESULT", "meal_anchor_finalized");
         return TRUE;
     }
 
@@ -1122,6 +1381,7 @@ int DL_FinalizeReachedDirectiveMoveJob(object oNpc, int nEffectiveDirective)
         DL_ClearMoveJob(oNpc);
         DL_ExecuteChillDirective(oNpc);
         DL_SetReachedFinalizeDebug(oNpc, TRUE, TRUE, "chill_anchor_finalized", nEffectiveDirective, sOwner, sTargetTag);
+        DL_BsmithTraceStage(oNpc, "FINALIZE_RESULT", "chill_anchor_finalized");
         return TRUE;
     }
 
@@ -1130,6 +1390,7 @@ int DL_FinalizeReachedDirectiveMoveJob(object oNpc, int nEffectiveDirective)
         DL_ClearMoveJob(oNpc);
         DL_ExecuteWorkDirective(oNpc);
         DL_SetReachedFinalizeDebug(oNpc, TRUE, TRUE, "work_anchor_finalized", nEffectiveDirective, sOwner, sTargetTag);
+        DL_BsmithTraceStage(oNpc, "FINALIZE_RESULT", "work_anchor_finalized");
         return TRUE;
     }
 
@@ -1138,10 +1399,12 @@ int DL_FinalizeReachedDirectiveMoveJob(object oNpc, int nEffectiveDirective)
         DL_ClearMoveJob(oNpc);
         DL_ExecuteSleepDirective(oNpc);
         DL_SetReachedFinalizeDebug(oNpc, TRUE, TRUE, "sleep_anchor_finalized", nEffectiveDirective, sOwner, sTargetTag);
+        DL_BsmithTraceStage(oNpc, "FINALIZE_RESULT", "sleep_anchor_finalized");
         return TRUE;
     }
 
     DL_SetReachedFinalizeDebug(oNpc, TRUE, FALSE, "owner_directive_mismatch", nEffectiveDirective, sOwner, sTargetTag);
+    DL_BsmithTraceStage(oNpc, "FINALIZE_RESULT", "owner_directive_mismatch");
     return FALSE;
 }
 
@@ -1156,6 +1419,8 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
 
     int nEffectiveDirective = DL_ResolveEffectiveDirective(oNpc, nDirective);
     int nPrevDirective = GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE);
+    DL_BsmithTraceStage(oNpc, "DIRECTIVE_RESOLVED", DL_GetDirectiveLabel(nEffectiveDirective));
+    DL_BsmithTraceStage(oNpc, "DIRECTIVE_APPLY_ENTER", DL_GetDirectiveLabel(nPrevDirective) + "->" + DL_GetDirectiveLabel(nEffectiveDirective));
 
     if (nPrevDirective != nEffectiveDirective)
     {

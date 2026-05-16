@@ -391,6 +391,7 @@ void DL_SetNpcRegularWorkerDebug(
     else
     {
         SetLocalString(oNpc, DL_L_NPC_TOUCH_SKIPPED_REASON_DBG, sSkipReason);
+        DL_BsmithTraceStage(oNpc, "WORKER_SKIP", sSkipReason);
     }
 }
 
@@ -1137,6 +1138,7 @@ void DL_WorkerTouchNpc(object oNpc)
         sRegisteredArea = GetTag(oRegisteredArea);
     }
     SetLocalString(oNpc, "dl_registry_area_after_repair", sRegisteredArea);
+    DL_BsmithTraceStage(oNpc, "REGISTRY_CHECK", "after_repair");
     DL_ClearStaleTransitionHandoffProblemIfOwned(oNpc);
     if (GetLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC) == "registry_repair_verify_failed")
     {
@@ -1151,6 +1153,7 @@ void DL_WorkerTouchNpc(object oNpc)
     SetLocalInt(oNpc, DL_L_NPC_LAST_WORKER_TOUCH_HOUR_DBG, GetTimeHour());
     SetLocalInt(oNpc, DL_L_NPC_LAST_WORKER_TOUCH_MINUTE_DBG, GetTimeMinute());
     SetLocalInt(oNpc, DL_L_NPC_LAST_WORKER_TOUCH_ABS_MIN_DBG, DL_GetAbsoluteMinute());
+    DL_BsmithTraceStage(oNpc, "WORKER_TOUCH", "worker_touch");
 
     int nDirective = DL_ResolveNpcDirective(oNpc);
     DL_ApplyDirectiveSkeleton(oNpc, nDirective);
@@ -1158,6 +1161,7 @@ void DL_WorkerTouchNpc(object oNpc)
     if (DL_GetNpcProblemSummary(oNpc) != "ok")
     {
         DL_MaybeLogNpcDiagnostic(oNpc, "worker", FALSE);
+        DL_BsmithTraceStage(oNpc, "PROBLEM_SUMMARY", DL_GetNpcProblemSummary(oNpc));
     }
     else
     {
