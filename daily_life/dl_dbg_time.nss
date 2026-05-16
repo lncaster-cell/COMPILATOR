@@ -393,7 +393,10 @@ void main()
         " npc_last_worker_touch_minute=" + IntToString(GetLocalInt(oNpc, "npc_last_worker_touch_minute")) +
         " npc_registry_slot=" + IntToString(GetLocalInt(oNpc, "npc_registry_slot")) +
         " npc_registry_count=" + IntToString(GetLocalInt(oNpc, "npc_registry_count")) +
-        " npc_slot_contains_self=" + IntToString(GetLocalInt(oNpc, "npc_slot_contains_self"))
+        " npc_slot_contains_self=" + IntToString(GetLocalInt(oNpc, "npc_slot_contains_self")) +
+        " stale_old_area_slot_removed=" + IntToString(GetLocalInt(oNpc, "stale_old_area_slot_removed")) +
+        " stale_old_area=" + GetLocalString(oNpc, "stale_old_area") +
+        " stale_old_area_slot=" + IntToString(GetLocalInt(oNpc, "stale_old_area_slot"))
     );
 
     if (sNavReason == "finalize_skip_target_invalid" ||

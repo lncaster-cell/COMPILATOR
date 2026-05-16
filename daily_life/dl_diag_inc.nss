@@ -272,7 +272,10 @@ void DL_LogNpcDiagnostic(object oNpc, string sSource)
                   " npc_last_worker_touch_minute=" + IntToString(GetLocalInt(oNpc, "npc_last_worker_touch_minute")) +
                   " npc_registry_slot=" + IntToString(GetLocalInt(oNpc, "npc_registry_slot")) +
                   " npc_registry_count=" + IntToString(GetLocalInt(oNpc, "npc_registry_count")) +
-                  " npc_slot_contains_self=" + IntToString(GetLocalInt(oNpc, "npc_slot_contains_self"));
+                  " npc_slot_contains_self=" + IntToString(GetLocalInt(oNpc, "npc_slot_contains_self")) +
+                  " stale_old_area_slot_removed=" + IntToString(GetLocalInt(oNpc, "stale_old_area_slot_removed")) +
+                  " stale_old_area=" + GetLocalString(oNpc, "stale_old_area") +
+                  " stale_old_area_slot=" + IntToString(GetLocalInt(oNpc, "stale_old_area_slot"));
 
     DL_LogRuntime(sLog);
 }
@@ -330,7 +333,10 @@ string DL_GetNpcDiagnosticSignature(object oNpc)
            IntToString(GetLocalInt(oNpc, "npc_last_worker_touch_minute")) + "|" +
            IntToString(GetLocalInt(oNpc, "npc_registry_slot")) + "|" +
            IntToString(GetLocalInt(oNpc, "npc_registry_count")) + "|" +
-           IntToString(GetLocalInt(oNpc, "npc_slot_contains_self"));
+           IntToString(GetLocalInt(oNpc, "npc_slot_contains_self")) + "|" +
+           IntToString(GetLocalInt(oNpc, "stale_old_area_slot_removed")) + "|" +
+           GetLocalString(oNpc, "stale_old_area") + "|" +
+           IntToString(GetLocalInt(oNpc, "stale_old_area_slot"));
 }
 
 void DL_MaybeLogNpcDiagnostic(object oNpc, string sSource, int bForce)

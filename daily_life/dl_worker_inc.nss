@@ -54,6 +54,8 @@ const int DL_TRANSITION_HANDOFF_SLOT_COUNT = 4;
 
 void DL_WorkerTouchNpc(object oNpc);
 int DL_ProcessAreaNpcByPassMode(object oArea, object oNpc, int nPassMode, int nTickStamp, int nBudget, int nCursorBefore, int nCursorAfter);
+int DL_RemoveStaleNpcReferenceFromAreaRegistrySlot(object oArea, object oNpc, int nSlot);
+int DL_IsNpcRegistryOwnerForArea(object oNpc, object oArea);
 
 int DL_GetCursorAdvance(int nNpcProcessed, int nCandidatesSeen, int nNpcSeen)
 {
@@ -356,6 +358,12 @@ void DL_SetNpcRegularWorkerDebug(
         return;
     }
 
+    if (DL_IsActivePipelineNpc(oNpc) && !DL_IsNpcRegistryOwnerForArea(oNpc, oArea))
+    {
+        DL_RemoveStaleNpcReferenceFromAreaRegistrySlot(oArea, oNpc, nCursorBefore);
+        return;
+    }
+
     int nSlot = GetLocalInt(oNpc, DL_L_NPC_REG_SLOT);
     int nCount = GetLocalInt(oArea, DL_L_AREA_REG_COUNT);
     int bSlotContainsSelf = FALSE;
@@ -563,8 +571,50 @@ void DL_MarkAreaCursorNpcSkipped(object oArea, int nTickStamp, int nPassMode, in
     object oNpc = DL_GetAreaRegistryNpcAtSlot(oArea, nCursor);
     if (GetIsObjectValid(oNpc))
     {
+        if (DL_IsActivePipelineNpc(oNpc) && !DL_IsNpcRegistryOwnerForArea(oNpc, oArea))
+        {
+            DL_RemoveStaleNpcReferenceFromAreaRegistrySlot(oArea, oNpc, nCursor);
+            return;
+        }
         DL_SetNpcRegularWorkerDebug(oNpc, oArea, nTickStamp, nPassMode, nBudget, nCursor, nCursor, FALSE, FALSE, sReason);
     }
+}
+
+int DL_RemoveStaleNpcReferenceFromAreaRegistrySlot(object oArea, object oNpc, int nSlot)
+{
+    if (!GetIsObjectValid(oArea) || !GetIsObjectValid(oNpc))
+    {
+        return FALSE;
+    }
+
+    int nCount = GetLocalInt(oArea, DL_L_AREA_REG_COUNT);
+    if (nCount <= 0 || nSlot < 0 || nSlot >= nCount)
+    {
+        return DL_RemoveStaleNpcReferenceFromAreaRegistry(oArea, oNpc);
+    }
+
+    if (DL_GetAreaRegistryNpcAtSlot(oArea, nSlot) == oNpc)
+    {
+        DL_RepairAreaRegistrySlot(oArea, nSlot, nCount);
+        if (GetLocalObject(oNpc, DL_L_NPC_REG_AREA) == oArea)
+        {
+            DL_ClearNpcRegistryLocals(oNpc);
+        }
+        DL_SetStaleOldAreaRegistryDebug(oNpc, oArea, nSlot, TRUE);
+        return TRUE;
+    }
+
+    return DL_RemoveStaleNpcReferenceFromAreaRegistry(oArea, oNpc);
+}
+
+int DL_IsNpcRegistryOwnerForArea(object oNpc, object oArea)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oArea))
+    {
+        return FALSE;
+    }
+
+    return GetArea(oNpc) == oArea && GetLocalObject(oNpc, DL_L_NPC_REG_AREA) == oArea;
 }
 
 void DL_ClearStaleTransitionHandoffProblemIfOwned(object oNpc)
@@ -792,9 +842,9 @@ int DL_ProcessAreaNpcByPassMode(object oArea, object oNpc, int nPassMode, int nT
         return FALSE;
     }
 
-    if (GetArea(oNpc) != oArea)
+    if (GetArea(oNpc) != oArea || GetLocalObject(oNpc, DL_L_NPC_REG_AREA) != oArea)
     {
-        DL_SetNpcRegularWorkerDebug(oNpc, oArea, nTickStamp, nPassMode, nBudget, nCursorBefore, nCursorAfter, TRUE, FALSE, "skip_area_mismatch");
+        DL_RemoveStaleNpcReferenceFromAreaRegistrySlot(oArea, oNpc, nCursorBefore);
         return FALSE;
     }
 
@@ -866,6 +916,7 @@ int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPas
             if (GetObjectType(oCandidate) == OBJECT_TYPE_CREATURE &&
                 GetIsPC(oCandidate) == FALSE &&
                 GetIsDM(oCandidate) == FALSE &&
+                GetArea(oCandidate) == oArea &&
                 GetLocalInt(oCandidate, DL_L_NPC_REG_ON) == TRUE &&
                 GetLocalObject(oCandidate, DL_L_NPC_REG_AREA) == oArea &&
                 GetLocalInt(oCandidate, DL_L_NPC_REG_SLOT) == nSlot &&
@@ -878,7 +929,13 @@ int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPas
             }
             else if (DL_IsActivePipelineNpc(oCandidate))
             {
-                if (GetArea(oCandidate) == oArea)
+                if (GetArea(oCandidate) != oArea || GetLocalObject(oCandidate, DL_L_NPC_REG_AREA) != oArea)
+                {
+                    DL_RemoveStaleNpcReferenceFromAreaRegistrySlot(oArea, oCandidate, nSlot);
+                    nNpcRegistered = GetLocalInt(oArea, DL_L_AREA_REG_COUNT);
+                    bFallbackNeeded = TRUE;
+                }
+                else
                 {
                     DL_EnsureNpcRegisteredInCurrentArea(oCandidate);
                     if (GetLocalObject(oCandidate, DL_L_NPC_REG_AREA) == oArea &&
@@ -887,12 +944,6 @@ int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPas
                         nNpcProcessed = nNpcProcessed + 1;
                     }
                 }
-                else
-                {
-                    DL_SetNpcRegularWorkerDebug(oCandidate, oArea, nTickStamp, nPassMode, nBudget, nCursor, nCursor, TRUE, FALSE, "skip_area_mismatch");
-                    DL_EnsureNpcRegisteredInCurrentArea(oCandidate);
-                }
-                bFallbackNeeded = TRUE;
             }
             else if (GetLocalInt(oCandidate, DL_L_NPC_REG_ON) == TRUE)
             {
@@ -919,7 +970,15 @@ int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPas
         object oBudgetNpc = DL_GetAreaRegistryNpcAtSlot(oArea, nNextBudgetSlot);
         if (GetIsObjectValid(oBudgetNpc))
         {
-            DL_SetNpcRegularWorkerDebug(oBudgetNpc, oArea, nTickStamp, nPassMode, nBudget, nCursor, nCursor, FALSE, FALSE, "skip_budget_exhausted");
+            if (DL_IsActivePipelineNpc(oBudgetNpc) && !DL_IsNpcRegistryOwnerForArea(oBudgetNpc, oArea))
+            {
+                DL_RemoveStaleNpcReferenceFromAreaRegistrySlot(oArea, oBudgetNpc, nNextBudgetSlot);
+                nNpcRegistered = GetLocalInt(oArea, DL_L_AREA_REG_COUNT);
+            }
+            else
+            {
+                DL_SetNpcRegularWorkerDebug(oBudgetNpc, oArea, nTickStamp, nPassMode, nBudget, nCursor, nCursor, FALSE, FALSE, "skip_budget_exhausted");
+            }
         }
     }
 
