@@ -1,4 +1,4 @@
-#include "dl_res_inc"
+#include "dl_runtime_contract_inc"
 #include "dl_diag_inc"
 
 // Manual Daily Life debug entry point.
