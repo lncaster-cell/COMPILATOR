@@ -292,6 +292,128 @@ void DL_UpdateDuplicateMoveTargetDebug(object oNpc, string sTargetTag, string sT
     DL_SetDuplicateMoveTargetDebug(oNpc, sTargetTag, sMatchArea, nMatches > 1);
 }
 
+void DL_SetMoveTargetIdentityDebug(object oNpc, object oMoveTarget, object oFocusTarget)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    object oNpcArea = GetArea(oNpc);
+    if (GetIsObjectValid(oMoveTarget))
+    {
+        SetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_OBJ_TAG_DBG, GetTag(oMoveTarget));
+        object oMoveArea = GetArea(oMoveTarget);
+        if (GetIsObjectValid(oMoveArea))
+        {
+            SetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_OBJ_AREA_DBG, GetTag(oMoveArea));
+        }
+        if (GetIsObjectValid(oNpcArea) && oMoveArea == oNpcArea)
+        {
+            SetLocalFloat(oNpc, DL_L_NPC_MOVE_TARGET_OBJ_DIST_DBG, GetDistanceBetween(oNpc, oMoveTarget));
+        }
+        else
+        {
+            SetLocalFloat(oNpc, DL_L_NPC_MOVE_TARGET_OBJ_DIST_DBG, -1.0);
+        }
+    }
+    else
+    {
+        DeleteLocalString(oNpc, DL_L_NPC_MOVE_TARGET_OBJ_TAG_DBG);
+        DeleteLocalString(oNpc, DL_L_NPC_MOVE_TARGET_OBJ_AREA_DBG);
+        SetLocalFloat(oNpc, DL_L_NPC_MOVE_TARGET_OBJ_DIST_DBG, -1.0);
+    }
+
+    if (GetIsObjectValid(oFocusTarget))
+    {
+        SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET_OBJ_TAG_DBG, GetTag(oFocusTarget));
+        object oFocusArea = GetArea(oFocusTarget);
+        if (GetIsObjectValid(oFocusArea))
+        {
+            SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET_OBJ_AREA_DBG, GetTag(oFocusArea));
+        }
+        if (GetIsObjectValid(oNpcArea) && oFocusArea == oNpcArea)
+        {
+            SetLocalFloat(oNpc, DL_L_NPC_FOCUS_TARGET_OBJ_DIST_DBG, GetDistanceBetween(oNpc, oFocusTarget));
+        }
+        else
+        {
+            SetLocalFloat(oNpc, DL_L_NPC_FOCUS_TARGET_OBJ_DIST_DBG, -1.0);
+        }
+    }
+    else
+    {
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_TARGET_OBJ_TAG_DBG);
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_TARGET_OBJ_AREA_DBG);
+        SetLocalFloat(oNpc, DL_L_NPC_FOCUS_TARGET_OBJ_DIST_DBG, -1.0);
+    }
+
+    SetLocalInt(oNpc, DL_L_NPC_MOVE_FOCUS_TARGET_SAME_OBJ_DBG,
+        GetIsObjectValid(oMoveTarget) && oMoveTarget == oFocusTarget);
+}
+
+void DL_SetDuplicateMoveTargetDebug(object oNpc, string sTargetTag, string sTargetArea, int bDuplicate)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    SetLocalInt(oNpc, DL_L_NPC_DUPLICATE_MOVE_TARGET_TAG_DBG, bDuplicate);
+    if (bDuplicate)
+    {
+        SetLocalString(oNpc, DL_L_NPC_DUPLICATE_MOVE_TARGET_TAG_VALUE_DBG, sTargetTag);
+        SetLocalString(oNpc, DL_L_NPC_DUPLICATE_MOVE_TARGET_AREA_DBG, sTargetArea);
+    }
+    else
+    {
+        DeleteLocalString(oNpc, DL_L_NPC_DUPLICATE_MOVE_TARGET_TAG_VALUE_DBG);
+        DeleteLocalString(oNpc, DL_L_NPC_DUPLICATE_MOVE_TARGET_AREA_DBG);
+    }
+}
+
+void DL_UpdateDuplicateMoveTargetDebug(object oNpc, string sTargetTag, string sTargetArea)
+{
+    if (!GetIsObjectValid(oNpc) || sTargetTag == "")
+    {
+        return;
+    }
+
+    object oNpcArea = GetArea(oNpc);
+    string sMatchArea = sTargetArea;
+    if (sMatchArea == "" && GetIsObjectValid(oNpcArea))
+    {
+        sMatchArea = GetTag(oNpcArea);
+    }
+
+    int nMatches = 0;
+    int nIndex = 0;
+    while (nIndex < DL_MOVE_TARGET_SEARCH_CAP)
+    {
+        object oCandidate = GetObjectByTag(sTargetTag, nIndex);
+        if (!GetIsObjectValid(oCandidate))
+        {
+            break;
+        }
+
+        object oCandidateArea = GetArea(oCandidate);
+        if (sMatchArea != "")
+        {
+            if (GetIsObjectValid(oCandidateArea) && GetTag(oCandidateArea) == sMatchArea)
+            {
+                nMatches = nMatches + 1;
+            }
+        }
+        else
+        {
+            nMatches = nMatches + 1;
+        }
+        nIndex = nIndex + 1;
+    }
+
+    DL_SetDuplicateMoveTargetDebug(oNpc, sTargetTag, sMatchArea, nMatches > 1);
+}
+
 object DL_ResolveMoveJobTarget(object oNpc)
 {
     if (!GetIsObjectValid(oNpc))
