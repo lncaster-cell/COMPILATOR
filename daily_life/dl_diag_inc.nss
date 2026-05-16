@@ -243,10 +243,18 @@ void DL_LogNpcDiagnostic(object oNpc, string sSource)
                   " directive_change_cleanup=" + GetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_CLEANUP) +
                   " area_worker_tick_area=" + GetLocalString(oNpc, "area_worker_tick_area") +
                   " area_worker_tick_seq=" + IntToString(GetLocalInt(oNpc, "area_worker_tick_seq")) +
+                  " area_worker_pass_mode=" + GetLocalString(oNpc, "area_worker_pass_mode") +
+                  " area_worker_budget=" + IntToString(GetLocalInt(oNpc, "area_worker_budget")) +
+                  " area_worker_cursor_before=" + IntToString(GetLocalInt(oNpc, "area_worker_cursor_before")) +
+                  " area_worker_cursor_after=" + IntToString(GetLocalInt(oNpc, "area_worker_cursor_after")) +
+                  " npc_seen_by_round_robin=" + IntToString(GetLocalInt(oNpc, "npc_seen_by_round_robin")) +
+                  " npc_processed_by_round_robin=" + IntToString(GetLocalInt(oNpc, "npc_processed_by_round_robin")) +
+                  " npc_touch_skipped_reason=" + GetLocalString(oNpc, "npc_touch_skipped_reason") +
+                  " npc_worker_touch_seq_before=" + IntToString(GetLocalInt(oNpc, "npc_worker_touch_seq_before")) +
+                  " npc_worker_touch_seq_after=" + IntToString(GetLocalInt(oNpc, "npc_worker_touch_seq_after")) +
                   " npc_worker_touch_seq=" + IntToString(GetLocalInt(oNpc, "npc_worker_touch_seq")) +
                   " npc_last_worker_touch_hour=" + IntToString(GetLocalInt(oNpc, "npc_last_worker_touch_hour")) +
                   " npc_last_worker_touch_minute=" + IntToString(GetLocalInt(oNpc, "npc_last_worker_touch_minute")) +
-                  " npc_processed_by_round_robin=" + IntToString(GetLocalInt(oNpc, "npc_processed_by_round_robin")) +
                   " npc_registry_slot=" + IntToString(GetLocalInt(oNpc, "npc_registry_slot")) +
                   " npc_registry_count=" + IntToString(GetLocalInt(oNpc, "npc_registry_count")) +
                   " npc_slot_contains_self=" + IntToString(GetLocalInt(oNpc, "npc_slot_contains_self"));
@@ -278,10 +286,18 @@ string DL_GetNpcDiagnosticSignature(object oNpc)
            GetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_CLEANUP) + "|" +
            GetLocalString(oNpc, "area_worker_tick_area") + "|" +
            IntToString(GetLocalInt(oNpc, "area_worker_tick_seq")) + "|" +
+           GetLocalString(oNpc, "area_worker_pass_mode") + "|" +
+           IntToString(GetLocalInt(oNpc, "area_worker_budget")) + "|" +
+           IntToString(GetLocalInt(oNpc, "area_worker_cursor_before")) + "|" +
+           IntToString(GetLocalInt(oNpc, "area_worker_cursor_after")) + "|" +
+           IntToString(GetLocalInt(oNpc, "npc_seen_by_round_robin")) + "|" +
+           IntToString(GetLocalInt(oNpc, "npc_processed_by_round_robin")) + "|" +
+           GetLocalString(oNpc, "npc_touch_skipped_reason") + "|" +
+           IntToString(GetLocalInt(oNpc, "npc_worker_touch_seq_before")) + "|" +
+           IntToString(GetLocalInt(oNpc, "npc_worker_touch_seq_after")) + "|" +
            IntToString(GetLocalInt(oNpc, "npc_worker_touch_seq")) + "|" +
            IntToString(GetLocalInt(oNpc, "npc_last_worker_touch_hour")) + "|" +
            IntToString(GetLocalInt(oNpc, "npc_last_worker_touch_minute")) + "|" +
-           IntToString(GetLocalInt(oNpc, "npc_processed_by_round_robin")) + "|" +
            IntToString(GetLocalInt(oNpc, "npc_registry_slot")) + "|" +
            IntToString(GetLocalInt(oNpc, "npc_registry_count")) + "|" +
            IntToString(GetLocalInt(oNpc, "npc_slot_contains_self"));
