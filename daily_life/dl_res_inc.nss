@@ -648,7 +648,7 @@ void DL_BsmithTraceStage(object oNpc, string sStage, string sNote)
         " npc=" + GetTag(oNpc) +
         " area=" + DL_BsmithAreaTag(oNpc) +
         " pos=" + FloatToString(vPos.x, 1, 1) + "," + FloatToString(vPos.y, 1, 1) + "," + FloatToString(vPos.z, 1, 1) +
-        " dir=" + DL_GetDirectiveLabel(GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE)) +
+        " dir=" + DL_GetDirectiveDebugLabel(GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE)) +
         " state=" + GetLocalString(oNpc, DL_L_NPC_STATE) +
         " problem=" + sProblem +
         " move=" + GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) + "/" + GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE) + "/" + GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG) + "/" + GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) +
@@ -1268,7 +1268,7 @@ int DL_FinalizeReachedDirectiveMoveJob(object oNpc, int nEffectiveDirective)
 
     SetLocalInt(oNpc, DL_L_NPC_REACHED_FINALIZE_USED_FOCUS_DBG, FALSE);
 
-    DL_BsmithTraceStage(oNpc, "FINALIZE_ENTER", DL_GetDirectiveLabel(nEffectiveDirective));
+    DL_BsmithTraceStage(oNpc, "FINALIZE_ENTER", DL_GetDirectiveDebugLabel(nEffectiveDirective));
 
     if (!DL_HasMoveJob(oNpc))
     {
@@ -1419,8 +1419,8 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
 
     int nEffectiveDirective = DL_ResolveEffectiveDirective(oNpc, nDirective);
     int nPrevDirective = GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE);
-    DL_BsmithTraceStage(oNpc, "DIRECTIVE_RESOLVED", DL_GetDirectiveLabel(nEffectiveDirective));
-    DL_BsmithTraceStage(oNpc, "DIRECTIVE_APPLY_ENTER", DL_GetDirectiveLabel(nPrevDirective) + "->" + DL_GetDirectiveLabel(nEffectiveDirective));
+    DL_BsmithTraceStage(oNpc, "DIRECTIVE_RESOLVED", DL_GetDirectiveDebugLabel(nEffectiveDirective));
+    DL_BsmithTraceStage(oNpc, "DIRECTIVE_APPLY_ENTER", DL_GetDirectiveDebugLabel(nPrevDirective) + "->" + DL_GetDirectiveDebugLabel(nEffectiveDirective));
 
     if (nPrevDirective != nEffectiveDirective)
     {
