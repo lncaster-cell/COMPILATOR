@@ -1180,6 +1180,12 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
             }
         }
     }
+    if (bMoveJobTicked && DL_GetMoveJobResult(oNpc) == DL_MOVE_RESULT_REACHED)
+    {
+        DL_ClearFocusMoveIssueState(oNpc);
+        DL_ClearTransitionExecutionState(oNpc);
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
+    }
     if (bMoveJobTicked && DL_GetMoveJobResult(oNpc) == DL_MOVE_RESULT_RUNNING)
     {
         if (DL_FinalizeReachedDirectiveMoveJob(oNpc, nEffectiveDirective))
