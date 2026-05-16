@@ -5,6 +5,24 @@ const string DL_L_MODULE_RESYNC_LAST_PROCESSED = "dl_module_resync_last_processe
 const string DL_L_AREA_WORKER_LAST_PROCESSED = "dl_area_worker_last_processed";
 const string DL_L_AREA_RESYNC_LAST_PROCESSED = "dl_area_resync_last_processed";
 const string DL_L_NPC_LAST_TOUCH_TICK = "dl_npc_last_touch_tick";
+const string DL_L_AREA_WORKER_TICK_AREA_DBG = "area_worker_tick_area";
+const string DL_L_AREA_WORKER_TICK_SEQ_DBG = "area_worker_tick_seq";
+const string DL_L_NPC_WORKER_TOUCH_SEQ_DBG = "npc_worker_touch_seq";
+const string DL_L_NPC_LAST_WORKER_TOUCH_HOUR_DBG = "npc_last_worker_touch_hour";
+const string DL_L_NPC_LAST_WORKER_TOUCH_MINUTE_DBG = "npc_last_worker_touch_minute";
+const string DL_L_NPC_LAST_WORKER_TOUCH_ABS_MIN_DBG = "npc_last_worker_touch_abs_minute";
+const string DL_L_NPC_PROCESSED_BY_RR_DBG = "npc_processed_by_round_robin";
+const string DL_L_NPC_REGISTRY_SLOT_DBG = "npc_registry_slot";
+const string DL_L_NPC_REGISTRY_COUNT_DBG = "npc_registry_count";
+const string DL_L_NPC_SLOT_CONTAINS_SELF_DBG = "npc_slot_contains_self";
+const string DL_L_AREA_WORKER_PASS_MODE_DBG = "area_worker_pass_mode";
+const string DL_L_AREA_WORKER_BUDGET_DBG = "area_worker_budget";
+const string DL_L_AREA_WORKER_CURSOR_BEFORE_DBG = "area_worker_cursor_before";
+const string DL_L_AREA_WORKER_CURSOR_AFTER_DBG = "area_worker_cursor_after";
+const string DL_L_NPC_SEEN_BY_RR_DBG = "npc_seen_by_round_robin";
+const string DL_L_NPC_TOUCH_SKIPPED_REASON_DBG = "npc_touch_skipped_reason";
+const string DL_L_NPC_WORKER_TOUCH_SEQ_BEFORE_DBG = "npc_worker_touch_seq_before";
+const string DL_L_NPC_WORKER_TOUCH_SEQ_AFTER_DBG = "npc_worker_touch_seq_after";
 
 const int DL_AREA_PASS_MODE_WORKER = 1;
 const int DL_AREA_PASS_MODE_RESYNC = 2;
@@ -212,6 +230,177 @@ void DL_RepairAreaRegistrySlot(object oArea, int nSlot, int nCount)
     SetLocalInt(oArea, DL_L_AREA_REG_SEQ, GetLocalInt(oArea, DL_L_AREA_REG_SEQ) + 1);
 }
 
+string DL_GetAreaWorkerPassModeDebugLabel(int nPassMode)
+{
+    if (nPassMode == DL_AREA_PASS_MODE_WORKER) return "worker";
+    if (nPassMode == DL_AREA_PASS_MODE_RESYNC) return "resync";
+    if (nPassMode == DL_AREA_PASS_MODE_WARM) return "warm";
+    return "unknown";
+}
+
+void DL_SetAreaWorkerPassDebug(object oArea, int nTickStamp, int nPassMode, int nBudget, int nCursorBefore, int nCursorAfter)
+{
+    if (!GetIsObjectValid(oArea))
+    {
+        return;
+    }
+
+    SetLocalString(oArea, DL_L_AREA_WORKER_TICK_AREA_DBG, GetTag(oArea));
+    SetLocalInt(oArea, DL_L_AREA_WORKER_TICK_SEQ_DBG, nTickStamp);
+    SetLocalString(oArea, DL_L_AREA_WORKER_PASS_MODE_DBG, DL_GetAreaWorkerPassModeDebugLabel(nPassMode));
+    SetLocalInt(oArea, DL_L_AREA_WORKER_BUDGET_DBG, nBudget);
+    SetLocalInt(oArea, DL_L_AREA_WORKER_CURSOR_BEFORE_DBG, nCursorBefore);
+    SetLocalInt(oArea, DL_L_AREA_WORKER_CURSOR_AFTER_DBG, nCursorAfter);
+}
+
+void DL_SetNpcRegularWorkerDebug(
+    object oNpc,
+    object oArea,
+    int nTickStamp,
+    int nPassMode,
+    int nBudget,
+    int nCursorBefore,
+    int nCursorAfter,
+    int bSeenByRoundRobin,
+    int bProcessedByRoundRobin,
+    string sSkipReason
+)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oArea))
+    {
+        return;
+    }
+
+    int nSlot = GetLocalInt(oNpc, DL_L_NPC_REG_SLOT);
+    int nCount = GetLocalInt(oArea, DL_L_AREA_REG_COUNT);
+    int bSlotContainsSelf = FALSE;
+    if (nSlot >= 0 && nSlot < nCount)
+    {
+        bSlotContainsSelf = DL_GetAreaRegistryNpcAtSlot(oArea, nSlot) == oNpc;
+    }
+
+    SetLocalString(oNpc, DL_L_AREA_WORKER_TICK_AREA_DBG, GetTag(oArea));
+    SetLocalInt(oNpc, DL_L_AREA_WORKER_TICK_SEQ_DBG, nTickStamp);
+    SetLocalString(oNpc, DL_L_AREA_WORKER_PASS_MODE_DBG, DL_GetAreaWorkerPassModeDebugLabel(nPassMode));
+    SetLocalInt(oNpc, DL_L_AREA_WORKER_BUDGET_DBG, nBudget);
+    SetLocalInt(oNpc, DL_L_AREA_WORKER_CURSOR_BEFORE_DBG, nCursorBefore);
+    SetLocalInt(oNpc, DL_L_AREA_WORKER_CURSOR_AFTER_DBG, nCursorAfter);
+    SetLocalInt(oNpc, DL_L_NPC_SEEN_BY_RR_DBG, bSeenByRoundRobin);
+    SetLocalInt(oNpc, DL_L_NPC_PROCESSED_BY_RR_DBG, bProcessedByRoundRobin);
+    SetLocalInt(oNpc, DL_L_NPC_REGISTRY_SLOT_DBG, nSlot);
+    SetLocalInt(oNpc, DL_L_NPC_REGISTRY_COUNT_DBG, nCount);
+    SetLocalInt(oNpc, DL_L_NPC_SLOT_CONTAINS_SELF_DBG, bSlotContainsSelf);
+    if (sSkipReason == "")
+    {
+        DeleteLocalString(oNpc, DL_L_NPC_TOUCH_SKIPPED_REASON_DBG);
+    }
+    else
+    {
+        SetLocalString(oNpc, DL_L_NPC_TOUCH_SKIPPED_REASON_DBG, sSkipReason);
+    }
+}
+
+int DL_ShouldBypassLastTouchGate(object oNpc)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return FALSE;
+    }
+
+    int nStoredDirective = GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE);
+    int nResolvedDirective = DL_ResolveEffectiveDirective(oNpc, DL_ResolveNpcDirective(oNpc));
+    if (nStoredDirective != nResolvedDirective)
+    {
+        return TRUE;
+    }
+
+    if (DL_HasMoveJob(oNpc) && GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_RUNNING)
+    {
+        object oTarget = DL_ResolveMoveJobTarget(oNpc);
+        if (GetIsObjectValid(oTarget) && GetArea(oTarget) == GetArea(oNpc))
+        {
+            float fRadius = GetLocalFloat(oNpc, DL_L_NPC_MOVE_RADIUS);
+            if (fRadius <= 0.0)
+            {
+                fRadius = DL_MOVE_DEFAULT_RADIUS;
+            }
+            if (GetDistanceBetween(oNpc, oTarget) <= fRadius)
+            {
+                return TRUE;
+            }
+        }
+    }
+
+    return FALSE;
+}
+
+int DL_TouchNpcFromAreaWorker(object oNpc, object oArea, int nPassMode, int nTickStamp, int nBudget, int nCursorBefore, int nCursorAfter)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oArea))
+    {
+        return FALSE;
+    }
+
+    int nSeqBefore = GetLocalInt(oNpc, DL_L_NPC_WORKER_TOUCH_SEQ_DBG);
+    SetLocalInt(oNpc, DL_L_NPC_WORKER_TOUCH_SEQ_BEFORE_DBG, nSeqBefore);
+    SetLocalInt(oNpc, DL_L_NPC_WORKER_TOUCH_SEQ_AFTER_DBG, nSeqBefore);
+    DL_SetNpcRegularWorkerDebug(oNpc, oArea, nTickStamp, nPassMode, nBudget, nCursorBefore, nCursorAfter, TRUE, FALSE, "");
+    DL_WorkerTouchNpc(oNpc);
+    int nSeqAfter = GetLocalInt(oNpc, DL_L_NPC_WORKER_TOUCH_SEQ_DBG);
+    SetLocalInt(oNpc, DL_L_NPC_WORKER_TOUCH_SEQ_AFTER_DBG, nSeqAfter);
+    if (nSeqAfter != nSeqBefore)
+    {
+        DL_SetNpcRegularWorkerDebug(oNpc, oArea, nTickStamp, nPassMode, nBudget, nCursorBefore, nCursorAfter, TRUE, TRUE, "");
+        return TRUE;
+    }
+
+    DL_SetNpcRegularWorkerDebug(oNpc, oArea, nTickStamp, nPassMode, nBudget, nCursorBefore, nCursorAfter, TRUE, FALSE, "skip_unknown");
+    return FALSE;
+}
+
+void DL_MarkAreaCursorNpcSkipped(object oArea, int nTickStamp, int nPassMode, int nBudget, int nCursor, string sReason)
+{
+    if (!GetIsObjectValid(oArea))
+    {
+        return;
+    }
+
+    int nCount = GetLocalInt(oArea, DL_L_AREA_REG_COUNT);
+    if (nCount <= 0)
+    {
+        return;
+    }
+
+    if (nCursor < 0 || nCursor >= nCount)
+    {
+        nCursor = 0;
+    }
+
+    object oNpc = DL_GetAreaRegistryNpcAtSlot(oArea, nCursor);
+    if (GetIsObjectValid(oNpc))
+    {
+        DL_SetNpcRegularWorkerDebug(oNpc, oArea, nTickStamp, nPassMode, nBudget, nCursor, nCursor, FALSE, FALSE, sReason);
+    }
+}
+
+void DL_ClearStaleTransitionHandoffProblemIfOwned(object oNpc)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    object oCurrentArea = GetArea(oNpc);
+    object oRegisteredArea = GetLocalObject(oNpc, DL_L_NPC_REG_AREA);
+    if (GetLocalString(oNpc, "dl_post_jump_result") == "post_jump_finalizer_complete" &&
+        GetIsObjectValid(oCurrentArea) &&
+        oRegisteredArea == oCurrentArea &&
+        GetLocalString(oNpc, "dl_transition_registry_problem") == "target_area_worker_not_ticking_or_not_owning_npc")
+    {
+        DeleteLocalString(oNpc, "dl_transition_registry_problem");
+    }
+}
+
 int DL_RunAreaRegistryFallbackIntegrityRepair(object oArea, int nRepairBudget)
 {
     if (nRepairBudget < DL_WORKER_BUDGET_MIN)
@@ -371,41 +560,63 @@ int DL_RunAreaRegistryFallbackRecovery(object oArea, int nTickStamp, int nScanBu
     return GetLocalInt(oArea, DL_L_AREA_REG_COUNT);
 }
 
-int DL_ProcessAreaNpcByPassMode(object oNpc, int nPassMode, int nTickStamp)
+int DL_ProcessAreaNpcByPassMode(object oArea, object oNpc, int nPassMode, int nTickStamp, int nBudget, int nCursorBefore, int nCursorAfter)
 {
-    if ((nPassMode == DL_AREA_PASS_MODE_WORKER || nPassMode == DL_AREA_PASS_MODE_WARM) &&
-        GetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK) == nTickStamp)
+    if (!GetIsObjectValid(oNpc))
     {
+        return FALSE;
+    }
+
+    if (nPassMode != DL_AREA_PASS_MODE_WORKER &&
+        nPassMode != DL_AREA_PASS_MODE_WARM &&
+        nPassMode != DL_AREA_PASS_MODE_RESYNC)
+    {
+        DL_SetNpcRegularWorkerDebug(oNpc, oArea, nTickStamp, nPassMode, nBudget, nCursorBefore, nCursorAfter, TRUE, FALSE, "skip_pass_mode");
+        return FALSE;
+    }
+
+    if ((nPassMode == DL_AREA_PASS_MODE_WORKER || nPassMode == DL_AREA_PASS_MODE_WARM) &&
+        GetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK) == nTickStamp &&
+        !DL_ShouldBypassLastTouchGate(oNpc))
+    {
+        DL_SetNpcRegularWorkerDebug(oNpc, oArea, nTickStamp, nPassMode, nBudget, nCursorBefore, nCursorAfter, TRUE, FALSE, "skip_last_touch_gate");
         return FALSE;
     }
 
     if (nPassMode == DL_AREA_PASS_MODE_RESYNC)
     {
+        DL_SetNpcRegularWorkerDebug(oNpc, oArea, nTickStamp, nPassMode, nBudget, nCursorBefore, nCursorAfter, TRUE, FALSE, "skip_pass_mode");
         DL_RequestResync(oNpc, DL_RESYNC_AREA_ENTER);
         DL_ProcessResync(oNpc);
         SetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK, nTickStamp);
         return TRUE;
     }
 
-    if (nPassMode == DL_AREA_PASS_MODE_WARM)
+    if (!DL_IsActivePipelineNpc(oNpc))
     {
-        if (!DL_IsActivePipelineNpc(oNpc))
-        {
-            return FALSE;
-        }
+        DL_SetNpcRegularWorkerDebug(oNpc, oArea, nTickStamp, nPassMode, nBudget, nCursorBefore, nCursorAfter, TRUE, FALSE, "skip_not_active_pipeline_npc");
+        return FALSE;
+    }
 
-        if (!DL_EnsureNpcRegisteredInCurrentArea(oNpc))
-        {
-            return FALSE;
-        }
+    if (GetArea(oNpc) != oArea)
+    {
+        DL_SetNpcRegularWorkerDebug(oNpc, oArea, nTickStamp, nPassMode, nBudget, nCursorBefore, nCursorAfter, TRUE, FALSE, "skip_area_mismatch");
+        return FALSE;
+    }
 
+    if (!DL_EnsureNpcRegisteredInCurrentArea(oNpc))
+    {
+        DL_SetNpcRegularWorkerDebug(oNpc, oArea, nTickStamp, nPassMode, nBudget, nCursorBefore, nCursorAfter, TRUE, FALSE, "skip_invalid_slot");
+        return FALSE;
+    }
+
+    if (DL_TouchNpcFromAreaWorker(oNpc, oArea, nPassMode, nTickStamp, nBudget, nCursorBefore, nCursorAfter))
+    {
         SetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK, nTickStamp);
         return TRUE;
     }
 
-    DL_WorkerTouchNpc(oNpc);
-    SetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK, nTickStamp);
-    return TRUE;
+    return FALSE;
 }
 
 int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPassMode, int nTickStamp)
@@ -427,6 +638,8 @@ int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPas
     {
         nNpcRegistered = 0;
     }
+
+    DL_SetAreaWorkerPassDebug(oArea, nTickStamp, nPassMode, nBudget, nCursor, nCursor);
 
     // Recovery path only: bounded scan when registry is empty or has stale slots.
     if (nNpcRegistered == 0)
@@ -464,20 +677,38 @@ int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPas
                 GetLocalInt(oCandidate, DL_L_NPC_REG_SLOT) == nSlot &&
                 DL_IsActivePipelineNpc(oCandidate))
             {
-                if (DL_ProcessAreaNpcByPassMode(oCandidate, nPassMode, nTickStamp))
+                if (DL_ProcessAreaNpcByPassMode(oArea, oCandidate, nPassMode, nTickStamp, nBudget, nCursor, nCursor))
                 {
                     nNpcProcessed = nNpcProcessed + 1;
                 }
             }
-            else if (DL_IsActivePipelineNpc(oCandidate) && GetArea(oCandidate) != oArea)
+            else if (DL_IsActivePipelineNpc(oCandidate))
             {
-                DL_EnsureNpcRegisteredInCurrentArea(oCandidate);
+                if (GetArea(oCandidate) == oArea)
+                {
+                    DL_EnsureNpcRegisteredInCurrentArea(oCandidate);
+                    if (GetLocalObject(oCandidate, DL_L_NPC_REG_AREA) == oArea &&
+                        DL_ProcessAreaNpcByPassMode(oArea, oCandidate, nPassMode, nTickStamp, nBudget, nCursor, nCursor))
+                    {
+                        nNpcProcessed = nNpcProcessed + 1;
+                    }
+                }
+                else
+                {
+                    DL_SetNpcRegularWorkerDebug(oCandidate, oArea, nTickStamp, nPassMode, nBudget, nCursor, nCursor, TRUE, FALSE, "skip_area_mismatch");
+                    DL_EnsureNpcRegisteredInCurrentArea(oCandidate);
+                }
                 bFallbackNeeded = TRUE;
             }
             else if (GetLocalInt(oCandidate, DL_L_NPC_REG_ON) == TRUE)
             {
+                DL_SetNpcRegularWorkerDebug(oCandidate, oArea, nTickStamp, nPassMode, nBudget, nCursor, nCursor, TRUE, FALSE, "skip_not_active_pipeline_npc");
                 DL_UnregisterNpc(oCandidate);
                 bFallbackNeeded = TRUE;
+            }
+            else
+            {
+                DL_SetNpcRegularWorkerDebug(oCandidate, oArea, nTickStamp, nPassMode, nBudget, nCursor, nCursor, TRUE, FALSE, "skip_not_active_pipeline_npc");
             }
         }
         else
@@ -488,9 +719,37 @@ int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPas
         nAttempts = nAttempts + 1;
     }
 
+    if (nNpcProcessed >= nBudget && nAttempts < nNpcRegistered)
+    {
+        int nNextBudgetSlot = (nCursor + nAttempts) % nNpcRegistered;
+        object oBudgetNpc = DL_GetAreaRegistryNpcAtSlot(oArea, nNextBudgetSlot);
+        if (GetIsObjectValid(oBudgetNpc))
+        {
+            DL_SetNpcRegularWorkerDebug(oBudgetNpc, oArea, nTickStamp, nPassMode, nBudget, nCursor, nCursor, FALSE, FALSE, "skip_budget_exhausted");
+        }
+    }
+
     if (bFallbackNeeded)
     {
         DL_MarkAreaRegistryRebuildPending(oArea);
+    }
+
+    if (nPassMode == DL_AREA_PASS_MODE_WORKER || nPassMode == DL_AREA_PASS_MODE_WARM)
+    {
+        int nLastCatchupTick = GetLocalInt(oArea, DL_L_AREA_PASS_FALLBACK_LAST_TICK);
+        int bCatchupDue = GetLocalInt(oArea, DL_L_AREA_REGISTRY_REBUILD_PENDING) == TRUE ||
+            nLastCatchupTick <= 0 ||
+            (nTickStamp >= nLastCatchupTick && (nTickStamp - nLastCatchupTick) >= DL_WARM_MAINTENANCE_INTERVAL_TICKS);
+        if (bCatchupDue)
+        {
+            int nCatchupBudget = nBudget - nNpcProcessed;
+            if (nCatchupBudget < DL_WORKER_BUDGET_MIN)
+            {
+                nCatchupBudget = DL_WORKER_BUDGET_MIN;
+            }
+            DL_RunAreaRegistryFallbackCatchupScan(oArea, nTickStamp, nCatchupBudget);
+            nNpcRegistered = GetLocalInt(oArea, DL_L_AREA_REG_COUNT);
+        }
     }
 
     if (GetLocalInt(oArea, DL_L_AREA_REGISTRY_REBUILD_PENDING) == TRUE)
@@ -542,7 +801,10 @@ int DL_RunTransitionRegistryHandoffTick(object oArea, int nTickStamp)
 
             if (oNpcArea == oArea)
             {
+                SetLocalInt(oNpc, DL_L_NPC_PROCESSED_BY_RR_DBG, FALSE);
+                DL_SetNpcRegularWorkerDebug(oNpc, oArea, nTickStamp, DL_AREA_PASS_MODE_WORKER, 0, 0, 0, FALSE, FALSE, "");
                 DL_WorkerTouchNpc(oNpc);
+                DL_ClearStaleTransitionHandoffProblemIfOwned(oNpc);
                 SetLocalInt(oNpc, "dl_transition_registry_handoff_touch_called", TRUE);
                 SetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK, nTickStamp);
                 oRegisteredArea = GetLocalObject(oNpc, DL_L_NPC_REG_AREA);
@@ -622,6 +884,7 @@ void DL_WorkerTouchNpc(object oNpc)
         sRegisteredArea = GetTag(oRegisteredArea);
     }
     SetLocalString(oNpc, "dl_registry_area_after_repair", sRegisteredArea);
+    DL_ClearStaleTransitionHandoffProblemIfOwned(oNpc);
     if (GetLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC) == "registry_repair_verify_failed")
     {
         DeleteLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC);
@@ -631,6 +894,10 @@ void DL_WorkerTouchNpc(object oNpc)
     int nWorkerSeq = GetLocalInt(oModule, DL_L_MODULE_WORKER_SEQ) + 1;
     SetLocalInt(oModule, DL_L_MODULE_WORKER_SEQ, nWorkerSeq);
     SetLocalInt(oNpc, DL_L_NPC_WORKER_SEQ, nWorkerSeq);
+    SetLocalInt(oNpc, DL_L_NPC_WORKER_TOUCH_SEQ_DBG, nWorkerSeq);
+    SetLocalInt(oNpc, DL_L_NPC_LAST_WORKER_TOUCH_HOUR_DBG, GetTimeHour());
+    SetLocalInt(oNpc, DL_L_NPC_LAST_WORKER_TOUCH_MINUTE_DBG, GetTimeMinute());
+    SetLocalInt(oNpc, DL_L_NPC_LAST_WORKER_TOUCH_ABS_MIN_DBG, DL_GetAbsoluteMinute());
 
     int nDirective = DL_ResolveNpcDirective(oNpc);
     DL_ApplyDirectiveSkeleton(oNpc, nDirective);
@@ -716,11 +983,13 @@ void DL_RunAreaWarmMaintenanceTick(object oArea)
 
     if (!DL_IsRuntimeEnabled())
     {
+        DL_MarkAreaCursorNpcSkipped(oArea, DL_GetAreaTick(oArea), DL_AREA_PASS_MODE_WARM, 0, DL_GetAreaWorkerCursor(oArea), "skip_runtime_disabled");
         return;
     }
 
     if (DL_GetAreaTier(oArea) != DL_TIER_WARM)
     {
+        DL_MarkAreaCursorNpcSkipped(oArea, DL_GetAreaTick(oArea), DL_AREA_PASS_MODE_WARM, 0, DL_GetAreaWorkerCursor(oArea), "skip_area_not_hot");
         return;
     }
 
@@ -728,6 +997,7 @@ void DL_RunAreaWarmMaintenanceTick(object oArea)
     int nLastTick = GetLocalInt(oArea, DL_L_AREA_LAST_WARM_MAINT_TICK);
     if (nTickStamp >= nLastTick && (nTickStamp - nLastTick) < DL_WARM_MAINTENANCE_INTERVAL_TICKS)
     {
+        DL_MarkAreaCursorNpcSkipped(oArea, nTickStamp, DL_AREA_PASS_MODE_WARM, 0, DL_GetAreaWorkerCursor(oArea), "skip_area_not_hot");
         return;
     }
     SetLocalInt(oArea, DL_L_AREA_LAST_WARM_MAINT_TICK, nTickStamp);
@@ -736,6 +1006,9 @@ void DL_RunAreaWarmMaintenanceTick(object oArea)
     nBudget = DL_ConsumeModuleNpcBudget(nBudget);
     if (nBudget <= 0)
     {
+        int nBudgetCursor = DL_GetAreaWorkerCursor(oArea);
+        DL_SetAreaWorkerPassDebug(oArea, nTickStamp, DL_AREA_PASS_MODE_WARM, 0, nBudgetCursor, nBudgetCursor);
+        DL_MarkAreaCursorNpcSkipped(oArea, nTickStamp, DL_AREA_PASS_MODE_WARM, 0, nBudgetCursor, "skip_budget_exhausted");
         SetLocalInt(oArea, DL_L_AREA_WORKER_LAST_PROCESSED, 0);
         object oModuleNoBudget = GetModule();
         SetLocalInt(oModuleNoBudget, DL_L_MODULE_WORKER_LAST_PROCESSED, 0);
@@ -746,6 +1019,7 @@ void DL_RunAreaWarmMaintenanceTick(object oArea)
     int nNpcProcessed = DL_RunAreaNpcRoundRobinPass(oArea, nCursor, nBudget, DL_AREA_PASS_MODE_WARM, nTickStamp);
     int nNpcSeen = GetLocalInt(oArea, DL_L_AREA_PASS_LAST_SEEN);
 
+    int nCursorAfter = 0;
     if (nNpcSeen <= 0)
     {
         DL_SetAreaWorkerCursor(oArea, 0);
@@ -754,8 +1028,10 @@ void DL_RunAreaWarmMaintenanceTick(object oArea)
     {
         int nCandidatesSeen = GetLocalInt(oArea, DL_L_AREA_PASS_LAST_CANDIDATES);
         int nCursorAdvance = DL_GetCursorAdvance(nNpcProcessed, nCandidatesSeen, nNpcSeen);
-        DL_SetAreaWorkerCursor(oArea, (nCursor + nCursorAdvance) % nNpcSeen);
+        nCursorAfter = (nCursor + nCursorAdvance) % nNpcSeen;
+        DL_SetAreaWorkerCursor(oArea, nCursorAfter);
     }
+    DL_SetAreaWorkerPassDebug(oArea, nTickStamp, DL_AREA_PASS_MODE_WARM, nBudget, nCursor, nCursorAfter);
 
     SetLocalInt(oArea, DL_L_AREA_WORKER_LAST_PROCESSED, nNpcProcessed);
     object oModule = GetModule();
@@ -771,10 +1047,13 @@ void DL_RunAreaWorkerTick(object oArea)
 
     if (!DL_IsRuntimeEnabled())
     {
+        DL_MarkAreaCursorNpcSkipped(oArea, DL_GetAreaTick(oArea), DL_AREA_PASS_MODE_WORKER, 0, DL_GetAreaWorkerCursor(oArea), "skip_runtime_disabled");
         return;
     }
 
-    DL_AdvanceAreaTick(oArea);
+    int nAreaTickSeq = DL_AdvanceAreaTick(oArea);
+    SetLocalString(oArea, DL_L_AREA_WORKER_TICK_AREA_DBG, GetTag(oArea));
+    SetLocalInt(oArea, DL_L_AREA_WORKER_TICK_SEQ_DBG, nAreaTickSeq);
     DL_BootstrapAreaTier(oArea);
     DL_MaybeReconcileAreaPlayerCount(oArea);
     DL_UpdateAreaTierLifecycle(oArea);
@@ -784,6 +1063,7 @@ void DL_RunAreaWorkerTick(object oArea)
     int nTier = DL_GetAreaTier(oArea);
     if (nTier == DL_TIER_FROZEN)
     {
+        DL_MarkAreaCursorNpcSkipped(oArea, DL_GetAreaTick(oArea), DL_AREA_PASS_MODE_WORKER, 0, DL_GetAreaWorkerCursor(oArea), "skip_area_not_hot");
         return;
     }
     if (nTier == DL_TIER_WARM)
@@ -798,6 +1078,9 @@ void DL_RunAreaWorkerTick(object oArea)
     nBudget = DL_ConsumeModuleNpcBudget(nBudget);
     if (nBudget <= 0)
     {
+        int nBudgetCursor = DL_GetAreaWorkerCursor(oArea);
+        DL_SetAreaWorkerPassDebug(oArea, DL_GetAreaTick(oArea), DL_AREA_PASS_MODE_WORKER, 0, nBudgetCursor, nBudgetCursor);
+        DL_MarkAreaCursorNpcSkipped(oArea, DL_GetAreaTick(oArea), DL_AREA_PASS_MODE_WORKER, 0, nBudgetCursor, "skip_budget_exhausted");
         object oModuleNoBudget = GetModule();
         SetLocalInt(oModuleNoBudget, DL_L_MODULE_WORKER_TICKS, GetLocalInt(oModuleNoBudget, DL_L_MODULE_WORKER_TICKS) + 1);
         SetLocalInt(oArea, DL_L_AREA_WORKER_LAST_PROCESSED, 0);
@@ -810,6 +1093,7 @@ void DL_RunAreaWorkerTick(object oArea)
     int nNpcProcessed = DL_RunAreaNpcRoundRobinPass(oArea, nCursor, nBudget, DL_AREA_PASS_MODE_WORKER, nTickStamp) + nHandoffTouched;
     int nNpcSeen = GetLocalInt(oArea, DL_L_AREA_PASS_LAST_SEEN);
 
+    int nCursorAfter = 0;
     if (nNpcSeen <= 0)
     {
         DL_SetAreaWorkerCursor(oArea, 0);
@@ -818,8 +1102,10 @@ void DL_RunAreaWorkerTick(object oArea)
     {
         int nCandidatesSeen = GetLocalInt(oArea, DL_L_AREA_PASS_LAST_CANDIDATES);
         int nCursorAdvance = DL_GetCursorAdvance(nNpcProcessed, nCandidatesSeen, nNpcSeen);
-        DL_SetAreaWorkerCursor(oArea, (nCursor + nCursorAdvance) % nNpcSeen);
+        nCursorAfter = (nCursor + nCursorAdvance) % nNpcSeen;
+        DL_SetAreaWorkerCursor(oArea, nCursorAfter);
     }
+    DL_SetAreaWorkerPassDebug(oArea, nTickStamp, DL_AREA_PASS_MODE_WORKER, nBudget, nCursor, nCursorAfter);
 
     object oModule = GetModule();
     SetLocalInt(oModule, DL_L_MODULE_WORKER_TICKS, GetLocalInt(oModule, DL_L_MODULE_WORKER_TICKS) + 1);

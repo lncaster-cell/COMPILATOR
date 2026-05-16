@@ -38,16 +38,59 @@ string DL_GetNpcProblemSummary(object oNpc)
 {
     object oCurrentArea = GetArea(oNpc);
     object oRegisteredArea = GetLocalObject(oNpc, "dl_npc_reg_area");
+    if (GetLocalString(oNpc, "dl_post_jump_result") == "post_jump_finalizer_complete" &&
+        GetIsObjectValid(oCurrentArea) &&
+        oRegisteredArea == oCurrentArea &&
+        GetLocalString(oNpc, "dl_transition_registry_problem") == "target_area_worker_not_ticking_or_not_owning_npc")
+    {
+        DeleteLocalString(oNpc, "dl_transition_registry_problem");
+    }
+
     if (GetIsObjectValid(oCurrentArea) &&
         oCurrentArea != oRegisteredArea)
     {
         return "registry_area_mismatch";
     }
 
+    int nStoredDirective = GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE);
+    int nResolvedDirective = DL_ResolveEffectiveDirective(oNpc, DL_ResolveNpcDirective(oNpc));
+    int nNowAbsMin = DL_GetAbsoluteMinute();
+    int nLastWorkerAbsMin = GetLocalInt(oNpc, "npc_last_worker_touch_abs_minute");
+    int nAreaTick = 0;
+    if (GetIsObjectValid(oCurrentArea))
+    {
+        nAreaTick = GetLocalInt(oCurrentArea, "dl_worker_tick");
+    }
+    int nNpcWorkerTick = GetLocalInt(oNpc, "area_worker_tick_seq");
+    if (nResolvedDirective != nStoredDirective &&
+        GetIsObjectValid(oCurrentArea) &&
+        oRegisteredArea == oCurrentArea &&
+        DL_IsActivePipelineNpc(oNpc) &&
+        ((nAreaTick > 0 && nNpcWorkerTick > 0 && (nAreaTick - nNpcWorkerTick) > 1) ||
+            (nLastWorkerAbsMin > 0 && (nNowAbsMin - nLastWorkerAbsMin) > 1)))
+    {
+        return "regular_worker_not_touching_registered_npc";
+    }
+
     string sHandoffDiag = GetLocalString(oNpc, "dl_transition_registry_problem");
     if (sHandoffDiag != "")
     {
         return sHandoffDiag;
+    }
+
+    if (nResolvedDirective != nStoredDirective)
+    {
+        return "directive_mismatch:" + DL_GetDirectiveLabel(nStoredDirective) + "->" + DL_GetDirectiveLabel(nResolvedDirective);
+    }
+
+    if (DL_HasMoveJob(oNpc) && !DL_IsMoveJobOwnerCompatibleWithDirective(oNpc, nStoredDirective))
+    {
+        return "move_owner_directive_mismatch:" + GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) + "->" + DL_GetDirectiveLabel(nStoredDirective);
+    }
+
+    if (!DL_IsFocusStateCompatibleWithDirective(oNpc, nStoredDirective))
+    {
+        return "focus_directive_mismatch:" + GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) + "->" + DL_GetDirectiveLabel(nStoredDirective);
     }
 
     string sMoveDiag = GetLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC);
@@ -191,7 +234,30 @@ void DL_LogNpcDiagnostic(object oNpc, string sSource)
                   " work_status=" + GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) +
                   " work_target=" + GetLocalString(oNpc, DL_L_NPC_WORK_TARGET) +
                   " transition_status=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) +
-                  " transition_target=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET);
+                  " transition_target=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) +
+                  " directive_preempted_old_move=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_DBG_DIRECTIVE_PREEMPTED_OLD_MOVE)) +
+                  " old_move_owner=" + GetLocalString(oNpc, DL_L_NPC_DBG_OLD_MOVE_OWNER) +
+                  " old_move_target=" + GetLocalString(oNpc, DL_L_NPC_DBG_OLD_MOVE_TARGET) +
+                  " directive_change_prev=" + GetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_PREV) +
+                  " directive_change_next=" + GetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_NEXT) +
+                  " directive_change_cleanup=" + GetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_CLEANUP) +
+                  " area_worker_tick_area=" + GetLocalString(oNpc, "area_worker_tick_area") +
+                  " area_worker_tick_seq=" + IntToString(GetLocalInt(oNpc, "area_worker_tick_seq")) +
+                  " area_worker_pass_mode=" + GetLocalString(oNpc, "area_worker_pass_mode") +
+                  " area_worker_budget=" + IntToString(GetLocalInt(oNpc, "area_worker_budget")) +
+                  " area_worker_cursor_before=" + IntToString(GetLocalInt(oNpc, "area_worker_cursor_before")) +
+                  " area_worker_cursor_after=" + IntToString(GetLocalInt(oNpc, "area_worker_cursor_after")) +
+                  " npc_seen_by_round_robin=" + IntToString(GetLocalInt(oNpc, "npc_seen_by_round_robin")) +
+                  " npc_processed_by_round_robin=" + IntToString(GetLocalInt(oNpc, "npc_processed_by_round_robin")) +
+                  " npc_touch_skipped_reason=" + GetLocalString(oNpc, "npc_touch_skipped_reason") +
+                  " npc_worker_touch_seq_before=" + IntToString(GetLocalInt(oNpc, "npc_worker_touch_seq_before")) +
+                  " npc_worker_touch_seq_after=" + IntToString(GetLocalInt(oNpc, "npc_worker_touch_seq_after")) +
+                  " npc_worker_touch_seq=" + IntToString(GetLocalInt(oNpc, "npc_worker_touch_seq")) +
+                  " npc_last_worker_touch_hour=" + IntToString(GetLocalInt(oNpc, "npc_last_worker_touch_hour")) +
+                  " npc_last_worker_touch_minute=" + IntToString(GetLocalInt(oNpc, "npc_last_worker_touch_minute")) +
+                  " npc_registry_slot=" + IntToString(GetLocalInt(oNpc, "npc_registry_slot")) +
+                  " npc_registry_count=" + IntToString(GetLocalInt(oNpc, "npc_registry_count")) +
+                  " npc_slot_contains_self=" + IntToString(GetLocalInt(oNpc, "npc_slot_contains_self"));
 
     DL_LogRuntime(sLog);
 }
@@ -211,7 +277,30 @@ string DL_GetNpcDiagnosticSignature(object oNpc)
            GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) + "|" +
            GetLocalString(oNpc, DL_L_NPC_WORK_TARGET) + "|" +
            GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) + "|" +
-           GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET);
+           GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) + "|" +
+           IntToString(GetLocalInt(oNpc, DL_L_NPC_DBG_DIRECTIVE_PREEMPTED_OLD_MOVE)) + "|" +
+           GetLocalString(oNpc, DL_L_NPC_DBG_OLD_MOVE_OWNER) + "|" +
+           GetLocalString(oNpc, DL_L_NPC_DBG_OLD_MOVE_TARGET) + "|" +
+           GetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_PREV) + "|" +
+           GetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_NEXT) + "|" +
+           GetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_CLEANUP) + "|" +
+           GetLocalString(oNpc, "area_worker_tick_area") + "|" +
+           IntToString(GetLocalInt(oNpc, "area_worker_tick_seq")) + "|" +
+           GetLocalString(oNpc, "area_worker_pass_mode") + "|" +
+           IntToString(GetLocalInt(oNpc, "area_worker_budget")) + "|" +
+           IntToString(GetLocalInt(oNpc, "area_worker_cursor_before")) + "|" +
+           IntToString(GetLocalInt(oNpc, "area_worker_cursor_after")) + "|" +
+           IntToString(GetLocalInt(oNpc, "npc_seen_by_round_robin")) + "|" +
+           IntToString(GetLocalInt(oNpc, "npc_processed_by_round_robin")) + "|" +
+           GetLocalString(oNpc, "npc_touch_skipped_reason") + "|" +
+           IntToString(GetLocalInt(oNpc, "npc_worker_touch_seq_before")) + "|" +
+           IntToString(GetLocalInt(oNpc, "npc_worker_touch_seq_after")) + "|" +
+           IntToString(GetLocalInt(oNpc, "npc_worker_touch_seq")) + "|" +
+           IntToString(GetLocalInt(oNpc, "npc_last_worker_touch_hour")) + "|" +
+           IntToString(GetLocalInt(oNpc, "npc_last_worker_touch_minute")) + "|" +
+           IntToString(GetLocalInt(oNpc, "npc_registry_slot")) + "|" +
+           IntToString(GetLocalInt(oNpc, "npc_registry_count")) + "|" +
+           IntToString(GetLocalInt(oNpc, "npc_slot_contains_self"));
 }
 
 void DL_MaybeLogNpcDiagnostic(object oNpc, string sSource, int bForce)

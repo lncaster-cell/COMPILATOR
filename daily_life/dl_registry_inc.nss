@@ -721,6 +721,7 @@ void DL_OnAreaEnterBootstrap(object oArea, object oEnter)
                 DeleteLocalString(oEnter, "dl_transition_registry_problem");
             }
 
+            SetLocalInt(oEnter, "npc_processed_by_round_robin", FALSE);
             DL_WorkerTouchNpc(oEnter);
             SetLocalInt(oEnter, "dl_area_enter_npc_touch", TRUE);
 
