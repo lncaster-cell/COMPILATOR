@@ -417,6 +417,16 @@ void main()
             " registry_area_before_repair=" + GetLocalString(oNpc, "dl_registry_area_before_repair") +
             " registry_area_after_repair=" + GetLocalString(oNpc, "dl_registry_area_after_repair") +
             " worker_touch_area=" + GetLocalString(oNpc, "dl_worker_touch_area") +
+            " area_enter_npc_touch=" + IntToString(GetLocalInt(oNpc, "dl_area_enter_npc_touch")) +
+            " area_enter_area=" + GetLocalString(oNpc, "dl_area_enter_area") +
+            " area_enter_npc_area=" + GetLocalString(oNpc, "dl_area_enter_npc_area") +
+            " area_enter_reg_area_after=" + GetLocalString(oNpc, "dl_area_enter_reg_area_after") +
+            " post_jump_finalizer_called=" + IntToString(GetLocalInt(oNpc, "dl_post_jump_finalizer_called")) +
+            " post_jump_current_area=" + GetLocalString(oNpc, "dl_post_jump_current_area") +
+            " post_jump_expected_area=" + GetLocalString(oNpc, "dl_post_jump_expected_area") +
+            " post_jump_registered_area_after=" + GetLocalString(oNpc, "dl_post_jump_registered_area_after") +
+            " post_jump_worker_touch_called=" + IntToString(GetLocalInt(oNpc, "dl_post_jump_worker_touch_called")) +
+            " post_jump_result=" + GetLocalString(oNpc, "dl_post_jump_result") +
             " repair_current_tick=" + IntToString(GetLocalInt(oNpc, "dl_registry_repair_current_tick")) +
             " repair_owner_changed=" + IntToString(GetLocalInt(oNpc, "dl_registry_repair_owner_changed"))
         );
@@ -448,6 +458,16 @@ void main()
             " registry_area_before_repair=" + GetLocalString(oNpc, "dl_transition_registry_registry_area_before_repair") +
             " registry_area_after_repair=" + GetLocalString(oNpc, "dl_transition_registry_registry_area_after_repair") +
             " worker_touch_area=" + GetLocalString(oNpc, "dl_transition_registry_worker_touch_area") +
+            " area_enter_npc_touch=" + IntToString(GetLocalInt(oNpc, "dl_area_enter_npc_touch")) +
+            " area_enter_area=" + GetLocalString(oNpc, "dl_area_enter_area") +
+            " area_enter_npc_area=" + GetLocalString(oNpc, "dl_area_enter_npc_area") +
+            " area_enter_reg_area_after=" + GetLocalString(oNpc, "dl_area_enter_reg_area_after") +
+            " post_jump_finalizer_called=" + IntToString(GetLocalInt(oNpc, "dl_post_jump_finalizer_called")) +
+            " post_jump_current_area=" + GetLocalString(oNpc, "dl_post_jump_current_area") +
+            " post_jump_expected_area=" + GetLocalString(oNpc, "dl_post_jump_expected_area") +
+            " post_jump_registered_area_after=" + GetLocalString(oNpc, "dl_post_jump_registered_area_after") +
+            " post_jump_worker_touch_called=" + IntToString(GetLocalInt(oNpc, "dl_post_jump_worker_touch_called")) +
+            " post_jump_result=" + GetLocalString(oNpc, "dl_post_jump_result") +
             " repair_current_tick=" + IntToString(GetLocalInt(oNpc, "dl_transition_registry_repair_current_tick")) +
             " repair_owner_changed=" + IntToString(GetLocalInt(oNpc, "dl_transition_registry_repair_owner_changed"))
         );

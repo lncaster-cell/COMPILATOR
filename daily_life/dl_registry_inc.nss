@@ -70,6 +70,9 @@ const int DL_MODULE_RESYNC_PRESSURE_CAP = 1;
 
 // Forward declarations for mutually-recursive registration helpers.
 int DL_EnsureNpcRegisteredInCurrentArea(object oNpc);
+// Implemented in dl_worker_inc; area OnEnter uses this narrow declaration to
+// finalize NPC ownership only after the engine reports the physical area enter.
+void DL_WorkerTouchNpc(object oNpc);
 void DL_RegisterNpc(object oNpc);
 void DL_ReconcileNpcAreaRegistration(object oNpc);
 void DL_UnregisterNpc(object oNpc);
@@ -686,6 +689,64 @@ void DL_OnAreaEnterBootstrap(object oArea, object oEnter)
     }
 
     DL_BootstrapAreaTier(oArea);
+
+    if (DL_IsActivePipelineNpc(oEnter))
+    {
+        string sAreaTag = GetTag(oArea);
+        object oNpcArea = GetArea(oEnter);
+        string sNpcAreaTag = "";
+        if (GetIsObjectValid(oNpcArea))
+        {
+            sNpcAreaTag = GetTag(oNpcArea);
+        }
+
+        SetLocalInt(oEnter, "dl_area_enter_npc_touch", FALSE);
+        SetLocalString(oEnter, "dl_area_enter_area", sAreaTag);
+        SetLocalString(oEnter, "dl_area_enter_npc_area", sNpcAreaTag);
+
+        DL_EnsureNpcRegisteredInCurrentArea(oEnter);
+
+        object oRegisteredArea = GetLocalObject(oEnter, DL_L_NPC_REG_AREA);
+        string sRegisteredAreaAfter = "";
+        if (GetIsObjectValid(oRegisteredArea))
+        {
+            sRegisteredAreaAfter = GetTag(oRegisteredArea);
+        }
+        SetLocalString(oEnter, "dl_area_enter_reg_area_after", sRegisteredAreaAfter);
+
+        if (oRegisteredArea == oArea)
+        {
+            if (GetLocalString(oEnter, "dl_transition_registry_problem") == "target_area_worker_not_ticking_or_not_owning_npc")
+            {
+                DeleteLocalString(oEnter, "dl_transition_registry_problem");
+            }
+
+            DL_WorkerTouchNpc(oEnter);
+            SetLocalInt(oEnter, "dl_area_enter_npc_touch", TRUE);
+
+            oNpcArea = GetArea(oEnter);
+            sNpcAreaTag = "";
+            if (GetIsObjectValid(oNpcArea))
+            {
+                sNpcAreaTag = GetTag(oNpcArea);
+            }
+            oRegisteredArea = GetLocalObject(oEnter, DL_L_NPC_REG_AREA);
+            sRegisteredAreaAfter = "";
+            if (GetIsObjectValid(oRegisteredArea))
+            {
+                sRegisteredAreaAfter = GetTag(oRegisteredArea);
+            }
+
+            SetLocalString(oEnter, "dl_area_enter_npc_area", sNpcAreaTag);
+            SetLocalString(oEnter, "dl_area_enter_reg_area_after", sRegisteredAreaAfter);
+            SetLocalString(oEnter, "dl_transition_registry_npc_area", sNpcAreaTag);
+            SetLocalString(oEnter, "dl_transition_registry_current_physical_area", sNpcAreaTag);
+            SetLocalString(oEnter, "dl_transition_registry_registered_area", sRegisteredAreaAfter);
+            SetLocalString(oEnter, "dl_transition_registry_reg_area_after", sRegisteredAreaAfter);
+            SetLocalString(oEnter, "dl_transition_registry_worker_touch_area", sNpcAreaTag);
+            SetLocalInt(oEnter, "dl_transition_registry_handoff_touch_called", TRUE);
+        }
+    }
 }
 
 void DL_OnAreaExitBootstrap(object oArea, object oExit)
