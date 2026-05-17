@@ -174,7 +174,10 @@ void DL_ReissueMoveJobAfterNoProgress(object oNpc, object oTarget, float fRadius
     SetLocalInt(oNpc, DL_L_NPC_MOVE_ACTION_REISSUED_DBG, TRUE);
 
     AssignCommand(oNpc, ClearAllActions(TRUE));
-    DL_ClearTransitionExecutionState(oNpc);
+    if (GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) != DL_MOVE_OWNER_TRANSITION)
+    {
+        DL_ClearTransitionExecutionState(oNpc);
+    }
     DL_ResetCustomAnimationBeforeAnchorMove(oNpc);
     SetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET, nNowTick);
     DL_QueueMoveToObjectAction(oNpc, oTarget, TRUE, fRadius);
@@ -536,7 +539,10 @@ void DL_MarkMoveJobReachedNow(object oNpc, string sReason)
     SetLocalInt(oNpc, DL_L_NPC_MOVE_CURRENT_ACTION_DBG, GetCurrentAction(oNpc));
     SetLocalInt(oNpc, DL_L_NPC_MOVE_ACTION_REISSUED_DBG, FALSE);
     DL_RecordMoveJobProgressSample(oNpc, fDistance, DL_GetMoveJobTickStamp());
-    DL_ClearTransitionExecutionState(oNpc);
+    if (GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) != DL_MOVE_OWNER_TRANSITION)
+    {
+        DL_ClearTransitionExecutionState(oNpc);
+    }
     DL_BsmithTraceStage(oNpc, "MOVE_REACHED", sReason);
 }
 
@@ -558,10 +564,25 @@ void DL_IssueMoveJobAction(object oNpc, object oTarget)
         return;
     }
 
-    DL_ClearTransitionExecutionState(oNpc);
+    if (GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) != DL_MOVE_OWNER_TRANSITION)
+    {
+        DL_ClearTransitionExecutionState(oNpc);
+    }
     DL_ResetCustomAnimationBeforeAnchorMove(oNpc);
     SetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET, DL_GetSleepActionStamp());
-    DL_QueueMoveAction(oNpc, GetLocation(oTarget), TRUE);
+    if (GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) == DL_MOVE_OWNER_TRANSITION)
+    {
+        float fRadius = GetLocalFloat(oNpc, DL_L_NPC_MOVE_RADIUS);
+        if (fRadius <= 0.0)
+        {
+            fRadius = DL_MOVE_DEFAULT_RADIUS;
+        }
+        DL_QueueMoveToObjectAction(oNpc, oTarget, TRUE, fRadius);
+    }
+    else
+    {
+        DL_QueueMoveAction(oNpc, GetLocation(oTarget), TRUE);
+    }
 }
 
 int DL_ForceReachMoveJobIfAlreadyAtTarget(object oNpc)

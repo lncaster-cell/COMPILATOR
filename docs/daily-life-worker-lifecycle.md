@@ -13,6 +13,10 @@ A HOT area is an area that currently has at least one runtime player. In a HOT a
 
 `DL_WorkerTouchNpc` is the normal lifecycle entry point for resolving and applying directives. Movement job ticks, reached-move finalization, directive changes, and directive executor calls must remain inside the worker touch/apply pipeline instead of being reintroduced as separate HOT-area bypasses.
 
+## Transition move lifecycle
+
+Transition move jobs are first-class movement jobs inside the canonical worker/apply pipeline. When a directive resolves to an anchor in another area, an active `move_owner=transition` job remains compatible with that directive only while its transition target zone matches the directive destination zone and its move target is the current route's transition waypoint. The HOT worker must not use a separate transition handoff bypass to advance this movement; it must flow through `DL_WorkerTouchNpc`, `DL_ApplyDirectiveSkeleton`, the move-job tick, and the existing transition execution/finalizer path.
+
 ## Reached movement invariant
 
 When a move job reports that it is already at its target via `DL_IsMoveJobAtTargetNow`, the apply pipeline must close the reached move through `DL_FinalizeReachedDirectiveMoveJob`. A reached move must not remain in `move_result=running`, and anchor focus must not remain in `focus_status=moving_to_anchor` after the invariant enforcement path runs.
