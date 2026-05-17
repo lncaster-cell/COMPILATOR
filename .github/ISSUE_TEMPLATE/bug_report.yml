@@ -1,0 +1,79 @@
+name: Bug report
+about: Report a runtime, behavior, or compatibility bug
+labels: bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for NPC behavior, Daily Life, compiler-compatibility, or runtime bugs.
+        Compilation is user-owned. Agents must not run the compiler unless explicitly authorized in the current task.
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behavior
+      description: What happened in game/tooling?
+      placeholder: NPC stayed in move_result=running after reaching the waypoint.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened?
+    validations:
+      required: true
+  - type: input
+    id: subsystem
+    attributes:
+      label: Subsystem
+      placeholder: daily_life / movement / worker / diagnostics / compiler-compat
+    validations:
+      required: false
+  - type: input
+    id: npc_tag
+    attributes:
+      label: NPC tag / object involved
+      placeholder: blacksmith01
+    validations:
+      required: false
+  - type: input
+    id: area
+    attributes:
+      label: Area / location
+      placeholder: area resref or in-game location
+    validations:
+      required: false
+  - type: textarea
+    id: trace
+    attributes:
+      label: Relevant trace / diagnostics
+      description: Paste BSMITH_TRACE, local vars, screen logs, or first-root error text if available.
+      render: text
+    validations:
+      required: false
+  - type: textarea
+    id: recent_changes
+    attributes:
+      label: Recent related changes
+      description: PR number, branch, or change that might be related.
+      placeholder: PR #856, movement finalizer change, worker touch change, etc.
+    validations:
+      required: false
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Constraints for agents
+      options:
+        - label: Do not run compiler; user owns compilation.
+          required: true
+        - label: Preserve existing runtime contracts unless the task explicitly requires a migration.
+          required: true
+        - label: Prefer minimal targeted fix over broad rewrite.
+          required: true
+  - type: textarea
+    id: manual_validation
+    attributes:
+      label: Manual validation notes
+      description: What should the user check after the patch?
+    validations:
+      required: false
