@@ -90,7 +90,12 @@ const string DL_L_NPC_MOVE_RESULT_BEFORE_TICK_DBG = "move_result_before_tick";
 const string DL_L_NPC_MOVE_RESULT_AFTER_TICK_DBG = "move_result_after_tick";
 const string DL_L_NPC_MOVE_RESULT_REGRESSED_TO_RUNNING_DBG = "move_result_regressed_to_running";
 const string DL_L_NPC_MOVE_RESULT_REGRESSION_REASON_DBG = "move_result_regression_reason";
+const string DL_L_NPC_MOVE_RESULT_REGRESSION_STAGE_DBG = "move_result_regression_stage";
 const string DL_L_NPC_INVARIANT_REACHED_MOVE_STILL_RUNNING_DBG = "invariant_violation_reached_move_still_running";
+const string DL_L_NPC_REACHED_FINALIZE_HARD_DIAG_DBG = "reached_finalize_returned_true_but_state_still_running";
+const string DL_L_NPC_REACHED_INVARIANT_EMERGENCY_CLOSED_DBG = "reached_invariant_emergency_closed";
+const string DL_L_NPC_REACHED_INVARIANT_OWNER_DBG = "reached_invariant_owner";
+const string DL_L_NPC_REACHED_INVARIANT_TARGET_DBG = "reached_invariant_target";
 
 const string DL_L_NPC_MOVE_OWNER = "dl_move_owner";
 const string DL_L_NPC_MOVE_PHASE = "dl_move_phase";
@@ -632,6 +637,13 @@ void DL_BsmithTraceStage(object oNpc, string sStage, string sNote)
         fFocusDist = GetDistanceBetween(oNpc, oFocusObj);
     }
 
+    int bCanonicalReached = GetLocalInt(oNpc, DL_L_NPC_MOVE_REACH_CHECK_RESULT_DBG);
+    if (DL_HasMoveJob(oNpc))
+    {
+        bCanonicalReached = DL_IsMoveJobAtTargetNow(oNpc);
+    }
+    float fRawReachDist = GetLocalFloat(oNpc, DL_L_NPC_MOVE_REACH_CHECK_RAW_DIST_DBG);
+    int nCurrentAction = GetCurrentAction(oNpc);
     string sProblem = DL_GetNpcProblemSummary(oNpc);
     int nSeq = GetLocalInt(GetModule(), "dl_bsmith_trace_seq") + 1;
     SetLocalInt(GetModule(), "dl_bsmith_trace_seq", nSeq);
@@ -659,10 +671,19 @@ void DL_BsmithTraceStage(object oNpc, string sStage, string sNote)
         " state=" + GetLocalString(oNpc, DL_L_NPC_STATE) +
         " problem=" + sProblem +
         " move=" + GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) + "/" + GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE) + "/" + GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG) + "/" + GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) +
+        " move_result=" + GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) +
+        " move_owner=" + GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) +
+        " move_target=" + GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG) +
+        " canonical_reached=" + IntToString(bCanonicalReached) +
+        " raw_dist=" + FloatToString(fRawReachDist, 1, 2) +
+        " current_action=" + IntToString(nCurrentAction) +
+        " focus_status=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) +
+        " focus_target=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) +
+        " move_ticket=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET)) +
         " mobj=" + DL_BsmithObjectValid(oMoveObj) + "/" + DL_BsmithAreaTag(oMoveObj) + "/" + FloatToString(fMoveDist, 1, 2) +
         " focus=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) + "/" + GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) +
         " fobj=" + DL_BsmithObjectValid(oFocusObj) + "/" + DL_BsmithAreaTag(oFocusObj) + "/" + FloatToString(fFocusDist, 1, 2) +
-        " action=" + IntToString(GetCurrentAction(oNpc)) +
+        " action=" + IntToString(nCurrentAction) +
         " worker=" + IntToString(GetLocalInt(oNpc, "npc_worker_touch_seq")) + "/" + GetLocalString(oNpc, "npc_touch_skipped_reason") +
         " reg=" + sRegArea + "/" + IntToString(nRegSlot) + "/" + IntToString(bSlotSelf) +
         " trans=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) + "/" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) +
@@ -867,6 +888,20 @@ int DL_ShouldUseDirectiveFastPath(object oNpc, int nEffectiveDirective)
         string sFocusStatus = GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS);
         return GetSubString(sFocusStatus, 0, 15) == "on_meal_anchor" &&
                GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) != "";
+    }
+
+    if (nEffectiveDirective == DL_DIR_SOCIAL)
+    {
+        return GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "on_social_anchor" &&
+               GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) != "" &&
+               !DL_HasMoveJob(oNpc);
+    }
+
+    if (nEffectiveDirective == DL_DIR_PUBLIC)
+    {
+        return GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "on_public_anchor" &&
+               GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) != "" &&
+               !DL_HasMoveJob(oNpc);
     }
 
     if (nEffectiveDirective == DL_DIR_CHILL)
@@ -1398,6 +1433,169 @@ int DL_FinalizeReachedDirectiveMoveJob(object oNpc, int nEffectiveDirective)
     return FALSE;
 }
 
+void DL_TraceApplyPipeline(object oNpc, string sStage)
+{
+    DL_BsmithTraceStage(
+        oNpc,
+        sStage,
+        "move_result=" + GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) +
+            " move_owner=" + GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) +
+            " move_target=" + GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG) +
+            " canonical_reached=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_MOVE_REACH_CHECK_RESULT_DBG)) +
+            " raw_dist=" + FloatToString(GetLocalFloat(oNpc, DL_L_NPC_MOVE_REACH_CHECK_RAW_DIST_DBG), 1, 2) +
+            " current_action=" + IntToString(GetCurrentAction(oNpc)) +
+            " focus_status=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) +
+            " focus_target=" + GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) +
+            " move_ticket=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET))
+    );
+}
+
+int DL_IsDirectiveStableAfterReachedFinalize(object oNpc, int nEffectiveDirective)
+{
+    if (nEffectiveDirective == DL_DIR_PUBLIC)
+    {
+        return GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "on_public_anchor" &&
+               GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) != "";
+    }
+    if (nEffectiveDirective == DL_DIR_SOCIAL)
+    {
+        return GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "on_social_anchor" &&
+               GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) != "";
+    }
+    if (nEffectiveDirective == DL_DIR_MEAL)
+    {
+        return GetSubString(GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS), 0, 15) == "on_meal_anchor" &&
+               GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) != "";
+    }
+    if (nEffectiveDirective == DL_DIR_CHILL)
+    {
+        return GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "on_chill_anchor" &&
+               GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) != "";
+    }
+    if (nEffectiveDirective == DL_DIR_WORK)
+    {
+        return GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) == "on_anchor" &&
+               GetLocalString(oNpc, DL_L_NPC_WORK_TARGET) != "";
+    }
+    if (nEffectiveDirective == DL_DIR_SLEEP)
+    {
+        return GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) == "on_bed" &&
+               GetLocalString(oNpc, DL_L_NPC_SLEEP_TARGET) != "";
+    }
+    return TRUE;
+}
+
+void DL_VerifyReachedFinalizeClosure(object oNpc, int nEffectiveDirective)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    if ((DL_HasMoveJob(oNpc) && GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_RUNNING) ||
+        !DL_IsDirectiveStableAfterReachedFinalize(oNpc, nEffectiveDirective))
+    {
+        SetLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC, DL_L_NPC_REACHED_FINALIZE_HARD_DIAG_DBG);
+        SetLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC, DL_L_NPC_REACHED_FINALIZE_HARD_DIAG_DBG);
+        DL_BsmithTraceStage(oNpc, "INVARIANT", DL_L_NPC_REACHED_FINALIZE_HARD_DIAG_DBG);
+    }
+}
+
+int DL_EmergencyCloseReachedMoveInvariant(object oNpc, int nEffectiveDirective)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return FALSE;
+    }
+
+    string sOwner = GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER);
+    string sTargetTag = GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG);
+    if (sTargetTag == "")
+    {
+        sTargetTag = GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET);
+    }
+
+    if (sOwner == DL_MOVE_OWNER_PUBLIC && nEffectiveDirective == DL_DIR_PUBLIC && sTargetTag != "")
+    {
+        DL_ClearMoveJob(oNpc);
+        DL_ClearFocusMoveIssueState(oNpc);
+        DL_ClearTransitionExecutionState(oNpc);
+        SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "on_public_anchor");
+        SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, sTargetTag);
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
+        DeleteLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC);
+        SetLocalInt(oNpc, DL_L_NPC_REACHED_INVARIANT_EMERGENCY_CLOSED_DBG, TRUE);
+        SetLocalString(oNpc, DL_L_NPC_REACHED_INVARIANT_OWNER_DBG, sOwner);
+        SetLocalString(oNpc, DL_L_NPC_REACHED_INVARIANT_TARGET_DBG, sTargetTag);
+        DL_BsmithTraceStage(oNpc, "INVARIANT", "reached_invariant_emergency_closed=1 reached_invariant_owner=public reached_invariant_target=" + sTargetTag);
+        return TRUE;
+    }
+
+    if (sOwner == DL_MOVE_OWNER_SOCIAL && nEffectiveDirective == DL_DIR_SOCIAL && sTargetTag != "")
+    {
+        DL_ClearMoveJob(oNpc);
+        DL_ClearFocusMoveIssueState(oNpc);
+        DL_ClearTransitionExecutionState(oNpc);
+        SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "on_social_anchor");
+        SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, sTargetTag);
+        DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
+        DeleteLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC);
+        SetLocalInt(oNpc, DL_L_NPC_REACHED_INVARIANT_EMERGENCY_CLOSED_DBG, TRUE);
+        SetLocalString(oNpc, DL_L_NPC_REACHED_INVARIANT_OWNER_DBG, sOwner);
+        SetLocalString(oNpc, DL_L_NPC_REACHED_INVARIANT_TARGET_DBG, sTargetTag);
+        DL_BsmithTraceStage(oNpc, "INVARIANT", "reached_invariant_emergency_closed=1 reached_invariant_owner=social reached_invariant_target=" + sTargetTag);
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+void DL_DetectApplyMoveRegression(object oNpc, int bReachedOrClearedEarlier, int nMoveTicketBefore, string sMoveTargetBefore, string sStage, int nEffectiveDirective)
+{
+    if (!bReachedOrClearedEarlier)
+    {
+        return;
+    }
+
+    if (sMoveTargetBefore != "" &&
+        GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_RUNNING &&
+        GetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET) == nMoveTicketBefore &&
+        GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG) == sMoveTargetBefore)
+    {
+        SetLocalInt(oNpc, DL_L_NPC_MOVE_RESULT_REGRESSED_TO_RUNNING_DBG, TRUE);
+        SetLocalString(oNpc, DL_L_NPC_MOVE_RESULT_REGRESSION_STAGE_DBG, sStage);
+        SetLocalString(oNpc, DL_L_NPC_MOVE_RESULT_REGRESSION_REASON_DBG, "same_tick_reopened_reached_move");
+        DL_BsmithTraceStage(oNpc, "INVARIANT", "move_result_regressed_to_running stage=" + sStage + " reason=same_tick_reopened_reached_move");
+        if (DL_IsMoveJobAtTargetNow(oNpc))
+        {
+            DL_FinalizeReachedDirectiveMoveJob(oNpc, nEffectiveDirective);
+            if (GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_RUNNING)
+            {
+                DL_EmergencyCloseReachedMoveInvariant(oNpc, nEffectiveDirective);
+            }
+        }
+    }
+}
+
+void DL_EnforceReachedMoveApplyExitInvariant(object oNpc, int nEffectiveDirective)
+{
+    if (DL_IsMoveJobAtTargetNow(oNpc) &&
+        GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_RUNNING &&
+        GetCurrentAction(oNpc) != ACTION_MOVETOPOINT)
+    {
+        SetLocalInt(oNpc, DL_L_NPC_INVARIANT_REACHED_MOVE_STILL_RUNNING_DBG, TRUE);
+        DL_BsmithTraceStage(oNpc, "INVARIANT", "invariant_violation_reached_move_still_running");
+        if (DL_FinalizeReachedDirectiveMoveJob(oNpc, nEffectiveDirective))
+        {
+            DL_VerifyReachedFinalizeClosure(oNpc, nEffectiveDirective);
+        }
+        if (GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_RUNNING)
+        {
+            DL_EmergencyCloseReachedMoveInvariant(oNpc, nEffectiveDirective);
+        }
+    }
+}
+
 void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
 {
     if (!GetIsObjectValid(oNpc))
@@ -1409,8 +1607,10 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
 
     int nEffectiveDirective = DL_ResolveEffectiveDirective(oNpc, nDirective);
     int nPrevDirective = GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE);
+    int nApplyStartMoveTicket = GetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET);
+    string sApplyStartMoveTarget = GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG);
     DL_BsmithTraceStage(oNpc, "DIRECTIVE_RESOLVED", DL_GetDirectiveDebugLabel(nEffectiveDirective));
-    DL_BsmithTraceStage(oNpc, "DIRECTIVE_APPLY_ENTER", DL_GetDirectiveDebugLabel(nPrevDirective) + "->" + DL_GetDirectiveDebugLabel(nEffectiveDirective));
+    DL_TraceApplyPipeline(oNpc, "APPLY_ENTER");
 
     if (nPrevDirective != nEffectiveDirective)
     {
@@ -1419,6 +1619,16 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
     else
     {
         DL_ClearDirectiveChangeDebug(oNpc);
+        if (DL_IsMoveJobOwnerCompatibleWithDirective(oNpc, nEffectiveDirective) &&
+            DL_IsMoveJobAtTargetNow(oNpc))
+        {
+            DL_TraceApplyPipeline(oNpc, "BEFORE_FINALIZE_REACHED");
+            if (DL_FinalizeReachedDirectiveMoveJob(oNpc, nEffectiveDirective))
+            {
+                DL_VerifyReachedFinalizeClosure(oNpc, nEffectiveDirective);
+            }
+            DL_TraceApplyPipeline(oNpc, "AFTER_FINALIZE_REACHED");
+        }
         DL_RecoverReachedFocusAnchorMoveState(oNpc);
         if (!DL_IsMoveJobOwnerCompatibleWithDirective(oNpc, nEffectiveDirective))
         {
@@ -1440,105 +1650,80 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
         DL_BridgeLegacyDirectiveAnchorMoveJob(oNpc, nEffectiveDirective);
     }
 
-    int nMoveTicketBefore = GetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET);
+    int nMoveTicketBefore = nApplyStartMoveTicket;
+    string sMoveTargetBefore = sApplyStartMoveTarget;
     string sMoveResultBeforeTick = GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT);
+    int bReachedOrClearedEarlier = sMoveResultBeforeTick == DL_MOVE_RESULT_REACHED || !DL_HasMoveJob(oNpc);
     SetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET_BEFORE_DBG, nMoveTicketBefore);
     SetLocalString(oNpc, DL_L_NPC_MOVE_RESULT_BEFORE_TICK_DBG, sMoveResultBeforeTick);
     SetLocalInt(oNpc, DL_L_NPC_MOVE_RESULT_REGRESSED_TO_RUNNING_DBG, FALSE);
     DeleteLocalString(oNpc, DL_L_NPC_MOVE_RESULT_REGRESSION_REASON_DBG);
+    DeleteLocalString(oNpc, DL_L_NPC_MOVE_RESULT_REGRESSION_STAGE_DBG);
     SetLocalInt(oNpc, DL_L_NPC_INVARIANT_REACHED_MOVE_STILL_RUNNING_DBG, FALSE);
 
     int bMoveJobTicked = FALSE;
     if (nPrevDirective == nEffectiveDirective && DL_IsMoveJobOwnerCompatibleWithDirective(oNpc, nEffectiveDirective))
     {
-        if (DL_FinalizeReachedDirectiveMoveJob(oNpc, nEffectiveDirective))
+        DL_TraceApplyPipeline(oNpc, "BEFORE_TICK_MOVE_JOB");
+        bMoveJobTicked = DL_TickMoveJob(oNpc);
+        if (bMoveJobTicked && DL_GetMoveJobResult(oNpc) == DL_MOVE_RESULT_REACHED)
         {
-            bMoveJobTicked = TRUE;
-        }
-        else
-        {
-            bMoveJobTicked = DL_TickMoveJob(oNpc);
-            if (bMoveJobTicked && DL_GetMoveJobResult(oNpc) == DL_MOVE_RESULT_REACHED)
+            DL_TraceApplyPipeline(oNpc, "BEFORE_FINALIZE_REACHED");
+            if (DL_FinalizeReachedDirectiveMoveJob(oNpc, nEffectiveDirective))
             {
-                DL_FinalizeReachedDirectiveMoveJob(oNpc, nEffectiveDirective);
+                DL_VerifyReachedFinalizeClosure(oNpc, nEffectiveDirective);
             }
+            DL_TraceApplyPipeline(oNpc, "AFTER_FINALIZE_REACHED");
+            bReachedOrClearedEarlier = TRUE;
         }
+        DL_TraceApplyPipeline(oNpc, "AFTER_TICK_MOVE_JOB");
     }
+    else
+    {
+        DL_TraceApplyPipeline(oNpc, "BEFORE_TICK_MOVE_JOB");
+        DL_TraceApplyPipeline(oNpc, "AFTER_TICK_MOVE_JOB");
+    }
+
+    if (!DL_HasMoveJob(oNpc) || GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_REACHED)
+    {
+        bReachedOrClearedEarlier = TRUE;
+    }
+    DL_DetectApplyMoveRegression(oNpc, bReachedOrClearedEarlier, nMoveTicketBefore, sMoveTargetBefore, "AFTER_TICK_MOVE_JOB", nEffectiveDirective);
+
     if (bMoveJobTicked && DL_GetMoveJobResult(oNpc) == DL_MOVE_RESULT_RUNNING)
     {
+        DL_TraceApplyPipeline(oNpc, "BEFORE_FINALIZE_REACHED");
         if (DL_FinalizeReachedDirectiveMoveJob(oNpc, nEffectiveDirective))
         {
-            bMoveJobTicked = TRUE;
+            DL_VerifyReachedFinalizeClosure(oNpc, nEffectiveDirective);
+            bReachedOrClearedEarlier = TRUE;
         }
-        else
+        DL_TraceApplyPipeline(oNpc, "AFTER_FINALIZE_REACHED");
+        if (GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_RUNNING)
         {
-            if (GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_RUNNING &&
-                GetLocalInt(oNpc, DL_L_NPC_MOVE_REACH_CHECK_ACTION_DBG) != ACTION_MOVETOPOINT &&
-                DL_IsMoveJobAtTargetNow(oNpc))
-            {
-                SetLocalInt(oNpc, DL_L_NPC_INVARIANT_REACHED_MOVE_STILL_RUNNING_DBG, TRUE);
-                DL_BsmithTraceStage(oNpc, "INVARIANT", "invariant_violation_reached_move_still_running");
-                DL_FinalizeReachedDirectiveMoveJob(oNpc, nEffectiveDirective);
-            }
-
-            int nMoveTicketAfterReturn = GetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET);
-            string sMoveResultAfterReturn = GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT);
-            SetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET_AFTER_DBG, nMoveTicketAfterReturn);
-            SetLocalString(oNpc, DL_L_NPC_MOVE_RESULT_AFTER_TICK_DBG, sMoveResultAfterReturn);
-            if (sMoveResultBeforeTick == DL_MOVE_RESULT_REACHED &&
-                sMoveResultAfterReturn == DL_MOVE_RESULT_RUNNING &&
-                nMoveTicketAfterReturn == nMoveTicketBefore)
-            {
-                SetLocalInt(oNpc, DL_L_NPC_MOVE_RESULT_REGRESSED_TO_RUNNING_DBG, TRUE);
-                SetLocalString(oNpc, DL_L_NPC_MOVE_RESULT_REGRESSION_REASON_DBG, "same_ticket_reached_to_running");
-                if (DL_IsMoveJobAtTargetNow(oNpc))
-                {
-                    SetLocalInt(oNpc, DL_L_NPC_INVARIANT_REACHED_MOVE_STILL_RUNNING_DBG, TRUE);
-                    DL_BsmithTraceStage(oNpc, "INVARIANT", "move_result_regressed_to_running");
-                    DL_FinalizeReachedDirectiveMoveJob(oNpc, nEffectiveDirective);
-                }
-            }
-            DL_ApplyMaterializationSkeleton(oNpc, nEffectiveDirective);
-            DL_LogStuckState(oNpc, nEffectiveDirective);
-            return;
+            DL_EnforceReachedMoveApplyExitInvariant(oNpc, nEffectiveDirective);
         }
-    }
-
-    if (GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_RUNNING &&
-        GetLocalInt(oNpc, DL_L_NPC_MOVE_REACH_CHECK_ACTION_DBG) != ACTION_MOVETOPOINT &&
-        DL_IsMoveJobAtTargetNow(oNpc))
-    {
-        SetLocalInt(oNpc, DL_L_NPC_INVARIANT_REACHED_MOVE_STILL_RUNNING_DBG, TRUE);
-        DL_BsmithTraceStage(oNpc, "INVARIANT", "invariant_violation_reached_move_still_running");
-        DL_FinalizeReachedDirectiveMoveJob(oNpc, nEffectiveDirective);
     }
 
     int nMoveTicketAfter = GetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET);
     string sMoveResultAfterTick = GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT);
     SetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET_AFTER_DBG, nMoveTicketAfter);
     SetLocalString(oNpc, DL_L_NPC_MOVE_RESULT_AFTER_TICK_DBG, sMoveResultAfterTick);
-    if (sMoveResultBeforeTick == DL_MOVE_RESULT_REACHED &&
-        sMoveResultAfterTick == DL_MOVE_RESULT_RUNNING &&
-        nMoveTicketAfter == nMoveTicketBefore)
-    {
-        SetLocalInt(oNpc, DL_L_NPC_MOVE_RESULT_REGRESSED_TO_RUNNING_DBG, TRUE);
-        SetLocalString(oNpc, DL_L_NPC_MOVE_RESULT_REGRESSION_REASON_DBG, "same_ticket_reached_to_running");
-        if (DL_IsMoveJobAtTargetNow(oNpc))
-        {
-            SetLocalInt(oNpc, DL_L_NPC_INVARIANT_REACHED_MOVE_STILL_RUNNING_DBG, TRUE);
-            DL_BsmithTraceStage(oNpc, "INVARIANT", "move_result_regressed_to_running");
-            DL_FinalizeReachedDirectiveMoveJob(oNpc, nEffectiveDirective);
-        }
-    }
+    DL_DetectApplyMoveRegression(oNpc, bReachedOrClearedEarlier, nMoveTicketBefore, sMoveTargetBefore, "BEFORE_DIRECTIVE_EXECUTOR", nEffectiveDirective);
 
     if (nPrevDirective == nEffectiveDirective && DL_ShouldUseDirectiveFastPath(oNpc, nEffectiveDirective))
     {
+        DL_TraceApplyPipeline(oNpc, "BEFORE_DIRECTIVE_EXECUTOR");
         if (nEffectiveDirective == DL_DIR_WORK)
         {
             DL_RefreshWorkPresentationOnFastPath(oNpc);
         }
+        DL_TraceApplyPipeline(oNpc, "AFTER_DIRECTIVE_EXECUTOR");
 
+        DL_DetectApplyMoveRegression(oNpc, bReachedOrClearedEarlier, nMoveTicketBefore, sMoveTargetBefore, "AFTER_DIRECTIVE_EXECUTOR", nEffectiveDirective);
         DL_ApplyMaterializationSkeleton(oNpc, nEffectiveDirective);
+        DL_EnforceReachedMoveApplyExitInvariant(oNpc, nEffectiveDirective);
+        DL_TraceApplyPipeline(oNpc, "APPLY_EXIT");
         DL_LogStuckState(oNpc, nEffectiveDirective);
         return;
     }
@@ -1546,6 +1731,7 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
     SetLocalInt(oNpc, DL_L_NPC_DIRECTIVE, nEffectiveDirective);
     DL_LogDirectiveChange(oNpc, nPrevDirective, nEffectiveDirective);
 
+    DL_TraceApplyPipeline(oNpc, "BEFORE_DIRECTIVE_EXECUTOR");
     if (nEffectiveDirective == DL_DIR_SLEEP)
     {
         DL_ClearWorkExecutionState(oNpc);
@@ -1610,7 +1796,11 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
     {
         DL_ApplyIdleLikeDirectiveState(oNpc, FALSE);
     }
+    DL_TraceApplyPipeline(oNpc, "AFTER_DIRECTIVE_EXECUTOR");
 
+    DL_DetectApplyMoveRegression(oNpc, bReachedOrClearedEarlier, nMoveTicketBefore, sMoveTargetBefore, "AFTER_DIRECTIVE_EXECUTOR", nEffectiveDirective);
     DL_ApplyMaterializationSkeleton(oNpc, nEffectiveDirective);
+    DL_EnforceReachedMoveApplyExitInvariant(oNpc, nEffectiveDirective);
+    DL_TraceApplyPipeline(oNpc, "APPLY_EXIT");
     DL_LogStuckState(oNpc, nEffectiveDirective);
 }
