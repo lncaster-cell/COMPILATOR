@@ -1580,8 +1580,8 @@ void DL_DetectApplyMoveRegression(object oNpc, int bReachedOrClearedEarlier, int
 void DL_EnforceReachedMoveApplyExitInvariant(object oNpc, int nEffectiveDirective)
 {
     if (DL_IsMoveJobAtTargetNow(oNpc) &&
-        GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_RUNNING &&
-        GetCurrentAction(oNpc) != ACTION_MOVETOPOINT)
+        (GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_RUNNING ||
+            GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "moving_to_anchor"))
     {
         SetLocalInt(oNpc, DL_L_NPC_INVARIANT_REACHED_MOVE_STILL_RUNNING_DBG, TRUE);
         DL_BsmithTraceStage(oNpc, "INVARIANT", "invariant_violation_reached_move_still_running");
