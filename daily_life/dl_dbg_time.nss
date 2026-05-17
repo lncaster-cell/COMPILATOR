@@ -3,10 +3,10 @@
 
 // Manual Daily Life debug entry point.
 // Assign this script to a debug placeable OnUsed event.
-// It enables the narrow blacksmith01 trace and prints a direct, human-readable
-// "what do you think you are doing right now?" snapshot for the NPC.
-// Read only BSMITH_STATUS / BSMITH_TARGET / BSMITH_TRACE /
-// BSMITH_CONTRADICTION / BSMITH_CLASSIFY lines.
+// It prints a bounded one-shot blacksmith01 snapshot only. It must not
+// enable persistent dl_bsmith_trace; set dl_bsmith_trace_budget separately
+// when an explicit bounded BSMITH_TRACE session is needed.
+// Read BSMITH_STATUS / BSMITH_TARGET / BSMITH_PROBLEM_SUMMARY lines.
 
 void DL_DebugTimeSendToAll(string sMessage)
 {
@@ -151,6 +151,7 @@ void DL_DebugTimePrintBlacksmithSnapshot(object oNpc)
         " elapsed_min=" + IntToString(nElapsed) +
         " npc=blacksmith01" +
         " area=" + DL_DebugTimeAreaTag(oNpc) +
+        " dir=" + DL_GetDirectiveDebugLabel(GetLocalInt(oNpc, "dl_npc_directive")) +
         " pos=" + FloatToString(vNpc.x, 1, 1) + "," + FloatToString(vNpc.y, 1, 1) + "," + FloatToString(vNpc.z, 1, 1) +
         " says=" + sClaim +
         " move=" + GetLocalString(oNpc, "dl_move_owner") + "/" + GetLocalString(oNpc, "dl_move_phase") + "/" + sMoveTag + "/" + GetLocalString(oNpc, "dl_move_result") +
@@ -171,14 +172,23 @@ void DL_DebugTimePrintBlacksmithSnapshot(object oNpc)
         " worker=" + IntToString(GetLocalInt(oNpc, "npc_worker_touch_seq")) + "/" + GetLocalString(oNpc, "npc_touch_skipped_reason") +
         " transition=" + GetLocalString(oNpc, "dl_transition_status") + "/" + GetLocalString(oNpc, "dl_transition_target")
     );
+
+    DL_DebugTimeSendToAll(
+        "BSMITH_PROBLEM_SUMMARY t=" + IntToString(nHour) + ":" + IntToString(nMinute) +
+        " elapsed_min=" + IntToString(nElapsed) +
+        " problem=" + DL_GetNpcProblemSummary(oNpc) +
+        " classifier=" + GetLocalString(oNpc, "dl_bsmith_last_classify") +
+        " move_diag=" + GetLocalString(oNpc, "dl_move_diagnostic") +
+        " transition_diag=" + GetLocalString(oNpc, "dl_npc_transition_diagnostic") +
+        " no_progress=" + IntToString(GetLocalInt(oNpc, "dl_move_no_progress_count")) +
+        " reissues=" + IntToString(GetLocalInt(oNpc, "dl_move_reissue_count")) +
+        " last_finalize=" + GetLocalString(oNpc, "reached_finalize_reason")
+    );
 }
 
 void main()
 {
-    object oModule = GetModule();
     object oNpc = GetObjectByTag("blacksmith01", 0);
-
-    SetLocalInt(oModule, "dl_bsmith_trace", TRUE);
 
     if (!GetIsObjectValid(oNpc))
     {
@@ -186,9 +196,7 @@ void main()
         return;
     }
 
-    SetLocalInt(oNpc, "dl_bsmith_trace", TRUE);
+    DL_BsmithTraceDisable(oNpc);
 
-    DL_DebugTimeSendToAll("BSMITH_TRACE_SETUP status=enabled npc=blacksmith01 note=manual_status_snapshot_active");
     DL_DebugTimePrintBlacksmithSnapshot(oNpc);
-    DL_BsmithTraceStage(oNpc, "PROBLEM_SUMMARY", "manual_debug_placeable_used");
 }
