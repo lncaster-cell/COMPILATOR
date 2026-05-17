@@ -439,23 +439,87 @@ string DL_BsmithObjectValid(object oObj)
     return "0";
 }
 
+void DL_BsmithTraceDisable(object oNpc)
+{
+    object oModule = GetModule();
+    DeleteLocalInt(oModule, "dl_bsmith_trace");
+    DeleteLocalInt(oModule, "dl_bsmith_trace_budget");
+    if (GetIsObjectValid(oNpc))
+    {
+        DeleteLocalInt(oNpc, "dl_bsmith_trace");
+        DeleteLocalInt(oNpc, "dl_bsmith_trace_budget");
+    }
+}
+
+int DL_BsmithTraceBudget(object oNpc)
+{
+    int nBudget = 0;
+    if (GetIsObjectValid(oNpc))
+    {
+        nBudget = GetLocalInt(oNpc, "dl_bsmith_trace_budget");
+    }
+    if (nBudget <= 0)
+    {
+        nBudget = GetLocalInt(GetModule(), "dl_bsmith_trace_budget");
+    }
+    return nBudget;
+}
+
 int DL_BsmithTraceEnabled(object oNpc)
 {
     if (!GetIsObjectValid(oNpc) || GetTag(oNpc) != "blacksmith01")
     {
         return FALSE;
     }
-    return GetLocalInt(GetModule(), "dl_bsmith_trace") == TRUE || GetLocalInt(oNpc, "dl_bsmith_trace") == TRUE;
+
+    int bTrace = GetLocalInt(GetModule(), "dl_bsmith_trace") == TRUE || GetLocalInt(oNpc, "dl_bsmith_trace") == TRUE;
+    if (!bTrace)
+    {
+        return FALSE;
+    }
+
+    if (DL_BsmithTraceBudget(oNpc) <= 0)
+    {
+        DL_BsmithTraceDisable(oNpc);
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
-void DL_BsmithEmit(string sLine)
+void DL_BsmithConsumeTraceBudget(object oNpc)
 {
+    int nBudget = DL_BsmithTraceBudget(oNpc);
+    if (nBudget <= 1)
+    {
+        DL_BsmithTraceDisable(oNpc);
+        return;
+    }
+
+    if (GetIsObjectValid(oNpc) && GetLocalInt(oNpc, "dl_bsmith_trace_budget") > 0)
+    {
+        SetLocalInt(oNpc, "dl_bsmith_trace_budget", nBudget - 1);
+        return;
+    }
+
+    SetLocalInt(GetModule(), "dl_bsmith_trace_budget", nBudget - 1);
+}
+
+void DL_BsmithEmitLine(object oNpc, string sLine)
+{
+    if (!DL_BsmithTraceEnabled(oNpc))
+    {
+        return;
+    }
+
     object oPC = GetFirstPC();
     while (GetIsObjectValid(oPC))
     {
         SendMessageToPC(oPC, sLine);
         oPC = GetNextPC();
     }
+
+    DL_BsmithConsumeTraceBudget(oNpc);
 }
 
 void DL_BsmithContradiction(object oNpc, string sType, string sEvidence)
@@ -464,7 +528,7 @@ void DL_BsmithContradiction(object oNpc, string sType, string sEvidence)
     {
         return;
     }
-    DL_BsmithEmit("BSMITH_CONTRADICTION type=" + sType + " evidence=" + sEvidence);
+    DL_BsmithEmitLine(oNpc, "BSMITH_CONTRADICTION type=" + sType + " evidence=" + sEvidence);
 }
 
 void DL_BsmithClassify(object oNpc, string sCategory, string sConfidence, string sReason)
@@ -479,7 +543,7 @@ void DL_BsmithClassify(object oNpc, string sCategory, string sConfidence, string
         return;
     }
     SetLocalString(oNpc, "dl_bsmith_last_classify", sSig);
-    DL_BsmithEmit("BSMITH_CLASSIFY category=" + sCategory + " confidence=" + sConfidence + " reason=" + sReason);
+    DL_BsmithEmitLine(oNpc, "BSMITH_CLASSIFY category=" + sCategory + " confidence=" + sConfidence + " reason=" + sReason);
 }
 
 object DL_BsmithFallbackObjectByTag(string sTag)
@@ -611,11 +675,11 @@ void DL_BsmithMaybeClassify(object oNpc, string sProblem)
 }
 
 /*
-How to use:
-1. Set dl_bsmith_trace=1.
+How to use bounded trace mode:
+1. Set dl_bsmith_trace=1 and dl_bsmith_trace_budget=N on the module or blacksmith01.
 2. Reproduce blacksmith01 behavior around 19:00 -> 21:00 in gotha_tavern.
 3. Collect only BSMITH_TRACE / BSMITH_CONTRADICTION / BSMITH_CLASSIFY lines.
-4. Do not use old Daily Life debug output; it has been removed because it obscured the bug.
+4. The trace auto-clears dl_bsmith_trace when the budget reaches 0.
 */
 void DL_BsmithTraceStage(object oNpc, string sStage, string sNote)
 {
@@ -645,8 +709,6 @@ void DL_BsmithTraceStage(object oNpc, string sStage, string sNote)
     float fRawReachDist = GetLocalFloat(oNpc, DL_L_NPC_MOVE_REACH_CHECK_RAW_DIST_DBG);
     int nCurrentAction = GetCurrentAction(oNpc);
     string sProblem = DL_GetNpcProblemSummary(oNpc);
-    int nSeq = GetLocalInt(GetModule(), "dl_bsmith_trace_seq") + 1;
-    SetLocalInt(GetModule(), "dl_bsmith_trace_seq", nSeq);
     vector vPos = GetPosition(oNpc);
     object oRegArea = GetLocalObject(oNpc, "dl_npc_reg_area");
     string sRegArea = "";
@@ -660,6 +722,41 @@ void DL_BsmithTraceStage(object oNpc, string sStage, string sNote)
     {
         bSlotSelf = GetLocalObject(oRegArea, "dl_reg_slot_" + IntToString(nRegSlot)) == oNpc;
     }
+
+    string sSignature = sStage + "|" +
+        DL_GetDirectiveDebugLabel(GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE)) + "|" +
+        GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) + "|" +
+        GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) + "|" +
+        GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG) + "|" +
+        GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) + "|" +
+        GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) + "|" +
+        GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) + "|" +
+        GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) + "|" +
+        IntToString(nCurrentAction) + "|" +
+        sProblem + "|" +
+        sNote;
+    string sSigKey = "dl_bsmith_trace_sig_" + sStage;
+    string sTimeKey = "dl_bsmith_trace_min_" + sStage;
+    int nNowAbsMin = DL_GetAbsoluteMinute();
+    int nLastAbsMin = GetLocalInt(oNpc, sTimeKey);
+    if (GetLocalString(oNpc, sSigKey) == sSignature &&
+        nLastAbsMin > 0 &&
+        (nNowAbsMin - nLastAbsMin) < 5)
+    {
+        return;
+    }
+    SetLocalString(oNpc, sSigKey, sSignature);
+    SetLocalInt(oNpc, sTimeKey, nNowAbsMin);
+    SetLocalString(oNpc, "dl_bsmith_trace_last_stage", sStage);
+    SetLocalString(oNpc, "dl_bsmith_trace_last_sig", sSignature);
+    SetLocalString(oNpc, "dl_bsmith_trace_last_directive", DL_GetDirectiveDebugLabel(GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE)));
+    SetLocalString(oNpc, "dl_bsmith_trace_last_move_owner", GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER));
+    SetLocalString(oNpc, "dl_bsmith_trace_last_move_result", GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT));
+    SetLocalString(oNpc, "dl_bsmith_trace_last_move_target", GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG));
+    SetLocalString(oNpc, "dl_bsmith_trace_last_problem", sProblem);
+
+    int nSeq = GetLocalInt(GetModule(), "dl_bsmith_trace_seq") + 1;
+    SetLocalInt(GetModule(), "dl_bsmith_trace_seq", nSeq);
 
     string sLine = "BSMITH_TRACE seq=" + IntToString(nSeq) +
         " stage=" + sStage +
@@ -689,7 +786,7 @@ void DL_BsmithTraceStage(object oNpc, string sStage, string sNote)
         " trans=" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) + "/" + GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) +
         " note=" + sNote;
 
-    DL_BsmithEmit(sLine);
+    DL_BsmithEmitLine(oNpc, sLine);
     DL_BsmithDetectContradictions(oNpc, sStage, oMoveObj, oFocusObj, fMoveDist, fFocusDist);
     DL_BsmithMaybeClassify(oNpc, sProblem);
 }
