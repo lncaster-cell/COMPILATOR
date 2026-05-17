@@ -18,6 +18,7 @@ const string DL_L_NPC_MOVE_RESULT_AFTER_REACHED_FINALIZE_DBG = "move_result_afte
 const string DL_L_NPC_MOVE_TARGET_OBJ_TAG_DBG = "move_target_obj_tag";
 const string DL_L_NPC_MOVE_TARGET_OBJ_AREA_DBG = "move_target_obj_area";
 const string DL_L_NPC_MOVE_TARGET_OBJ_DIST_DBG = "move_target_obj_dist";
+const string DL_L_NPC_TRANSITION_ENTRY_MOVE_COMMAND_DBG = "transition_entry_move_command";
 const string DL_L_NPC_FOCUS_TARGET_OBJ_TAG_DBG = "focus_target_obj_tag";
 const string DL_L_NPC_FOCUS_TARGET_OBJ_AREA_DBG = "focus_target_obj_area";
 const string DL_L_NPC_FOCUS_TARGET_OBJ_DIST_DBG = "focus_target_obj_dist";
@@ -572,12 +573,8 @@ void DL_IssueMoveJobAction(object oNpc, object oTarget)
     SetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET, DL_GetSleepActionStamp());
     if (GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) == DL_MOVE_OWNER_TRANSITION)
     {
-        float fRadius = GetLocalFloat(oNpc, DL_L_NPC_MOVE_RADIUS);
-        if (fRadius <= 0.0)
-        {
-            fRadius = DL_MOVE_DEFAULT_RADIUS;
-        }
-        DL_QueueMoveToObjectAction(oNpc, oTarget, TRUE, fRadius);
+        SetLocalString(oNpc, DL_L_NPC_TRANSITION_ENTRY_MOVE_COMMAND_DBG, "location_exact");
+        DL_QueueMoveAction(oNpc, GetLocation(oTarget), TRUE);
     }
     else
     {
