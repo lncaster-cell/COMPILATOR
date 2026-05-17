@@ -4,5 +4,6 @@ void DL_BeginMoveJobToObject(object oNpc, string sOwner, string sPhase, object o
 void DL_ClearMoveJob(object oNpc);
 int DL_TickMoveJob(object oNpc);
 int DL_ForceReachMoveJobIfAlreadyAtTarget(object oNpc);
+int DL_IsMoveJobAtTargetNow(object oNpc);
 int DL_IsMoveJobReached(object oNpc);
 string DL_GetMoveJobResult(object oNpc);
