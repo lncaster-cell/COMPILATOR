@@ -35,6 +35,13 @@ const string DL_L_NPC_CRITICAL_WORKER_TOUCH_DBG = "critical_worker_touch";
 const string DL_L_NPC_CRITICAL_REASON_DBG = "critical_reason";
 const string DL_L_NPC_CRITICAL_BYPASSED_LAST_TOUCH_DBG = "critical_bypassed_last_touch_gate";
 const string DL_L_NPC_CRITICAL_BYPASSED_WARM_DBG = "critical_bypassed_warm_gate";
+const string DL_L_NPC_CRITICAL_SEEN_NOT_TOUCHED_DBG = "critical_seen_but_not_touched";
+const string DL_L_NPC_CRITICAL_PROCESS_FAILED_REASON_DBG = "critical_process_failed_reason";
+const string DL_L_NPC_CRITICAL_SLOT_DBG = "critical_slot";
+const string DL_L_NPC_CRITICAL_AREA_DBG = "critical_area";
+const string DL_L_NPC_CRITICAL_REGISTRY_COUNT_DBG = "critical_registry_count";
+const string DL_L_NPC_CRITICAL_PASS_MODE_DBG = "critical_pass_mode";
+const string DL_L_NPC_EMERGENCY_STALE_REACHED_TOUCH_DBG = "emergency_worker_touch_for_stale_reached";
 
 const int DL_AREA_PASS_MODE_WORKER = 1;
 const int DL_AREA_PASS_MODE_RESYNC = 2;
@@ -53,6 +60,8 @@ const int DL_FALLBACK_OBJECT_HOP_MULTIPLIER = 8;
 const int DL_TRANSITION_HANDOFF_SLOT_COUNT = 4;
 
 void DL_WorkerTouchNpc(object oNpc);
+int DL_TouchNpcFromAreaWorker(object oNpc, object oArea, int nPassMode, int nTickStamp, int nBudget, int nCursorBefore, int nCursorAfter);
+void DL_SetNpcRegularWorkerDebug(object oNpc, object oArea, int nTickStamp, int nPassMode, int nBudget, int nCursorBefore, int nCursorAfter, int bSeenByRoundRobin, int bProcessedByRoundRobin, string sSkipReason);
 int DL_ProcessAreaNpcByPassMode(object oArea, object oNpc, int nPassMode, int nTickStamp, int nBudget, int nCursorBefore, int nCursorAfter);
 int DL_RemoveStaleNpcReferenceFromAreaRegistrySlot(object oArea, object oNpc, int nSlot);
 int DL_IsNpcRegistryOwnerForArea(object oNpc, object oArea);
@@ -325,6 +334,124 @@ void DL_SetCriticalWorkerDebug(object oNpc, string sReason)
     SetLocalString(oNpc, DL_L_NPC_CRITICAL_REASON_DBG, sReason);
 }
 
+void DL_SetCriticalProcessFailedDebug(object oNpc, object oArea, int nSlot, int nCount, int nPassMode, string sReason)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    SetLocalInt(oNpc, DL_L_NPC_CRITICAL_SEEN_NOT_TOUCHED_DBG, TRUE);
+    SetLocalString(oNpc, DL_L_NPC_CRITICAL_PROCESS_FAILED_REASON_DBG, sReason);
+    SetLocalInt(oNpc, DL_L_NPC_CRITICAL_SLOT_DBG, nSlot);
+    if (GetIsObjectValid(oArea))
+    {
+        SetLocalString(oNpc, DL_L_NPC_CRITICAL_AREA_DBG, GetTag(oArea));
+    }
+    else
+    {
+        SetLocalString(oNpc, DL_L_NPC_CRITICAL_AREA_DBG, "");
+    }
+    SetLocalInt(oNpc, DL_L_NPC_CRITICAL_REGISTRY_COUNT_DBG, nCount);
+    SetLocalString(oNpc, DL_L_NPC_CRITICAL_PASS_MODE_DBG, DL_GetAreaWorkerPassModeDebugLabel(nPassMode));
+    DL_BsmithTraceStage(
+        oNpc,
+        "WORKER_SKIP",
+        "reason=critical_seen_but_not_touched critical_process_failed_reason=" + sReason +
+            " critical_slot=" + IntToString(nSlot) +
+            " critical_area=" + GetLocalString(oNpc, DL_L_NPC_CRITICAL_AREA_DBG) +
+            " critical_registry_count=" + IntToString(nCount) +
+            " critical_pass_mode=" + DL_GetAreaWorkerPassModeDebugLabel(nPassMode)
+    );
+}
+
+void DL_ClearCriticalProcessFailedDebug(object oNpc)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    SetLocalInt(oNpc, DL_L_NPC_CRITICAL_SEEN_NOT_TOUCHED_DBG, FALSE);
+    DeleteLocalString(oNpc, DL_L_NPC_CRITICAL_PROCESS_FAILED_REASON_DBG);
+    DeleteLocalInt(oNpc, DL_L_NPC_CRITICAL_SLOT_DBG);
+    DeleteLocalString(oNpc, DL_L_NPC_CRITICAL_AREA_DBG);
+    DeleteLocalInt(oNpc, DL_L_NPC_CRITICAL_REGISTRY_COUNT_DBG);
+    DeleteLocalString(oNpc, DL_L_NPC_CRITICAL_PASS_MODE_DBG);
+}
+
+int DL_IsRegisteredCurrentAreaStaleReachedMoveCritical(object oNpc, object oArea)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oArea))
+    {
+        return FALSE;
+    }
+
+    if (!DL_HasMoveJob(oNpc))
+    {
+        return FALSE;
+    }
+
+    if (GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) != DL_MOVE_RESULT_RUNNING)
+    {
+        return FALSE;
+    }
+
+    if (!DL_IsMoveJobAtTargetNow(oNpc))
+    {
+        return FALSE;
+    }
+
+    if (GetCurrentAction(oNpc) == ACTION_MOVETOPOINT)
+    {
+        return FALSE;
+    }
+
+    if (GetArea(oNpc) != oArea)
+    {
+        return FALSE;
+    }
+
+    if (GetLocalObject(oNpc, DL_L_NPC_REG_AREA) != oArea)
+    {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+int DL_EmergencyTouchCriticalStaleReachedNpc(object oNpc, object oArea, int nPassMode, int nTickStamp, int nSlot, int nCount, string sReason)
+{
+    if (!DL_IsActivePipelineNpc(oNpc))
+    {
+        return FALSE;
+    }
+
+    if (!DL_IsRegisteredCurrentAreaStaleReachedMoveCritical(oNpc, oArea))
+    {
+        return FALSE;
+    }
+
+    if (nSlot < 0 || nSlot >= nCount)
+    {
+        return FALSE;
+    }
+
+    if (DL_GetAreaRegistryNpcAtSlot(oArea, nSlot) != oNpc)
+    {
+        return FALSE;
+    }
+
+    SetLocalInt(oNpc, DL_L_NPC_EMERGENCY_STALE_REACHED_TOUCH_DBG, TRUE);
+    DL_SetCriticalProcessFailedDebug(oNpc, oArea, nSlot, nCount, nPassMode, sReason);
+    DL_SetNpcRegularWorkerDebug(oNpc, oArea, nTickStamp, nPassMode, DL_WORKER_BUDGET_MIN, nSlot, nSlot, TRUE, FALSE, sReason);
+    DL_BsmithTraceStage(oNpc, "WORKER_TOUCH_ENTER", "emergency_worker_touch_for_stale_reached");
+    DL_WorkerTouchNpc(oNpc);
+    SetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK, nTickStamp);
+    DL_BsmithTraceStage(oNpc, "WORKER_TOUCH_EXIT", "emergency_worker_touch_for_stale_reached");
+    return TRUE;
+}
+
 void DL_SetAreaWorkerPassDebug(object oArea, int nTickStamp, int nPassMode, int nBudget, int nCursorBefore, int nCursorAfter)
 {
     if (!GetIsObjectValid(oArea))
@@ -567,13 +694,20 @@ int DL_ProcessCriticalAreaCursorNpc(object oArea, int nPassMode, int nTickStamp,
             DL_BsmithTraceStage(oNpc, "WORKER_REGISTRY_SEEN", "critical_stale_scan slot=" + IntToString(nSlot) + " bypass=" + sBypassKind);
             if (DL_IsActivePipelineNpc(oNpc) && GetArea(oNpc) == oArea && GetLocalObject(oNpc, DL_L_NPC_REG_AREA) == oArea)
             {
-                if (DL_IsStaleReachedMoveJobCritical(oNpc))
+                if (DL_IsRegisteredCurrentAreaStaleReachedMoveCritical(oNpc, oArea))
                 {
+                    DL_ClearCriticalProcessFailedDebug(oNpc);
+                    SetLocalInt(oNpc, DL_L_NPC_EMERGENCY_STALE_REACHED_TOUCH_DBG, FALSE);
                     DL_SetCriticalWorkerDebug(oNpc, "stale_reached_move_job");
                     DL_BsmithTraceStage(oNpc, "CRITICAL_BYPASS", "stale_reached_move_job bypass=" + sBypassKind + " slot=" + IntToString(nSlot));
-                    if (DL_ProcessAreaNpcByPassMode(oArea, oNpc, nPassMode, nTickStamp, DL_WORKER_BUDGET_MIN, nSlot, nSlot))
+                    if (DL_TouchNpcFromAreaWorker(oNpc, oArea, nPassMode, nTickStamp, DL_WORKER_BUDGET_MIN, nSlot, nSlot))
                     {
                         SetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK, nTickStamp);
+                        return TRUE;
+                    }
+                    DL_SetCriticalProcessFailedDebug(oNpc, oArea, nSlot, nCount, nPassMode, "critical_stale_area_worker_touch_failed");
+                    if (DL_EmergencyTouchCriticalStaleReachedNpc(oNpc, oArea, nPassMode, nTickStamp, nSlot, nCount, "critical_stale_area_worker_touch_failed"))
+                    {
                         return TRUE;
                     }
                     DL_BsmithTraceStage(oNpc, "WORKER_SKIP", "reason=critical_stale_process_failed slot=" + IntToString(nSlot));
@@ -624,10 +758,17 @@ int DL_ProcessCriticalAreaCursorNpc(object oArea, int nPassMode, int nTickStamp,
                         SetLocalInt(oNpc, DL_L_NPC_CRITICAL_BYPASSED_WARM_DBG, TRUE);
                     }
 
+                    DL_ClearCriticalProcessFailedDebug(oNpc);
+                    SetLocalInt(oNpc, DL_L_NPC_EMERGENCY_STALE_REACHED_TOUCH_DBG, FALSE);
                     DL_BsmithTraceStage(oNpc, "CRITICAL_BYPASS", sCriticalReason + " bypass=" + sBypassKind + " slot=" + IntToString(nSlot));
                     if (DL_ProcessAreaNpcByPassMode(oArea, oNpc, nPassMode, nTickStamp, DL_WORKER_BUDGET_MIN, nSlot, nSlot))
                     {
                         SetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK, nTickStamp);
+                        return TRUE;
+                    }
+                    DL_SetCriticalProcessFailedDebug(oNpc, oArea, nSlot, nCount, nPassMode, "critical_process_failed");
+                    if (DL_EmergencyTouchCriticalStaleReachedNpc(oNpc, oArea, nPassMode, nTickStamp, nSlot, nCount, "critical_process_failed"))
+                    {
                         return TRUE;
                     }
                     DL_BsmithTraceStage(oNpc, "WORKER_SKIP", "reason=critical_process_failed slot=" + IntToString(nSlot));
