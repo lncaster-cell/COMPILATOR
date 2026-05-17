@@ -1083,20 +1083,29 @@ int DL_ProcessAreaNpcByPassMode(object oArea, object oNpc, int nPassMode, int nT
 
     SetLocalInt(oNpc, DL_L_NPC_CRITICAL_BYPASSED_LAST_TOUCH_DBG, FALSE);
     SetLocalInt(oNpc, DL_L_NPC_CRITICAL_BYPASSED_WARM_DBG, FALSE);
-    int bCritical = DL_NpcNeedsCriticalWorkerTouch(oNpc);
-    if (bCritical && nPassMode == DL_AREA_PASS_MODE_WARM)
+    // HOT runtime areas use authoritative round-robin touch; no diagnostic bypass gate.
+    int bHotRuntimeArea = nPassMode == DL_AREA_PASS_MODE_WORKER &&
+        GetIsObjectValid(oArea) &&
+        DL_GetAreaTier(oArea) == DL_TIER_HOT &&
+        DL_GetAreaPlayerCount(oArea) > 0;
+    int bCritical = FALSE;
+    if (!bHotRuntimeArea)
     {
-        SetLocalInt(oNpc, DL_L_NPC_CRITICAL_BYPASSED_WARM_DBG, TRUE);
-    }
-    if ((nPassMode == DL_AREA_PASS_MODE_WORKER || nPassMode == DL_AREA_PASS_MODE_WARM) &&
-        GetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK) == nTickStamp)
-    {
-        if (!bCritical)
+        bCritical = DL_NpcNeedsCriticalWorkerTouch(oNpc);
+        if (bCritical && nPassMode == DL_AREA_PASS_MODE_WARM)
         {
-            DL_SetNpcRegularWorkerDebug(oNpc, oArea, nTickStamp, nPassMode, nBudget, nCursorBefore, nCursorAfter, TRUE, FALSE, "skip_last_touch_gate");
-            return FALSE;
+            SetLocalInt(oNpc, DL_L_NPC_CRITICAL_BYPASSED_WARM_DBG, TRUE);
         }
-        SetLocalInt(oNpc, DL_L_NPC_CRITICAL_BYPASSED_LAST_TOUCH_DBG, TRUE);
+        if ((nPassMode == DL_AREA_PASS_MODE_WORKER || nPassMode == DL_AREA_PASS_MODE_WARM) &&
+            GetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK) == nTickStamp)
+        {
+            if (!bCritical)
+            {
+                DL_SetNpcRegularWorkerDebug(oNpc, oArea, nTickStamp, nPassMode, nBudget, nCursorBefore, nCursorAfter, TRUE, FALSE, "skip_last_touch_gate");
+                return FALSE;
+            }
+            SetLocalInt(oNpc, DL_L_NPC_CRITICAL_BYPASSED_LAST_TOUCH_DBG, TRUE);
+        }
     }
 
     if (nPassMode == DL_AREA_PASS_MODE_RESYNC)
@@ -1241,17 +1250,12 @@ int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPas
     {
         int nNextBudgetSlot = (nCursor + nAttempts) % nNpcRegistered;
         object oBudgetNpc = DL_GetAreaRegistryNpcAtSlot(oArea, nNextBudgetSlot);
-        if (GetIsObjectValid(oBudgetNpc))
+        if (GetIsObjectValid(oBudgetNpc) &&
+            DL_IsActivePipelineNpc(oBudgetNpc) &&
+            !DL_IsNpcRegistryOwnerForArea(oBudgetNpc, oArea))
         {
-            if (DL_IsActivePipelineNpc(oBudgetNpc) && !DL_IsNpcRegistryOwnerForArea(oBudgetNpc, oArea))
-            {
-                DL_RemoveStaleNpcReferenceFromAreaRegistrySlot(oArea, oBudgetNpc, nNextBudgetSlot);
-                nNpcRegistered = GetLocalInt(oArea, DL_L_AREA_REG_COUNT);
-            }
-            else
-            {
-                DL_SetNpcRegularWorkerDebug(oBudgetNpc, oArea, nTickStamp, nPassMode, nBudget, nCursor, nCursor, FALSE, FALSE, "skip_budget_exhausted");
-            }
+            DL_RemoveStaleNpcReferenceFromAreaRegistrySlot(oArea, oBudgetNpc, nNextBudgetSlot);
+            nNpcRegistered = GetLocalInt(oArea, DL_L_AREA_REG_COUNT);
         }
     }
 
@@ -1666,13 +1670,6 @@ void DL_RunAreaWorkerTick(object oArea)
         bStaleRepaired
     );
 
-    if (DL_ProcessCriticalAreaCursorNpc(oArea, DL_AREA_PASS_MODE_WORKER, DL_GetAreaTick(oArea), "worker"))
-    {
-        return;
-    }
-
-    int nHandoffTouched = DL_RunTransitionRegistryHandoffTick(oArea, DL_GetAreaTick(oArea));
-
     int nTier = DL_GetAreaTier(oArea);
     if (nTier == DL_TIER_FROZEN)
     {
@@ -1711,27 +1708,16 @@ void DL_RunAreaWorkerTick(object oArea)
 
     DL_RunAreaEnterResyncTick(oArea);
 
+    // HOT area worker must not depend on shared module budget or critical/emergency bypasses.
     int nBudget = DL_GetAreaWorkerBudget(oArea);
-    nBudget = DL_ConsumeModuleNpcBudget(nBudget);
-    if (nBudget <= 0)
+    if (nBudget < DL_WORKER_BUDGET_MIN)
     {
-        if (DL_ProcessCriticalAreaCursorNpc(oArea, DL_AREA_PASS_MODE_WORKER, DL_GetAreaTick(oArea), "budget"))
-        {
-            return;
-        }
-        int nBudgetCursor = DL_GetAreaWorkerCursor(oArea);
-        DL_SetAreaWorkerPassDebug(oArea, DL_GetAreaTick(oArea), DL_AREA_PASS_MODE_WORKER, 0, nBudgetCursor, nBudgetCursor);
-        DL_MarkAreaCursorNpcSkipped(oArea, DL_GetAreaTick(oArea), DL_AREA_PASS_MODE_WORKER, 0, nBudgetCursor, "skip_budget_exhausted");
-        object oModuleNoBudget = GetModule();
-        SetLocalInt(oModuleNoBudget, DL_L_MODULE_WORKER_TICKS, GetLocalInt(oModuleNoBudget, DL_L_MODULE_WORKER_TICKS) + 1);
-        SetLocalInt(oArea, DL_L_AREA_WORKER_LAST_PROCESSED, 0);
-        SetLocalInt(oModuleNoBudget, DL_L_MODULE_WORKER_LAST_PROCESSED, 0);
-        return;
+        nBudget = DL_WORKER_BUDGET_MIN;
     }
 
     int nCursor = DL_GetAreaWorkerCursor(oArea);
     int nTickStamp = DL_GetAreaTick(oArea);
-    int nNpcProcessed = DL_RunAreaNpcRoundRobinPass(oArea, nCursor, nBudget, DL_AREA_PASS_MODE_WORKER, nTickStamp) + nHandoffTouched;
+    int nNpcProcessed = DL_RunAreaNpcRoundRobinPass(oArea, nCursor, nBudget, DL_AREA_PASS_MODE_WORKER, nTickStamp);
     int nNpcSeen = GetLocalInt(oArea, DL_L_AREA_PASS_LAST_SEEN);
 
     int nCursorAfter = 0;
