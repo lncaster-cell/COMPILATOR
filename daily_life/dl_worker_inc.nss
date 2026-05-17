@@ -391,7 +391,7 @@ void DL_SetNpcRegularWorkerDebug(
     else
     {
         SetLocalString(oNpc, DL_L_NPC_TOUCH_SKIPPED_REASON_DBG, sSkipReason);
-        DL_BsmithTraceStage(oNpc, "WORKER_SKIP", sSkipReason);
+        DL_BsmithTraceStage(oNpc, "WORKER_SKIP", "reason=" + sSkipReason);
     }
 }
 
@@ -550,6 +550,30 @@ object DL_GetAreaWorkerCursorNpc(object oArea)
     return DL_GetAreaRegistryNpcAtSlot(oArea, nCursor);
 }
 
+void DL_TraceAreaWorkerTickForRegisteredNpc(object oNpc, object oArea, int nTickStamp, int nPassMode, int nBudget, int nCursor)
+{
+    if (!GetIsObjectValid(oNpc) || GetTag(oNpc) != "blacksmith01")
+    {
+        return;
+    }
+
+    string sAreaTag = "";
+    if (GetIsObjectValid(oArea))
+    {
+        sAreaTag = GetTag(oArea);
+    }
+
+    DL_BsmithTraceStage(
+        oNpc,
+        "AREA_WORKER_TICK",
+        "area=" + sAreaTag +
+            " tick=" + IntToString(nTickStamp) +
+            " pass=" + DL_GetAreaWorkerPassModeDebugLabel(nPassMode) +
+            " budget=" + IntToString(nBudget) +
+            " cursor=" + IntToString(nCursor)
+    );
+}
+
 int DL_ProcessCriticalAreaCursorNpc(object oArea, int nPassMode, int nTickStamp, string sBypassKind)
 {
     if (!GetIsObjectValid(oArea))
@@ -570,17 +594,66 @@ int DL_ProcessCriticalAreaCursorNpc(object oArea, int nPassMode, int nTickStamp,
     }
 
     int nAttempts = 0;
+    int nSlot = 0;
+    object oNpc = OBJECT_INVALID;
     while (nAttempts < nCount)
     {
-        int nSlot = (nCursor + nAttempts) % nCount;
-        object oNpc = DL_GetAreaRegistryNpcAtSlot(oArea, nSlot);
+        nSlot = (nCursor + nAttempts) % nCount;
+        oNpc = DL_GetAreaRegistryNpcAtSlot(oArea, nSlot);
         if (GetIsObjectValid(oNpc))
         {
+            DL_TraceAreaWorkerTickForRegisteredNpc(oNpc, oArea, nTickStamp, nPassMode, DL_WORKER_BUDGET_MIN, nCursor);
+            DL_BsmithTraceStage(oNpc, "WORKER_REGISTRY_SEEN", "critical_stale_scan slot=" + IntToString(nSlot) + " bypass=" + sBypassKind);
+            if (DL_IsActivePipelineNpc(oNpc) && GetArea(oNpc) == oArea && GetLocalObject(oNpc, DL_L_NPC_REG_AREA) == oArea)
+            {
+                if (DL_IsStaleReachedMoveJobCritical(oNpc))
+                {
+                    DL_SetCriticalWorkerDebug(oNpc, "stale_reached_move_job");
+                    DL_BsmithTraceStage(oNpc, "CRITICAL_BYPASS", "stale_reached_move_job bypass=" + sBypassKind + " slot=" + IntToString(nSlot));
+                    if (DL_ProcessAreaNpcByPassMode(oArea, oNpc, nPassMode, nTickStamp, DL_WORKER_BUDGET_MIN, nSlot, nSlot))
+                    {
+                        SetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK, nTickStamp);
+                        return TRUE;
+                    }
+                    DL_BsmithTraceStage(oNpc, "WORKER_SKIP", "reason=critical_stale_process_failed slot=" + IntToString(nSlot));
+                }
+            }
+            else if (DL_IsActivePipelineNpc(oNpc) && !DL_IsNpcRegistryOwnerForArea(oNpc, oArea))
+            {
+                DL_RemoveStaleNpcReferenceFromAreaRegistrySlot(oArea, oNpc, nSlot);
+                nCount = GetLocalInt(oArea, DL_L_AREA_REG_COUNT);
+                if (nCount <= 0)
+                {
+                    return FALSE;
+                }
+                if (nCursor >= nCount)
+                {
+                    nCursor = 0;
+                }
+            }
+        }
+
+        nAttempts = nAttempts + 1;
+    }
+
+    nAttempts = 0;
+    while (nAttempts < nCount)
+    {
+        nSlot = (nCursor + nAttempts) % nCount;
+        oNpc = DL_GetAreaRegistryNpcAtSlot(oArea, nSlot);
+        if (GetIsObjectValid(oNpc))
+        {
+            DL_TraceAreaWorkerTickForRegisteredNpc(oNpc, oArea, nTickStamp, nPassMode, DL_WORKER_BUDGET_MIN, nCursor);
             DL_BsmithTraceStage(oNpc, "WORKER_REGISTRY_SEEN", "critical_scan slot=" + IntToString(nSlot) + " bypass=" + sBypassKind);
             if (DL_IsActivePipelineNpc(oNpc) && GetArea(oNpc) == oArea && GetLocalObject(oNpc, DL_L_NPC_REG_AREA) == oArea)
             {
                 if (DL_NpcNeedsCriticalWorkerTouch(oNpc))
                 {
+                    string sCriticalReason = GetLocalString(oNpc, DL_L_NPC_CRITICAL_REASON_DBG);
+                    if (sCriticalReason == "")
+                    {
+                        sCriticalReason = "critical_worker_touch";
+                    }
                     if (sBypassKind == "warm")
                     {
                         SetLocalInt(oNpc, DL_L_NPC_CRITICAL_BYPASSED_WARM_DBG, TRUE);
@@ -590,13 +663,13 @@ int DL_ProcessCriticalAreaCursorNpc(object oArea, int nPassMode, int nTickStamp,
                         SetLocalInt(oNpc, DL_L_NPC_CRITICAL_BYPASSED_WARM_DBG, TRUE);
                     }
 
-                    DL_BsmithTraceStage(oNpc, "CRITICAL_BYPASS", sBypassKind + " slot=" + IntToString(nSlot));
+                    DL_BsmithTraceStage(oNpc, "CRITICAL_BYPASS", sCriticalReason + " bypass=" + sBypassKind + " slot=" + IntToString(nSlot));
                     if (DL_ProcessAreaNpcByPassMode(oArea, oNpc, nPassMode, nTickStamp, DL_WORKER_BUDGET_MIN, nSlot, nSlot))
                     {
                         SetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK, nTickStamp);
                         return TRUE;
                     }
-                    DL_BsmithTraceStage(oNpc, "WORKER_SKIP", "critical_process_failed slot=" + IntToString(nSlot));
+                    DL_BsmithTraceStage(oNpc, "WORKER_SKIP", "reason=critical_process_failed slot=" + IntToString(nSlot));
                 }
             }
             else if (DL_IsActivePipelineNpc(oNpc) && !DL_IsNpcRegistryOwnerForArea(oNpc, oArea))
@@ -631,15 +704,18 @@ int DL_TouchNpcFromAreaWorker(object oNpc, object oArea, int nPassMode, int nTic
     SetLocalInt(oNpc, DL_L_NPC_WORKER_TOUCH_SEQ_BEFORE_DBG, nSeqBefore);
     SetLocalInt(oNpc, DL_L_NPC_WORKER_TOUCH_SEQ_AFTER_DBG, nSeqBefore);
     DL_SetNpcRegularWorkerDebug(oNpc, oArea, nTickStamp, nPassMode, nBudget, nCursorBefore, nCursorAfter, TRUE, FALSE, "");
+    DL_BsmithTraceStage(oNpc, "WORKER_TOUCH_ENTER", "area_worker");
     DL_WorkerTouchNpc(oNpc);
     int nSeqAfter = GetLocalInt(oNpc, DL_L_NPC_WORKER_TOUCH_SEQ_DBG);
     SetLocalInt(oNpc, DL_L_NPC_WORKER_TOUCH_SEQ_AFTER_DBG, nSeqAfter);
     if (nSeqAfter != nSeqBefore)
     {
         DL_SetNpcRegularWorkerDebug(oNpc, oArea, nTickStamp, nPassMode, nBudget, nCursorBefore, nCursorAfter, TRUE, TRUE, "");
+        DL_BsmithTraceStage(oNpc, "WORKER_TOUCH_EXIT", "processed");
         return TRUE;
     }
 
+    DL_BsmithTraceStage(oNpc, "WORKER_TOUCH_EXIT", "not_processed");
     DL_SetNpcRegularWorkerDebug(oNpc, oArea, nTickStamp, nPassMode, nBudget, nCursorBefore, nCursorAfter, TRUE, FALSE, "skip_unknown");
     return FALSE;
 }
@@ -1341,12 +1417,13 @@ void DL_RunAreaWarmMaintenanceTick(object oArea)
     }
 
     int nTickStamp = DL_GetAreaTick(oArea);
+    if (DL_ProcessCriticalAreaCursorNpc(oArea, DL_AREA_PASS_MODE_WARM, nTickStamp, "warm"))
+    {
+        return;
+    }
+
     if (DL_GetAreaTier(oArea) != DL_TIER_WARM)
     {
-        if (DL_ProcessCriticalAreaCursorNpc(oArea, DL_AREA_PASS_MODE_WARM, nTickStamp, "warm"))
-        {
-            return;
-        }
         DL_MarkAreaCursorNpcSkipped(oArea, nTickStamp, DL_AREA_PASS_MODE_WARM, 0, DL_GetAreaWorkerCursor(oArea), "skip_area_not_hot");
         return;
     }
@@ -1486,6 +1563,11 @@ void DL_RunAreaWorkerTick(object oArea)
         bForcedHotDueToPlayer,
         bStaleRepaired
     );
+
+    if (DL_ProcessCriticalAreaCursorNpc(oArea, DL_AREA_PASS_MODE_WORKER, DL_GetAreaTick(oArea), "worker"))
+    {
+        return;
+    }
 
     int nHandoffTouched = DL_RunTransitionRegistryHandoffTick(oArea, DL_GetAreaTick(oArea));
 
