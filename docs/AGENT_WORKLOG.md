@@ -62,3 +62,13 @@ Entry template:
 **Reason:** reduce context loss and prevent agents from solving the same class of problems by broad rewrites, duplicated logic, or unsafe compiler/toolchain interaction.  
 **Preserve:** agents must keep using `AGENTS.md` and this worklog first, must not run compilation unless explicitly authorized, and should route Daily Life movement fixes through the existing registry/worker/directive/finalizer contracts.  
 **Validation:** documentation/process-only change. Compilation not run; user owns compilation.
+
+## 2026-05-17 — Add Start Here productivity guide
+
+**Task/PR/branch:** `codex/add-agent-start-here`.  
+**Files touched:** `AGENTS.md`, `docs/agent/START_HERE.md`, `docs/AGENT_WORKLOG.md`.  
+**Context:** the user clarified that the agent files are not meant as ordinary documentation, but as productivity infrastructure for AI-assisted solo/vibe development: faster context loading, safer bug fixing, fewer repeated mistakes, and better continuity between sessions.  
+**Change:** added `docs/agent/START_HERE.md` as the high-level entry point explaining the operating model, file map, productivity rules, and expected agent workflow. Updated `AGENTS.md` so agents read it immediately after `AGENTS.md` and before deeper protocols.  
+**Reason:** future agents should understand why these files exist and how to use them as a workflow, not treat them as optional docs.  
+**Preserve:** user owns intent, manual compilation, runtime validation, and final acceptance; agents own investigation, minimal patches, PRs, and context/worklog updates.  
+**Validation:** documentation/process-only change. Compilation not run; user owns compilation.

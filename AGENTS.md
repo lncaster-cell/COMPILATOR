@@ -4,17 +4,24 @@ This repository contains Neverwinter Nights 2 / NWScript code for the user's mod
 
 ## Primary rule
 
-Preserve NWScript/NWN2 compatibility, runtime behavior, and project continuity. Do not rely on memory from previous sessions. Always treat the repository, this file, and `docs/AGENT_WORKLOG.md` as the current source of truth.
+Preserve NWScript/NWN2 compatibility, runtime behavior, and project continuity. Do not rely on memory from previous sessions. Always treat the repository, this file, `docs/agent/START_HERE.md`, and `docs/AGENT_WORKLOG.md` as the current source of truth.
+
+This repository is optimized for AI-assisted solo/vibe development: the user drives intent, manual compilation, in-game validation, and final acceptance; agents provide investigation, minimal patches, PRs, and persistent context updates.
 
 ## Mandatory reading order before editing
 
 Before changing any code, an agent must read:
 
 1. `AGENTS.md`.
-2. `docs/AGENT_WORKLOG.md`, if present.
-3. The target files and nearby includes.
-4. Recent relevant PR descriptions or commit messages when investigating an active bug.
-5. Existing helpers, constants, local-key contracts, and diagnostics related to the task.
+2. `docs/agent/START_HERE.md`.
+3. `docs/AGENT_WORKLOG.md`, if present.
+4. `docs/agent/SUBSYSTEM_INDEX.md` to locate the likely subsystem.
+5. `docs/agent/TASK_PROTOCOL.md`.
+6. `docs/agent/DEBUGGING_PROTOCOL.md` when debugging runtime/NPC/Daily Life behavior.
+7. `docs/agent/DO_NOT_TOUCH.md` before touching risky areas.
+8. The target files and nearby includes.
+9. Recent relevant PR descriptions or commit messages when investigating an active bug.
+10. Existing helpers, constants, local-key contracts, and diagnostics related to the task.
 
 Never start by rewriting. Start by understanding the current architecture and the last known debugging state.
 
