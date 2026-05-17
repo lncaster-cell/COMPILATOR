@@ -72,3 +72,13 @@ Entry template:
 **Reason:** future agents should understand why these files exist and how to use them as a workflow, not treat them as optional docs.  
 **Preserve:** user owns intent, manual compilation, runtime validation, and final acceptance; agents own investigation, minimal patches, PRs, and context/worklog updates.  
 **Validation:** documentation/process-only change. Compilation not run; user owns compilation.
+
+## 2026-05-17 — Add root-cause bugfix protocol
+
+**Task/PR/branch:** `codex/add-root-cause-bugfix-protocol`.  
+**Files touched:** `AGENTS.md`, `docs/agent/ROOT_CAUSE_BUGFIX_PROTOCOL.md`, `docs/AGENT_WORKLOG.md`.  
+**Context:** the user identified a process failure: repeated AI fixes were often treating symptoms instead of proving root causes, and the repository was not yet fully managed as an AI-assisted solo-development workflow.  
+**Change:** added a mandatory root-cause bugfix protocol for non-trivial, recurring, runtime, and Daily Life/NPC bugs. Updated `AGENTS.md` to require this protocol before behavior patches on such bugs.  
+**Reason:** force agents to identify the first failing pipeline stage, gather evidence, choose the correct owner subsystem, and prefer focused diagnostics when the root cause is not proven.  
+**Preserve:** issue-driven debugging, evidence before patch, minimal owner-subsystem changes, no symptom-chasing emergency bypasses, and explicit manual validation by the user.  
+**Validation:** documentation/process-only change. Compilation not run; user owns compilation.

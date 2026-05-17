@@ -8,6 +8,21 @@ Preserve NWScript/NWN2 compatibility, runtime behavior, and project continuity. 
 
 This repository is optimized for AI-assisted solo/vibe development: the user drives intent, manual compilation, in-game validation, and final acceptance; agents provide investigation, minimal patches, PRs, and persistent context updates.
 
+## Root-cause rule for bugs
+
+For non-trivial runtime bugs, recurring bugs, Daily Life/NPC bugs, or any issue that has already consumed multiple PRs, agents must follow `docs/agent/ROOT_CAUSE_BUGFIX_PROTOCOL.md`.
+
+Agents must not start with another behavior patch until they can state:
+
+1. observed symptom;
+2. expected state;
+3. first failing pipeline stage;
+4. evidence for that stage;
+5. owner subsystem;
+6. smallest safe fix or diagnostic step.
+
+If the first failing stage is unknown, prefer a focused diagnostic PR over another broad behavior rewrite.
+
 ## Mandatory reading order before editing
 
 Before changing any code, an agent must read:
@@ -17,11 +32,12 @@ Before changing any code, an agent must read:
 3. `docs/AGENT_WORKLOG.md`, if present.
 4. `docs/agent/SUBSYSTEM_INDEX.md` to locate the likely subsystem.
 5. `docs/agent/TASK_PROTOCOL.md`.
-6. `docs/agent/DEBUGGING_PROTOCOL.md` when debugging runtime/NPC/Daily Life behavior.
-7. `docs/agent/DO_NOT_TOUCH.md` before touching risky areas.
-8. The target files and nearby includes.
-9. Recent relevant PR descriptions or commit messages when investigating an active bug.
-10. Existing helpers, constants, local-key contracts, and diagnostics related to the task.
+6. `docs/agent/ROOT_CAUSE_BUGFIX_PROTOCOL.md` for non-trivial, recurring, runtime, or Daily Life/NPC bugs.
+7. `docs/agent/DEBUGGING_PROTOCOL.md` when debugging runtime/NPC/Daily Life behavior.
+8. `docs/agent/DO_NOT_TOUCH.md` before touching risky areas.
+9. The target files and nearby includes.
+10. Recent relevant PR descriptions or commit messages when investigating an active bug.
+11. Existing helpers, constants, local-key contracts, and diagnostics related to the task.
 
 Never start by rewriting. Start by understanding the current architecture and the last known debugging state.
 
