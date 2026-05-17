@@ -37,6 +37,15 @@ const string DL_L_NPC_MOVE_STALL_REASON = "dl_move_stall_reason";
 const string DL_L_NPC_MOVE_DIST_DELTA_DBG = "move_dist_delta";
 const string DL_L_NPC_MOVE_ACTION_REISSUED_DBG = "move_action_reissued";
 const string DL_L_NPC_MOVE_CURRENT_ACTION_DBG = "current_action";
+const string DL_L_NPC_MOVE_REACH_CHECK_TARGET_VALID_DBG = "move_reach_check_target_valid";
+const string DL_L_NPC_MOVE_REACH_CHECK_SAME_AREA_DBG = "move_reach_check_same_area";
+const string DL_L_NPC_MOVE_REACH_CHECK_RAW_DIST_DBG = "move_reach_check_raw_dist";
+const string DL_L_NPC_MOVE_REACH_CHECK_RADIUS_DBG = "move_reach_check_radius";
+const string DL_L_NPC_MOVE_REACH_CHECK_RESULT_DBG = "move_reach_check_result";
+const string DL_L_NPC_MOVE_REACH_CHECK_ACTION_DBG = "move_reach_check_action";
+const string DL_L_NPC_SAME_MOVE_JOB_REBEGIN_BLOCKED_DBG = "same_move_job_rebegin_blocked";
+const string DL_L_NPC_SAME_MOVE_JOB_REBEGIN_OWNER_DBG = "same_move_job_rebegin_owner";
+const string DL_L_NPC_SAME_MOVE_JOB_REBEGIN_TARGET_DBG = "same_move_job_rebegin_target";
 const float DL_MOVE_PROGRESS_EPSILON = 0.15;
 const int DL_MOVE_NO_PROGRESS_SECONDS = 8;
 const int DL_MOVE_PERSISTENT_REISSUE_COUNT = 3;
@@ -440,6 +449,97 @@ void DL_SetMoveJobAreaFromTarget(object oNpc, object oTarget)
     }
 }
 
+int DL_IsMoveJobAtTargetNow(object oNpc)
+{
+    if (!DL_HasMoveJob(oNpc))
+    {
+        if (GetIsObjectValid(oNpc))
+        {
+            SetLocalInt(oNpc, DL_L_NPC_MOVE_REACH_CHECK_TARGET_VALID_DBG, FALSE);
+            SetLocalInt(oNpc, DL_L_NPC_MOVE_REACH_CHECK_SAME_AREA_DBG, FALSE);
+            SetLocalFloat(oNpc, DL_L_NPC_MOVE_REACH_CHECK_RAW_DIST_DBG, -1.0);
+            SetLocalFloat(oNpc, DL_L_NPC_MOVE_REACH_CHECK_RADIUS_DBG, DL_MOVE_DEFAULT_RADIUS);
+            SetLocalInt(oNpc, DL_L_NPC_MOVE_REACH_CHECK_RESULT_DBG, FALSE);
+            SetLocalInt(oNpc, DL_L_NPC_MOVE_REACH_CHECK_ACTION_DBG, GetCurrentAction(oNpc));
+        }
+        return FALSE;
+    }
+
+    object oTarget = DL_ResolveMoveJobTarget(oNpc);
+    int bTargetValid = GetIsObjectValid(oTarget);
+    int bSameArea = FALSE;
+    float fRawDistance = -1.0;
+    float fRadius = GetLocalFloat(oNpc, DL_L_NPC_MOVE_RADIUS);
+    if (fRadius <= 0.0)
+    {
+        fRadius = DL_MOVE_DEFAULT_RADIUS;
+        SetLocalFloat(oNpc, DL_L_NPC_MOVE_RADIUS, fRadius);
+    }
+
+    if (bTargetValid)
+    {
+        object oNpcArea = GetArea(oNpc);
+        object oTargetArea = GetArea(oTarget);
+        if (GetIsObjectValid(oNpcArea) && GetIsObjectValid(oTargetArea) && oNpcArea == oTargetArea)
+        {
+            bSameArea = TRUE;
+            fRawDistance = GetDistanceBetween(oNpc, oTarget);
+            SetLocalObject(oNpc, DL_L_NPC_MOVE_TARGET_OBJ, oTarget);
+            DL_SetMoveJobAreaFromTarget(oNpc, oTarget);
+        }
+    }
+
+    int bResult = bTargetValid && bSameArea && fRawDistance <= fRadius;
+    SetLocalInt(oNpc, DL_L_NPC_MOVE_REACH_CHECK_TARGET_VALID_DBG, bTargetValid);
+    SetLocalInt(oNpc, DL_L_NPC_MOVE_REACH_CHECK_SAME_AREA_DBG, bSameArea);
+    SetLocalFloat(oNpc, DL_L_NPC_MOVE_REACH_CHECK_RAW_DIST_DBG, fRawDistance);
+    SetLocalFloat(oNpc, DL_L_NPC_MOVE_REACH_CHECK_RADIUS_DBG, fRadius);
+    SetLocalInt(oNpc, DL_L_NPC_MOVE_REACH_CHECK_RESULT_DBG, bResult);
+    SetLocalInt(oNpc, DL_L_NPC_MOVE_REACH_CHECK_ACTION_DBG, GetCurrentAction(oNpc));
+    return bResult;
+}
+
+void DL_MarkMoveJobReachedNow(object oNpc, string sReason)
+{
+    if (!DL_HasMoveJob(oNpc))
+    {
+        return;
+    }
+
+    object oTarget = DL_ResolveMoveJobTarget(oNpc);
+    if (!GetIsObjectValid(oTarget))
+    {
+        return;
+    }
+
+    float fDistance = GetLocalFloat(oNpc, DL_L_NPC_MOVE_REACH_CHECK_RAW_DIST_DBG);
+    if (fDistance < 0.0)
+    {
+        fDistance = GetDistanceBetween(oNpc, oTarget);
+    }
+
+    string sTargetTag = GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG);
+    if (sTargetTag == "")
+    {
+        sTargetTag = GetTag(oTarget);
+    }
+
+    SetLocalObject(oNpc, DL_L_NPC_MOVE_TARGET_OBJ, oTarget);
+    DL_SetMoveJobAreaFromTarget(oNpc, oTarget);
+    SetLocalString(oNpc, DL_L_NPC_MOVE_RESULT, DL_MOVE_RESULT_REACHED);
+    DeleteLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC);
+    DeleteLocalString(oNpc, DL_L_NPC_MOVE_STALL_REASON);
+    SetLocalInt(oNpc, DL_L_NPC_MOVE_REACHED_FINALIZED_DBG, TRUE);
+    SetLocalString(oNpc, DL_L_NPC_REACHED_MOVE_OWNER_DBG, GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER));
+    SetLocalString(oNpc, DL_L_NPC_REACHED_MOVE_TARGET_DBG, sTargetTag);
+    SetLocalFloat(oNpc, DL_L_NPC_MOVE_DIST_DELTA_DBG, 0.0);
+    SetLocalInt(oNpc, DL_L_NPC_MOVE_CURRENT_ACTION_DBG, GetCurrentAction(oNpc));
+    SetLocalInt(oNpc, DL_L_NPC_MOVE_ACTION_REISSUED_DBG, FALSE);
+    DL_RecordMoveJobProgressSample(oNpc, fDistance, DL_GetMoveJobTickStamp());
+    DL_ClearTransitionExecutionState(oNpc);
+    DL_BsmithTraceStage(oNpc, "MOVE_REACHED", sReason);
+}
+
 void DL_SetMoveJobFailed(object oNpc, string sDiagnostic)
 {
     if (!GetIsObjectValid(oNpc))
@@ -476,55 +576,15 @@ int DL_ForceReachMoveJobIfAlreadyAtTarget(object oNpc)
         return FALSE;
     }
 
-    object oTarget = DL_ResolveMoveJobTarget(oNpc);
-    if (!GetIsObjectValid(oTarget))
+    if (!DL_IsMoveJobAtTargetNow(oNpc))
     {
         return FALSE;
     }
 
-    object oNpcArea = GetArea(oNpc);
-    object oTargetArea = GetArea(oTarget);
-    if (!GetIsObjectValid(oNpcArea) || !GetIsObjectValid(oTargetArea) || oNpcArea != oTargetArea)
-    {
-        return FALSE;
-    }
-
-    float fRadius = GetLocalFloat(oNpc, DL_L_NPC_MOVE_RADIUS);
-    if (fRadius <= 0.0)
-    {
-        fRadius = DL_MOVE_DEFAULT_RADIUS;
-        SetLocalFloat(oNpc, DL_L_NPC_MOVE_RADIUS, fRadius);
-    }
-
-    float fDistance = GetDistanceBetween(oNpc, oTarget);
-    if (fDistance > fRadius)
-    {
-        return FALSE;
-    }
-
-    string sTargetTag = GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG);
-    if (sTargetTag == "")
-    {
-        sTargetTag = GetTag(oTarget);
-    }
-
-    SetLocalObject(oNpc, DL_L_NPC_MOVE_TARGET_OBJ, oTarget);
-    DL_SetMoveJobAreaFromTarget(oNpc, oTarget);
-    SetLocalString(oNpc, DL_L_NPC_MOVE_RESULT, DL_MOVE_RESULT_REACHED);
-    DeleteLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC);
-    DeleteLocalString(oNpc, DL_L_NPC_MOVE_STALL_REASON);
     SetLocalInt(oNpc, DL_L_NPC_REACHED_FINALIZE_ATTEMPTED_DBG, FALSE);
     SetLocalInt(oNpc, DL_L_NPC_REACHED_FINALIZE_SUCCESS_DBG, FALSE);
     DeleteLocalString(oNpc, DL_L_NPC_REACHED_FINALIZE_REASON_DBG);
-    SetLocalInt(oNpc, DL_L_NPC_MOVE_REACHED_FINALIZED_DBG, TRUE);
-    SetLocalString(oNpc, DL_L_NPC_REACHED_MOVE_OWNER_DBG, GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER));
-    SetLocalString(oNpc, DL_L_NPC_REACHED_MOVE_TARGET_DBG, sTargetTag);
-    SetLocalFloat(oNpc, DL_L_NPC_MOVE_DIST_DELTA_DBG, 0.0);
-    SetLocalInt(oNpc, DL_L_NPC_MOVE_CURRENT_ACTION_DBG, GetCurrentAction(oNpc));
-    SetLocalInt(oNpc, DL_L_NPC_MOVE_ACTION_REISSUED_DBG, FALSE);
-    DL_RecordMoveJobProgressSample(oNpc, fDistance, DL_GetMoveJobTickStamp());
-    DL_ClearTransitionExecutionState(oNpc);
-    DL_BsmithTraceStage(oNpc, "MOVE_REACHED", "forced_already_at_target");
+    DL_MarkMoveJobReachedNow(oNpc, "forced_already_at_target");
     return TRUE;
 }
 
@@ -536,6 +596,12 @@ int DL_TickMoveJob(object oNpc)
     }
 
     SetLocalInt(oNpc, DL_L_NPC_MOVE_REACHED_FINALIZED_DBG, FALSE);
+
+    if (DL_IsMoveJobAtTargetNow(oNpc))
+    {
+        DL_MarkMoveJobReachedNow(oNpc, "within_radius");
+        return TRUE;
+    }
 
     object oTarget = DL_ResolveMoveJobTarget(oNpc);
     if (!GetIsObjectValid(oTarget))
@@ -570,21 +636,6 @@ int DL_TickMoveJob(object oNpc)
     float fDistance = GetDistanceBetween(oNpc, oTarget);
     SetLocalInt(oNpc, DL_L_NPC_MOVE_CURRENT_ACTION_DBG, nCurrentAction);
     SetLocalInt(oNpc, DL_L_NPC_MOVE_ACTION_REISSUED_DBG, FALSE);
-
-    if (fDistance <= fRadius)
-    {
-        SetLocalString(oNpc, DL_L_NPC_REACHED_MOVE_OWNER_DBG, GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER));
-        SetLocalString(oNpc, DL_L_NPC_REACHED_MOVE_TARGET_DBG, GetTag(oTarget));
-        SetLocalInt(oNpc, DL_L_NPC_MOVE_REACHED_FINALIZED_DBG, TRUE);
-        SetLocalString(oNpc, DL_L_NPC_MOVE_RESULT, DL_MOVE_RESULT_REACHED);
-        DeleteLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC);
-        DeleteLocalString(oNpc, DL_L_NPC_MOVE_STALL_REASON);
-        SetLocalFloat(oNpc, DL_L_NPC_MOVE_DIST_DELTA_DBG, 0.0);
-        DL_RecordMoveJobProgressSample(oNpc, fDistance, nNowTick);
-        DL_ClearTransitionExecutionState(oNpc);
-        DL_BsmithTraceStage(oNpc, "MOVE_REACHED", "within_radius");
-        return TRUE;
-    }
 
     SetLocalString(oNpc, DL_L_NPC_MOVE_RESULT, DL_MOVE_RESULT_RUNNING);
     DL_BsmithTraceStage(oNpc, "MOVE_TICK", "running");
@@ -637,6 +688,22 @@ void DL_BeginMoveJobToObject(object oNpc, string sOwner, string sPhase, object o
         fRadius = DL_MOVE_DEFAULT_RADIUS;
     }
 
+    SetLocalInt(oNpc, DL_L_NPC_SAME_MOVE_JOB_REBEGIN_BLOCKED_DBG, FALSE);
+    SetLocalString(oNpc, DL_L_NPC_SAME_MOVE_JOB_REBEGIN_OWNER_DBG, sOwner);
+    SetLocalString(oNpc, DL_L_NPC_SAME_MOVE_JOB_REBEGIN_TARGET_DBG, GetTag(oTarget));
+    if (GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) == sOwner &&
+        GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE) == sPhase &&
+        GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG) == GetTag(oTarget))
+    {
+        object oExistingTarget = DL_ResolveMoveJobTarget(oNpc);
+        if (GetIsObjectValid(oExistingTarget) && oExistingTarget == oTarget && DL_IsMoveJobAtTargetNow(oNpc))
+        {
+            SetLocalInt(oNpc, DL_L_NPC_SAME_MOVE_JOB_REBEGIN_BLOCKED_DBG, TRUE);
+            DL_MarkMoveJobReachedNow(oNpc, "same_rebegin_at_target_blocked");
+            return;
+        }
+    }
+
     DL_ClearMoveJob(oNpc);
     SetLocalString(oNpc, DL_L_NPC_MOVE_OWNER, sOwner);
     SetLocalString(oNpc, DL_L_NPC_MOVE_PHASE, sPhase);
@@ -661,6 +728,19 @@ void DL_BeginMoveJob(object oNpc, string sOwner, string sPhase, string sTargetTa
     if (fRadius <= 0.0)
     {
         fRadius = DL_MOVE_DEFAULT_RADIUS;
+    }
+
+    SetLocalInt(oNpc, DL_L_NPC_SAME_MOVE_JOB_REBEGIN_BLOCKED_DBG, FALSE);
+    SetLocalString(oNpc, DL_L_NPC_SAME_MOVE_JOB_REBEGIN_OWNER_DBG, sOwner);
+    SetLocalString(oNpc, DL_L_NPC_SAME_MOVE_JOB_REBEGIN_TARGET_DBG, sTargetTag);
+    if (GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) == sOwner &&
+        GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE) == sPhase &&
+        GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG) == sTargetTag &&
+        DL_IsMoveJobAtTargetNow(oNpc))
+    {
+        SetLocalInt(oNpc, DL_L_NPC_SAME_MOVE_JOB_REBEGIN_BLOCKED_DBG, TRUE);
+        DL_MarkMoveJobReachedNow(oNpc, "same_rebegin_at_target_blocked");
+        return;
     }
 
     DL_ClearMoveJob(oNpc);

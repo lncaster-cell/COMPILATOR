@@ -407,26 +407,7 @@ int DL_IsStaleReachedMoveJobCritical(object oNpc)
         return FALSE;
     }
 
-    object oNpcArea = GetArea(oNpc);
-    if (!GetIsObjectValid(oNpcArea))
-    {
-        return FALSE;
-    }
-
-    object oTarget = DL_ResolveMoveJobTarget(oNpc);
-    if (!GetIsObjectValid(oTarget) || GetArea(oTarget) != oNpcArea)
-    {
-        return FALSE;
-    }
-
-    float fRadius = GetLocalFloat(oNpc, DL_L_NPC_MOVE_RADIUS);
-    if (fRadius <= 0.0)
-    {
-        fRadius = DL_MOVE_DEFAULT_RADIUS;
-    }
-
-    float fDistance = GetDistanceBetween(oNpc, oTarget);
-    if (fDistance > fRadius)
+    if (!DL_IsMoveJobAtTargetNow(oNpc))
     {
         return FALSE;
     }
@@ -436,24 +417,8 @@ int DL_IsStaleReachedMoveJobCritical(object oNpc)
         return TRUE;
     }
 
-    if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) != "moving_to_anchor")
-    {
-        return FALSE;
-    }
-
-    object oFocusTarget = DL_ResolveFocusTargetInCurrentArea(oNpc);
-    if (!GetIsObjectValid(oFocusTarget) || GetArea(oFocusTarget) != oNpcArea)
-    {
-        return FALSE;
-    }
-
-    int bSameTarget = oFocusTarget == oTarget;
-    if (!bSameTarget && GetTag(oFocusTarget) == GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG))
-    {
-        bSameTarget = TRUE;
-    }
-
-    if (bSameTarget && GetDistanceBetween(oNpc, oFocusTarget) <= fRadius)
+    if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "moving_to_anchor" &&
+        GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) == GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG))
     {
         return TRUE;
     }
@@ -494,14 +459,10 @@ int DL_NpcNeedsCriticalWorkerTouch(object oNpc)
         }
     }
 
-    if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "moving_to_anchor")
+    if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "moving_to_anchor" && DL_IsMoveJobAtTargetNow(oNpc))
     {
-        object oFocusTarget = DL_ResolveFocusTargetInCurrentArea(oNpc);
-        if (GetIsObjectValid(oFocusTarget) && GetDistanceBetween(oNpc, oFocusTarget) <= DL_WORK_ANCHOR_RADIUS)
-        {
-            DL_SetCriticalWorkerDebug(oNpc, "focus_anchor_reached");
-            return TRUE;
-        }
+        DL_SetCriticalWorkerDebug(oNpc, "focus_anchor_reached");
+        return TRUE;
     }
 
     if (GetLocalString(oNpc, "dl_post_jump_result") == "post_jump_finalizer_complete" &&
