@@ -290,7 +290,7 @@ void DL_ExecuteSleepDirective(object oNpc)
     int bMayUseNavigation = DL_ShouldAttemptSleepNavigation(oNpc);
 
     DL_NavPrepareTargetZoneFromAnchor(oNpc, oApproach);
-    if (!bCommittedToBed && bMayUseNavigation && DL_NavTryAdvanceToZone(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET)))
+    if (!bCommittedToBed && bMayUseNavigation && DL_NavTryAdvanceToZoneForOwner(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET), DL_MOVE_OWNER_SLEEP))
     {
         DL_MarkSleepNavigationInProgress(oNpc, GetTag(oApproach));
         return;
@@ -317,7 +317,7 @@ void DL_ExecuteSleepDirective(object oNpc)
     }
 
     DL_NavPrepareTargetZoneFromAnchor(oNpc, oBed);
-    if (bMayUseNavigation && DL_NavTryAdvanceToZone(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET)))
+    if (bMayUseNavigation && DL_NavTryAdvanceToZoneForOwner(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET), DL_MOVE_OWNER_SLEEP))
     {
         DL_MarkSleepNavigationInProgress(oNpc, GetTag(oBed));
         return;
