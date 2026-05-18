@@ -281,7 +281,7 @@ int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
     }
 
     DL_NavPrepareTargetZoneFromAnchor(oNpc, oTarget);
-    if (DL_NavTryAdvanceToZone(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET)))
+    if (DL_NavTryAdvanceToZoneForOwner(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET), DL_MOVE_OWNER_WORK))
     {
         return TRUE;
     }

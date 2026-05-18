@@ -175,13 +175,23 @@ void DL_ReissueMoveJobAfterNoProgress(object oNpc, object oTarget, float fRadius
     SetLocalInt(oNpc, DL_L_NPC_MOVE_ACTION_REISSUED_DBG, TRUE);
 
     AssignCommand(oNpc, ClearAllActions(TRUE));
-    if (GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) != DL_MOVE_OWNER_TRANSITION)
+    if (GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) != DL_MOVE_OWNER_TRANSITION &&
+        GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE) != DL_NAV_MOVE_PHASE_TRANSITION_TO_AREA)
     {
         DL_ClearTransitionExecutionState(oNpc);
     }
     DL_ResetCustomAnimationBeforeAnchorMove(oNpc);
     SetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET, nNowTick);
-    DL_QueueMoveToObjectAction(oNpc, oTarget, TRUE, fRadius);
+    if (GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) == DL_MOVE_OWNER_TRANSITION ||
+        GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE) == DL_NAV_MOVE_PHASE_TRANSITION_TO_AREA)
+    {
+        SetLocalString(oNpc, DL_L_NPC_TRANSITION_ENTRY_MOVE_COMMAND_DBG, "location_exact_reissue");
+        DL_QueueMoveAction(oNpc, GetLocation(oTarget), TRUE);
+    }
+    else
+    {
+        DL_QueueMoveToObjectAction(oNpc, oTarget, TRUE, fRadius);
+    }
     DL_BsmithTraceStage(oNpc, "ACTION_MOVE_ISSUED", "reissue");
     DL_BsmithTraceStage(oNpc, "MOVE_REISSUE", sReason);
     DL_RecordMoveJobProgressSample(oNpc, fDistance, nNowTick);
@@ -540,7 +550,8 @@ void DL_MarkMoveJobReachedNow(object oNpc, string sReason)
     SetLocalInt(oNpc, DL_L_NPC_MOVE_CURRENT_ACTION_DBG, GetCurrentAction(oNpc));
     SetLocalInt(oNpc, DL_L_NPC_MOVE_ACTION_REISSUED_DBG, FALSE);
     DL_RecordMoveJobProgressSample(oNpc, fDistance, DL_GetMoveJobTickStamp());
-    if (GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) != DL_MOVE_OWNER_TRANSITION)
+    if (GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) != DL_MOVE_OWNER_TRANSITION &&
+        GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE) != DL_NAV_MOVE_PHASE_TRANSITION_TO_AREA)
     {
         DL_ClearTransitionExecutionState(oNpc);
     }
@@ -565,21 +576,19 @@ void DL_IssueMoveJobAction(object oNpc, object oTarget)
         return;
     }
 
-    if (GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) != DL_MOVE_OWNER_TRANSITION)
+    if (GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) != DL_MOVE_OWNER_TRANSITION &&
+        GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE) != DL_NAV_MOVE_PHASE_TRANSITION_TO_AREA)
     {
         DL_ClearTransitionExecutionState(oNpc);
     }
     DL_ResetCustomAnimationBeforeAnchorMove(oNpc);
     SetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET, DL_GetSleepActionStamp());
-    if (GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) == DL_MOVE_OWNER_TRANSITION)
+    if (GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) == DL_MOVE_OWNER_TRANSITION ||
+        GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE) == DL_NAV_MOVE_PHASE_TRANSITION_TO_AREA)
     {
         SetLocalString(oNpc, DL_L_NPC_TRANSITION_ENTRY_MOVE_COMMAND_DBG, "location_exact");
-        DL_QueueMoveAction(oNpc, GetLocation(oTarget), TRUE);
     }
-    else
-    {
-        DL_QueueMoveAction(oNpc, GetLocation(oTarget), TRUE);
-    }
+    DL_QueueMoveAction(oNpc, GetLocation(oTarget), TRUE);
 }
 
 int DL_ForceReachMoveJobIfAlreadyAtTarget(object oNpc)

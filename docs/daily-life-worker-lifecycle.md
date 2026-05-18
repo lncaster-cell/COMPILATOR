@@ -15,7 +15,7 @@ A HOT area is an area that currently has at least one runtime player. In a HOT a
 
 ## Transition move lifecycle
 
-Transition move jobs are first-class movement jobs inside the canonical worker/apply pipeline. When a directive resolves to an anchor in another area, an active `move_owner=transition` job remains compatible with that directive only while its transition target zone matches the directive destination zone and its move target is the current route's transition waypoint. The HOT worker must not use a separate transition handoff bypass to advance this movement; it must flow through `DL_WorkerTouchNpc`, `DL_ApplyDirectiveSkeleton`, the move-job tick, and the existing transition execution/finalizer path.
+Transition entry movement is a transport phase of the active directive inside the canonical worker/apply pipeline. When a directive resolves to an anchor in another area, new route-to-entry jobs keep the directive owner (`public`, `social`, `work`, `sleep`, `meal`, or `chill`) and use `move_phase=transition_to_area`; legacy `move_owner=transition` jobs remain accepted only through explicit compatibility checks. A transition move is compatible only while its transition target zone matches the directive destination zone and its move target is the current route's transition waypoint. The HOT worker must not use a separate transition handoff bypass to advance this movement; it must flow through `DL_WorkerTouchNpc`, `DL_ApplyDirectiveSkeleton`, the move-job tick, and the existing transition execution/finalizer path.
 
 ## Reached movement invariant
 

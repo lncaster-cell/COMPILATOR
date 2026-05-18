@@ -26,6 +26,7 @@ const string DL_NAV_DELIMITER = "__";
 const string DL_NAV_ROUTE_PREFIX = "route_";
 const float DL_NAV_ENTRY_RADIUS = 1.60;
 const float DL_NAV_ZONE_INFER_RADIUS = 1.80;
+const string DL_NAV_MOVE_PHASE_TRANSITION_TO_AREA = "transition_to_area";
 const int DL_NAV_AREA_SCAN_CAP = 128;
 const int DL_NAV_TRANSITION_TAG_SEARCH_CAP = 64;
 
@@ -698,7 +699,7 @@ int DL_NavTryFinalizeCompletedTransition(object oNpc, object oTargetAnchor)
     return TRUE;
 }
 
-int DL_NavTryAdvanceToZone(object oNpc, string sTargetZone)
+int DL_NavTryAdvanceToZoneForOwner(object oNpc, string sTargetZone, string sMoveOwner)
 {
     if (!GetIsObjectValid(oNpc) || sTargetZone == "")
     {
@@ -769,7 +770,16 @@ int DL_NavTryAdvanceToZone(object oNpc, string sTargetZone)
             return TRUE;
         }
 
-        DL_BeginMoveJob(oNpc, "transition", sTargetZone, GetTag(oEntry), DL_NAV_ENTRY_RADIUS);
+        if (sMoveOwner == "")
+        {
+            sMoveOwner = "transition";
+        }
+        string sMovePhase = sTargetZone;
+        if (sMoveOwner != "transition")
+        {
+            sMovePhase = DL_NAV_MOVE_PHASE_TRANSITION_TO_AREA;
+        }
+        DL_BeginMoveJob(oNpc, sMoveOwner, sMovePhase, GetTag(oEntry), DL_NAV_ENTRY_RADIUS);
         DL_NavSetDebug(oNpc, sCurrentZone, sTargetZone, sNextZone, "moving_to_entry");
         DL_NavSetState(oNpc, "moving_to_entry", sTargetZone, "");
         return TRUE;
@@ -788,12 +798,20 @@ int DL_NavTryAdvanceToZone(object oNpc, string sTargetZone)
     return TRUE;
 }
 
+int DL_NavTryAdvanceToZone(object oNpc, string sTargetZone)
+{
+    return DL_NavTryAdvanceToZoneForOwner(oNpc, sTargetZone, "transition");
+}
+
 int DL_TryUseNavigationRouteToTarget(object oNpc, object oTarget)
 {
     if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget)) return FALSE;
     string sTargetZone = GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET);
     if (sTargetZone == "") return FALSE;
-    return DL_NavTryAdvanceToZone(oNpc, sTargetZone);
+
+    string sMoveOwner = GetLocalString(oNpc, "dl_move_owner");
+    if (sMoveOwner == "") sMoveOwner = "transition";
+    return DL_NavTryAdvanceToZoneForOwner(oNpc, sTargetZone, sMoveOwner);
 }
 
 int DL_TryExecuteTransitionAtWaypoint(object oNpc, object oTargetWp)
@@ -801,5 +819,8 @@ int DL_TryExecuteTransitionAtWaypoint(object oNpc, object oTargetWp)
     if (!GetIsObjectValid(oNpc)) return FALSE;
     string sTargetZone = GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET);
     if (sTargetZone == "") return FALSE;
-    return DL_NavTryAdvanceToZone(oNpc, sTargetZone);
+
+    string sMoveOwner = GetLocalString(oNpc, "dl_move_owner");
+    if (sMoveOwner == "") sMoveOwner = "transition";
+    return DL_NavTryAdvanceToZoneForOwner(oNpc, sTargetZone, sMoveOwner);
 }

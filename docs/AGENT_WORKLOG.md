@@ -1,5 +1,15 @@
 # Agent Worklog
 
+## 2026-05-17 — Normalize Daily Life transition transport ownership
+
+**Task/PR/branch:** current branch / Daily Life transition directive-owned transport phase.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `daily_life/dl_res_inc.nss`, `daily_life/dl_move_job_inc.nss`, `daily_life/dl_focus_inc.nss`, `daily_life/dl_work_inc.nss`, `daily_life/dl_sleep_inc.nss`, `docs/daily-life-worker-lifecycle.md`, `docs/AGENT_WORKLOG.md`.
+**Context:** blacksmith PUBLIC navigation could run as `dir=PUBLIC` while the entry movement was `move_owner=transition`, leaving transition as a competing semantic owner at the Directive/Movement/Transition boundary.
+**Change:** added directive-owned transition entry moves using `move_phase=transition_to_area`, routed focus/work/sleep navigation calls through an owner-aware transition helper, kept legacy `move_owner=transition` compatibility explicit, and made transition no-progress reissues use exact location movement like initial transition entry moves.
+**Reason:** transition should be a transport service for the active directive, not an alternate directive owner; near-entry no-progress recovery must not fall back to radius-based object movement for transition entries.
+**Preserve:** do not globally increase transition radius, move waypoints, or add worker bypasses for this bug class; valid directive-owned transport should not produce `move_owner_directive_mismatch:transition`.
+**Validation:** lightweight static/text checks only. Compilation not run; user owns compilation.
+
 ## Tavern transition boundary finding
 
 - `blacksmith01` can reach the tavern transition entry with `move_owner=transition`, `move_target=gotha_cavenue__gotha_tavern`, and raw distance hovering around `1.60/1.61` while the action queue is empty.

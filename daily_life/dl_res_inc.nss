@@ -1173,6 +1173,8 @@ object DL_ResolveDirectiveAnchorForMoveBridge(object oNpc, int nDirective)
 
 string DL_GetDirectiveMoveOwnerForBridge(int nDirective)
 {
+    if (nDirective == DL_DIR_SLEEP) return DL_MOVE_OWNER_SLEEP;
+    if (nDirective == DL_DIR_WORK) return DL_MOVE_OWNER_WORK;
     if (nDirective == DL_DIR_PUBLIC) return DL_MOVE_OWNER_PUBLIC;
     if (nDirective == DL_DIR_SOCIAL) return DL_MOVE_OWNER_SOCIAL;
     if (nDirective == DL_DIR_MEAL) return DL_MOVE_OWNER_MEAL;
@@ -1182,6 +1184,14 @@ string DL_GetDirectiveMoveOwnerForBridge(int nDirective)
 
 string DL_GetDirectiveDestinationZone(object oNpc, int nDirective)
 {
+    if (GetIsObjectValid(oNpc) &&
+        GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE) == DL_NAV_MOVE_PHASE_TRANSITION_TO_AREA &&
+        GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) == DL_GetDirectiveMoveOwnerForBridge(nDirective) &&
+        GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) != "")
+    {
+        return GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET);
+    }
+
     object oAnchor = DL_ResolveDirectiveAnchorForMoveBridge(oNpc, nDirective);
     if (!GetIsObjectValid(oAnchor))
     {
@@ -1199,9 +1209,29 @@ string DL_GetDirectiveDestinationZone(object oNpc, int nDirective)
 
 int DL_IsTransitionMoveJobCompatibleWithDirective(object oNpc, int nDirective)
 {
-    if (!GetIsObjectValid(oNpc) || GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) != DL_MOVE_OWNER_TRANSITION)
+    if (!GetIsObjectValid(oNpc))
     {
         return FALSE;
+    }
+
+    string sOwner = GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER);
+    string sPhase = GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE);
+    if (sOwner == DL_MOVE_OWNER_TRANSITION)
+    {
+        // Legacy transition-owned jobs are accepted only through the explicit
+        // transition compatibility checks below.
+    }
+    else
+    {
+        if (sPhase != DL_NAV_MOVE_PHASE_TRANSITION_TO_AREA)
+        {
+            return FALSE;
+        }
+
+        if (sOwner != DL_GetDirectiveMoveOwnerForBridge(nDirective))
+        {
+            return FALSE;
+        }
     }
 
     string sDirectiveZone = DL_GetDirectiveDestinationZone(oNpc, nDirective);
@@ -1213,13 +1243,16 @@ int DL_IsTransitionMoveJobCompatibleWithDirective(object oNpc, int nDirective)
     object oAnchor = DL_ResolveDirectiveAnchorForMoveBridge(oNpc, nDirective);
     object oNpcArea = GetArea(oNpc);
     object oAnchorArea = GetArea(oAnchor);
-    if (!GetIsObjectValid(oNpcArea) || !GetIsObjectValid(oAnchorArea) || oNpcArea == oAnchorArea)
+    if (GetIsObjectValid(oAnchor))
     {
-        return FALSE;
+        if (!GetIsObjectValid(oNpcArea) || !GetIsObjectValid(oAnchorArea) || oNpcArea == oAnchorArea)
+        {
+            return FALSE;
+        }
     }
 
     string sMoveTargetZone = GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET);
-    if (sMoveTargetZone == "")
+    if (sMoveTargetZone == "" && sOwner == DL_MOVE_OWNER_TRANSITION)
     {
         sMoveTargetZone = GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE);
     }
@@ -1294,6 +1327,11 @@ int DL_IsMoveJobOwnerCompatibleWithDirective(object oNpc, int nDirective)
     if (sOwner == "")
     {
         return TRUE;
+    }
+
+    if (GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE) == DL_NAV_MOVE_PHASE_TRANSITION_TO_AREA)
+    {
+        return DL_IsTransitionMoveJobCompatibleWithDirective(oNpc, nDirective);
     }
 
     if (sOwner == DL_MOVE_OWNER_PUBLIC) return nDirective == DL_DIR_PUBLIC;
@@ -1824,6 +1862,7 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
     {
         DL_ClearDirectiveChangeDebug(oNpc);
         if (GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) != DL_MOVE_OWNER_TRANSITION &&
+            GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE) != DL_NAV_MOVE_PHASE_TRANSITION_TO_AREA &&
             DL_IsMoveJobOwnerCompatibleWithDirective(oNpc, nEffectiveDirective) &&
             DL_IsMoveJobAtTargetNow(oNpc))
         {

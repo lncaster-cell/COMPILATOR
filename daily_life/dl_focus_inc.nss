@@ -229,7 +229,7 @@ int DL_ProgressFocusAtTarget(object oNpc, object oTarget, string sOnAnchorStatus
                 " current_action=" + IntToString(GetLocalInt(oNpc, "dl_nav_debug_current_action"))
         );
     }
-    if (!bFinalizedTransition && DL_NavTryAdvanceToZone(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET)))
+    if (!bFinalizedTransition && DL_NavTryAdvanceToZoneForOwner(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET), DL_GetFocusMoveOwner(oNpc)))
     {
         return TRUE;
     }
@@ -840,7 +840,7 @@ void DL_ExecuteMealDirective(object oNpc)
     );
 
     DL_NavPrepareTargetZoneFromAnchor(oNpc, oMeal);
-    if (DL_NavTryAdvanceToZone(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET)))
+    if (DL_NavTryAdvanceToZoneForOwner(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET), DL_GetFocusMoveOwner(oNpc)))
     {
         return;
     }
@@ -998,7 +998,7 @@ int DL_ProgressChillAtSeat(object oNpc, object oSeat)
     }
 
     DL_NavPrepareTargetZoneFromAnchor(oNpc, oSeat);
-    if (DL_NavTryAdvanceToZone(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET)))
+    if (DL_NavTryAdvanceToZoneForOwner(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET), DL_GetFocusMoveOwner(oNpc)))
     {
         return TRUE;
     }
