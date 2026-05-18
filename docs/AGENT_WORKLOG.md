@@ -1,5 +1,15 @@
 # Agent Worklog
 
+## 2026-05-18 — Prefer current-area anchor targets after transitions
+
+**Task/PR/branch:** current branch / post-transition PUBLIC anchor finalization bug.
+**Files touched:** `daily_life/dl_move_job_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** after PR #865, `blacksmith01` reaches `dl_public_tavern_blacksmith` in `gotha_tavern` but can remain `move_result=running` with `focus_status=moving_to_anchor` and `last_finalize=target_not_reached`.
+**Change:** `DL_ResolveMoveJobTarget` now tracks same-tag candidates in the NPC's current area and, for `move_phase=anchor`, prefers the current-area anchor over a stored target-area match/fallback when resolving the canonical move target. Duplicate-target debug now also flags duplicate current-area candidates.
+**Reason:** focus-style anchor moves are same-area presentation moves after transition handoff; if `dl_move_target_area` or a cached duplicate points at an old/stale area, the canonical reached/finalizer path must rebind to the current-area anchor so PUBLIC/SOCIAL/MEAL/CHILL can close through the shared reached condition instead of staying running.
+**Preserve:** do not change transition transport ownership or radius; keep anchor finalization centralized through `DL_IsMoveJobAtTargetNow`, `DL_TickMoveJob`, and `DL_FinalizeReachedDirectiveMoveJob`; no DelayCommand, polling, area scans, or PUBLIC-only emergency bypass was added.
+**Validation:** lightweight static/text checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-17 — Normalize Daily Life transition transport ownership
 
 **Task/PR/branch:** current branch / Daily Life transition directive-owned transport phase.

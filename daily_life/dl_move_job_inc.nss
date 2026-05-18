@@ -388,7 +388,9 @@ object DL_ResolveMoveJobTarget(object oNpc)
 
     object oFallback = OBJECT_INVALID;
     object oFirstInTargetArea = OBJECT_INVALID;
+    object oFirstInNpcArea = OBJECT_INVALID;
     int nMatchesInTargetArea = 0;
+    int nMatchesInNpcArea = 0;
     int nIndex = 0;
     while (nIndex < DL_MOVE_TARGET_SEARCH_CAP)
     {
@@ -400,11 +402,21 @@ object DL_ResolveMoveJobTarget(object oNpc)
 
         object oCandidateArea = GetArea(oCandidate);
         int bAreaMatches = FALSE;
+        int bNpcAreaMatches = GetIsObjectValid(oNpcArea) && oCandidateArea == oNpcArea;
+        if (bNpcAreaMatches)
+        {
+            nMatchesInNpcArea = nMatchesInNpcArea + 1;
+            if (!GetIsObjectValid(oFirstInNpcArea))
+            {
+                oFirstInNpcArea = oCandidate;
+            }
+        }
+
         if (sTargetArea != "")
         {
             bAreaMatches = GetIsObjectValid(oCandidateArea) && GetTag(oCandidateArea) == sTargetArea;
         }
-        else if (GetIsObjectValid(oNpcArea) && oCandidateArea == oNpcArea)
+        else if (bNpcAreaMatches)
         {
             bAreaMatches = TRUE;
         }
@@ -425,13 +437,25 @@ object DL_ResolveMoveJobTarget(object oNpc)
         nIndex = nIndex + 1;
     }
 
-    DL_SetDuplicateMoveTargetDebug(oNpc, sTargetTag, sTargetArea, nMatchesInTargetArea > 1);
+    DL_SetDuplicateMoveTargetDebug(oNpc, sTargetTag, sTargetArea, nMatchesInTargetArea > 1 || nMatchesInNpcArea > 1);
 
     if (GetIsObjectValid(oFocusTarget))
     {
         SetLocalObject(oNpc, DL_L_NPC_MOVE_TARGET_OBJ, oFocusTarget);
         DL_SetMoveTargetIdentityDebug(oNpc, oFocusTarget, oFocusTarget);
         return oFocusTarget;
+    }
+
+    // Anchor moves are post-transition same-area presentation moves.  If the
+    // stored target-area local is stale after an area handoff, prefer the
+    // anchor with the requested tag in the NPC's current area so the canonical
+    // reached check can close PUBLIC/SOCIAL/MEAL/CHILL anchors instead of
+    // leaving a running move against an old-area duplicate.
+    if (GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE) == "anchor" && GetIsObjectValid(oFirstInNpcArea))
+    {
+        SetLocalObject(oNpc, DL_L_NPC_MOVE_TARGET_OBJ, oFirstInNpcArea);
+        DL_SetMoveTargetIdentityDebug(oNpc, oFirstInNpcArea, oFocusTarget);
+        return oFirstInNpcArea;
     }
 
     if (GetIsObjectValid(oFirstInTargetArea))
