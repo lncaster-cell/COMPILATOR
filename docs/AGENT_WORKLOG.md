@@ -1,5 +1,14 @@
 # Agent Worklog
 
+
+## 2026-05-18 - Daily Life stabilization audit map (#864)
+
+- Files touched: `docs/daily-life-stabilization-audit.md`, `docs/AGENT_WORKLOG.md`.
+- Change: added an audit-only cleanup/refactor map for the Daily Life subsystem covering the canonical pipeline, ownership boundaries, code-path classification, bugfix debt inventory, setup simplification rules, protected invariants, and manual validation checklist.
+- Why: `stable/daily-life-blacksmith-baseline` is now a working baseline after #865/#866/#867 and setup fixes; future cleanup needs a safe staged plan that does not change runtime behavior.
+- Compile status: compilation not run; user owns compilation.
+- Invariant/warning: this PR is documentation-only. Do not delete or narrow movement, transition, worker, registry, or BSMITH diagnostic code until follow-up PRs have explicit runtime validation evidence.
+
 ## 2026-05-18 — Prefer current-area anchor targets after transitions
 
 **Task/PR/branch:** current branch / post-transition PUBLIC anchor finalization bug.
