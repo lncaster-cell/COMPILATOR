@@ -538,6 +538,41 @@ void DL_FinalizeTransitionAfterQueuedJump(object oNpc)
         return;
     }
 
+    string sPendingExitTag = GetLocalString(oNpc, "dl_transition_pending_exit_tag");
+    object oPendingExit = DL_NavFindTransitionByTag(sPendingExitTag);
+    int bPendingExitValid = GetIsObjectValid(oPendingExit);
+    int bJumpTargetWasValid = GetIsObjectValid(oExpectedArea);
+
+    if (GetIsObjectValid(oCurrentArea) &&
+        oCurrentArea == oOldArea &&
+        oCurrentArea == oExpectedArea &&
+        sTargetZone != "" &&
+        (bPendingExitValid || bJumpTargetWasValid))
+    {
+        DL_ClearTransitionExecutionState(oNpc);
+        DL_NavClearFocusMoveIssueStateAfterJump(oNpc);
+        DL_NavSetNpcCurrentZone(oNpc, sTargetZone);
+        DL_NavSetDebug(oNpc, sTargetZone, sTargetZone, "", "post_jump_finalizer_same_area_complete");
+        if (GetLocalString(oNpc, "dl_transition_registry_problem") == "target_area_worker_not_ticking_or_not_owning_npc" ||
+            GetLocalString(oNpc, "dl_transition_registry_problem") == "post_jump_finalizer_area_not_changed" ||
+            GetLocalString(oNpc, "dl_transition_registry_problem") == "post_jump_finalizer_registry_repair_failed" ||
+            GetLocalString(oNpc, "dl_transition_registry_problem") == "post_jump_finalizer_registry_area_mismatch")
+        {
+            DeleteLocalString(oNpc, "dl_transition_registry_problem");
+        }
+
+        DL_WorkerTouchNpc(oNpc);
+        SetLocalInt(oNpc, "dl_post_jump_worker_touch_called", TRUE);
+        SetLocalString(oNpc, "dl_transition_registry_worker_touch_area", GetLocalString(oNpc, "dl_worker_touch_area"));
+        SetLocalInt(oNpc, "dl_transition_registry_handoff_touch_called", FALSE);
+
+        sResult = "post_jump_finalizer_same_area_complete";
+        SetLocalString(oNpc, "dl_post_jump_result", sResult);
+        DL_BsmithTraceStage(oNpc, "TRANSITION_FINALIZER", sResult);
+        DeleteLocalInt(oNpc, "dl_transition_pending_finalizer_expected");
+        return;
+    }
+
     if (!GetIsObjectValid(oCurrentArea) || oCurrentArea == oOldArea)
     {
         sResult = "post_jump_finalizer_area_not_changed";
@@ -547,7 +582,8 @@ void DL_FinalizeTransitionAfterQueuedJump(object oNpc)
             " current_area=" + sCurrentArea +
             " expected_area=" + sExpectedArea +
             " old_area=" + sOldArea +
-            " exit_tag=" + GetLocalString(oNpc, "dl_transition_pending_exit_tag")
+            " target_zone=" + sTargetZone +
+            " exit_tag=" + sPendingExitTag
         );
         SetLocalString(oNpc, "dl_transition_registry_problem", sResult);
         return;
