@@ -114,3 +114,13 @@ Entry template:
 **Reason:** preserve the active BSMITH diagnostic infrastructure while making runtime testing readable and preventing accidental persistent spam.
 **Preserve:** normal `dl_dbg_time` clicks must not enable persistent `dl_bsmith_trace`; explicit tracing now requires both `dl_bsmith_trace=1` and a positive `dl_bsmith_trace_budget`; do not remove BSMITH trace fields while movement debugging continues.
 **Validation:** static/text checks only. Compilation not run; user owns compilation.
+
+## 2026-05-18 — Allow same-area pseudo-transition finalization
+
+**Task/PR/branch:** current branch.
+**Files touched:** `daily_life/dl_transition_inc.nss`.
+**Context:** after missing area scripts and PR #865 were fixed, `blacksmith01` could enter tavern/PUBLIC correctly but reproducibly failed MEAL at 06:00 when routing `hall -> far_room` inside `gotha_interior_kuznica`; the queued-jump finalizer treated `oCurrentArea == oOldArea` as `post_jump_finalizer_area_not_changed` even for valid same-area pseudo-zone transitions.
+**Change:** added a narrow same-area completion path in `DL_FinalizeTransitionAfterQueuedJump` when current/old/expected area match, target zone is pending, and the pending exit or stored jump target is valid. The path clears transition/focus movement state, sets the NPC nav zone to the pending target zone, records `post_jump_finalizer_same_area_complete`, touches the worker, and clears the pending finalizer flag without stale-registry removal or cross-area handoff.
+**Reason:** same-area pseudo-transitions are a navigation-system feature, not a MEAL-specific movement problem, and physical area identity must not be treated as failure when the expected route remains within one area.
+**Preserve:** cross-area transition finalization, registry repair, stale-reference removal, and registry handoff behavior remain on the existing cross-area path; do not replace this with radii changes, delays, heartbeat loops, or area scans.
+**Validation:** static/text checks only. Compilation not run; user owns compilation.
