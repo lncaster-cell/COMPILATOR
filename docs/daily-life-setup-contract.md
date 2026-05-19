@@ -91,13 +91,13 @@ Set `dl_nav_zone_id` on:
 - the area, when the whole area has one default navigation zone;
 - an anchor waypoint, when that anchor belongs to a more specific zone than the area default.
 
-Same-area pseudo-zones are valid. Current examples include:
+Same-area pseudo-zones are valid. Current blacksmith baseline examples include:
 
-- `hall`
-- `bedroom`
-- `far_room`
+- `gotha_smith_main`
+- `gotha_smith_bedroom`
+- `gotha_smith_backroom`
 
-The same physical area can contain several navigation zones. For example, one home interior area can contain `hall`, `bedroom`, and `far_room`. Routes and transition waypoints must still be defined between these zones even though no physical area change happens.
+The same physical area can contain several navigation zones. For example, one smith interior area can contain `gotha_smith_main`, `gotha_smith_bedroom`, and `gotha_smith_backroom`. Routes and transition waypoints must still be defined between these zones even though no physical area change happens.
 
 ## 5. Transition waypoints
 
@@ -111,12 +111,12 @@ The double underscore is part of the contract.
 
 Examples:
 
-- `hall__bedroom`
-- `bedroom__hall`
-- `hall__far_room`
-- `far_room__hall`
-- `hall__gotha_cavenue`
-- `gotha_cavenue__hall`
+- `gotha_smith_bedroom__gotha_smith_main`
+- `gotha_smith_main__gotha_smith_bedroom`
+- `gotha_smith_backroom__gotha_smith_main`
+- `gotha_smith_main__gotha_smith_backroom`
+- `gotha_smith_main__gotha_cavenue`
+- `gotha_cavenue__gotha_smith_main`
 - `gotha_cavenue__gotha_tavern`
 - `gotha_tavern__gotha_cavenue`
 
@@ -134,12 +134,12 @@ route_<current_zone>__<target_zone> = <next_zone>
 
 The `target_zone` is the final zone of the resolved destination anchor, not necessarily the destination area's Tag.
 
-Example: if an NPC is in the tavern and the final target is the sleep anchor in the home `bedroom`, the required route chain is:
+Example: if an NPC is in the tavern and the final target is the sleep anchor in `gotha_smith_bedroom`, the required route chain is:
 
 ```text
-route_gotha_tavern__bedroom = gotha_cavenue
-route_gotha_cavenue__bedroom = hall
-route_hall__bedroom = bedroom
+route_gotha_tavern__gotha_smith_bedroom = gotha_cavenue
+route_gotha_cavenue__gotha_smith_bedroom = gotha_smith_main
+route_gotha_smith_main__gotha_smith_bedroom = gotha_smith_bedroom
 ```
 
 This is **not** enough:
@@ -148,7 +148,7 @@ This is **not** enough:
 route_gotha_tavern__gotha_interior_kyznica
 ```
 
-That route targets an area tag, but the target anchor may resolve to zone `bedroom`. In that case navigation asks for a route to `bedroom`, so the area-level route does not satisfy the current contract.
+That route targets an area tag, but the target anchor may resolve to zone `gotha_smith_bedroom`. In that case navigation asks for a route to `gotha_smith_bedroom`, so the area-level route does not satisfy the current contract.
 
 ## 7. Worked example: `blacksmith01`
 
@@ -161,10 +161,10 @@ Known working NPC locals:
 | Local | Value |
 | --- | --- |
 | `dl_profile_id` | `blacksmith` |
-| `dl_home_area_tag` | `gotha_interior_kyznica` |
+| `dl_home_area_tag` | `gotha_kyznica` |
 | `dl_home_slot` | `1` |
-| `dl_meal_area_tag` | `gotha_interior_kyznica` |
-| `dl_work_area_tag` | `gotha_interior_kyznica` |
+| `dl_meal_area_tag` | `gotha_kyznica` |
+| `dl_work_area_tag` | `gotha_kyznica` |
 | `dl_public_area_tag` | `gotha_tavern` |
 | `dl_social_area_tag` | `gotha_cavenue` |
 | `dl_social_slot` | `a` |
@@ -174,7 +174,7 @@ Known working NPC locals:
 
 Participating areas:
 
-- `gotha_interior_kyznica`
+- `gotha_kyznica`
 - `gotha_cavenue`
 - `gotha_tavern`
 
@@ -184,9 +184,9 @@ Each participating area must have the Daily Life heartbeat, enter, and exit scri
 
 Home internal routes:
 
-- `bedroom ↔ hall`
-- `far_room ↔ hall`
-- `hall ↔ gotha_cavenue`
+- `gotha_smith_bedroom ↔ gotha_smith_main`
+- `gotha_smith_backroom ↔ gotha_smith_main`
+- `gotha_smith_main ↔ gotha_cavenue`
 
 Street/tavern routes:
 
@@ -194,8 +194,9 @@ Street/tavern routes:
 
 Routes must exist to final target zones, including:
 
-- from tavern/street to `bedroom`;
-- from tavern/street to `far_room`;
+- from tavern/street to `gotha_smith_bedroom`;
+- from tavern/street to `gotha_smith_backroom`;
+- from tavern/street to `gotha_smith_main`;
 - from home zones to `gotha_tavern`;
 - from home zones to `gotha_cavenue`.
 

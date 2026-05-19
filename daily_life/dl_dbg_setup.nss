@@ -353,33 +353,33 @@ void main()
     DL_SetupPrintAnchorNavZone(oSocialArea, "dl_anchor_social_a");
     DL_SetupPrintAnchorNavZone(oSocialArea, "dl_anchor_social_b");
 
-    nErrors = DL_SetupCheckWaypointInArea(oHomeArea, "bedroom__hall", "transition", nErrors, FALSE);
-    nErrors = DL_SetupCheckWaypointInArea(oHomeArea, "hall__bedroom", "transition", nErrors, FALSE);
-    nErrors = DL_SetupCheckWaypointInArea(oHomeArea, "far_room__hall", "transition", nErrors, FALSE);
-    nErrors = DL_SetupCheckWaypointInArea(oHomeArea, "hall__far_room", "transition", nErrors, FALSE);
-    nErrors = DL_SetupCheckWaypointInArea(oHomeArea, "hall__gotha_cavenue", "transition", nErrors, FALSE);
-    nErrors = DL_SetupCheckWaypointInArea(oHomeArea, "gotha_cavenue__hall", "transition", nErrors, FALSE);
+    nErrors = DL_SetupCheckWaypointInArea(oHomeArea, "gotha_smith_bedroom__gotha_smith_main", "transition", nErrors, FALSE);
+    nErrors = DL_SetupCheckWaypointInArea(oHomeArea, "gotha_smith_main__gotha_smith_bedroom", "transition", nErrors, FALSE);
+    nErrors = DL_SetupCheckWaypointInArea(oHomeArea, "gotha_smith_backroom__gotha_smith_main", "transition", nErrors, FALSE);
+    nErrors = DL_SetupCheckWaypointInArea(oHomeArea, "gotha_smith_main__gotha_smith_backroom", "transition", nErrors, FALSE);
+    nErrors = DL_SetupCheckWaypointInArea(oHomeArea, "gotha_smith_main__gotha_cavenue", "transition", nErrors, FALSE);
+    nErrors = DL_SetupCheckWaypointInArea(oHomeArea, "gotha_cavenue__gotha_smith_main", "transition", nErrors, FALSE);
     nErrors = DL_SetupCheckWaypointInArea(oPublicArea, "gotha_cavenue__gotha_tavern", "transition", nErrors, FALSE);
     nErrors = DL_SetupCheckWaypointInArea(oPublicArea, "gotha_tavern__gotha_cavenue", "transition", nErrors, FALSE);
 
-    nErrors = DL_SetupCheckRoute(oHomeArea, oModule, "bedroom", "gotha_cavenue", nErrors);
-    nErrors = DL_SetupCheckRoute(oHomeArea, oModule, "far_room", "gotha_cavenue", nErrors);
-    nErrors = DL_SetupCheckRoute(oHomeArea, oModule, "hall", "gotha_cavenue", nErrors);
-    nErrors = DL_SetupCheckRoute(oHomeArea, oModule, "bedroom", "gotha_tavern", nErrors);
-    nErrors = DL_SetupCheckRoute(oHomeArea, oModule, "far_room", "gotha_tavern", nErrors);
-    nErrors = DL_SetupCheckRoute(oHomeArea, oModule, "hall", "gotha_tavern", nErrors);
+    nErrors = DL_SetupCheckRoute(oHomeArea, oModule, "gotha_smith_bedroom", "gotha_cavenue", nErrors);
+    nErrors = DL_SetupCheckRoute(oHomeArea, oModule, "gotha_smith_backroom", "gotha_cavenue", nErrors);
+    nErrors = DL_SetupCheckRoute(oHomeArea, oModule, "gotha_smith_main", "gotha_cavenue", nErrors);
+    nErrors = DL_SetupCheckRoute(oHomeArea, oModule, "gotha_smith_bedroom", "gotha_tavern", nErrors);
+    nErrors = DL_SetupCheckRoute(oHomeArea, oModule, "gotha_smith_backroom", "gotha_tavern", nErrors);
+    nErrors = DL_SetupCheckRoute(oHomeArea, oModule, "gotha_smith_main", "gotha_tavern", nErrors);
     nErrors = DL_SetupCheckRoute(oPublicArea, oModule, "gotha_cavenue", "gotha_tavern", nErrors);
-    nErrors = DL_SetupCheckRoute(oPublicArea, oModule, "gotha_cavenue", "bedroom", nErrors);
-    nErrors = DL_SetupCheckRoute(oPublicArea, oModule, "gotha_cavenue", "far_room", nErrors);
-    nErrors = DL_SetupCheckRoute(oPublicArea, oModule, "gotha_cavenue", "hall", nErrors);
+    nErrors = DL_SetupCheckRoute(oPublicArea, oModule, "gotha_cavenue", "gotha_smith_bedroom", nErrors);
+    nErrors = DL_SetupCheckRoute(oPublicArea, oModule, "gotha_cavenue", "gotha_smith_backroom", nErrors);
+    nErrors = DL_SetupCheckRoute(oPublicArea, oModule, "gotha_cavenue", "gotha_smith_main", nErrors);
     nErrors = DL_SetupCheckRoute(oPublicArea, oModule, "gotha_tavern", "gotha_cavenue", nErrors);
-    nErrors = DL_SetupCheckRoute(oPublicArea, oModule, "gotha_tavern", "bedroom", nErrors);
-    nErrors = DL_SetupCheckRoute(oPublicArea, oModule, "gotha_tavern", "far_room", nErrors);
-    nErrors = DL_SetupCheckRoute(oPublicArea, oModule, "gotha_tavern", "hall", nErrors);
-    nErrors = DL_SetupCheckRoute(oHomeArea, oModule, "bedroom", "hall", nErrors);
-    nErrors = DL_SetupCheckRoute(oHomeArea, oModule, "far_room", "hall", nErrors);
-    nErrors = DL_SetupCheckRoute(oHomeArea, oModule, "hall", "bedroom", nErrors);
-    nErrors = DL_SetupCheckRoute(oHomeArea, oModule, "hall", "far_room", nErrors);
+    nErrors = DL_SetupCheckRoute(oPublicArea, oModule, "gotha_tavern", "gotha_smith_bedroom", nErrors);
+    nErrors = DL_SetupCheckRoute(oPublicArea, oModule, "gotha_tavern", "gotha_smith_backroom", nErrors);
+    nErrors = DL_SetupCheckRoute(oPublicArea, oModule, "gotha_tavern", "gotha_smith_main", nErrors);
+    nErrors = DL_SetupCheckRoute(oHomeArea, oModule, "gotha_smith_bedroom", "gotha_smith_main", nErrors);
+    nErrors = DL_SetupCheckRoute(oHomeArea, oModule, "gotha_smith_backroom", "gotha_smith_main", nErrors);
+    nErrors = DL_SetupCheckRoute(oHomeArea, oModule, "gotha_smith_main", "gotha_smith_bedroom", nErrors);
+    nErrors = DL_SetupCheckRoute(oHomeArea, oModule, "gotha_smith_main", "gotha_smith_backroom", nErrors);
 
     DL_SetupPrintResult(sNpcTag, nErrors, nWarnings);
 }
