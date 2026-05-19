@@ -10,6 +10,39 @@ void DL_SetupSendToAll(string sMessage)
     }
 }
 
+int DL_SetupIsVerbose()
+{
+    if (GetLocalInt(GetModule(), "dl_setup_verbose") == 1)
+    {
+        return TRUE;
+    }
+
+    if (GetLocalInt(OBJECT_SELF, "dl_setup_verbose") == 1)
+    {
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+void DL_SetupPrintOk(string sMessage)
+{
+    if (DL_SetupIsVerbose())
+    {
+        DL_SetupSendToAll("OK " + sMessage);
+    }
+}
+
+void DL_SetupPrintWarn(string sMessage)
+{
+    DL_SetupSendToAll("WARN " + sMessage);
+}
+
+void DL_SetupPrintError(string sMessage)
+{
+    DL_SetupSendToAll("ERROR " + sMessage);
+}
+
 void DL_SetupPrintResult(string sNpcTag, int nErrors, int nWarnings)
 {
     DL_SetupSendToAll("DL_SETUP " + sNpcTag + " RESULT errors=" + IntToString(nErrors) + " warnings=" + IntToString(nWarnings));
@@ -21,11 +54,11 @@ int DL_SetupCheckRequiredStringLocal(object oNpc, string sLocalName, int nErrors
     string sValue = GetLocalString(oNpc, sLocalName);
     if (sValue == "")
     {
-        DL_SetupSendToAll("ERROR missing local " + sLocalName);
+        DL_SetupPrintError("missing local " + sLocalName);
         return nErrors + 1;
     }
 
-    DL_SetupSendToAll("OK local " + sLocalName + "=" + sValue);
+    DL_SetupPrintOk("local " + sLocalName + "=" + sValue);
     return nErrors;
 }
 
@@ -43,11 +76,11 @@ int DL_SetupCheckRequiredHomeSlot(object oNpc, int nErrors)
 
     if (sSlot == "")
     {
-        DL_SetupSendToAll("ERROR missing local dl_home_slot");
+        DL_SetupPrintError("missing local dl_home_slot");
         return nErrors + 1;
     }
 
-    DL_SetupSendToAll("OK local dl_home_slot=" + sSlot);
+    DL_SetupPrintOk("local dl_home_slot=" + sSlot);
     return nErrors;
 }
 
@@ -72,11 +105,11 @@ int DL_SetupCheckAreaTag(string sLabel, string sAreaTag, int nErrors)
     object oArea = DL_SetupResolveAreaByTag(sAreaTag);
     if (!GetIsObjectValid(oArea))
     {
-        DL_SetupSendToAll("ERROR local " + sLabel + "=" + sAreaTag + " area_resolved=0");
+        DL_SetupPrintError("local " + sLabel + "=" + sAreaTag + " area_resolved=0");
         return nErrors + 1;
     }
 
-    DL_SetupSendToAll("OK local " + sLabel + "=" + sAreaTag + " area_resolved=1");
+    DL_SetupPrintOk("local " + sLabel + "=" + sAreaTag + " area_resolved=1");
     return nErrors;
 }
 
@@ -106,14 +139,14 @@ int DL_SetupCheckWaypointInArea(object oArea, string sWpTag, string sLabel, int 
     {
         if (bWarnOnly)
         {
-            DL_SetupSendToAll("WARN missing " + sLabel + " tag=" + sWpTag + " area=" + GetTag(oArea));
+            DL_SetupPrintWarn("missing " + sLabel + " tag=" + sWpTag + " area=" + GetTag(oArea));
             return nErrors;
         }
-        DL_SetupSendToAll("ERROR missing " + sLabel + " tag=" + sWpTag + " area=" + GetTag(oArea));
+        DL_SetupPrintError("missing " + sLabel + " tag=" + sWpTag + " area=" + GetTag(oArea));
         return nErrors + 1;
     }
 
-    DL_SetupSendToAll("OK " + sLabel + " tag=" + sWpTag + " area=" + GetTag(oArea));
+    DL_SetupPrintOk(sLabel + " tag=" + sWpTag + " area=" + GetTag(oArea));
     return nErrors;
 }
 
@@ -129,10 +162,10 @@ int DL_SetupCheckAreaAnchor(object oArea, string sLocalName, int nErrors, int bW
     {
         if (bWarnOnly)
         {
-            DL_SetupSendToAll("WARN missing area local " + sLocalName + " on " + GetTag(oArea));
+            DL_SetupPrintWarn("missing area local " + sLocalName + " on " + GetTag(oArea));
             return nErrors;
         }
-        DL_SetupSendToAll("ERROR missing area local " + sLocalName + " on " + GetTag(oArea));
+        DL_SetupPrintError("missing area local " + sLocalName + " on " + GetTag(oArea));
         return nErrors + 1;
     }
 
@@ -149,11 +182,11 @@ void DL_SetupPrintNavZone(object oObj, string sLabel)
     string sZone = GetLocalString(oObj, "dl_nav_zone_id");
     if (sZone == "")
     {
-        DL_SetupSendToAll("WARN " + sLabel + " dl_nav_zone_id missing; fallback inference may be used");
+        DL_SetupPrintWarn(sLabel + " dl_nav_zone_id missing; fallback inference may be used");
         return;
     }
 
-    DL_SetupSendToAll("OK " + sLabel + " dl_nav_zone_id=" + sZone);
+    DL_SetupPrintOk(sLabel + " dl_nav_zone_id=" + sZone);
 }
 
 void DL_SetupPrintAnchorNavZone(object oArea, string sAnchorLocal)
@@ -178,11 +211,11 @@ void DL_SetupPrintAnchorNavZone(object oArea, string sAnchorLocal)
     string sZone = GetLocalString(oAnchor, "dl_nav_zone_id");
     if (sZone == "")
     {
-        DL_SetupSendToAll("WARN anchor " + sAnchorTag + " dl_nav_zone_id missing; zone may be inferred from transition or area default");
+        DL_SetupPrintWarn("anchor " + sAnchorTag + " dl_nav_zone_id missing; zone may be inferred from transition or area default");
         return;
     }
 
-    DL_SetupSendToAll("OK anchor " + sAnchorTag + " dl_nav_zone_id=" + sZone);
+    DL_SetupPrintOk("anchor " + sAnchorTag + " dl_nav_zone_id=" + sZone);
 }
 
 int DL_SetupCheckRoute(object oSourceArea, object oModule, string sFromZone, string sTargetZone, int nErrors)
@@ -202,11 +235,37 @@ int DL_SetupCheckRoute(object oSourceArea, object oModule, string sFromZone, str
 
     if (sNext == "")
     {
-        DL_SetupSendToAll("ERROR missing " + sKey);
+        DL_SetupPrintError("missing " + sKey);
         return nErrors + 1;
     }
 
-    DL_SetupSendToAll("OK " + sKey + "=" + sNext);
+    DL_SetupPrintOk(sKey + "=" + sNext);
+    return nErrors;
+}
+
+int DL_SetupCheckTransitionWaypoint(string sWpTag, string sExpectedAreaTag, int nErrors)
+{
+    object oWp = GetObjectByTag(sWpTag, 0);
+    if (!GetIsObjectValid(oWp) || GetObjectType(oWp) != OBJECT_TYPE_WAYPOINT)
+    {
+        DL_SetupPrintError("missing transition tag=" + sWpTag);
+        return nErrors + 1;
+    }
+
+    object oFoundArea = GetArea(oWp);
+    string sFoundAreaTag = "";
+    if (GetIsObjectValid(oFoundArea))
+    {
+        sFoundAreaTag = GetTag(oFoundArea);
+    }
+
+    DL_SetupPrintOk("transition tag=" + sWpTag + " found_area=" + sFoundAreaTag);
+
+    if (sExpectedAreaTag != "" && sFoundAreaTag != "" && sFoundAreaTag != sExpectedAreaTag)
+    {
+        DL_SetupPrintWarn("transition tag=" + sWpTag + " expected_area=" + sExpectedAreaTag + " found_area=" + sFoundAreaTag);
+    }
+
     return nErrors;
 }
 
@@ -226,7 +285,7 @@ void main()
         return;
     }
 
-    DL_SetupSendToAll("OK npc exists area=" + GetTag(GetArea(oNpc)));
+    DL_SetupPrintOk("npc exists area=" + GetTag(GetArea(oNpc)));
 
     nErrors = DL_SetupCheckRequiredStringLocal(oNpc, "dl_profile_id", nErrors);
 
@@ -242,16 +301,16 @@ void main()
     nErrors = DL_SetupCheckRequiredHomeSlot(oNpc, nErrors);
     nErrors = DL_SetupCheckRequiredStringLocal(oNpc, "dl_meal_area_tag", nErrors);
 
-    if (sWorkAreaTag == "") { DL_SetupSendToAll("WARN missing local dl_work_area_tag"); nWarnings = nWarnings + 1; }
-    else { DL_SetupSendToAll("OK local dl_work_area_tag=" + sWorkAreaTag); }
-    if (sPublicAreaTag == "") { DL_SetupSendToAll("WARN missing local dl_public_area_tag"); nWarnings = nWarnings + 1; }
-    else { DL_SetupSendToAll("OK local dl_public_area_tag=" + sPublicAreaTag); }
-    if (sSocialAreaTag == "") { DL_SetupSendToAll("WARN missing local dl_social_area_tag"); nWarnings = nWarnings + 1; }
-    else { DL_SetupSendToAll("OK local dl_social_area_tag=" + sSocialAreaTag); }
-    if (sSocialSlot == "") { DL_SetupSendToAll("WARN missing local dl_social_slot"); nWarnings = nWarnings + 1; }
-    else { DL_SetupSendToAll("OK local dl_social_slot=" + sSocialSlot); }
-    if (sSocialPartner == "") { DL_SetupSendToAll("WARN missing local dl_social_partner_tag"); nWarnings = nWarnings + 1; }
-    else { DL_SetupSendToAll("OK local dl_social_partner_tag=" + sSocialPartner); }
+    if (sWorkAreaTag == "") { DL_SetupPrintWarn("missing local dl_work_area_tag"); nWarnings = nWarnings + 1; }
+    else { DL_SetupPrintOk("local dl_work_area_tag=" + sWorkAreaTag); }
+    if (sPublicAreaTag == "") { DL_SetupPrintWarn("missing local dl_public_area_tag"); nWarnings = nWarnings + 1; }
+    else { DL_SetupPrintOk("local dl_public_area_tag=" + sPublicAreaTag); }
+    if (sSocialAreaTag == "") { DL_SetupPrintWarn("missing local dl_social_area_tag"); nWarnings = nWarnings + 1; }
+    else { DL_SetupPrintOk("local dl_social_area_tag=" + sSocialAreaTag); }
+    if (sSocialSlot == "") { DL_SetupPrintWarn("missing local dl_social_slot"); nWarnings = nWarnings + 1; }
+    else { DL_SetupPrintOk("local dl_social_slot=" + sSocialSlot); }
+    if (sSocialPartner == "") { DL_SetupPrintWarn("missing local dl_social_partner_tag"); nWarnings = nWarnings + 1; }
+    else { DL_SetupPrintOk("local dl_social_partner_tag=" + sSocialPartner); }
 
     nErrors = DL_SetupCheckAreaTag("dl_home_area_tag", sHomeAreaTag, nErrors);
     nErrors = DL_SetupCheckAreaTag("dl_meal_area_tag", sMealAreaTag, nErrors);
@@ -266,29 +325,15 @@ void main()
     object oSocialArea = DL_SetupResolveAreaByTag(sSocialAreaTag);
     object oModule = GetModule();
 
-    if (GetIsObjectValid(oHomeArea))
+    string sAreaList = "";
+    if (GetIsObjectValid(oHomeArea)) { sAreaList = GetTag(oHomeArea); }
+    if (GetIsObjectValid(oMealArea) && oMealArea != oHomeArea) { if (sAreaList != "") sAreaList += ", "; sAreaList += GetTag(oMealArea); }
+    if (GetIsObjectValid(oWorkArea) && oWorkArea != oHomeArea && oWorkArea != oMealArea) { if (sAreaList != "") sAreaList += ", "; sAreaList += GetTag(oWorkArea); }
+    if (GetIsObjectValid(oPublicArea) && oPublicArea != oHomeArea && oPublicArea != oMealArea && oPublicArea != oWorkArea) { if (sAreaList != "") sAreaList += ", "; sAreaList += GetTag(oPublicArea); }
+    if (GetIsObjectValid(oSocialArea) && oSocialArea != oHomeArea && oSocialArea != oMealArea && oSocialArea != oWorkArea && oSocialArea != oPublicArea) { if (sAreaList != "") sAreaList += ", "; sAreaList += GetTag(oSocialArea); }
+    if (sAreaList != "")
     {
-        DL_SetupSendToAll("WARN cannot introspect area scripts; manually verify dl_a_hb/dl_a_enter/dl_a_exit on area " + GetTag(oHomeArea));
-        nWarnings = nWarnings + 1;
-    }
-    if (GetIsObjectValid(oMealArea) && oMealArea != oHomeArea)
-    {
-        DL_SetupSendToAll("WARN cannot introspect area scripts; manually verify dl_a_hb/dl_a_enter/dl_a_exit on area " + GetTag(oMealArea));
-        nWarnings = nWarnings + 1;
-    }
-    if (GetIsObjectValid(oWorkArea) && oWorkArea != oHomeArea && oWorkArea != oMealArea)
-    {
-        DL_SetupSendToAll("WARN cannot introspect area scripts; manually verify dl_a_hb/dl_a_enter/dl_a_exit on area " + GetTag(oWorkArea));
-        nWarnings = nWarnings + 1;
-    }
-    if (GetIsObjectValid(oPublicArea) && oPublicArea != oHomeArea && oPublicArea != oMealArea && oPublicArea != oWorkArea)
-    {
-        DL_SetupSendToAll("WARN cannot introspect area scripts; manually verify dl_a_hb/dl_a_enter/dl_a_exit on area " + GetTag(oPublicArea));
-        nWarnings = nWarnings + 1;
-    }
-    if (GetIsObjectValid(oSocialArea) && oSocialArea != oHomeArea && oSocialArea != oMealArea && oSocialArea != oWorkArea && oSocialArea != oPublicArea)
-    {
-        DL_SetupSendToAll("WARN cannot introspect area scripts; manually verify dl_a_hb/dl_a_enter/dl_a_exit on area " + GetTag(oSocialArea));
+        DL_SetupPrintWarn("area script introspection unavailable; manually verify dl_a_hb/dl_a_enter/dl_a_exit on areas: " + sAreaList);
         nWarnings = nWarnings + 1;
     }
 
@@ -348,14 +393,14 @@ void main()
     DL_SetupPrintAnchorNavZone(oSocialArea, "dl_anchor_social_a");
     DL_SetupPrintAnchorNavZone(oSocialArea, "dl_anchor_social_b");
 
-    nErrors = DL_SetupCheckWaypointInArea(oHomeArea, "gotha_smith_bedroom__gotha_smith_main", "transition", nErrors, FALSE);
-    nErrors = DL_SetupCheckWaypointInArea(oHomeArea, "gotha_smith_main__gotha_smith_bedroom", "transition", nErrors, FALSE);
-    nErrors = DL_SetupCheckWaypointInArea(oHomeArea, "gotha_smith_backroom__gotha_smith_main", "transition", nErrors, FALSE);
-    nErrors = DL_SetupCheckWaypointInArea(oHomeArea, "gotha_smith_main__gotha_smith_backroom", "transition", nErrors, FALSE);
-    nErrors = DL_SetupCheckWaypointInArea(oHomeArea, "gotha_smith_main__gotha_cavenue", "transition", nErrors, FALSE);
-    nErrors = DL_SetupCheckWaypointInArea(oHomeArea, "gotha_cavenue__gotha_smith_main", "transition", nErrors, FALSE);
-    nErrors = DL_SetupCheckWaypointInArea(oPublicArea, "gotha_cavenue__gotha_tavern", "transition", nErrors, FALSE);
-    nErrors = DL_SetupCheckWaypointInArea(oPublicArea, "gotha_tavern__gotha_cavenue", "transition", nErrors, FALSE);
+    nErrors = DL_SetupCheckTransitionWaypoint("gotha_smith_bedroom__gotha_smith_main", sHomeAreaTag, nErrors);
+    nErrors = DL_SetupCheckTransitionWaypoint("gotha_smith_main__gotha_smith_bedroom", sHomeAreaTag, nErrors);
+    nErrors = DL_SetupCheckTransitionWaypoint("gotha_smith_backroom__gotha_smith_main", sHomeAreaTag, nErrors);
+    nErrors = DL_SetupCheckTransitionWaypoint("gotha_smith_main__gotha_smith_backroom", sHomeAreaTag, nErrors);
+    nErrors = DL_SetupCheckTransitionWaypoint("gotha_smith_main__gotha_cavenue", sHomeAreaTag, nErrors);
+    nErrors = DL_SetupCheckTransitionWaypoint("gotha_cavenue__gotha_smith_main", sHomeAreaTag, nErrors);
+    nErrors = DL_SetupCheckTransitionWaypoint("gotha_cavenue__gotha_tavern", sPublicAreaTag, nErrors);
+    nErrors = DL_SetupCheckTransitionWaypoint("gotha_tavern__gotha_cavenue", sPublicAreaTag, nErrors);
 
     nErrors = DL_SetupCheckRoute(oHomeArea, oModule, "gotha_smith_bedroom", "gotha_cavenue", nErrors);
     nErrors = DL_SetupCheckRoute(oHomeArea, oModule, "gotha_smith_backroom", "gotha_cavenue", nErrors);

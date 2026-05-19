@@ -1,3 +1,13 @@
+## 2026-05-19 — Compact default output for manual Daily Life setup validator
+
+**Task/PR/branch:** current branch / compact validator output by default.
+**Files touched:** `daily_life/dl_dbg_setup.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** manual setup validation output was noisy because every `OK` line was always printed, which flooded chat/log during normal checks.
+**Change:** added `DL_SetupPrintOk/Warn/Error` wrappers plus `dl_setup_verbose` toggle (`GetModule()` or `OBJECT_SELF`) so default mode prints `BEGIN`, `WARN/ERROR`, `RESULT`, `END`, while verbose mode preserves full `OK/WARN/ERROR` detail. Also compacted repeated area-script-introspection warnings into a single aggregated warning and switched transition waypoint checks to global waypoint-tag existence first (type=WAYPOINT), with area mismatch warnings only in verbose mode.
+**Reason:** improve validator usability without touching runtime Daily Life movement/transition/directive/registry behavior; keep validator read-only and manual.
+**Preserve:** no auto-fix behavior, no heartbeat/runtime integration, no `DelayCommand`, no movement/transition worker mutations.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-19 — Add manual Daily Life setup validator debug script
 
 **Task/PR/branch:** current branch / manual setup validator for blacksmith baseline.
