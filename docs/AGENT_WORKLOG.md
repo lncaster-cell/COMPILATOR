@@ -1,3 +1,13 @@
+## 2026-05-19 — Add manual Daily Life setup validator debug script
+
+**Task/PR/branch:** current branch / manual setup validator for blacksmith baseline.
+**Files touched:** `daily_life/dl_dbg_setup.nss`, `docs/daily-life-setup-contract.md`, `docs/AGENT_WORKLOG.md`.
+**Context:** after blacksmith baseline stabilization, setup mistakes (locals/areas/routes/anchors) remain a frequent source of debugging friction and can be mistaken for runtime regressions.
+**Change:** added `dl_dbg_setup` as a separate manual OnUsed debug script that validates `blacksmith01` setup with bounded `OK/WARN/ERROR` checklist output (NPC existence, required/optional locals, area-tag resolution, script-introspection reminders, anchors/fallback waypoints, nav zone notes, transition waypoints, and key route locals with area→module fallback). Added a short “Manual setup validator” section to setup-contract docs.
+**Reason:** provide a read-only preflight validator that reduces setup pain without changing worker/movement/transition/directive/runtime behavior and without bloating `dl_dbg_time.nss`.
+**Preserve:** validator is manual and read-only; no heartbeat integration, no auto-fix, no `DelayCommand`, no per-NPC runtime loop, no worker/registry mutations.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 # Agent Worklog
 
 
@@ -53,12 +63,12 @@ Entry template:
 ```md
 ## YYYY-MM-DD — Short title
 
-**Task/PR/branch:** branch or PR number if known.  
-**Files touched:** `path/file.nss`, `path/file_inc.nss`.  
-**Context:** what bug/problem/decision led to the change.  
-**Change:** what was changed.  
-**Reason:** why this approach was chosen.  
-**Preserve:** invariant, contract, diagnostic, or warning future agents must not break.  
+**Task/PR/branch:** branch or PR number if known.
+**Files touched:** `path/file.nss`, `path/file_inc.nss`.
+**Context:** what bug/problem/decision led to the change.
+**Change:** what was changed.
+**Reason:** why this approach was chosen.
+**Preserve:** invariant, contract, diagnostic, or warning future agents must not break.
 **Validation:** static checks only, or `Compilation not run; user owns compilation.`
 ```
 
@@ -66,52 +76,52 @@ Entry template:
 
 ## 2026-05-17 — Establish shared agent memory and compile ownership
 
-**Task/PR/branch:** `codex/update-agent-memory-rules`.  
-**Files touched:** `AGENTS.md`, `docs/AGENT_WORKLOG.md`.  
-**Context:** the project is large, actively developed through multiple AI/Codex sessions, and session context can be lost. The user also clarified that compilation is manual and must not be run by agents.  
-**Change:** strengthened `AGENTS.md` with mandatory reading order, compile ownership rules, current Daily Life debugging context, movement invariants, and the requirement to update this worklog after non-trivial changes. Added this worklog as the canonical mini-history for future agents.  
-**Reason:** future agents need persistent context and must not accidentally run or modify the compiler/toolchain while debugging code.  
-**Preserve:** compilation remains user-owned; agents may read compiler-stock/reference scripts only for compatibility research and must not run or change the compiler/toolchain unless explicitly authorized in the current task.  
+**Task/PR/branch:** `codex/update-agent-memory-rules`.
+**Files touched:** `AGENTS.md`, `docs/AGENT_WORKLOG.md`.
+**Context:** the project is large, actively developed through multiple AI/Codex sessions, and session context can be lost. The user also clarified that compilation is manual and must not be run by agents.
+**Change:** strengthened `AGENTS.md` with mandatory reading order, compile ownership rules, current Daily Life debugging context, movement invariants, and the requirement to update this worklog after non-trivial changes. Added this worklog as the canonical mini-history for future agents.
+**Reason:** future agents need persistent context and must not accidentally run or modify the compiler/toolchain while debugging code.
+**Preserve:** compilation remains user-owned; agents may read compiler-stock/reference scripts only for compatibility research and must not run or change the compiler/toolchain unless explicitly authorized in the current task.
 **Validation:** documentation-only change. Compilation not run; user owns compilation.
 
 ## 2026-05-17 — Current Daily Life movement debugging context
 
-**Task/PR/branch:** context summarized from recent merged PRs #851-#856.  
-**Files touched:** no code in this entry; context concerns `daily_life/dl_move_job_decl_inc.nss`, `daily_life/dl_move_job_inc.nss`, `daily_life/dl_res_inc.nss`, and `daily_life/dl_worker_inc.nss`.  
-**Context:** recent debugging focused on NPCs, especially blacksmith behavior, becoming stuck with contradictory movement state: physically/canonically reached target while `move_result` remained `running`, focus stayed `moving_to_anchor`, or the area worker failed to touch the registered NPC.  
-**Change:** recent work introduced/used canonical reached checks, reached/finalize invariant enforcement, critical area-worker re-entry, constrained emergency touch/finalize paths, and BSMITH trace diagnostics.  
-**Reason:** fixes should route stale reached NPCs back through the existing worker/directive/finalizer pipeline instead of duplicating movement behavior or adding broad polling.  
-**Preserve:** one canonical reached verdict; bounded critical handling; no broad area scans in hot paths; no casual removal of BSMITH tracing while this bug class is under investigation.  
+**Task/PR/branch:** context summarized from recent merged PRs #851-#856.
+**Files touched:** no code in this entry; context concerns `daily_life/dl_move_job_decl_inc.nss`, `daily_life/dl_move_job_inc.nss`, `daily_life/dl_res_inc.nss`, and `daily_life/dl_worker_inc.nss`.
+**Context:** recent debugging focused on NPCs, especially blacksmith behavior, becoming stuck with contradictory movement state: physically/canonically reached target while `move_result` remained `running`, focus stayed `moving_to_anchor`, or the area worker failed to touch the registered NPC.
+**Change:** recent work introduced/used canonical reached checks, reached/finalize invariant enforcement, critical area-worker re-entry, constrained emergency touch/finalize paths, and BSMITH trace diagnostics.
+**Reason:** fixes should route stale reached NPCs back through the existing worker/directive/finalizer pipeline instead of duplicating movement behavior or adding broad polling.
+**Preserve:** one canonical reached verdict; bounded critical handling; no broad area scans in hot paths; no casual removal of BSMITH tracing while this bug class is under investigation.
 **Validation:** context entry only. Compilation not run; user owns compilation.
 
 ## 2026-05-17 — Add operational protocol files for agents
 
-**Task/PR/branch:** `codex/add-agent-operational-protocols`.  
-**Files touched:** `.github/pull_request_template.md`, `.github/ISSUE_TEMPLATE/bug_report.yml`, `docs/agent/TASK_PROTOCOL.md`, `docs/agent/DEBUGGING_PROTOCOL.md`, `docs/agent/SUBSYSTEM_INDEX.md`, `docs/agent/DO_NOT_TOUCH.md`, `docs/AGENT_WORKLOG.md`.  
-**Context:** after establishing shared agent memory, the repository still needed concrete operating rails so future agents produce consistent PRs, collect consistent bug data, and debug Daily Life/NPC issues in a repeatable order.  
-**Change:** added PR and bug-report templates, a general task protocol, a Daily Life debugging protocol, a subsystem index, and do-not-touch guardrails for compiler/toolchain, runtime contracts, diagnostics, include-order contracts, and performance-sensitive paths.  
-**Reason:** reduce context loss and prevent agents from solving the same class of problems by broad rewrites, duplicated logic, or unsafe compiler/toolchain interaction.  
-**Preserve:** agents must keep using `AGENTS.md` and this worklog first, must not run compilation unless explicitly authorized, and should route Daily Life movement fixes through the existing registry/worker/directive/finalizer contracts.  
+**Task/PR/branch:** `codex/add-agent-operational-protocols`.
+**Files touched:** `.github/pull_request_template.md`, `.github/ISSUE_TEMPLATE/bug_report.yml`, `docs/agent/TASK_PROTOCOL.md`, `docs/agent/DEBUGGING_PROTOCOL.md`, `docs/agent/SUBSYSTEM_INDEX.md`, `docs/agent/DO_NOT_TOUCH.md`, `docs/AGENT_WORKLOG.md`.
+**Context:** after establishing shared agent memory, the repository still needed concrete operating rails so future agents produce consistent PRs, collect consistent bug data, and debug Daily Life/NPC issues in a repeatable order.
+**Change:** added PR and bug-report templates, a general task protocol, a Daily Life debugging protocol, a subsystem index, and do-not-touch guardrails for compiler/toolchain, runtime contracts, diagnostics, include-order contracts, and performance-sensitive paths.
+**Reason:** reduce context loss and prevent agents from solving the same class of problems by broad rewrites, duplicated logic, or unsafe compiler/toolchain interaction.
+**Preserve:** agents must keep using `AGENTS.md` and this worklog first, must not run compilation unless explicitly authorized, and should route Daily Life movement fixes through the existing registry/worker/directive/finalizer contracts.
 **Validation:** documentation/process-only change. Compilation not run; user owns compilation.
 
 ## 2026-05-17 — Add Start Here productivity guide
 
-**Task/PR/branch:** `codex/add-agent-start-here`.  
-**Files touched:** `AGENTS.md`, `docs/agent/START_HERE.md`, `docs/AGENT_WORKLOG.md`.  
-**Context:** the user clarified that the agent files are not meant as ordinary documentation, but as productivity infrastructure for AI-assisted solo/vibe development: faster context loading, safer bug fixing, fewer repeated mistakes, and better continuity between sessions.  
-**Change:** added `docs/agent/START_HERE.md` as the high-level entry point explaining the operating model, file map, productivity rules, and expected agent workflow. Updated `AGENTS.md` so agents read it immediately after `AGENTS.md` and before deeper protocols.  
-**Reason:** future agents should understand why these files exist and how to use them as a workflow, not treat them as optional docs.  
-**Preserve:** user owns intent, manual compilation, runtime validation, and final acceptance; agents own investigation, minimal patches, PRs, and context/worklog updates.  
+**Task/PR/branch:** `codex/add-agent-start-here`.
+**Files touched:** `AGENTS.md`, `docs/agent/START_HERE.md`, `docs/AGENT_WORKLOG.md`.
+**Context:** the user clarified that the agent files are not meant as ordinary documentation, but as productivity infrastructure for AI-assisted solo/vibe development: faster context loading, safer bug fixing, fewer repeated mistakes, and better continuity between sessions.
+**Change:** added `docs/agent/START_HERE.md` as the high-level entry point explaining the operating model, file map, productivity rules, and expected agent workflow. Updated `AGENTS.md` so agents read it immediately after `AGENTS.md` and before deeper protocols.
+**Reason:** future agents should understand why these files exist and how to use them as a workflow, not treat them as optional docs.
+**Preserve:** user owns intent, manual compilation, runtime validation, and final acceptance; agents own investigation, minimal patches, PRs, and context/worklog updates.
 **Validation:** documentation/process-only change. Compilation not run; user owns compilation.
 
 ## 2026-05-17 — Add root-cause bugfix protocol
 
-**Task/PR/branch:** `codex/add-root-cause-bugfix-protocol`.  
-**Files touched:** `AGENTS.md`, `docs/agent/ROOT_CAUSE_BUGFIX_PROTOCOL.md`, `docs/AGENT_WORKLOG.md`.  
-**Context:** the user identified a process failure: repeated AI fixes were often treating symptoms instead of proving root causes, and the repository was not yet fully managed as an AI-assisted solo-development workflow.  
-**Change:** added a mandatory root-cause bugfix protocol for non-trivial, recurring, runtime, and Daily Life/NPC bugs. Updated `AGENTS.md` to require this protocol before behavior patches on such bugs.  
-**Reason:** force agents to identify the first failing pipeline stage, gather evidence, choose the correct owner subsystem, and prefer focused diagnostics when the root cause is not proven.  
-**Preserve:** issue-driven debugging, evidence before patch, minimal owner-subsystem changes, no symptom-chasing emergency bypasses, and explicit manual validation by the user.  
+**Task/PR/branch:** `codex/add-root-cause-bugfix-protocol`.
+**Files touched:** `AGENTS.md`, `docs/agent/ROOT_CAUSE_BUGFIX_PROTOCOL.md`, `docs/AGENT_WORKLOG.md`.
+**Context:** the user identified a process failure: repeated AI fixes were often treating symptoms instead of proving root causes, and the repository was not yet fully managed as an AI-assisted solo-development workflow.
+**Change:** added a mandatory root-cause bugfix protocol for non-trivial, recurring, runtime, and Daily Life/NPC bugs. Updated `AGENTS.md` to require this protocol before behavior patches on such bugs.
+**Reason:** force agents to identify the first failing pipeline stage, gather evidence, choose the correct owner subsystem, and prefer focused diagnostics when the root cause is not proven.
+**Preserve:** issue-driven debugging, evidence before patch, minimal owner-subsystem changes, no symptom-chasing emergency bypasses, and explicit manual validation by the user.
 **Validation:** documentation/process-only change. Compilation not run; user owns compilation.
 
 ## 2026-05-17 — Bound manual BSMITH diagnostics
@@ -136,10 +146,10 @@ Entry template:
 
 ## 2026-05-18 — Daily Life setup contract documentation
 
-**Task/PR/branch:** after PR #868 / Document Daily Life setup contract.  
-**Files touched:** `docs/daily-life-setup-contract.md`, `docs/AGENT_WORKLOG.md`.  
-**Context:** `blacksmith01` passed two full cycles successfully, and the stabilization audit identified setup complexity as the next source of Daily Life risk.  
-**Change:** added a builder-facing Daily Life setup contract covering required area scripts, NPC locals, anchors, nav zones, transition waypoint tags, target-zone route locals, the blacksmith01 working baseline, common failure signatures, pre-flight checks, and future validator requirements.  
-**Reason:** document the setup contract before adding validator code or changing runtime behavior, so future NPC setup errors can be separated from movement/worker regressions.  
-**Preserve:** documentation-only change; do not treat this as runtime validation, and do not remove existing Daily Life diagnostics based only on this document.  
+**Task/PR/branch:** after PR #868 / Document Daily Life setup contract.
+**Files touched:** `docs/daily-life-setup-contract.md`, `docs/AGENT_WORKLOG.md`.
+**Context:** `blacksmith01` passed two full cycles successfully, and the stabilization audit identified setup complexity as the next source of Daily Life risk.
+**Change:** added a builder-facing Daily Life setup contract covering required area scripts, NPC locals, anchors, nav zones, transition waypoint tags, target-zone route locals, the blacksmith01 working baseline, common failure signatures, pre-flight checks, and future validator requirements.
+**Reason:** document the setup contract before adding validator code or changing runtime behavior, so future NPC setup errors can be separated from movement/worker regressions.
+**Preserve:** documentation-only change; do not treat this as runtime validation, and do not remove existing Daily Life diagnostics based only on this document.
 **Validation:** documentation/static checks only. Compilation not run; user owns validation.

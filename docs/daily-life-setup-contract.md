@@ -248,3 +248,15 @@ A future validator/tool should verify at least:
 - routes are defined to final target zones, not only to area tags;
 - known failure signatures can be mapped back to missing scripts, anchors, zones, or route locals;
 - validation output clearly distinguishes setup errors from runtime movement/worker regressions.
+
+## 11. Manual setup validator
+
+A separate manual debug validator script is available:
+
+- Script: `daily_life/dl_dbg_setup.nss`
+- Usage: assign `dl_dbg_setup` to a debug placeable `OnUsed` event and use it manually.
+- Scope: currently validates `blacksmith01` setup.
+- Output: prints bounded `OK` / `WARN` / `ERROR` checklist lines to all PCs via `SendMessageToPC`.
+- Safety: read-only validation only. It does **not** auto-fix locals, anchors, routes, worker state, registry state, movement state, or directives.
+
+This tool is intentionally separate from `daily_life/dl_dbg_time.nss`, which remains a runtime snapshot/debug script.
