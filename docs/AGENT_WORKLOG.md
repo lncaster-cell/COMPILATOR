@@ -1,3 +1,13 @@
+## 2026-05-19 — Daily Life diagnostic classification cleanup pass (no behavior change)
+
+**Task/PR/branch:** current branch / post-baseline diagnostic noise cleanup pass.
+**Files touched:** `daily_life/dl_diag_inc.nss`, `daily_life/dl_dbg_time.nss`, `daily_life/dl_dbg_setup.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** after blacksmith baseline stabilization and setup-contract/validator additions, diagnostics needed clearer categorization without touching movement/transition/directive/registry behavior.
+**Change:** added explicit diagnostic-classification comments separating canonical runtime diagnostics, temporary BSMITH diagnostics, emergency/recovery diagnostics, and setup-validator diagnostics; clarified `dl_dbg_time` as runtime snapshot-only; clarified `dl_dbg_setup` as manual setup-validator-only and made the begin banner explicit (`manual setup validator`).
+**Reason:** reduce debugging noise/confusion by making diagnostic intent explicit while preserving all existing runtime code paths and observability contracts.
+**Preserve:** no movement job, transition, directive application, registry ownership, worker scheduling, or emergency/recovery logic changes; BSMITH snapshot fields remain intact (`BSMITH_STATUS`, `BSMITH_TARGET`, `BSMITH_PROBLEM_SUMMARY`).
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-19 — Add manual Daily Life setup validator debug script
 
 **Task/PR/branch:** current branch / manual setup validator for blacksmith baseline.

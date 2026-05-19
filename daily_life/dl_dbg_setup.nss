@@ -1,5 +1,9 @@
 #include "nw_i0_plot"
 
+// Manual setup validator only (non-runtime, read-only diagnostics).
+// Classification: setup validator diagnostics (DL_SETUP lines).
+// Keep separate from dl_dbg_time runtime snapshots and worker/move tracing.
+
 void DL_SetupSendToAll(string sMessage)
 {
     object oPC = GetFirstPC();
@@ -221,7 +225,7 @@ void main()
     int nErrors = 0;
     int nWarnings = 0;
 
-    DL_SetupSendToAll("DL_SETUP " + sNpcTag + " BEGIN");
+    DL_SetupSendToAll("DL_SETUP " + sNpcTag + " BEGIN (manual setup validator)");
 
     object oNpc = GetObjectByTag(sNpcTag, 0);
     if (!GetIsObjectValid(oNpc))

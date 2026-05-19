@@ -1,6 +1,16 @@
 const string DL_L_NPC_BLOCKED_DIAGNOSTIC = "dl_npc_blocked_diagnostic";
 const string DL_L_NPC_DIAG_LAST_SIG = "dl_npc_diag_last_sig";
 
+// Daily Life diagnostic classification (baseline cleanup, no behavior change):
+// - Canonical diagnostics: DL_GetNpcProblemSummary + DL_MaybeLogNpcDiagnostic;
+//   these are consumed by dl_dbg_time snapshots and runtime stuck analysis.
+// - Temporary BSMITH diagnostics: routed through DL_BsmithTraceStage and labels
+//   used by manual blacksmith tracing (BSMITH_* lines).
+// - Emergency/recovery diagnostics: transition/worker/move local-key reasons that
+//   explain bounded recovery paths; preserve for root-cause analysis.
+// - Setup validator diagnostics: emitted only by dl_dbg_setup.nss (DL_SETUP lines),
+//   intentionally separate from runtime worker/movement logging.
+
 string DL_GetDirectiveLabel(int nDirective)
 {
     if (nDirective == DL_DIR_NONE)

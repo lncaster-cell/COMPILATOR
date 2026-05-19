@@ -7,6 +7,7 @@
 // enable persistent dl_bsmith_trace; set dl_bsmith_trace_budget separately
 // when an explicit bounded BSMITH_TRACE session is needed.
 // Read BSMITH_STATUS / BSMITH_TARGET / BSMITH_PROBLEM_SUMMARY lines.
+// Classification: canonical runtime snapshot diagnostics (manual OnUsed only).
 
 void DL_DebugTimeSendToAll(string sMessage)
 {
