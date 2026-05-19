@@ -59,11 +59,6 @@ object DL_SetupResolveAreaByTag(string sAreaTag)
         return OBJECT_INVALID;
     }
 
-    if (GetObjectType(oArea) != OBJECT_TYPE_AREA)
-    {
-        return OBJECT_INVALID;
-    }
-
     return oArea;
 }
 
