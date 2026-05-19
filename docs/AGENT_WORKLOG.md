@@ -10,6 +10,26 @@
 
 # Agent Worklog
 
+## 2026-05-19 — Update manual setup validator to unique Gotha zone IDs
+
+**Task/PR/branch:** current branch / manual validator zone-id migration for blacksmith baseline.
+**Files touched:** `daily_life/dl_dbg_setup.nss`, `docs/daily-life-setup-contract.md`, `docs/AGENT_WORKLOG.md`.
+**Context:** blacksmith setup migrated from legacy generic nav zones (`hall`, `bedroom`, `far_room`) to unique zone IDs and updated area tags.
+**Change:** updated manual validator transition waypoint checks and route-local checks to require `gotha_smith_main`, `gotha_smith_bedroom`, `gotha_smith_backroom`, `gotha_cavenue`, and `gotha_tavern` route families; replaced old hall/bedroom/far_room baseline examples in setup-contract docs with the current unique Gotha baseline and updated home/work/meal area tag examples to `gotha_kyznica`.
+**Reason:** keep manual setup validation aligned with the active module setup contract so missing/invalid setup is detected before runtime debugging.
+**Preserve:** manual/read-only validator only; no runtime movement/transition/directive/registry behavior changes, no auto-fix paths, no heartbeat/runtime validation integration.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
+### 2026-05-19 — Follow-up: NWScript compiler compatibility fix in dl_dbg_setup
+
+**Task/PR/branch:** current branch / follow-up to unique Gotha validator update.
+**Files touched:** `daily_life/dl_dbg_setup.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** CI `check` run reported `NSC1020: Undeclared identifier "OBJECT_TYPE_AREA"` in `dl_dbg_setup.nss`.
+**Change:** removed the `OBJECT_TYPE_AREA` gate in `DL_SetupResolveAreaByTag`; resolver now treats a valid `GetObjectByTag` result as acceptable and still returns `OBJECT_INVALID` for unresolved tags.
+**Reason:** preserve manual validator behavior while restoring compatibility with this NWScript compiler's available object-type constants.
+**Preserve:** manual/read-only validator scope unchanged; no runtime movement/transition/directive/registry behavior touched.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 
 ## 2026-05-18 - Daily Life stabilization audit map (#864)
 
