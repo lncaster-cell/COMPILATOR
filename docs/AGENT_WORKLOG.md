@@ -133,3 +133,13 @@ Entry template:
 **Reason:** same-area pseudo-transitions are a navigation-system feature, not a MEAL-specific movement problem, and physical area identity must not be treated as failure when the expected route remains within one area.
 **Preserve:** cross-area transition finalization, registry repair, stale-reference removal, and registry handoff behavior remain on the existing cross-area path; do not replace this with radii changes, delays, heartbeat loops, or area scans.
 **Validation:** static/text checks only. Compilation not run; user owns compilation.
+
+## 2026-05-18 — Daily Life setup contract documentation
+
+**Task/PR/branch:** after PR #868 / Document Daily Life setup contract.  
+**Files touched:** `docs/daily-life-setup-contract.md`, `docs/AGENT_WORKLOG.md`.  
+**Context:** `blacksmith01` passed two full cycles successfully, and the stabilization audit identified setup complexity as the next source of Daily Life risk.  
+**Change:** added a builder-facing Daily Life setup contract covering required area scripts, NPC locals, anchors, nav zones, transition waypoint tags, target-zone route locals, the blacksmith01 working baseline, common failure signatures, pre-flight checks, and future validator requirements.  
+**Reason:** document the setup contract before adding validator code or changing runtime behavior, so future NPC setup errors can be separated from movement/worker regressions.  
+**Preserve:** documentation-only change; do not treat this as runtime validation, and do not remove existing Daily Life diagnostics based only on this document.  
+**Validation:** documentation/static checks only. Compilation not run; user owns validation.
