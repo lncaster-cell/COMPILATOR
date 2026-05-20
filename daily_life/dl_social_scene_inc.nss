@@ -94,12 +94,23 @@ string DL_GetSocialScenePoolAnim(string sPool, int nIndex)
     return "listen";
 }
 
-string DL_SelectSocialSceneAnim(string sPool, string sLastAnim)
+string DL_SelectSocialSceneAnim(string sPool, string sLastAnim, object oNpc, int nStep)
 {
     int nCount = DL_GetSocialScenePoolCount(sPool);
     if (nCount <= 0) nCount = 1;
 
-    int nIndex = Random(nCount);
+    string sNpcTag = GetTag(oNpc);
+    int nBaseIndex = DL_GetTagDeterministicOffset(sNpcTag, nCount, 0);
+
+    // Keep lightweight bounded variability so repeated scene loops do not become rigid.
+    // Jitter stays in [0..1], then folded into pool size bounds.
+    int nJitter = 0;
+    if (nCount > 1)
+    {
+        nJitter = Random(2);
+    }
+
+    int nIndex = (nBaseIndex + (nStep % nCount) + nJitter) % nCount;
     string sAnim = DL_GetSocialScenePoolAnim(sPool, nIndex);
     if (sAnim == sLastAnim && nCount > 1)
     {
@@ -179,7 +190,7 @@ void DL_TickSocialScene(object oNpc, object oAnchor, object oPartner, int bPartn
         if (nSoloStep == 0) sPool = "listener";
         if (nSoloStep == 1) sPool = "sad_speaker";
         if (nSoloStep == 2) sPool = "neutral_speaker";
-        sAnim = DL_SelectSocialSceneAnim(sPool, sLastAnim);
+        sAnim = DL_SelectSocialSceneAnim(sPool, sLastAnim, oNpc, nStep);
         nWait = DL_SOCIAL_SCENE_SOLO_WAIT_MINUTES;
         if (nSoloStep == 0) nWait = 2;
     }
@@ -191,7 +202,7 @@ void DL_TickSocialScene(object oNpc, object oAnchor, object oPartner, int bPartn
         if (bActiveSpeaker) sPool = DL_GetSocialSceneSpeakerPoolName(nStep);
         else sPool = "listener";
 
-        sAnim = DL_SelectSocialSceneAnim(sPool, sLastAnim);
+        sAnim = DL_SelectSocialSceneAnim(sPool, sLastAnim, oNpc, nStep);
     }
 
     if (nWait < 1) nWait = 1;

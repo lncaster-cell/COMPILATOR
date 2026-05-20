@@ -1,11 +1,11 @@
-## 2026-05-20 — BSMITH target identity contradiction: stabilize context + transition-finalizer filter
+## 2026-05-20 — Social scene deterministic animation base + bounded jitter
 
-**Task/PR/branch:** current branch / TARGET_IDENTITY_CHANGED false-positive hardening in resolver diagnostics.
-**Files touched:** `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** `TARGET_IDENTITY_CHANGED` around `dl_bsmith_last_target_obj` could overreact to object-handle churn during legitimate retarget/re-registration windows, especially around recent transition finalization.
-**Change:** tightened contradiction gating to prioritize stable identity context (`tag + area + move_target_area + bounded distance`) and demoted object-handle mismatch to a secondary signal; added a narrow suppression filter when `dl_post_jump_result` indicates recent transition finalizer completion (`post_jump_finalizer_complete` or `post_jump_finalizer_same_area_complete`); preserved existing contradiction/classification keys and pipeline diagnostics.
-**Reason:** reduce false positives while keeping useful TARGET_IDENTITY_CHANGED signal for same-tag same-area target churn in stable route context.
-**Preserve:** do not rename/remove existing BSMITH diagnostic keys or contradiction code paths; object-handle mismatch is diagnostic-only under stable context, not the primary identity verdict.
+**Task/PR/branch:** current branch / deterministic social-scene animation offset requested by user.
+**Files touched:** `daily_life/dl_social_scene_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** social-scene animation choice used fully random pool index, which made per-NPC progression non-deterministic across steps and harder to reason about while preserving anti-repeat behavior.
+**Change:** updated `DL_SelectSocialSceneAnim` to derive base animation index from `DL_GetTagDeterministicOffset(GetTag(oNpc), nCount, 0)` plus `nStep`, then apply small bounded jitter (`Random(2)` when pool size > 1), and keep existing anti-repeat fallback against `DL_L_NPC_SOCIAL_SCENE_LAST_ANIM`.
+**Reason:** maintain deterministic per-tag/per-step baseline while retaining lightweight variability and preserving current social-scene local-key state publication (`LAST_ANIM`, `LAST_POOL`, `PHASE`).
+**Preserve:** no local-key literal changes; scene state locals must continue to reflect final selected animation/pool/phase after anti-repeat adjustment.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Transition registry problem codes: remove raw string literals
