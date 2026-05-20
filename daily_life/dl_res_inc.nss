@@ -65,12 +65,6 @@ const string DL_L_NPC_SHIFT_LENGTH = "dl_shift_length";
 const string DL_L_NPC_DIAG_LAST_KEY = "dl_diag_last_key";
 const string DL_L_NPC_DIAG_LAST_MINUTE = "dl_diag_last_minute";
 const string DL_L_NPC_LAST_DIRECTIVE_CLEANUP = "dl_last_directive_cleanup";
-const string DL_L_MODULE_CHAT_DEBUG = "dl_chat_debug";
-const string DL_L_MODULE_CHAT_DEBUG_NPC_TAG = "dl_chat_debug_npc_tag";
-const string DL_L_NPC_CHAT_LAST_EVENT_SIG = "dl_chat_last_event_sig";
-const string DL_L_NPC_CHAT_STUCK_SIG = "dl_chat_stuck_sig";
-const string DL_L_NPC_CHAT_STUCK_SINCE = "dl_chat_stuck_since";
-const string DL_L_NPC_CHAT_STUCK_LAST_LOG = "dl_chat_stuck_last_log";
 const string DL_L_MODULE_CACHE_EPOCH = "dl_cache_epoch";
 const string DL_L_MODULE_FORCE_CACHE_RESET = "dl_force_cache_reset";
 const string DL_L_AREA_CACHE_EPOCH = "dl_area_cache_epoch";
@@ -180,8 +174,6 @@ const string DL_WEEKEND_MODE_REDUCED_WORK = "reduced_work";
 const string DL_MEAL_KIND_BREAKFAST = "breakfast";
 const string DL_MEAL_KIND_LUNCH = "lunch";
 const string DL_MEAL_KIND_DINNER = "dinner";
-const int DL_CHAT_STUCK_THRESHOLD_MIN = 5;
-const int DL_CHAT_STUCK_LOG_INTERVAL_MIN = 5;
 const int DL_CHAT_MARKUP_COOLDOWN_MIN = 120;
 const int DL_WORK_FASTPATH_PRESENTATION_REFRESH_MINUTES = 30;
 
@@ -198,26 +190,6 @@ void DL_MaybeRefreshAreaCachesForEpoch(object oArea);
 
 #include "dl_sched_inc"
 
-void DL_LogChat(string sMessage)
-{
-    // Temporary: chat debug logging is disabled.
-}
-int DL_IsChatDebugEnabledForNpc(object oNpc)
-{
-    object oModule = GetModule();
-    if (GetLocalInt(oModule, DL_L_MODULE_CHAT_DEBUG) != TRUE)
-    {
-        return FALSE;
-    }
-
-    string sFilterTag = GetLocalString(oModule, DL_L_MODULE_CHAT_DEBUG_NPC_TAG);
-    if (sFilterTag == "" || !GetIsObjectValid(oNpc))
-    {
-        return TRUE;
-    }
-
-    return GetTag(oNpc) == sFilterTag;
-}
 int DL_DirectiveUsesFocusState(int nDirective)
 {
     return nDirective == DL_DIR_MEAL ||
@@ -258,86 +230,6 @@ void DL_LogChatDebugEvent(object oNpc, string sKind, string sPayload)
 {
     // Old broad Daily Life chat/debug output was removed; use DL_BsmithTraceStage for the temporary blacksmith trace.
 }
-void DL_LogDirectiveChange(object oNpc, int nPrevDirective, int nDirective)
-{
-    if (nDirective == nPrevDirective)
-    {
-        return;
-    }
-
-    DL_LogChatDebugEvent(
-        oNpc,
-        "directive",
-        "dir=" + DL_GetDirectiveDebugLabel(nDirective) +
-            " prev=" + DL_GetDirectiveDebugLabel(nPrevDirective) +
-            " minute=" + IntToString(DL_GetNowMinuteOfDay())
-    );
-}
-void DL_LogStuckState(object oNpc, int nDirective)
-{
-    if (!GetIsObjectValid(oNpc) || !DL_IsChatDebugEnabledForNpc(oNpc))
-    {
-        return;
-    }
-
-    string sState = "";
-    string sTarget = "";
-    if (nDirective == DL_DIR_SLEEP)
-    {
-        sState = GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS);
-        if (sState == "moving_to_approach" || sState == "jumping_to_bed")
-        {
-            sTarget = GetLocalString(oNpc, DL_L_NPC_SLEEP_TARGET);
-        }
-    }
-    else if (nDirective == DL_DIR_WORK)
-    {
-        sState = GetLocalString(oNpc, DL_L_NPC_WORK_STATUS);
-        if (sState == "moving_to_anchor")
-        {
-            sTarget = GetLocalString(oNpc, DL_L_NPC_WORK_TARGET);
-        }
-    }
-    else if (nDirective == DL_DIR_MEAL || nDirective == DL_DIR_SOCIAL || nDirective == DL_DIR_PUBLIC || nDirective == DL_DIR_CHILL)
-    {
-        sState = GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS);
-        if (sState == "moving_to_anchor")
-        {
-            sTarget = GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET);
-        }
-    }
-
-    if (sTarget == "")
-    {
-        DeleteLocalString(oNpc, DL_L_NPC_CHAT_STUCK_SIG);
-        DeleteLocalInt(oNpc, DL_L_NPC_CHAT_STUCK_SINCE);
-        return;
-    }
-
-    int nNowAbsMin = DL_GetAbsoluteMinute();
-    string sSig = DL_GetDirectiveDebugLabel(nDirective) + "|" + sState + "|" + sTarget;
-    if (GetLocalString(oNpc, DL_L_NPC_CHAT_STUCK_SIG) != sSig)
-    {
-        SetLocalString(oNpc, DL_L_NPC_CHAT_STUCK_SIG, sSig);
-        SetLocalInt(oNpc, DL_L_NPC_CHAT_STUCK_SINCE, nNowAbsMin);
-        DeleteLocalInt(oNpc, DL_L_NPC_CHAT_STUCK_LAST_LOG);
-        return;
-    }
-
-    int nSince = GetLocalInt(oNpc, DL_L_NPC_CHAT_STUCK_SINCE);
-    int nLastLog = GetLocalInt(oNpc, DL_L_NPC_CHAT_STUCK_LAST_LOG);
-    if ((nNowAbsMin - nSince) < DL_CHAT_STUCK_THRESHOLD_MIN ||
-        (nLastLog > 0 && (nNowAbsMin - nLastLog) < DL_CHAT_STUCK_LOG_INTERVAL_MIN))
-    {
-        return;
-    }
-
-    SetLocalInt(oNpc, DL_L_NPC_CHAT_STUCK_LAST_LOG, nNowAbsMin);
-    DL_LogChat("npc=" + GetTag(oNpc) +
-              " stuck dir=" + DL_GetDirectiveDebugLabel(nDirective) +
-              " state=" + sState +
-              " target=" + sTarget);
-}
 void DL_LogMarkupIssueOnce(object oNpc, string sKey, string sMessage)
 {
     if (!GetIsObjectValid(oNpc))
@@ -355,10 +247,6 @@ void DL_LogMarkupIssueOnce(object oNpc, string sKey, string sMessage)
 
     SetLocalString(oNpc, DL_L_NPC_DIAG_LAST_KEY, sKey);
     SetLocalInt(oNpc, DL_L_NPC_DIAG_LAST_MINUTE, nNowAbsMin);
-    if (DL_IsChatDebugEnabledForNpc(oNpc))
-    {
-        DL_LogChat(sMessage);
-    }
 }
 
 void DL_ApplyMaterializationSkeleton(object oNpc, int nDirective)
@@ -1881,7 +1769,6 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
         if (DL_ProcessTransitionMoveInApply(oNpc, nEffectiveDirective))
         {
             DL_TraceApplyPipeline(oNpc, "APPLY_EXIT");
-            DL_LogStuckState(oNpc, nEffectiveDirective);
             return;
         }
         if (!DL_IsMoveJobOwnerCompatibleWithDirective(oNpc, nEffectiveDirective))
@@ -1978,12 +1865,10 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
         DL_ApplyMaterializationSkeleton(oNpc, nEffectiveDirective);
         DL_EnforceReachedMoveApplyExitInvariant(oNpc, nEffectiveDirective);
         DL_TraceApplyPipeline(oNpc, "APPLY_EXIT");
-        DL_LogStuckState(oNpc, nEffectiveDirective);
         return;
     }
 
     SetLocalInt(oNpc, DL_L_NPC_DIRECTIVE, nEffectiveDirective);
-    DL_LogDirectiveChange(oNpc, nPrevDirective, nEffectiveDirective);
 
     DL_TraceApplyPipeline(oNpc, "BEFORE_DIRECTIVE_EXECUTOR");
     if (nEffectiveDirective == DL_DIR_SLEEP)
@@ -2056,5 +1941,4 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
     DL_ApplyMaterializationSkeleton(oNpc, nEffectiveDirective);
     DL_EnforceReachedMoveApplyExitInvariant(oNpc, nEffectiveDirective);
     DL_TraceApplyPipeline(oNpc, "APPLY_EXIT");
-    DL_LogStuckState(oNpc, nEffectiveDirective);
 }

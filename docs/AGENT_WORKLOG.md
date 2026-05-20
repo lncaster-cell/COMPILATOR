@@ -1,3 +1,21 @@
+## 2026-05-20 — #864 Lane A: remove dead chat-debug plumbing from Daily Life resolver
+
+**Task/PR/branch:** current branch / Issue #864 cleanup (real code-debt reduction, non-comment).
+**Files touched:** `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** chat-debug path in resolver was already hard-disabled (`DL_LogChatDebugEvent` no-op and `DL_LogChat` empty), but dead gating/stuck-tracking code and locals were still kept and executed from worker touches.
+**Change:** removed dead chat-debug symbols and code paths: `DL_LogChat`, `DL_IsChatDebugEnabledForNpc`, `DL_LogDirectiveChange`, `DL_LogStuckState`, module chat-debug locals (`DL_L_MODULE_CHAT_DEBUG`, `DL_L_MODULE_CHAT_DEBUG_NPC_TAG`) and chat-stuck locals (`DL_L_NPC_CHAT_LAST_EVENT_SIG`, `DL_L_NPC_CHAT_STUCK_SIG`, `DL_L_NPC_CHAT_STUCK_SINCE`, `DL_L_NPC_CHAT_STUCK_LAST_LOG`), plus removed internal call sites from resolver tick/apply flow.
+**Reason:** reduce real accumulated debt and hot-path no-op diagnostic work without changing movement/transition/directive/registry/worker behavior or touching BSMITH diagnostics.
+**Validation:** static grep/diff checks only. Compilation not run; user owns compilation.
+
+## 2026-05-20 — #864 Lane A: deduplicate problem-summary diagnostic evaluation
+
+**Task/PR/branch:** current branch / Issue #864 targeted cleanup (diagnostic-noise lane).
+**Files touched:** `daily_life/dl_diag_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `DL_MaybeLogNpcDiagnostic` evaluated `DL_GetNpcProblemSummary` twice (signature + log path), which could produce noisy/uneven traces and duplicate summary computation in a hot diagnostic path.
+**Change:** introduced summary-aware helpers (`DL_LogNpcDiagnosticWithSummary`, `DL_GetNpcDiagnosticSignatureWithSummary`) and updated `DL_MaybeLogNpcDiagnostic` to compute summary once, reuse it for signature and BSMITH `PROBLEM_SUMMARY` output, while preserving existing diagnostic fields and call contracts.
+**Reason:** keep #864 cleanup incremental and safe by reducing duplicate diagnostic work/noise without changing directive/move/finalizer behavior.
+**Validation:** static text review only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Annotation-only micro-PR: classify critical Daily Life paths (#864)
 
 **Task/PR/branch:** current branch / first cleanup micro-step after audit.
