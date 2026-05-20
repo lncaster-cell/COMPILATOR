@@ -1,11 +1,11 @@
-## 2026-05-20 — Work waypoint resolver profile helper unification (work roles)
+## 2026-05-20 — Transition post-jump success helper unification
 
-**Task/PR/branch:** current branch / unify repeated work waypoint resolvers in `dl_work_inc.nss`.
-**Files touched:** `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** blacksmith/gate/trader/domestic role resolvers duplicated the same “anchor first, optional fallback by tag profile” pattern with only profile literals changed.
-**Change:** added shared helper `DL_ResolveWorkWaypointByRoleParams` with explicit profile parameters (anchor key + anchor cache key + fallback cache key/prefix/suffix/tag), migrated blacksmith forge/craft/fetch, gate post, trader, and domestic primary/secondary/fetch resolvers to call it, and preserved domestic behavior by passing home area plus empty fallback profile so no fallback lookup runs.
-**Reason:** reduce duplicate resolver logic while preserving existing runtime contracts, role-specific cache keys, and domestic home-area/no-fallback behavior.
-**Preserve:** literal local-key values and fallback literal tags are unchanged; domestic path remains home-area anchored and may validly return `OBJECT_INVALID` without fallback.
+**Task/PR/branch:** current branch / refactor same-area and complete success branches in transition finalizer.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `DL_FinalizeTransitionAfterQueuedJump` had duplicated success logic in `post_jump_finalizer_same_area_complete` and `post_jump_finalizer_complete` branches (debug/apply/cleanup/zone set + worker touch + trace/result flags).
+**Change:** added `DL_ApplyPostJumpCompletionSuccess(oNpc, sTargetZone, sReason)` helper and migrated both success branches to it while preserving existing literal reason values (`post_jump_finalizer_same_area_complete`, `post_jump_finalizer_complete`). Kept branch-specific behavior outside helper (`dl_transition_registry_handoff_touch_called` false for same-area, and registry handoff request for cross-area complete).
+**Reason:** enforce one canonical implementation for successful post-jump completion side effects and reduce future branch drift in active transition debugging paths.
+**Preserve:** no local-key literal contract renames; no change to failure paths (`area_not_changed`, `registry_repair_failed`, `registry_area_mismatch`, `unexpected_area`) or cross-area registry repair ordering.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Social scene IDs now drive real scene cadence/pools

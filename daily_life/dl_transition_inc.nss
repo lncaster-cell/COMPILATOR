@@ -261,28 +261,27 @@ void DL_ClearTransitionExecutionState(object oNpc)
     DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC);
 }
 
-
-void DL_ClearTransitionExecutionStateWithReason(object oNpc, string sReason, string sOwner)
+void DL_ApplyPostJumpCompletionSuccess(object oNpc, string sTargetZone, string sReason)
 {
-    if (!GetIsObjectValid(oNpc)) return;
+    DL_ClearTransitionExecutionState(oNpc);
+    DL_NavClearFocusMoveIssueStateAfterJump(oNpc);
+    DL_NavSetNpcCurrentZone(oNpc, sTargetZone);
+    DL_NavSetDebug(oNpc, sTargetZone, sTargetZone, "", sReason);
 
-    // Guard: while post-jump finalizer is expected and still queued, do not clear
-    // transition execution locals from non-finalizer owners.
-    if (GetLocalInt(oNpc, "dl_transition_pending_finalizer_expected") == TRUE)
+    if (GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_TARGET_AREA_WORKER_NOT_TICKING_OR_NOT_OWNING_NPC ||
+        GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_AREA_NOT_CHANGED ||
+        GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_REGISTRY_REPAIR_FAILED ||
+        GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_REGISTRY_AREA_MISMATCH)
     {
-        string sPostJumpResult = GetLocalString(oNpc, "dl_post_jump_result");
-        if (sPostJumpResult == "" || sPostJumpResult == "queued")
-        {
-            SetLocalString(
-                oNpc,
-                DL_L_NPC_TRANSITION_DIAGNOSTIC,
-                "clear_guard_pending_post_jump owner=" + sOwner + " reason=" + sReason + " result=" + sPostJumpResult
-            );
-            return;
-        }
+        DeleteLocalString(oNpc, "dl_transition_registry_problem");
     }
 
-    DL_ClearTransitionExecutionState(oNpc);
+    DL_WorkerTouchNpc(oNpc);
+    SetLocalInt(oNpc, "dl_post_jump_worker_touch_called", TRUE);
+    SetLocalString(oNpc, "dl_transition_registry_worker_touch_area", GetLocalString(oNpc, "dl_worker_touch_area"));
+    SetLocalString(oNpc, "dl_post_jump_result", sReason);
+    DL_BsmithTraceStage(oNpc, "TRANSITION_FINALIZER", sReason);
+    DeleteLocalInt(oNpc, "dl_transition_pending_finalizer_expected");
 }
 
 void DL_NavSetState(object oNpc, string sStatus, string sTargetZone, string sDiagnostic)
@@ -765,23 +764,8 @@ void DL_FinalizeTransitionAfterQueuedJump(object oNpc)
         sTargetZone != "" &&
         (bPendingExitValid || bJumpTargetWasValid))
     {
-        DL_NavInvalidateInferZoneCache(oNpc, "transition_finalize_same_area_complete");
-        DL_ClearTransitionExecutionState(oNpc);
-        DL_NavClearFocusMoveIssueStateAfterJump(oNpc);
-        DL_NavSetNpcCurrentZone(oNpc, sTargetZone);
-        DL_NavSetDebug(oNpc, sTargetZone, sTargetZone, "", "post_jump_finalizer_same_area_complete");
-        if (DL_ShouldClearTransitionRegistryProblemOnSuccess(GetLocalString(oNpc, "dl_transition_registry_problem")))
-        {
-            DeleteLocalString(oNpc, "dl_transition_registry_problem");
-        }
-
-        DL_WorkerTouchNpc(oNpc);
-        SetLocalInt(oNpc, "dl_post_jump_worker_touch_called", TRUE);
-        SetLocalString(oNpc, "dl_transition_registry_worker_touch_area", GetLocalString(oNpc, "dl_worker_touch_area"));
         SetLocalInt(oNpc, "dl_transition_registry_handoff_touch_called", FALSE);
-
-        sResult = "post_jump_finalizer_same_area_complete";
-        DL_FinalizePostJumpTransitionResult(oNpc, sResult, TRUE, sResult);
+        DL_ApplyPostJumpCompletionSuccess(oNpc, sTargetZone, "post_jump_finalizer_same_area_complete");
         return;
     }
 
@@ -843,19 +827,12 @@ void DL_FinalizeTransitionAfterQueuedJump(object oNpc)
 
     if (GetIsObjectValid(oExpectedArea) && oCurrentArea == oExpectedArea)
     {
-        DL_NavInvalidateInferZoneCache(oNpc, "transition_finalize_complete");
-        DL_ClearTransitionExecutionState(oNpc);
-        DL_NavClearFocusMoveIssueStateAfterJump(oNpc);
-        DL_NavSetNpcCurrentZone(oNpc, sTargetZone);
-        DL_NavSetDebug(oNpc, sTargetZone, sTargetZone, "", "post_jump_finalizer_complete");
-        if (DL_ShouldClearTransitionRegistryProblemOnSuccess(GetLocalString(oNpc, "dl_transition_registry_problem")))
-        {
-            DeleteLocalString(oNpc, "dl_transition_registry_problem");
-        }
-    }
-    else
-    {
-        sResult = DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_UNEXPECTED_AREA;
+        DL_RequestTransitionRegistryHandoff(oNpc, oOldArea, oExpectedArea);
+        SetLocalInt(oNpc, "dl_transition_registry_handoff_touch_called", TRUE);
+        DL_ApplyPostJumpCompletionSuccess(oNpc, sTargetZone, "post_jump_finalizer_complete");
+        return;
+    } else {
+        sResult = "post_jump_finalizer_unexpected_area";
         SetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC,
             sResult +
             " current_area=" + sCurrentArea +
@@ -870,13 +847,9 @@ void DL_FinalizeTransitionAfterQueuedJump(object oNpc)
     SetLocalString(oNpc, "dl_transition_registry_worker_touch_area", GetLocalString(oNpc, "dl_worker_touch_area"));
     SetLocalInt(oNpc, "dl_transition_registry_handoff_touch_called", TRUE);
 
-    if (GetIsObjectValid(oExpectedArea) && oCurrentArea == oExpectedArea)
-    {
-        DL_RequestTransitionRegistryHandoff(oNpc, oOldArea, oExpectedArea);
-        sResult = "post_jump_finalizer_complete";
-    }
-
-    DL_FinalizePostJumpTransitionResult(oNpc, sResult, TRUE, sResult);
+    SetLocalString(oNpc, "dl_post_jump_result", sResult);
+    DL_BsmithTraceStage(oNpc, "TRANSITION_FINALIZER", sResult);
+    DeleteLocalInt(oNpc, "dl_transition_pending_finalizer_expected");
 }
 
 int DL_NavTryFinalizeCompletedTransition(object oNpc, object oTargetAnchor)
