@@ -112,6 +112,7 @@ string DL_SelectSocialSceneAnim(string sPool, string sLastAnim)
     return sAnim;
 }
 
+
 void DL_ClearSocialSceneState(object oNpc)
 {
     if (!GetIsObjectValid(oNpc)) return;

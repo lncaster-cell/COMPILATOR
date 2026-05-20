@@ -1,12 +1,12 @@
-## 2026-05-20 — #864 Lane A: remove zero-call legacy helpers from Daily Life pipeline
+## 2026-05-20 — Social scene solo animation canonicalization (pool logic)
 
-**Task/PR/branch:** current branch / dead-code cleanup requested for owner-pipeline consistency.
-**Files touched:** `daily_life/dl_anchor_move_inc.nss`, `daily_life/dl_social_scene_inc.nss`, `daily_life/dl_work_inc.nss`, `daily_life/dl_worker_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** seven helper functions had no call sites in `daily_life/*.nss`, so they were outside the canonical worker/directive/finalizer movement pipeline and created maintenance ambiguity.
-**Change:** removed unused implementations: `DL_GetSocialSceneSoloAnim`, `DL_RecheckWorkDirectiveAfterMove`, `DL_IssueAnchorMoveExact`, `DL_IssueAnchorMoveRanged`, `DL_ResetStalledAnchorMoveForReissue`, `DL_ShouldBypassLastTouchGate`, and `DL_RunTransitionRegistryHandoffTick`.
-**Reason:** each function had zero in-repo call sites and no declaration/call-chain ownership in current active pipelines; removing dead code is safer than reintroducing non-canonical side paths and preserves the one-canonical-reached/finalizer invariants.
-**Preserve:** active movement invariants, worker touch pipeline, and BSMITH diagnostics are unchanged; no local-key literal migrations were introduced.
-**Validation:** static search checks only (dead-name sweep in `daily_life/*.nss`). Compilation not run; user owns compilation.
+**Task/PR/branch:** current branch / user-requested social scene cleanup.
+**Files touched:** `daily_life/dl_social_scene_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** solo social-scene animation selection had two competing mechanisms: unused helper `DL_GetSocialSceneSoloAnim` and active pool-based selection inside `DL_TickSocialScene`.
+**Change:** selected pool-based solo animation selection as canonical and removed dead helper `DL_GetSocialSceneSoloAnim`; kept `bSolo` branch behavior and all existing `DL_L_NPC_SOCIAL_SCENE_*` debug locals/contracts unchanged.
+**Reason:** preserve current runtime behavior while eliminating duplicate/competing selection path and making canonical ownership explicit in one place (`DL_TickSocialScene`).
+**Preserve:** do not rename or alter `DL_L_NPC_SOCIAL_SCENE_*` local-key literals; keep social-scene diagnostics/state locals intact.
+**Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — #864 Lane A: remove dead unused diagnostic wrappers
 
