@@ -45,20 +45,6 @@ const float DL_CHILL_SIT_VERIFY_DELAY = 4.0;
 const float DL_CHILL_LOOP_ANIM_DURATION = 30.0;
 const string DL_CHILL_ANIM_SIT_IDLE = "sitidle";
 
-const string DL_FOCUS_STATUS_MOVING_TO_ANCHOR = "moving_to_anchor";
-const string DL_FOCUS_STATUS_ON_MEAL_ANCHOR_SITTING = "on_meal_anchor_sitting";
-const string DL_FOCUS_STATUS_SITTING_MEAL_ATTEMPT = "sitting_meal_attempt";
-const string DL_FOCUS_STATUS_ON_CHILL_ANCHOR = "on_chill_anchor";
-const string DL_FOCUS_STATUS_MISSING_CHILL_CHAIR = "missing_chill_chair";
-const string DL_FOCUS_STATUS_CHILL_CHAIR_OCCUPIED = "chill_chair_occupied";
-const string DL_FOCUS_STATUS_SITTING_CHILL_ATTEMPT = "sitting_chill_attempt";
-const string DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR = "on_social_anchor";
-
-
-void DL_ClearFocusMoveIssueState(object oNpc)
-{
-    DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
-}
 int DL_ShouldIssueFocusMoveAction(object oNpc, object oTarget)
 {
     return DL_ShouldIssueAnchorMoveAction(
@@ -99,8 +85,8 @@ void DL_ClearFocusExecutionState(object oNpc)
     DeleteLocalInt(oNpc, DL_L_NPC_CHILL_SIT_RETRY_UNTIL);
     DeleteLocalInt(oNpc, DL_L_NPC_MEAL_SIT_RETRY_UNTIL);
     DL_ClearSocialSceneState(oNpc);
-    DL_ClearFocusMoveIssueState(oNpc);
-    DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "focus");
+    DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
+    DL_ClearTransitionExecutionState(oNpc);
 }
 object DL_ResolveSocialPartnerObject(object oNpc, string sPartnerTag)
 {
@@ -260,7 +246,7 @@ int DL_ProgressFocusAtTarget(object oNpc, object oTarget, string sOnAnchorStatus
         return TRUE;
     }
 
-    DL_ClearFocusMoveIssueState(oNpc);
+    DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
     DL_ClearMoveJob(oNpc);
     DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "focus");
     DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
@@ -289,8 +275,8 @@ int DL_ApplyFocusWaypointAnimation(object oNpc, object oAnchor, string sStableSt
         return TRUE;
     }
 
-    DL_ClearFocusMoveIssueState(oNpc);
-    DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "focus");
+    DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
+    DL_ClearTransitionExecutionState(oNpc);
     DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
     SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, sStableStatus);
     SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, sAnchorTag);
@@ -768,7 +754,7 @@ void DL_VerifyMealSitOrFallback(object oNpc, object oChair, object oMeal, string
 
     if (GetSittingCreature(oChair) == oNpc)
     {
-        DL_ClearFocusMoveIssueState(oNpc);
+        DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
         DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
         DeleteLocalInt(oNpc, DL_L_NPC_MEAL_SIT_RETRY_UNTIL);
         SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, DL_FOCUS_STATUS_ON_MEAL_ANCHOR_SITTING);
@@ -793,7 +779,7 @@ int DL_TryProgressMealLegacyChair(object oNpc, object oMeal, string sMealKind, s
     object oSitter = GetSittingCreature(oChair);
     if (oSitter == oNpc)
     {
-        DL_ClearFocusMoveIssueState(oNpc);
+        DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
         DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
         DeleteLocalInt(oNpc, DL_L_NPC_MEAL_SIT_RETRY_UNTIL);
         SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, DL_FOCUS_STATUS_ON_MEAL_ANCHOR_SITTING);
@@ -825,7 +811,7 @@ int DL_TryProgressMealLegacyChair(object oNpc, object oMeal, string sMealKind, s
         return FALSE;
     }
 
-    DL_ClearFocusMoveIssueState(oNpc);
+    DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
     DL_ClearMoveJob(oNpc);
     DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
     SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, DL_FOCUS_STATUS_SITTING_MEAL_ATTEMPT);
@@ -873,8 +859,8 @@ void DL_ExecuteMealDirective(object oNpc)
 
     if (DL_ShouldUseMealLegacyActionSit(oNpc, oMeal))
     {
-        DL_ClearFocusMoveIssueState(oNpc);
-        DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "focus");
+        DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
+        DL_ClearTransitionExecutionState(oNpc);
         if (DL_TryProgressMealLegacyChair(oNpc, oMeal, sMealKind, sAnim))
         {
             return;
@@ -941,8 +927,8 @@ void DL_VerifyChillSitOrFallback(object oNpc, object oChair, object oSeat)
 
     if (GetSittingCreature(oChair) == oNpc)
     {
-        DL_ClearFocusMoveIssueState(oNpc);
-        DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "focus");
+        DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
+        DL_ClearTransitionExecutionState(oNpc);
         DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
         DeleteLocalInt(oNpc, DL_L_NPC_CHILL_SIT_RETRY_UNTIL);
         SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, DL_FOCUS_STATUS_ON_CHILL_ANCHOR);
@@ -969,7 +955,7 @@ int DL_TryProgressChillLegacyChair(object oNpc, object oSeat)
     object oSitter = GetSittingCreature(oChair);
     if (oSitter == oNpc)
     {
-        DL_ClearFocusMoveIssueState(oNpc);
+        DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
         DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
         DeleteLocalInt(oNpc, DL_L_NPC_CHILL_SIT_RETRY_UNTIL);
         SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, DL_FOCUS_STATUS_ON_CHILL_ANCHOR);
@@ -993,7 +979,7 @@ int DL_TryProgressChillLegacyChair(object oNpc, object oSeat)
         return TRUE;
     }
 
-    DL_ClearFocusMoveIssueState(oNpc);
+    DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
     DL_ClearMoveJob(oNpc);
     DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
     SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, DL_FOCUS_STATUS_SITTING_CHILL_ATTEMPT);
@@ -1031,8 +1017,8 @@ int DL_ProgressChillAtSeat(object oNpc, object oSeat)
 
     if (DL_ShouldUseChillLegacyActionSit(oNpc, oSeat))
     {
-        DL_ClearFocusMoveIssueState(oNpc);
-        DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "focus");
+        DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
+        DL_ClearTransitionExecutionState(oNpc);
         if (DL_TryProgressChillLegacyChair(oNpc, oSeat))
         {
             return TRUE;
@@ -1133,8 +1119,8 @@ int DL_TryStartSocialSceneAtReachedAnchor(object oNpc, object oAnchor, object oP
         return FALSE;
     }
 
-    DL_ClearFocusMoveIssueState(oNpc);
-    DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "focus");
+    DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
+    DL_ClearTransitionExecutionState(oNpc);
     DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
     SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR);
     SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oAnchor));
@@ -1180,7 +1166,7 @@ void DL_ExecuteSocialDirective(object oNpc)
             (GetIsObjectValid(oMe) && GetTag(oMe) == sFocusTargetTag));
     if (bReachedSocialAnchor)
     {
-        DL_ClearFocusMoveIssueState(oNpc);
+        DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
         DL_ClearMoveJob(oNpc);
         DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "focus");
         DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
