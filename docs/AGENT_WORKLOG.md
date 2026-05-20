@@ -324,3 +324,13 @@ Entry template:
 **Reason:** avoid repeated same-tick inference scans in the same owner pipeline while preserving canonical behavior and existing bounded fallback semantics.
 **Preserve:** `DL_NAV_AREA_SCAN_CAP` remains unchanged and still bounds fallback loops; no global polling loop/path was introduced.
 **Validation:** static checks only. Compilation not run; user owns compilation.
+
+## 2026-05-20 — Restore missing DL_RepairAreaRegistrySlot body (Daily Life compile blocker)
+
+**Task/PR/branch:** current branch / Daily Life compile blocker fix for missing registry helper body.
+**Files touched:** `daily_life/dl_registry_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** multiple Daily Life scripts failed compile because `DL_RepairAreaRegistrySlot` was declared and called but had no function body in `dl_registry_inc.nss`.
+**Change:** implemented `DL_RepairAreaRegistrySlot` in `dl_registry_inc.nss` as compact dense-registry slot repair: validates area/slot/count, swaps last-slot NPC into removed slot when needed, updates moved NPC registry locals (`DL_L_NPC_REG_SLOT`, `DL_L_NPC_REG_AREA`), deletes old tail slot local, decrements area registry count, and bumps `DL_L_AREA_REG_SEQ`.
+**Reason:** restore canonical registry ownership/helper implementation in the registry include so existing worker/registry fallback repair call sites can compile and keep compact slot-array semantics.
+**Preserve:** no movement/transition/directive/worker scheduling behavior changes; no BSMITH diagnostic changes; forward declaration kept for compile-order compatibility.
+**Validation:** static checks only. Compilation not run; user owns compilation.
