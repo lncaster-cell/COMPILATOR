@@ -1743,6 +1743,8 @@ void DL_VerifyReachedFinalizeClosure(object oNpc, int nEffectiveDirective)
     }
 }
 
+// AUDIT(#864): EMERGENCY CLOSURE for reached-but-not-closed contradictions.
+// Preserve as narrow invariant repair until overlap debt is reduced with runtime evidence.
 int DL_EmergencyCloseReachedMoveInvariant(object oNpc, int nEffectiveDirective)
 {
     if (!GetIsObjectValid(oNpc))
@@ -1819,6 +1821,8 @@ void DL_DetectApplyMoveRegression(object oNpc, int bReachedOrClearedEarlier, int
     }
 }
 
+// AUDIT(#864): APPLY-EXIT INVARIANT ENFORCER (emergency/fallback boundary).
+// Purpose is to prevent stale running/moving_to_anchor contradictions after apply.
 void DL_EnforceReachedMoveApplyExitInvariant(object oNpc, int nEffectiveDirective)
 {
     if (DL_IsMoveJobAtTargetNow(oNpc) &&

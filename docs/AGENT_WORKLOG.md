@@ -1,3 +1,75 @@
+## 2026-05-20 — Annotation-only micro-PR: classify critical Daily Life paths (#864)
+
+**Task/PR/branch:** current branch / first cleanup micro-step after audit.
+**Files touched:** `daily_life/dl_worker_inc.nss`, `daily_life/dl_res_inc.nss`, `daily_life/dl_focus_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** proceed with safe technical-debt reduction without behavior change; clarify canonical/fallback/emergency ownership near high-risk overlap points.
+**Change:** added audit classification comments only (no logic edits) near `DL_NpcNeedsCriticalWorkerTouch`, `DL_EmergencyTouchCriticalStaleReachedNpc`, `DL_EmergencyCloseReachedMoveInvariant`, `DL_EnforceReachedMoveApplyExitInvariant`, and `DL_ProgressFocusAtTarget`.
+**Reason:** reduce accidental risky refactors and preserve current stabilization invariants while enabling cleaner follow-up PR planning.
+**Validation:** static text review only. Compilation not run; user owns compilation.
+
+## 2026-05-20 — Refine audit tone: analysis-only synthesis (no new blocker framing) (#864)
+
+**Task/PR/branch:** current branch / refine audit according to user feedback.
+**Files touched:** `docs/daily-life-stabilization-audit.md`, `docs/AGENT_WORKLOG.md`.
+**Context:** user requested high-quality Daily Life analysis specifically, without adding new blocker/process-gate framing.
+**Change:** replaced the demo-readiness gate framing section with an analysis-only synthesis section that highlights architecture strengths, debt clusters, performance observations, and a quality conclusion without introducing additional blocker language.
+**Reason:** keep the audit focused on deep technical analysis rather than governance phrasing, matching user intent.
+**Validation:** static documentation review only. Compilation not run; user owns compilation.
+
+## 2026-05-20 — Continue audit: demo-readiness gates and ranked risk register (#864)
+
+**Task/PR/branch:** current branch / quality-hardening audit pass for public-demo readiness framing.
+**Files touched:** `docs/daily-life-stabilization-audit.md`, `docs/AGENT_WORKLOG.md`.
+**Context:** user requested top-quality, production-like readiness mindset and maximal rigor in audit deliverables.
+**Change:** added (1) public demo-readiness quality gates (functional, observability, performance/safety), (2) explicit release blocker list, and (3) ranked Top-10 risk register (S/L/D/RPN) mapped to owner files and first mitigation lanes.
+**Reason:** convert audit from descriptive coverage into a quality-control framework that is actionable for pre-demo hardening while preserving current baseline constraints.
+**Validation:** static documentation review only. Compilation not run; user owns compilation.
+
+## 2026-05-20 — Continue audit: full daily_life script coverage pass (#864)
+
+**Task/PR/branch:** current branch / maximize audit depth with full script pass.
+**Files touched:** `docs/daily-life-stabilization-audit.md`, `docs/AGENT_WORKLOG.md`.
+**Context:** user requested maximal audit depth and full `daily_life/` script review while avoiding compiler/toolchain/stock compiler scripts.
+**Change:** added a full inventory section to the audit with coverage totals, role-based file grouping, high-risk/high-mass file list, compile-order include discipline notes, concentrated debt boundaries, and scope guardrails for next PR selection.
+**Reason:** provide a complete map of the Daily Life code surface so #864 cleanup can stay incremental and avoid broad regressions.
+**Validation:** static documentation review only. Compilation not run; user owns compilation.
+
+## 2026-05-20 — Continue audit: cleanup-readiness matrix and risk lanes (#864)
+
+**Task/PR/branch:** current branch / continued audit iteration.
+**Files touched:** `docs/daily-life-stabilization-audit.md`, `docs/AGENT_WORKLOG.md`.
+**Context:** continued audit requested again; need tighter execution map for selecting first safe cleanup lane after docs-first phase.
+**Change:** added file-by-file cleanup readiness matrix, behavior-cleanup risk heatmap lanes (A–E), and an audit continuity checklist for future agents to prevent mixed-scope/risky PRs.
+**Reason:** make #864 planning deterministic and reduce chance of broad refactor regressions against working blacksmith baseline.
+**Validation:** static documentation review only. Compilation not run; user owns compilation.
+
+## 2026-05-20 — Continue audit: obsolete-candidate gates and evidence template (#864)
+
+**Task/PR/branch:** current branch / continue Daily Life audit depth.
+**Files touched:** `docs/daily-life-stabilization-audit.md`, `docs/AGENT_WORKLOG.md`.
+**Context:** follow-up continuation requested after prior audit refinements; need clearer decision gates before any runtime-path cleanup.
+**Change:** added (1) candidate obsolete/dead inventory as documentation hypotheses only, (2) explicit decision gates per candidate, (3) compact evidence package template for follow-up cleanup PRs, and (4) two docs-first micro-PR candidates to continue #864 safely without behavior edits.
+**Reason:** convert audit from descriptive map to execution-ready cleanup process while protecting blacksmith01 baseline and current diagnostics.
+**Validation:** static documentation review only. Compilation not run; user owns compilation.
+
+## 2026-05-20 — Continue Daily Life stabilization audit depth mapping (#864)
+
+**Task/PR/branch:** current branch / continue audit per review feedback.
+**Files touched:** `docs/daily-life-stabilization-audit.md`, `docs/AGENT_WORKLOG.md`.
+**Context:** prior audit rewrite was accepted as direction but required continued depth for practical triage and phased debt reduction planning.
+**Change:** extended the audit with: (1) stage-by-stage failure-signature triage map, (2) unknown/risky backlog with explicit evidence requirements before deletions, (3) audit-driven sequencing plan for #864 follow-up PRs, and (4) explicit definition-of-done for finishing the audit phase without behavior changes.
+**Reason:** make #864 actionable for next small cleanup PRs while preserving baseline invariants and avoiding premature runtime path deletion.
+**Validation:** static documentation review only. Compilation not run; user owns compilation.
+
+## 2026-05-20 — Daily Life stabilization audit refresh after baseline success (#864)
+
+**Task/PR/branch:** current branch / audit refresh for post-baseline cleanup mapping.
+**Files touched:** `docs/daily-life-stabilization-audit.md`, `docs/AGENT_WORKLOG.md`.
+**Context:** blacksmith01 full-cycle baseline is currently successful, validator is already working, and #861 is closed; #864 remains the debt tracker.
+**Change:** rewrote the audit document into a strict pipeline/ownership/debt map with requested classifications (canonical/fallback/emergency/diagnostic/obsolete/unknown-risky), overlap analysis, phased cleanup buckets, a small next cleanup PR recommendation, and manual validation checklist without runtime behavior edits.
+**Reason:** provide a practical, low-risk cleanup map so future PRs can reduce Daily Life debt without breaking the working baseline.
+**Validation:** static documentation review only. Compilation not run; user owns compilation.
+
 ## 2026-05-19 — Compact default output for manual Daily Life setup validator
 
 **Task/PR/branch:** current branch / compact validator output by default.

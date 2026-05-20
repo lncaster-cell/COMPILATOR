@@ -420,6 +420,9 @@ int DL_IsRegisteredCurrentAreaStaleReachedMoveCritical(object oNpc, object oArea
     return TRUE;
 }
 
+// AUDIT(#864): EMERGENCY RECOVERY PATH.
+// Keep behavior stable; this path must route back into canonical worker touch flow,
+// not replace it with parallel directive/move logic.
 int DL_EmergencyTouchCriticalStaleReachedNpc(object oNpc, object oArea, int nPassMode, int nTickStamp, int nSlot, int nCount, string sReason)
 {
     if (!DL_IsActivePipelineNpc(oNpc))
@@ -553,6 +556,9 @@ int DL_IsStaleReachedMoveJobCritical(object oNpc)
     return FALSE;
 }
 
+// AUDIT(#864): FALLBACK/EMERGENCY CLASSIFIER.
+// This predicate is safety-net logic for stale/contradictory states and should stay
+// bounded and diagnosable; avoid broadening without focused evidence.
 int DL_NpcNeedsCriticalWorkerTouch(object oNpc)
 {
     if (!GetIsObjectValid(oNpc))
