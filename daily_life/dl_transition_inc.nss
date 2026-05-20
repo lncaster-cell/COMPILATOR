@@ -1,3 +1,5 @@
+#include "dl_shared_keys_inc"
+
 // Daily Life simple transition/navigation helper.
 // Builder contract:
 //   waypoint tag: <from_zone>__<to_zone>
