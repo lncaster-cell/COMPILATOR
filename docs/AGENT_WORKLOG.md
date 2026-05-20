@@ -1,11 +1,11 @@
-## 2026-05-20 — Work anchor transition-state safe clear/handoff guard
+## 2026-05-20 — Daily Life cap policy unification and cap inventory
 
-**Task/PR/branch:** current branch / DL_ProgressWorkAtTarget transition-finalizer overlap hardening.
-**Files touched:** `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** `DL_ProgressWorkAtTarget` could reach work anchor while transition status was still active (`moving_to_entry`/`transitioning`) and clear transition locals directly, overlapping active transition finalizer/owner flow.
-**Change:** added guarded transition-clear behavior in `DL_ProgressWorkAtTarget`: clear transition state only when transition is inactive (`""|idle|failed`); for active transition states, skip direct clear and route control through `DL_NavTryAdvanceToZoneForOwner(..., DL_MOVE_OWNER_WORK)` owner path; if handoff cannot advance, keep transition keys and skip clear. Added diagnostic local `dl_work_transition_clear_reason` for clear/skip reasons. Also tagged transition clear reason in work reset/missing-state clear paths.
-**Reason:** preserve transition owner/finalizer contracts and avoid unsafe direct deletion of transition keys while transition pipeline is still active.
-**Preserve:** transition key literals remain unchanged; owner-path handoff remains bounded and diagnosable via reason tags.
+**Task/PR/branch:** current branch / cap-policy standardization for `daily_life/`.
+**Files touched:** `daily_life/dl_move_job_inc.nss`, `daily_life/dl_anchor_cache_inc.nss`, `daily_life/dl_focus_inc.nss`, `daily_life/dl_transition_inc.nss`, `daily_life/dl_registry_inc.nss`, `daily_life/dl_cr_crime_inc.nss`, `docs/daily-life-cap-policy.md`, `docs/AGENT_WORKLOG.md`.
+**Context:** scan/lookup caps were spread across subsystems without one shared classification and rationale map, making future tuning risky in hot worker paths.
+**Change:** consolidated cap inventory into a dedicated policy document with HOT/WARM/COLD criticality plus policy groups (`worker-hotpath`, `nav-resolution`, `crime-reactions`), and added inline CAP POLICY comments next to key constants in Daily Life includes (especially hotpath constants) documenting budget intent and limit rationale.
+**Reason:** preserve bounded runtime behavior while making cap tuning explicit, auditable, and less likely to introduce accidental hot-path inflation.
+**Preserve:** keep existing cap values and local-key literal contracts unchanged; this PR is policy/annotation plus documentation inventory, not behavioral rewrite.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Transition registry problem codes: remove raw string literals
