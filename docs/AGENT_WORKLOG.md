@@ -1,3 +1,13 @@
+## 2026-05-20 — Transition finalizer completion side-effects helper unification
+
+**Task/PR/branch:** current branch / de-duplicate transition finalizer completion side-effects in `dl_transition_inc.nss`.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `DL_FinalizeTransitionAfterQueuedJump` duplicated the same completion side-effects sequence in `post_jump_finalizer_same_area_complete` and `post_jump_finalizer_complete` branches, which risks drift in active transition debug locals.
+**Change:** added helper `DL_ApplyTransitionFinalizerCompletionSideEffects(oNpc, sTargetZone, sDebugStage, bHandoffTouchCalled, sResult)` that performs the full completion side-effects package (cache invalidation, execution/focus cleanup, zone/debug update, recoverable-problem clear, worker touch locals, handoff-touch flag, and finalizer result write). Rewired both completion branches to use this helper, parameterizing `dl_transition_registry_handoff_touch_called` and result string as requested.
+**Reason:** preserve one canonical completion side-effects path while keeping branch-specific semantics explicit through parameters.
+**Preserve:** debug local keys and value formats remain unchanged (`dl_post_jump_worker_touch_called`, `dl_transition_registry_worker_touch_area`, `dl_transition_registry_handoff_touch_called`, `dl_post_jump_result` via finalizer helper).
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Work waypoint resolver profile helper unification (work roles)
 
 **Task/PR/branch:** current branch / unify repeated work waypoint resolvers in `dl_work_inc.nss`.
