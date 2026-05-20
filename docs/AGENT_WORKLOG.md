@@ -1,3 +1,13 @@
+## 2026-05-20 — Social scene IDs now drive real scene cadence/pools
+
+**Task/PR/branch:** current branch / social scene signature alignment in `dl_social_scene_inc.nss`.
+**Files touched:** `daily_life/dl_social_scene_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** social-scene helpers accepted `sSceneId`/`nStep` but effectively ignored scene identity in cadence/rule selection, creating pseudo data-driven signatures.
+**Change:** kept data-driven approach and wired scene identity into real branches: added `DL_SOCIAL_SCENE_TAVERN_LIVE`, made step-count and wait logic scene-aware, updated speaker/solo pool selection to branch by scene, and updated `DL_TickSocialScene` calls to pass/consume arguments matching actual logic.
+**Reason:** remove fake parameters while preserving extensibility: `DL_SOCIAL_SCENE_DEFAULT` keeps current baseline behavior, and alternative scene IDs now have concrete rules.
+**Preserve:** `DL_L_NPC_SOCIAL_SCENE_*` local-key literal contracts are unchanged.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Transition registry problem codes: remove raw string literals
 
 **Task/PR/branch:** current branch / literal-to-constant cleanup for transition registry problem codes.
