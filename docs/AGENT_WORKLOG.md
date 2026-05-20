@@ -1,11 +1,11 @@
-## 2026-05-20 — Transition finalizer outcome code centralization + shared outcome writer
+## 2026-05-20 — Transition finalizer completion side-effects helper unification
 
-**Task/PR/branch:** current branch / centralize finalizer reason/result constants in `dl_transition_inc.nss`.
+**Task/PR/branch:** current branch / de-duplicate transition finalizer completion side-effects in `dl_transition_inc.nss`.
 **Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** transition finalizer paths still mixed centralized problem constants with raw literals across post-jump result writes, nav-debug reasons, and BSMITH stage usage.
-**Change:** grouped full post-jump finalizer reason/result codes into one constant block, replaced raw literals in `SetLocalString(... "dl_post_jump_result" ...)`, `DL_NavSetDebug` finalizer reasons, and `DL_BsmithTraceStage` finalizer stage calls, and added `DL_SetFinalizerOutcomeState` helper to write result + diagnostic + registry problem + optional trace note in one call for failure outcomes.
-**Reason:** keep literal contract values unchanged while reducing drift/typo risk and making finalizer outcome reporting consistent in one helper.
-**Preserve:** all literal string values remain exactly the same runtime contracts; no transition pipeline ownership changes.
+**Context:** `DL_FinalizeTransitionAfterQueuedJump` duplicated the same completion side-effects sequence in `post_jump_finalizer_same_area_complete` and `post_jump_finalizer_complete` branches, which risks drift in active transition debug locals.
+**Change:** added helper `DL_ApplyTransitionFinalizerCompletionSideEffects(oNpc, sTargetZone, sDebugStage, bHandoffTouchCalled, sResult)` that performs the full completion side-effects package (cache invalidation, execution/focus cleanup, zone/debug update, recoverable-problem clear, worker touch locals, handoff-touch flag, and finalizer result write). Rewired both completion branches to use this helper, parameterizing `dl_transition_registry_handoff_touch_called` and result string as requested.
+**Reason:** preserve one canonical completion side-effects path while keeping branch-specific semantics explicit through parameters.
+**Preserve:** debug local keys and value formats remain unchanged (`dl_post_jump_worker_touch_called`, `dl_transition_registry_worker_touch_area`, `dl_transition_registry_handoff_touch_called`, `dl_post_jump_result` via finalizer helper).
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Work waypoint resolver profile helper unification (work roles)
