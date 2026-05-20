@@ -1,3 +1,13 @@
+## 2026-05-20 — Anchor move issue clear API consolidation (focus/work)
+
+**Task/PR/branch:** current branch / anchor move issue wrapper API review and call-site consolidation.
+**Files touched:** `daily_life/dl_res_inc.nss`, `daily_life/dl_focus_inc.nss`, `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `DL_ClearFocusMoveIssueState` and `DL_ClearWorkMoveIssueState` were public wrappers that only forwarded to `DL_ClearAnchorMoveIssueState` with owner-specific key constants.
+**Change:** replaced call-sites in resolver/focus/work includes with direct `DL_ClearAnchorMoveIssueState(...)` calls using existing owner key constants; removed now-redundant thin wrapper function definitions from focus/work includes.
+**Reason:** remove duplicate pass-through APIs when they carry no extra behavior and centralize anchor move-issue clearing through the canonical helper without changing local-key contracts.
+**Preserve:** `DL_L_NPC_FOCUS_ACTION_STAMP`, `DL_L_NPC_FOCUS_ACTION_TARGET`, `DL_L_NPC_WORK_ACTION_STAMP`, `DL_L_NPC_WORK_ACTION_TARGET` literal values and semantics are unchanged.
+**Validation:** static grep/diff checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Social scene IDs now drive real scene cadence/pools
 
 **Task/PR/branch:** current branch / social scene signature alignment in `dl_social_scene_inc.nss`.

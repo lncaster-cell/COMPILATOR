@@ -137,10 +137,6 @@ string DL_ResolveDomesticWorkerWorkKind(object oNpc, int bHasFetch)
 
     return DL_WORK_KIND_CRAFT;
 }
-void DL_ClearWorkMoveIssueState(object oNpc)
-{
-    DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_WORK_ACTION_STAMP, DL_L_NPC_WORK_ACTION_TARGET);
-}
 int DL_HasWorkPresentationState(object oNpc)
 {
     if (!GetIsObjectValid(oNpc))
@@ -180,7 +176,7 @@ void DL_ClearWorkExecutionState(object oNpc)
     DeleteLocalString(oNpc, DL_L_NPC_WORK_TARGET);
     DeleteLocalString(oNpc, DL_L_NPC_WORK_STATUS);
     DeleteLocalString(oNpc, DL_L_NPC_WORK_DIAGNOSTIC);
-    DL_ClearWorkMoveIssueState(oNpc);
+    DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_WORK_ACTION_STAMP, DL_L_NPC_WORK_ACTION_TARGET);
     DL_ClearActivityPresentation(oNpc);
     DL_ClearTransitionExecutionState(oNpc);
 }
@@ -210,7 +206,7 @@ void DL_SetWorkMissingState(object oNpc, string sKind, string sDiagnostic)
     SetLocalString(oNpc, DL_L_NPC_WORK_STATUS, "missing_waypoints");
     SetLocalString(oNpc, DL_L_NPC_WORK_DIAGNOSTIC, sDiagnostic);
     DeleteLocalString(oNpc, DL_L_NPC_WORK_TARGET);
-    DL_ClearWorkMoveIssueState(oNpc);
+    DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_WORK_ACTION_STAMP, DL_L_NPC_WORK_ACTION_TARGET);
     DL_ClearActivityPresentation(oNpc);
     DL_ClearTransitionExecutionState(oNpc);
 }
@@ -219,7 +215,7 @@ void DL_SetWorkTargetState(object oNpc, string sKind, object oTarget)
     string sTargetTag = GetTag(oTarget);
     if (GetLocalString(oNpc, DL_L_NPC_WORK_TARGET) != sTargetTag)
     {
-        DL_ClearWorkMoveIssueState(oNpc);
+        DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_WORK_ACTION_STAMP, DL_L_NPC_WORK_ACTION_TARGET);
     }
 
     SetLocalString(oNpc, DL_L_NPC_WORK_KIND, sKind);
@@ -280,7 +276,7 @@ int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
         return TRUE;
     }
 
-    DL_ClearWorkMoveIssueState(oNpc);
+    DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_WORK_ACTION_STAMP, DL_L_NPC_WORK_ACTION_TARGET);
     DL_ClearMoveJob(oNpc);
     DL_ClearTransitionExecutionState(oNpc);
     SetLocalString(oNpc, DL_L_NPC_WORK_STATUS, "on_anchor");
