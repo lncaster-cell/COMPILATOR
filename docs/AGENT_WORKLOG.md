@@ -1,12 +1,12 @@
-## 2026-05-20 — Canonical anchor move issue path for focus bridge
+## 2026-05-20 — Transition registry handoff canonical entrypoint restored
 
-**Task/PR/branch:** current branch / user-requested anchor move canonicalization.
-**Files touched:** `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** focus-like anchor move command issuing had a duplicate local implementation in directive move-bridge (`DL_TryRecoverMissingAnchorMoveJobFromDirective`) that manually set focus locals and started move job, parallel to canonical helper `DL_IssueFocusMoveAction`.
-**Change:** replaced duplicate inline anchor move issue block with a call to `DL_IssueFocusMoveAction(oNpc, oAnchor)`, while preserving existing pre-clear steps (`DL_ClearTransitionExecutionState`, `DL_ClearFocusMoveIssueState`, focus diagnostic clear), bridge reason selection, nav debug, and BSMITH/chat diagnostics.
-**Reason:** enforce one canonical command-issue entry path for focus anchor movement and avoid drift between bridge path and regular focus pipeline; preserve existing move/debug invariant fields.
-**Preserve:** no local-key literal renames; no removal of active movement/BSMITH diagnostics; no compiler/toolchain changes.
-**Validation:** static grep/diff review only. Compilation not run; user owns compilation.
+**Task/PR/branch:** current branch / handoff entrypoint audit in area worker/resync cycles.
+**Files touched:** `daily_life/dl_worker_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `DL_RunTransitionRegistryHandoffTick` was called from HOT worker, WARM maintenance, and enter-resync ticks, but the function body/signature was missing in `dl_worker_inc.nss` (left as orphaned block), so canonical handoff execution point was not explicit/maintainable.
+**Change:** restored `int DL_RunTransitionRegistryHandoffTick(object oArea, int nTickStamp)` as a bounded slot-based handoff processor (`DL_TRANSITION_HANDOFF_SLOT_COUNT`), keeping all existing touch/debug/rebuild behavior and reusing `DL_WorkerTouchNpc` pipeline.
+**Reason:** make the canonical handoff entrypoint factual and executable exactly where worker/resync cycles invoke it, without adding scans/polling or new ownership paths.
+**Preserve:** canonical handoff entrypoint remains area-owner tick path (`DL_RunAreaWorkerTick`, `DL_RunAreaWarmMaintenanceTick`, `DL_RunAreaEnterResyncTick`); keep bounded slot queue model and existing BSMITH/transition diagnostics.
+**Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Social scene solo animation canonicalization (pool logic)
 

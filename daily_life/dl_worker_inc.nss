@@ -1299,6 +1299,13 @@ int DL_RunTransitionRegistryHandoffTick(object oArea, int nTickStamp)
         return 0;
     }
 
+int DL_RunTransitionRegistryHandoffTick(object oArea, int nTickStamp)
+{
+    if (!DL_IsAreaObject(oArea))
+    {
+        return 0;
+    }
+
     int nTouched = 0;
     int i = 0;
     while (i < DL_TRANSITION_HANDOFF_SLOT_COUNT)
@@ -1309,12 +1316,6 @@ int DL_RunTransitionRegistryHandoffTick(object oArea, int nTickStamp)
         {
             object oNpcArea = GetArea(oNpc);
             object oRegisteredArea = GetLocalObject(oNpc, DL_L_NPC_REG_AREA);
-            string sRegisteredAreaBeforeTouch = "";
-            if (GetIsObjectValid(oRegisteredArea))
-            {
-                sRegisteredAreaBeforeTouch = GetTag(oRegisteredArea);
-            }
-            SetLocalString(oNpc, "dl_transition_registry_reg_area_before", sRegisteredAreaBeforeTouch);
             if (oNpcArea == oArea)
             {
                 SetLocalInt(oNpc, DL_L_NPC_PROCESSED_BY_RR_DBG, FALSE);
