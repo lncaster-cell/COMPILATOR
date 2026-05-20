@@ -1,12 +1,12 @@
-## 2026-05-20 — Move tick transition-wait semantics aligned with contradiction checks
+## 2026-05-20 — Registry stale-removal ownership consolidation (worker -> registry owner)
 
-**Task/PR/branch:** current branch / transition-wait canonicalization in move tick + resolver contradiction alignment.
-**Files touched:** `daily_life/dl_move_job_inc.nss`, `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** in `DL_TickMoveJob`, cross-area target branch marked `move_result=running` with diagnostic `waiting_for_transition`, but contradiction/classification path could still treat that as ordinary `running_without_moveto`.
-**Change:** in cross-area branch, explicitly stamp canonical move phase `DL_NAV_MOVE_PHASE_TRANSITION_TO_AREA` while preserving existing `waiting_for_transition` diagnostic and BSMITH trace; in resolver contradiction/classification checks, gate `ACTION_QUEUE_NOT_RUNNING` sampling/classification when move job is in transition-wait semantic state (diagnostic/phase/transition-status evidence).
-**Reason:** keep one canonical waiting-for-transition semantic without introducing duplicate state machines, and avoid false contradiction-class alarms for expected no-`ACTION_MOVETOPOINT` periods during transition handoff.
-**Preserve:** existing `waiting_for_transition` diagnostic channel and BSMITH trace fields are unchanged and remain active.
-**Validation:** static checks only. Compilation not run; user owns compilation.
+**Task/PR/branch:** current branch / user-requested owner consolidation for stale registry cleanup.
+**Files touched:** `daily_life/dl_worker_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** worker code still had duplicate physical slot-repair logic (`DL_RepairAreaRegistrySlot`) and inlined stale-removal branches overlapping `dl_registry_inc.nss` owner routines.
+**Change:** removed worker-local `DL_RepairAreaRegistrySlot` implementation and reduced `DL_RemoveStaleNpcReferenceFromAreaRegistrySlot` in worker to a thin bounded delegating call to `DL_RemoveStaleNpcReferenceFromAreaRegistry` (registry owner), preserving worker-side context only.
+**Reason:** enforce single ownership in `dl_registry_inc.nss` for physical stale reference deletion + slot repair + registry-local cleanup/debug contracts, and remove duplicate branch paths from worker.
+**Preserve:** no new scans introduced; worker call-sites still go through existing bounded pipelines and existing registry scan caps.
+**Validation:** static grep/diff checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Nav stale-zone guard in current-zone sync
 

@@ -229,31 +229,6 @@ void DL_RequestTransitionRegistryHandoff(object oNpc, object oOldArea, object oT
     DL_SetTransitionRegistryHandoffDebug(oNpc, oOldArea, oTargetArea);
 }
 
-void DL_RepairAreaRegistrySlot(object oArea, int nSlot, int nCount)
-{
-    int nLastSlot = nCount - 1;
-    object oTailNpc = OBJECT_INVALID;
-    if (nSlot != nLastSlot)
-    {
-        oTailNpc = DL_GetAreaRegistryNpcAtSlot(oArea, nLastSlot);
-    }
-
-    DL_DeleteAreaRegistrySlot(oArea, nLastSlot);
-
-    if (nSlot != nLastSlot)
-    {
-        DL_SetAreaRegistryNpcAtSlot(oArea, nSlot, oTailNpc);
-        if (GetIsObjectValid(oTailNpc))
-        {
-            SetLocalInt(oTailNpc, DL_L_NPC_REG_SLOT, nSlot);
-            SetLocalObject(oTailNpc, DL_L_NPC_REG_AREA, oArea);
-        }
-    }
-
-    SetLocalInt(oArea, DL_L_AREA_REG_COUNT, nLastSlot);
-    SetLocalInt(oArea, DL_L_AREA_REG_SEQ, GetLocalInt(oArea, DL_L_AREA_REG_SEQ) + 1);
-}
-
 string DL_GetAreaWorkerPassModeDebugLabel(int nPassMode)
 {
     if (nPassMode == DL_AREA_PASS_MODE_WORKER) return "worker";
@@ -859,24 +834,8 @@ int DL_RemoveStaleNpcReferenceFromAreaRegistrySlot(object oArea, object oNpc, in
     {
         return FALSE;
     }
-
-    int nCount = GetLocalInt(oArea, DL_L_AREA_REG_COUNT);
-    if (nCount <= 0 || nSlot < 0 || nSlot >= nCount)
-    {
-        return DL_RemoveStaleNpcReferenceFromAreaRegistry(oArea, oNpc);
-    }
-
-    if (DL_GetAreaRegistryNpcAtSlot(oArea, nSlot) == oNpc)
-    {
-        DL_RepairAreaRegistrySlot(oArea, nSlot, nCount);
-        if (GetLocalObject(oNpc, DL_L_NPC_REG_AREA) == oArea)
-        {
-            DL_ClearNpcRegistryLocals(oNpc);
-        }
-        DL_SetStaleOldAreaRegistryDebug(oNpc, oArea, nSlot, TRUE);
-        return TRUE;
-    }
-
+    // Registry owner path: physical stale removal + slot-repair live in dl_registry_inc.
+    // Worker keeps only bounded call-site context/routing.
     return DL_RemoveStaleNpcReferenceFromAreaRegistry(oArea, oNpc);
 }
 
