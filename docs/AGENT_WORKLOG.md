@@ -1,3 +1,13 @@
+## 2026-05-20 — Move tick transition-wait semantics aligned with contradiction checks
+
+**Task/PR/branch:** current branch / transition-wait canonicalization in move tick + resolver contradiction alignment.
+**Files touched:** `daily_life/dl_move_job_inc.nss`, `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** in `DL_TickMoveJob`, cross-area target branch marked `move_result=running` with diagnostic `waiting_for_transition`, but contradiction/classification path could still treat that as ordinary `running_without_moveto`.
+**Change:** in cross-area branch, explicitly stamp canonical move phase `DL_NAV_MOVE_PHASE_TRANSITION_TO_AREA` while preserving existing `waiting_for_transition` diagnostic and BSMITH trace; in resolver contradiction/classification checks, gate `ACTION_QUEUE_NOT_RUNNING` sampling/classification when move job is in transition-wait semantic state (diagnostic/phase/transition-status evidence).
+**Reason:** keep one canonical waiting-for-transition semantic without introducing duplicate state machines, and avoid false contradiction-class alarms for expected no-`ACTION_MOVETOPOINT` periods during transition handoff.
+**Preserve:** existing `waiting_for_transition` diagnostic channel and BSMITH trace fields are unchanged and remain active.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Nav stale-zone guard in current-zone sync
 
 **Task/PR/branch:** current branch / stale current-zone resync guard for transition navigation.

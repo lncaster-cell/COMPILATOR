@@ -676,6 +676,10 @@ int DL_TickMoveJob(object oNpc)
     object oTargetArea = GetArea(oTarget);
     if (GetIsObjectValid(oNpcArea) && GetIsObjectValid(oTargetArea) && oNpcArea != oTargetArea)
     {
+        // Canonical transition-wait state:
+        // keep move_result=running for compatibility, but mark explicit transition phase
+        // so contradiction logic can distinguish this from ordinary in-area running movement.
+        SetLocalString(oNpc, DL_L_NPC_MOVE_PHASE, DL_NAV_MOVE_PHASE_TRANSITION_TO_AREA);
         SetLocalString(oNpc, DL_L_NPC_MOVE_RESULT, DL_MOVE_RESULT_RUNNING);
         SetLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC, "waiting_for_transition");
         DL_BsmithTraceStage(oNpc, "MOVE_TICK", "waiting_for_transition");
