@@ -14,21 +14,49 @@ const string DL_L_NPC_SOCIAL_SCENE_PHASE = "dl_social_scene_phase";
 const string DL_L_NPC_SOCIAL_SCENE_PLAY_RESULT = "dl_social_scene_play_result";
 
 const string DL_SOCIAL_SCENE_DEFAULT = "social_default";
+const string DL_SOCIAL_SCENE_TAVERN_LIVE = "social_tavern_live";
 const int DL_SOCIAL_SCENE_SOLO_WAIT_MINUTES = 3;
 
 int DL_GetSocialSceneStepCount(string sSceneId)
 {
+    if (sSceneId == DL_SOCIAL_SCENE_TAVERN_LIVE) return 12;
     return 8;
 }
 
-int DL_GetSocialSceneStepWaitMinutes(string sSceneId, int nStep)
+int DL_GetSocialSceneStepWaitMinutes(string sSceneId, int nStep, int bSolo, int bActiveSpeaker)
 {
+    if (bSolo)
+    {
+        if (sSceneId == DL_SOCIAL_SCENE_TAVERN_LIVE)
+        {
+            if ((nStep % 4) == 0) return 2;
+            return 3;
+        }
+
+        return DL_SOCIAL_SCENE_SOLO_WAIT_MINUTES;
+    }
+
+    if (sSceneId == DL_SOCIAL_SCENE_TAVERN_LIVE)
+    {
+        if (bActiveSpeaker) return 1;
+        return 2;
+    }
+
     return 1;
 }
 
-string DL_GetSocialSceneSpeakerPoolName(int nPhase)
+string DL_GetSocialSceneSpeakerPoolName(string sSceneId, int nPhase)
 {
     int nMood = nPhase % 8;
+
+    if (sSceneId == DL_SOCIAL_SCENE_TAVERN_LIVE)
+    {
+        int nTavernMood = nPhase % 6;
+        if (nTavernMood == 0 || nTavernMood == 3) return "laugh_speaker";
+        if (nTavernMood == 1) return "forceful_speaker";
+        if (nTavernMood == 4) return "neutral_speaker";
+        return "sad_speaker";
+    }
 
     if (nMood == 2 || nMood == 3) return "forceful_speaker";
     if (nMood == 4 || nMood == 5) return "sad_speaker";
@@ -94,12 +122,23 @@ string DL_GetSocialScenePoolAnim(string sPool, int nIndex)
     return "listen";
 }
 
-string DL_SelectSocialSceneAnim(string sPool, string sLastAnim)
+string DL_SelectSocialSceneAnim(string sPool, string sLastAnim, object oNpc, int nStep)
 {
     int nCount = DL_GetSocialScenePoolCount(sPool);
     if (nCount <= 0) nCount = 1;
 
-    int nIndex = Random(nCount);
+    string sNpcTag = GetTag(oNpc);
+    int nBaseIndex = DL_GetTagDeterministicOffset(sNpcTag, nCount, 0);
+
+    // Keep lightweight bounded variability so repeated scene loops do not become rigid.
+    // Jitter stays in [0..1], then folded into pool size bounds.
+    int nJitter = 0;
+    if (nCount > 1)
+    {
+        nJitter = Random(2);
+    }
+
+    int nIndex = (nBaseIndex + (nStep % nCount) + nJitter) % nCount;
     string sAnim = DL_GetSocialScenePoolAnim(sPool, nIndex);
     if (sAnim == sLastAnim && nCount > 1)
     {
@@ -169,31 +208,41 @@ void DL_TickSocialScene(object oNpc, object oAnchor, object oPartner, int bPartn
     string sLastAnim = GetLocalString(oNpc, DL_L_NPC_SOCIAL_SCENE_LAST_ANIM);
     string sPool = "listener";
     string sAnim = "";
-    int nWait = DL_GetSocialSceneStepWaitMinutes(sSceneId, nStep);
+    int nWait = 1;
     int bActiveSpeaker = FALSE;
     int bPlayResult = FALSE;
 
     if (bSolo)
     {
         int nSoloStep = nStep % 3;
-        if (nSoloStep == 0) sPool = "listener";
-        if (nSoloStep == 1) sPool = "sad_speaker";
-        if (nSoloStep == 2) sPool = "neutral_speaker";
+        if (sSceneId == DL_SOCIAL_SCENE_TAVERN_LIVE)
+        {
+            int nSoloTavern = nStep % 4;
+            if (nSoloTavern == 0) sPool = "listener";
+            else if (nSoloTavern == 1) sPool = "laugh_speaker";
+            else if (nSoloTavern == 2) sPool = "neutral_speaker";
+            else sPool = "forceful_speaker";
+        }
+        else
+        {
+            if (nSoloStep == 0) sPool = "listener";
+            if (nSoloStep == 1) sPool = "sad_speaker";
+            if (nSoloStep == 2) sPool = "neutral_speaker";
+        }
         sAnim = DL_SelectSocialSceneAnim(sPool, sLastAnim);
-        nWait = DL_SOCIAL_SCENE_SOLO_WAIT_MINUTES;
-        if (nSoloStep == 0) nWait = 2;
     }
     else
     {
         if ((nStep % 2) == 0 && sRole == "a") bActiveSpeaker = TRUE;
         if ((nStep % 2) == 1 && sRole == "b") bActiveSpeaker = TRUE;
 
-        if (bActiveSpeaker) sPool = DL_GetSocialSceneSpeakerPoolName(nStep);
+        if (bActiveSpeaker) sPool = DL_GetSocialSceneSpeakerPoolName(sSceneId, nStep);
         else sPool = "listener";
 
-        sAnim = DL_SelectSocialSceneAnim(sPool, sLastAnim);
+        sAnim = DL_SelectSocialSceneAnim(sPool, sLastAnim, oNpc, nStep);
     }
 
+    nWait = DL_GetSocialSceneStepWaitMinutes(sSceneId, nStep, bSolo, bActiveSpeaker);
     if (nWait < 1) nWait = 1;
 
     if (DL_SocialSceneIsRealAnim(sAnim))

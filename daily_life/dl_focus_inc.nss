@@ -28,11 +28,15 @@ const string DL_L_NPC_SOCIAL_PROBE_CURRENT_ACTION = "dl_social_probe_current_act
 // Set dl_meal_legacy_action_sit=1 or dl_chill_legacy_action_sit=1 on the NPC
 // or waypoint only for hand-verified placeables that should use ActionSit.
 const string DL_L_WP_MEAL_CHAIR_TAG = "dl_meal_chair_tag";
+// CAP POLICY (worker-hotpath): social partner tag lookup runs during focus
+// apply/tick, so it must be bounded to avoid hot worker inflation.
 const int DL_SOCIAL_PARTNER_TAG_SEARCH_CAP = 32;
 const int DL_CHILL_MISSING_CACHE_TTL_MINUTES = 10;
 const int DL_MEAL_MISSING_CACHE_TTL_MINUTES = 10;
 const int DL_CHILL_SIT_RETRY_MINUTES = 1;
 const int DL_MEAL_SIT_RETRY_MINUTES = 1;
+// CAP POLICY (worker-hotpath): near-chair probe is local polish logic, so cap
+// is intentionally small to keep seat checks cheap per NPC tick.
 const int DL_MEAL_NEAR_CHAIR_SCAN_CAP = 12;
 const float DL_MEAL_NEAR_CHAIR_RADIUS = 2.25;
 const float DL_MEAL_SIT_VERIFY_DELAY = 4.0;
