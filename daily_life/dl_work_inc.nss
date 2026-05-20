@@ -1,6 +1,8 @@
 const string DL_L_NPC_WORK_ACTION_STAMP = "dl_work_anchor_action_stamp";
 const string DL_L_NPC_WORK_ACTION_TARGET = "dl_work_anchor_action_target";
-const string DL_L_NPC_WORK_TRANSITION_CLEAR_REASON_DBG = "dl_work_transition_clear_reason";
+const string DL_WORK_STATUS_MISSING_WAYPOINTS = "missing_waypoints";
+const string DL_WORK_STATUS_MOVING_TO_ANCHOR = "moving_to_anchor";
+const string DL_WORK_STATUS_ON_ANCHOR = "on_anchor";
 
 
 void DL_ExecuteWorkDirective(object oNpc);
@@ -235,7 +237,7 @@ string DL_ResolveBlacksmithWorkKindAtHour(object oNpc)
 void DL_SetWorkMissingState(object oNpc, string sKind, string sDiagnostic)
 {
     SetLocalString(oNpc, DL_L_NPC_WORK_KIND, sKind);
-    SetLocalString(oNpc, DL_L_NPC_WORK_STATUS, "missing_waypoints");
+    SetLocalString(oNpc, DL_L_NPC_WORK_STATUS, DL_WORK_STATUS_MISSING_WAYPOINTS);
     SetLocalString(oNpc, DL_L_NPC_WORK_DIAGNOSTIC, sDiagnostic);
     DeleteLocalString(oNpc, DL_L_NPC_WORK_TARGET);
     DL_ClearWorkMoveIssueState(oNpc);
@@ -269,7 +271,7 @@ int DL_ShouldIssueWorkMoveAction(object oNpc, object oTarget)
         oNpc,
         oTarget,
         DL_L_NPC_WORK_STATUS,
-        "moving_to_anchor",
+        DL_WORK_STATUS_MOVING_TO_ANCHOR,
         DL_L_NPC_WORK_ACTION_TARGET,
         DL_L_NPC_WORK_ACTION_STAMP
     );
@@ -281,15 +283,9 @@ void DL_IssueWorkMoveAction(object oNpc, object oTarget)
         return;
     }
 
-    DL_PrepareAnchorMoveToObject(
-        oNpc,
-        oTarget,
-        DL_L_NPC_WORK_STATUS,
-        "moving_to_anchor",
-        DL_L_NPC_WORK_TARGET,
-        DL_L_NPC_WORK_ACTION_TARGET,
-        DL_L_NPC_WORK_ACTION_STAMP
-    );
+    SetLocalString(oNpc, DL_L_NPC_WORK_STATUS, DL_WORK_STATUS_MOVING_TO_ANCHOR);
+    SetLocalString(oNpc, DL_L_NPC_WORK_TARGET, GetTag(oTarget));
+    SetLocalString(oNpc, DL_L_NPC_WORK_ACTION_TARGET, GetTag(oTarget));
     DL_BeginMoveJobToObject(oNpc, DL_MOVE_OWNER_WORK, GetLocalString(oNpc, DL_L_NPC_WORK_KIND), oTarget, DL_WORK_ANCHOR_RADIUS);
 }
 int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
@@ -316,8 +312,8 @@ int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
 
     DL_ClearWorkMoveIssueState(oNpc);
     DL_ClearMoveJob(oNpc);
-    DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "work");
-    SetLocalString(oNpc, DL_L_NPC_WORK_STATUS, "on_anchor");
+    DL_ClearTransitionExecutionState(oNpc);
+    SetLocalString(oNpc, DL_L_NPC_WORK_STATUS, DL_WORK_STATUS_ON_ANCHOR);
     DL_FaceWorkTargetOrientation(oNpc, oTarget);
     DL_ApplyArchiveActivityPresentation(oNpc, DL_DIR_WORK);
     DL_PlayWorkAnimation(oNpc);

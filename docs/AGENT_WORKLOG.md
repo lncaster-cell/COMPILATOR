@@ -1,12 +1,12 @@
-## 2026-05-20 — Transition registry problem clear whitelist helper unification
+## 2026-05-20 — Daily Life status literals centralized for work/focus/sleep
 
-**Task/PR/branch:** current branch / user-requested helper extraction in transition finalizer cleanup.
-**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** the same OR whitelist for clearing `dl_transition_registry_problem` after successful finalizer existed in multiple places, with one raw-string variant and drift risk.
-**Change:** extracted `DL_ShouldClearTransitionRegistryProblemOnSuccess(string sProblem)` with one canonical whitelist based on `DL_TRANSITION_REGISTRY_PROBLEM_*` constants and replaced duplicate inline OR blocks with helper calls.
-**Reason:** keep one source of truth for “safe-to-clear on success” transition registry problems, reduce divergence risk, and preserve existing runtime literal contracts.
-**Preserve:** only the recoverable transition/finalizer pipeline problem codes are auto-cleared on successful finalizer; no local-key literal value changes.
-**Validation:** static checks only. Compilation not run; user owns compilation.
+**Task/PR/branch:** current branch / status literal constantization in Daily Life includes.
+**Files touched:** `daily_life/dl_work_inc.nss`, `daily_life/dl_focus_inc.nss`, `daily_life/dl_sleep_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** repeated raw status string literals were used in `SetLocalString(...STATUS, ...)` paths across work/focus/sleep execution flows.
+**Change:** added file-scope status constants in each target include and replaced raw status string usage with constants, including the frequently used statuses `moving_to_anchor`, `on_anchor`, `on_social_anchor`, `moving_via_navigation`, and `on_bed`; literal runtime values were kept unchanged.
+**Reason:** reduce drift/typo risk while preserving existing runtime local-key/status contracts and behavior.
+**Preserve:** do not change the literal status values because they are part of active diagnostics/runtime state contracts.
+**Validation:** static grep/text checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Social scene IDs now drive real scene cadence/pools
 

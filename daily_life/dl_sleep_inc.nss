@@ -2,6 +2,13 @@ const string DL_L_NPC_SLEEP_APPROACH_ACTION_STAMP = "dl_sleep_approach_action_st
 const string DL_L_NPC_SLEEP_BED_ACTION_STAMP = "dl_sleep_bed_action_stamp";
 const int DL_SLEEP_ACTION_REISSUE_SECONDS = 6;
 
+const string DL_SLEEP_STATUS_MISSING_WAYPOINTS = "missing_waypoints";
+const string DL_SLEEP_STATUS_MOVING_VIA_NAVIGATION = "moving_via_navigation";
+const string DL_SLEEP_STATUS_MOVING_TO_APPROACH = "moving_to_approach";
+const string DL_SLEEP_STATUS_APPROACH_REACHED = "approach_reached";
+const string DL_SLEEP_STATUS_JUMPING_TO_BED = "jumping_to_bed";
+const string DL_SLEEP_STATUS_ON_BED = "on_bed";
+
 int DL_GetNpcHomeSlot(object oNpc)
 {
     int nSlot = GetLocalInt(oNpc, DL_L_NPC_HOME_SLOT);
@@ -88,7 +95,7 @@ int DL_HasSleepExitBedPlacement(object oNpc)
         return TRUE;
     }
 
-    if (sStatus == "approach_reached" || sStatus == "jumping_to_bed" || sStatus == "on_bed")
+    if (sStatus == DL_SLEEP_STATUS_APPROACH_REACHED || sStatus == DL_SLEEP_STATUS_JUMPING_TO_BED || sStatus == DL_SLEEP_STATUS_ON_BED)
     {
         return TRUE;
     }
@@ -223,7 +230,7 @@ void DL_ClearSleepExecutionState(object oNpc)
 void DL_SetSleepMissingState(object oNpc)
 {
     SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_NONE);
-    SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, "missing_waypoints");
+    SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_SLEEP_STATUS_MISSING_WAYPOINTS);
     SetLocalString(oNpc, DL_L_NPC_SLEEP_DIAGNOSTIC, "sleep_waypoints_missing");
     DL_ClearSleepActionIssueState(oNpc);
     DeleteLocalString(oNpc, DL_L_NPC_SLEEP_TARGET);
@@ -252,7 +259,7 @@ void DL_QueueJumpAction(object oNpc, location lTarget)
 void DL_MarkSleepNavigationInProgress(object oNpc, string sTargetTag)
 {
     SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_MOVING);
-    SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, "moving_via_navigation");
+    SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_SLEEP_STATUS_MOVING_VIA_NAVIGATION);
     SetLocalString(oNpc, DL_L_NPC_SLEEP_TARGET, sTargetTag);
 }
 int DL_ShouldAttemptSleepNavigation(object oNpc)
@@ -300,15 +307,8 @@ void DL_ExecuteSleepDirective(object oNpc)
     if (!bCommittedToBed && GetDistanceBetween(oNpc, oApproach) > DL_SLEEP_APPROACH_RADIUS)
     {
         SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_MOVING);
-        DL_PrepareAnchorMoveToObject(
-            oNpc,
-            oApproach,
-            DL_L_NPC_SLEEP_STATUS,
-            "moving_to_approach",
-            DL_L_NPC_SLEEP_TARGET,
-            "",
-            DL_L_NPC_SLEEP_APPROACH_ACTION_STAMP
-        );
+        SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_SLEEP_STATUS_MOVING_TO_APPROACH);
+        SetLocalString(oNpc, DL_L_NPC_SLEEP_TARGET, GetTag(oApproach));
         DL_BeginMoveJobToObject(oNpc, DL_MOVE_OWNER_SLEEP, "approach", oApproach, DL_SLEEP_APPROACH_RADIUS);
         return;
     }
@@ -318,9 +318,9 @@ void DL_ExecuteSleepDirective(object oNpc)
         DeleteLocalInt(oNpc, DL_L_NPC_SLEEP_APPROACH_ACTION_STAMP);
         DL_ClearMoveJob(oNpc);
         SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_JUMPING);
-        SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, "approach_reached");
+        SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_SLEEP_STATUS_APPROACH_REACHED);
         nPhase = DL_SLEEP_PHASE_JUMPING;
-        sStatus = "approach_reached";
+        sStatus = DL_SLEEP_STATUS_APPROACH_REACHED;
     }
 
     DL_NavPrepareTargetZoneFromAnchor(oNpc, oBed);
@@ -333,19 +333,19 @@ void DL_ExecuteSleepDirective(object oNpc)
     if (GetDistanceBetween(oNpc, oBed) > DL_SLEEP_BED_RADIUS)
     {
         if (nPhase != DL_SLEEP_PHASE_JUMPING ||
-            sStatus != "jumping_to_bed" ||
+            sStatus != DL_SLEEP_STATUS_JUMPING_TO_BED ||
             DL_ShouldReissueSleepAction(oNpc, DL_L_NPC_SLEEP_BED_ACTION_STAMP))
         {
             SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_JUMPING);
-            SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, "jumping_to_bed");
-            DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "sleep");
+            SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_SLEEP_STATUS_JUMPING_TO_BED);
+            DL_ClearTransitionExecutionState(oNpc);
             DL_MarkSleepActionIssued(oNpc, DL_L_NPC_SLEEP_BED_ACTION_STAMP);
             DL_QueueJumpAction(oNpc, lBed);
         }
         return;
     }
 
-    if (nPhase != DL_SLEEP_PHASE_ON_BED || sStatus != "on_bed")
+    if (nPhase != DL_SLEEP_PHASE_ON_BED || sStatus != DL_SLEEP_STATUS_ON_BED)
     {
         DL_PlaySleepAnimation(oNpc);
     }
@@ -354,6 +354,6 @@ void DL_ExecuteSleepDirective(object oNpc)
     DL_ClearMoveJob(oNpc);
     DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "sleep");
     SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_ON_BED);
-    SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, "on_bed");
-    DL_LogChatDebugEvent(oNpc, "on_bed", "on_bed anchor=" + GetTag(oBed));
+    SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_SLEEP_STATUS_ON_BED);
+    DL_LogChatDebugEvent(oNpc, DL_SLEEP_STATUS_ON_BED, "on_bed anchor=" + GetTag(oBed));
 }
