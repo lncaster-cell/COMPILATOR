@@ -1,11 +1,11 @@
-## 2026-05-20 — Social scene step source unification (time-based)
+## 2026-05-20 — Area worker: remove same-tick double player recount, keep bounded repair recount
 
-**Task/PR/branch:** current branch / user-requested social scene step source cleanup.
-**Files touched:** `daily_life/dl_social_scene_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** social-scene tick used time-based phase (`nNow % nStepCount`) but still wrote/cleared `DL_L_NPC_SOCIAL_SCENE_STEP`, creating redundant dead state.
-**Change:** kept time-based phase as the single source of truth and removed `DL_L_NPC_SOCIAL_SCENE_STEP` contract usage from declarations, cleanup, and per-tick writes.
-**Reason:** eliminate competing/unused step state and keep debug locals consistent with actual phase scheduling.
-**Preserve:** `DL_L_NPC_SOCIAL_SCENE_PHASE` remains the emitted phase value, and `DL_L_NPC_SOCIAL_SCENE_NEXT_MINUTE` remains the scheduling gate; no change to wait/phase logic.
+**Task/PR/branch:** current branch / user-requested `DL_MaybeReconcileAreaPlayerCount` + worker hotness pass optimization.
+**Files touched:** `daily_life/dl_worker_inc.nss`, `daily_life/dl_registry_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** area worker tick performed `DL_MaybeReconcileAreaPlayerCount` and then immediately ran `DL_CountPlayersInArea` again in the same tick, causing duplicate area scans on the hot path.
+**Change:** switched worker hotness flow to use reconciled cached player count as primary `nActualPlayers` source; kept a bounded protective recount only in repair mode (`cached<=0`) and only every `DL_PLAYER_COUNT_REPAIR_INTERVAL_TICKS` via `DL_L_AREA_PLAYER_COUNT_REPAIR_TICK`.
+**Reason:** remove redundant same-tick recount while preserving diagnosable recovery path and forced HOT repair when players are physically present but cached count is stale.
+**Preserve:** `DL_L_AREA_*_DBG` hotness debug locals remain intact; forced HOT path on confirmed real player presence remains intact.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Social scene solo animation canonicalization (pool logic)

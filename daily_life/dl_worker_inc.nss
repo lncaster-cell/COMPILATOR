@@ -1602,8 +1602,24 @@ void DL_RunAreaWorkerTick(object oArea)
     DL_MaybeReconcileAreaPlayerCount(oArea);
 
     int nCachedPlayers = DL_GetAreaPlayerCount(oArea);
-    int nActualPlayers = DL_CountPlayersInArea(oArea);
+    int nActualPlayers = nCachedPlayers;
     int nTierBeforeLifecycle = DL_GetAreaTier(oArea);
+    int nNowTick = DL_GetAreaTick(oArea);
+    int nLastRepairCountTick = GetLocalInt(oArea, DL_L_AREA_PLAYER_COUNT_REPAIR_TICK);
+    int bRunRepairCount = FALSE;
+    if (nCachedPlayers <= 0)
+    {
+        if (nNowTick < nLastRepairCountTick || (nNowTick - nLastRepairCountTick) >= DL_PLAYER_COUNT_REPAIR_INTERVAL_TICKS)
+        {
+            bRunRepairCount = TRUE;
+        }
+    }
+
+    if (bRunRepairCount)
+    {
+        nActualPlayers = DL_CountPlayersInArea(oArea);
+        SetLocalInt(oArea, DL_L_AREA_PLAYER_COUNT_REPAIR_TICK, nNowTick);
+    }
     int bStaleRepaired = FALSE;
     int bHotnessRepaired = FALSE;
     int bForcedHotDueToPlayer = FALSE;
