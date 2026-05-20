@@ -1,3 +1,12 @@
+## 2026-05-20 — Annotation-only micro-PR: classify critical Daily Life paths (#864)
+
+**Task/PR/branch:** current branch / first cleanup micro-step after audit.
+**Files touched:** `daily_life/dl_worker_inc.nss`, `daily_life/dl_res_inc.nss`, `daily_life/dl_focus_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** proceed with safe technical-debt reduction without behavior change; clarify canonical/fallback/emergency ownership near high-risk overlap points.
+**Change:** added audit classification comments only (no logic edits) near `DL_NpcNeedsCriticalWorkerTouch`, `DL_EmergencyTouchCriticalStaleReachedNpc`, `DL_EmergencyCloseReachedMoveInvariant`, `DL_EnforceReachedMoveApplyExitInvariant`, and `DL_ProgressFocusAtTarget`.
+**Reason:** reduce accidental risky refactors and preserve current stabilization invariants while enabling cleaner follow-up PR planning.
+**Validation:** static text review only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Refine audit tone: analysis-only synthesis (no new blocker framing) (#864)
 
 **Task/PR/branch:** current branch / refine audit according to user feedback.

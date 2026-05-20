@@ -205,6 +205,9 @@ object DL_GetNpcCachedPlaceableByTagInArea(object oNpc, string sCacheLocal, stri
 
     return OBJECT_INVALID;
 }
+// AUDIT(#864): CANONICAL FOCUS PROGRESSION with known overlap debt.
+// This block bridges focus presentation with movement/finalization outcomes;
+// refactor only in single-theme PRs to avoid duplicating closure logic.
 int DL_ProgressFocusAtTarget(object oNpc, object oTarget, string sOnAnchorStatus, string sAnim)
 {
     if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
