@@ -68,6 +68,16 @@ void DL_WorkerTouchNpc(object oNpc);
 int DL_RemoveStaleNpcReferenceFromAreaRegistry(object oArea, object oNpc);
 void DL_BsmithTraceStage(object oNpc, string sStage, string sNote);
 
+void DL_TraceTransitionFinalizer(object oNpc, string sResult, string sExtra)
+{
+    string sNote = "result=" + sResult;
+    if (sExtra != "")
+    {
+        sNote = sNote + " " + sExtra;
+    }
+    DL_BsmithTraceStage(oNpc, "TRANSITION_FINALIZER", sNote);
+}
+
 string DL_GetAreaNavigationSlotKey(int nSlot)
 {
     if (nSlot < 0) nSlot = 0;
@@ -893,7 +903,7 @@ int DL_NavTryFinalizeCompletedTransition(object oNpc, object oTargetAnchor)
         {
             DL_NavSetTransitionFinalizeSkippedDebug(oNpc, oTargetAnchor, "finalize_skip_target_invalid", sOldTransitionStatus);
         }
-        DL_BsmithTraceStage(oNpc, "TRANSITION_FINALIZER", "finalize_skip_target_invalid");
+        DL_TraceTransitionFinalizer(oNpc, "finalize_skip_target_invalid", "");
         return FALSE;
     }
 
@@ -910,7 +920,7 @@ int DL_NavTryFinalizeCompletedTransition(object oNpc, object oTargetAnchor)
         {
             DL_NavSetTransitionFinalizeSkippedDebug(oNpc, oTargetAnchor, "finalize_skip_area_invalid", sOldTransitionStatus);
         }
-        DL_BsmithTraceStage(oNpc, "TRANSITION_FINALIZER", "finalize_skip_area_invalid");
+        DL_TraceTransitionFinalizer(oNpc, "finalize_skip_area_invalid", "");
         return FALSE;
     }
 
@@ -920,7 +930,7 @@ int DL_NavTryFinalizeCompletedTransition(object oNpc, object oTargetAnchor)
         {
             DL_NavSetTransitionFinalizeSkippedDebug(oNpc, oTargetAnchor, "finalize_skip_area_mismatch", sOldTransitionStatus);
         }
-        DL_BsmithTraceStage(oNpc, "TRANSITION_FINALIZER", "finalize_skip_area_mismatch");
+        DL_TraceTransitionFinalizer(oNpc, "finalize_skip_area_mismatch", "");
         return FALSE;
     }
 
@@ -940,7 +950,7 @@ int DL_NavTryFinalizeCompletedTransition(object oNpc, object oTargetAnchor)
     DL_NavSetNpcCurrentZone(oNpc, sFinalZone);
     DL_NavSetDebug(oNpc, sFinalZone, sFinalZone, "", "post_transition_complete");
     DL_NavSetPostTransitionCompleteDebug(oNpc, oTargetAnchor, sFinalZone, sFinalZone, sOldTransitionStatus);
-    DL_BsmithTraceStage(oNpc, "TRANSITION_FINALIZER", "post_transition_complete");
+    DL_TraceTransitionFinalizer(oNpc, "post_transition_complete", "");
     return TRUE;
 }
 

@@ -1,3 +1,13 @@
+## 2026-05-20 — Transition finalizer trace helper standardization
+
+**Task/PR/branch:** current branch / transition finalizer BSMITH trace helper unification.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** transition finalizer stage tracing used repeated direct `DL_BsmithTraceStage(..., "TRANSITION_FINALIZER", ...)` calls with raw note literals, making parse format inconsistent for downstream log parsing.
+**Change:** added helper `DL_TraceTransitionFinalizer(oNpc, sResult, sExtra)` in transition include; helper emits standardized note format `result=<...>` plus optional suffix text, and migrated all existing `TRANSITION_FINALIZER` trace call sites in this file to the helper while preserving original result/event values.
+**Reason:** centralize finalizer trace formatting and preserve current transition event taxonomy for stable diagnostics.
+**Preserve:** keep event/result values unchanged (`post_transition_complete`, `finalize_skip_*`, `post_jump_finalizer_*`) and do not remove/rename active BSMITH trace stage.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Work waypoint resolver profile helper unification (work roles)
 
 **Task/PR/branch:** current branch / unify repeated work waypoint resolvers in `dl_work_inc.nss`.
