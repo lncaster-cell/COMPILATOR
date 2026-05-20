@@ -692,38 +692,21 @@ void DL_ClearSafeTransitionRegistryProblemAfterFinalize(object oNpc)
     }
 
     string sRegistryProblem = GetLocalString(oNpc, "dl_transition_registry_problem");
-    if (sRegistryProblem == DL_TRANSITION_REGISTRY_PROBLEM_TARGET_AREA_WORKER_NOT_TICKING_OR_NOT_OWNING_NPC ||
-        sRegistryProblem == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_NOT_EXPECTED ||
-        sRegistryProblem == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_AREA_NOT_CHANGED ||
-        sRegistryProblem == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_REGISTRY_REPAIR_FAILED ||
-        sRegistryProblem == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_REGISTRY_AREA_MISMATCH ||
-        sRegistryProblem == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_UNEXPECTED_AREA)
+    if (DL_ShouldClearTransitionRegistryProblemOnSuccess(sRegistryProblem))
     {
         DeleteLocalString(oNpc, "dl_transition_registry_problem");
     }
 }
 
-void DL_FinalizePostJumpTransitionResult(object oNpc, string sResult, int bClearExpectedFlag, string sTraceReason)
+int DL_ShouldClearTransitionRegistryProblemOnSuccess(string sProblem)
 {
-    if (!GetIsObjectValid(oNpc))
-    {
-        return;
-    }
-
-    SetLocalString(oNpc, "dl_post_jump_result", sResult);
-    if (sTraceReason != "")
-    {
-        DL_BsmithTraceStage(oNpc, "TRANSITION_FINALIZER", sTraceReason);
-    }
-
-    if (bClearExpectedFlag == TRUE)
-    {
-        DeleteLocalInt(oNpc, "dl_transition_pending_finalizer_expected");
-    }
-    else
-    {
-        SetLocalString(oNpc, "dl_transition_finalizer_expected_persist_reason", sResult);
-    }
+    // Contract: only transition registry problems that represent recoverable
+    // transport/finalizer pipeline states are auto-cleared after successful finalizer.
+    return
+        sProblem == DL_TRANSITION_REGISTRY_PROBLEM_TARGET_AREA_WORKER_NOT_TICKING_OR_NOT_OWNING_NPC ||
+        sProblem == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_AREA_NOT_CHANGED ||
+        sProblem == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_REGISTRY_REPAIR_FAILED ||
+        sProblem == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_REGISTRY_AREA_MISMATCH;
 }
 
 void DL_FinalizeTransitionAfterQueuedJump(object oNpc)
@@ -787,12 +770,7 @@ void DL_FinalizeTransitionAfterQueuedJump(object oNpc)
         DL_NavClearFocusMoveIssueStateAfterJump(oNpc);
         DL_NavSetNpcCurrentZone(oNpc, sTargetZone);
         DL_NavSetDebug(oNpc, sTargetZone, sTargetZone, "", "post_jump_finalizer_same_area_complete");
-        if (GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_TARGET_AREA_WORKER_NOT_TICKING_OR_NOT_OWNING_NPC ||
-            GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_NOT_EXPECTED ||
-            GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_AREA_NOT_CHANGED ||
-            GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_REGISTRY_REPAIR_FAILED ||
-            GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_REGISTRY_AREA_MISMATCH ||
-            GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_UNEXPECTED_AREA)
+        if (DL_ShouldClearTransitionRegistryProblemOnSuccess(GetLocalString(oNpc, "dl_transition_registry_problem")))
         {
             DeleteLocalString(oNpc, "dl_transition_registry_problem");
         }
@@ -870,12 +848,7 @@ void DL_FinalizeTransitionAfterQueuedJump(object oNpc)
         DL_NavClearFocusMoveIssueStateAfterJump(oNpc);
         DL_NavSetNpcCurrentZone(oNpc, sTargetZone);
         DL_NavSetDebug(oNpc, sTargetZone, sTargetZone, "", "post_jump_finalizer_complete");
-        if (GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_TARGET_AREA_WORKER_NOT_TICKING_OR_NOT_OWNING_NPC ||
-            GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_NOT_EXPECTED ||
-            GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_AREA_NOT_CHANGED ||
-            GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_REGISTRY_REPAIR_FAILED ||
-            GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_REGISTRY_AREA_MISMATCH ||
-            GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_UNEXPECTED_AREA)
+        if (DL_ShouldClearTransitionRegistryProblemOnSuccess(GetLocalString(oNpc, "dl_transition_registry_problem")))
         {
             DeleteLocalString(oNpc, "dl_transition_registry_problem");
         }

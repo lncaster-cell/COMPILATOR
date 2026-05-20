@@ -1,11 +1,21 @@
-## 2026-05-20 — Transition clear owner-wrapper + pending post-jump guard
+## 2026-05-20 — Transition registry problem clear whitelist helper unification
 
-**Task/PR/branch:** current branch / owner-aware transition clear routing.
-**Files touched:** `daily_life/dl_transition_inc.nss`, `daily_life/dl_sleep_inc.nss`, `daily_life/dl_work_inc.nss`, `daily_life/dl_focus_inc.nss`, `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** direct transition-state clears from multiple owner subsystems could wipe transition execution locals while a queued post-jump finalizer was still expected.
-**Change:** added `DL_ClearTransitionExecutionStateWithReason(oNpc, sReason, sOwner)` in transition include; wrapper preserves existing key-clear semantics by delegating to `DL_ClearTransitionExecutionState`, but now blocks owner-initiated clears when `dl_transition_pending_finalizer_expected==TRUE` and post-jump result is still pending/queued, recording a guard diagnostic reason. Replaced direct clear calls in sleep/work/focus/res includes with the owner-wrapper.
-**Reason:** keep transition finalizer ownership/stage integrity and avoid premature state erasure during expected post-jump completion.
-**Preserve:** `DL_L_NPC_TRANSITION_*` literal local-key contracts remain unchanged; finalizer-owned direct clears inside transition pipeline were not rewritten.
+**Task/PR/branch:** current branch / user-requested helper extraction in transition finalizer cleanup.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** the same OR whitelist for clearing `dl_transition_registry_problem` after successful finalizer existed in multiple places, with one raw-string variant and drift risk.
+**Change:** extracted `DL_ShouldClearTransitionRegistryProblemOnSuccess(string sProblem)` with one canonical whitelist based on `DL_TRANSITION_REGISTRY_PROBLEM_*` constants and replaced duplicate inline OR blocks with helper calls.
+**Reason:** keep one source of truth for “safe-to-clear on success” transition registry problems, reduce divergence risk, and preserve existing runtime literal contracts.
+**Preserve:** only the recoverable transition/finalizer pipeline problem codes are auto-cleared on successful finalizer; no local-key literal value changes.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
+## 2026-05-20 — Social scene IDs now drive real scene cadence/pools
+
+**Task/PR/branch:** current branch / explicit invalidation for `dl_nav_infer_cache_*`.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** bounded nav infer cache (tick+area+kind) reduced repeated scans, but invalidation moments were implicit, making rare transition edge cases harder to diagnose.
+**Change:** added `DL_NavInvalidateInferZoneCache` helper that clears all `DL_L_NAV_INFER_CACHE_*` locals and writes a nav-debug reason `infer_cache_invalidated:<reason>`; invoked it on transition execution-state clear, transition finalize success paths (`post_jump_finalizer_same_area_complete`, `post_jump_finalizer_complete`, completed-transition finalize), and when stored nav-zone area contract no longer matches NPC area (`zone_area_changed`) during sync.
+**Reason:** keep current bounded-cache behavior while explicitly documenting/enforcing when cached inference is stale across area/transition lifecycle edges.
+**Preserve:** cache key model remains `tick + area + kind`; no new scans/polling; existing scan caps/inference fallbacks unchanged.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Transition registry problem codes: remove raw string literals
