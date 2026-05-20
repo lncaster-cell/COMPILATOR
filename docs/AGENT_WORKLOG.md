@@ -1,3 +1,12 @@
+## 2026-05-20 — Continue audit: demo-readiness gates and ranked risk register (#864)
+
+**Task/PR/branch:** current branch / quality-hardening audit pass for public-demo readiness framing.
+**Files touched:** `docs/daily-life-stabilization-audit.md`, `docs/AGENT_WORKLOG.md`.
+**Context:** user requested top-quality, production-like readiness mindset and maximal rigor in audit deliverables.
+**Change:** added (1) public demo-readiness quality gates (functional, observability, performance/safety), (2) explicit release blocker list, and (3) ranked Top-10 risk register (S/L/D/RPN) mapped to owner files and first mitigation lanes.
+**Reason:** convert audit from descriptive coverage into a quality-control framework that is actionable for pre-demo hardening while preserving current baseline constraints.
+**Validation:** static documentation review only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Continue audit: full daily_life script coverage pass (#864)
 
 **Task/PR/branch:** current branch / maximize audit depth with full script pass.

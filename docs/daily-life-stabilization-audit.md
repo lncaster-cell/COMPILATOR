@@ -449,3 +449,90 @@ Even with full repository script coverage, the safest next step is still:
 
 Broad “all-in-one” simplification across `res/worker/focus/transition/registry` remains high regression risk against the current working baseline.
 
+
+---
+
+## 20) Public demo-readiness gate (quality bar for #864 closure)
+
+If this were prepared for public demonstration, release-readiness for Daily Life should require all gates below to be green.
+
+### 20.1 Functional gates (must pass)
+
+1. **Full-cycle stability gate**
+   - `blacksmith01` completes full schedule cycle repeatedly without stuck transitions.
+   - No persistent `move_result=running` when physically reached and no active move action exists.
+
+2. **Directive closure gate**
+   - Each directive family (SLEEP/WORK/MEAL/SOCIAL/PUBLIC/CHILL) reaches terminal state through canonical finalize flow.
+   - No contradictory terminal markers (`moving_to_anchor` + reached + no active move action).
+
+3. **Transition integrity gate**
+   - Same-area pseudo-zone transitions close correctly.
+   - Cross-area transitions reconcile registry ownership with physical area.
+
+4. **Worker determinism gate**
+   - Registered NPC is touched by canonical worker path in expected cadence.
+   - Emergency critical touch remains rare and explainable, not dominant.
+
+5. **Setup resilience gate**
+   - Validator catches missing area scripts/locals/routes before runtime debugging.
+   - Setup mistakes do not masquerade as runtime architecture regressions.
+
+### 20.2 Observability gates (must pass)
+
+1. **BSMITH contradiction gate**
+   - Contradiction/classify traces remain available for failure replay.
+   - No removal of diagnostic fields that are still referenced by active triage paths.
+
+2. **Problem-summary fidelity gate**
+   - `DL_GetNpcProblemSummary` remains consistent with actual first failing stage.
+   - No overbroad “ok” masking of known emergency states.
+
+3. **Rollback clarity gate**
+   - Every behavior-changing PR has explicit rollback trigger.
+   - No multi-lane behavior cleanup in one PR.
+
+### 20.3 Performance/safety gates (must pass)
+
+1. No new heartbeat-per-NPC loops.
+2. No unbounded area scans in hot paths.
+3. No replacement of route model with runtime-heavy pathfinding.
+4. No local-key literal renames without migration.
+
+### 20.4 Release blocker list (for demo context)
+
+Treat as blockers before calling subsystem “public-demo clean”:
+
+- recurrent stale reached/finalize contradictions;
+- unexplained emergency worker bypass spikes;
+- route_missing under known valid setup;
+- registry mismatch after cross-area movement;
+- diagnostic regression that prevents root-cause localization.
+
+---
+
+## 21) Top-10 risk register (ranked)
+
+Scale:
+- **Severity (S)**: impact if occurs (1–5)
+- **Likelihood (L)**: chance in current baseline (1–5)
+- **Detectability (D)**: ease of detecting quickly (1–5, higher = harder)
+- **RPN** = `S × L × D`
+
+| # | Risk | S | L | D | RPN | Primary owner files | First mitigation lane |
+|---|---|---:|---:|---:|---:|---|---|
+| 1 | reached/finalize contradiction returns in anchor flows | 5 | 3 | 4 | 60 | `dl_res_inc.nss`, `dl_move_job_inc.nss`, `dl_focus_inc.nss` | Lane C (single-family consolidation only) |
+| 2 | critical worker bypass becomes normal path | 5 | 3 | 4 | 60 | `dl_worker_inc.nss`, `dl_diag_inc.nss` | Lane B (one trigger family at a time) |
+| 3 | transition wrapper legacy path hides owner mismatch | 4 | 3 | 4 | 48 | `dl_transition_inc.nss`, `dl_res_inc.nss` | Lane D (after wrapper-hit evidence) |
+| 4 | registry fallback scans mask underlying ownership drift | 4 | 3 | 4 | 48 | `dl_registry_inc.nss`, `dl_worker_inc.nss` | Lane E (after stable-cycle evidence) |
+| 5 | social focus recovery duplicates canonical finalizer | 4 | 3 | 3 | 36 | `dl_focus_inc.nss`, `dl_res_inc.nss` | Lane C |
+| 6 | setup-contract drift causes false runtime bug reports | 4 | 2 | 4 | 32 | `dl_dbg_setup.nss`, setup docs, route/anchor includes | Lane A + docs-first |
+| 7 | diagnostic signal reduction removes root-cause visibility | 4 | 2 | 4 | 32 | `dl_diag_inc.nss`, `dl_dbg_time.nss`, BSMITH traces | Lane A (preserve decision fields) |
+| 8 | declaration include misuse introduces compile-order regressions | 4 | 2 | 3 | 24 | `dl_move_job_decl_inc.nss` | docs-first discipline |
+| 9 | sleep-specific flow regressions from unrelated cleanup | 4 | 2 | 3 | 24 | `dl_sleep_inc.nss`, `dl_transition_inc.nss` | isolate sleep changes only |
+| 10 | broad mixed-lane cleanup causes non-local regressions | 5 | 2 | 2 | 20 | `res/worker/focus/transition/registry` boundary | enforce single-lane PR rule |
+
+Priority note:
+- The highest-RPN risks are boundary regressions at `res ↔ move_job ↔ focus` and `worker ↔ diag`.
+- This reinforces the current #864 strategy: small, single-lane, evidence-gated PRs.
+
