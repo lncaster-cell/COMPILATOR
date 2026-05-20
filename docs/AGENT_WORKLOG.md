@@ -1,3 +1,13 @@
+## 2026-05-20 — Fix shared DL_L_AREA_WORKER_TICK include ownership
+
+**Task/PR/branch:** current branch / Daily Life compile blocker follow-up.
+**Files touched:** `daily_life/dl_shared_keys_inc.nss`, `daily_life/dl_registry_inc.nss`, `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `DL_L_AREA_WORKER_TICK` was used across transition and registry/worker code, but ownership in only one include caused include-order compile errors (`undeclared identifier` / `must be initialized before referenced`).
+**Change:** created a tiny shared include `dl_shared_keys_inc.nss` containing exactly `const string DL_L_AREA_WORKER_TICK = "dl_worker_tick";`; included it from `dl_registry_inc.nss` and `dl_transition_inc.nss`; removed direct local definitions from both includes.
+**Reason:** restore single-source ownership of the shared key while preserving NWScript include-order compatibility and avoiding duplicate definitions.
+**Preserve:** literal local-key value unchanged (`"dl_worker_tick"`), symbol name unchanged (`DL_L_AREA_WORKER_TICK`), no runtime behavior changes.
+**Validation:** static grep checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Fix Daily Life compile blockers after #877
 
 **Task/PR/branch:** current branch / post-#877 compile blocker repair.
