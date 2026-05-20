@@ -933,6 +933,25 @@ void DL_FinalizeTransitionAfterQueuedJump(object oNpc)
     DL_FinalizePostJumpTransitionResult(oNpc, sResult, TRUE, sResult);
 }
 
+
+void DL_FinalizePostJumpTransitionResult(object oNpc, string sResult, int bTouchCalled, string sTraceNote)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    SetLocalString(oNpc, "dl_post_jump_result", sResult);
+    SetLocalInt(oNpc, "dl_post_jump_worker_touch_called", bTouchCalled);
+
+    if (sTraceNote != "")
+    {
+        DL_BsmithTraceStage(oNpc, DL_BSMITH_STAGE_TRANSITION_FINALIZER, sTraceNote);
+    }
+
+    DeleteLocalInt(oNpc, "dl_transition_pending_finalizer_expected");
+}
+
 int DL_NavTryFinalizeCompletedTransition(object oNpc, object oTargetAnchor)
 {
     if (!GetIsObjectValid(oNpc))

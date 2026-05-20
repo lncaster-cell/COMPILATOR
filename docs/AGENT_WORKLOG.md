@@ -394,3 +394,13 @@ Entry template:
 **Reason:** preserve literal runtime values while deduplicating access paths and reducing drift/typo risk across finalize and invariant code.
 **Preserve:** literal string values were not changed; this is a symbolic-constant normalization only.
 **Validation:** static checks only. Compilation not run; user owns compilation.
+
+## 2026-05-20 — Restore missing Daily Life helper bodies
+
+**Task/PR/branch:** current branch / continue Daily Life compile recovery.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** repeated compile blockers in multiple Daily Life scripts reported missing function bodies for `DL_FinalizePostJumpTransitionResult` and `DL_ResolveWorkWaypointByRoleParams`.
+**Change:** restored both helper bodies with minimal contract-preserving logic. `DL_ResolveWorkWaypointByRoleParams` was restored from prior history (`cfb6ef9`) pattern (area anchor first, then fallback resolver when fallback contract fields are present). `DL_FinalizePostJumpTransitionResult` was reconstructed to match existing call contract (validity guard, set `dl_post_jump_result`, set `dl_post_jump_worker_touch_called`, optional transition finalizer BSMITH trace, clear pending finalizer expected flag).
+**Reason:** recent helper refactors left forward declarations without bodies, producing unresolved body errors during compile; this restores compile-time symbol completeness without redesigning transition/work behavior.
+**Preserve:** no movement/directive/worker/registry/nav behavior redesign; literal local-key contracts unchanged.
+**Validation:** compilation/check attempted per task; see current task report.

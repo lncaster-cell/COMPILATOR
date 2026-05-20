@@ -10,6 +10,41 @@ const string DL_L_NPC_WORK_RESOLVE_MISSING_DIAG = "dl_work_resolve_missing_diag"
 
 void DL_ExecuteWorkDirective(object oNpc);
 object DL_ResolveWorkWaypointByRoleParams(object oNpc, object oArea, string sAnchorKey, string sAnchorCacheKey, string sFallbackCacheKey, string sFallbackPrefix, string sFallbackSuffix, string sFallbackDefaultTag);
+
+object DL_ResolveWorkWaypointByRoleParams(
+    object oNpc,
+    object oArea,
+    string sAnchorKey,
+    string sAnchorCacheKey,
+    string sFallbackCacheKey,
+    string sFallbackPrefix,
+    string sFallbackSuffix,
+    string sFallbackDefaultTag
+)
+{
+    if (GetIsObjectValid(oArea))
+    {
+        object oWp = DL_GetAreaAnchorWaypoint(oNpc, oArea, sAnchorKey, sAnchorCacheKey, FALSE);
+        if (GetIsObjectValid(oWp))
+        {
+            return oWp;
+        }
+    }
+
+    if (sFallbackCacheKey == "" || sFallbackPrefix == "" || sFallbackSuffix == "" || sFallbackDefaultTag == "")
+    {
+        return OBJECT_INVALID;
+    }
+
+    return DL_ResolveNpcWaypointWithFallbackTag(
+        oNpc,
+        sFallbackCacheKey,
+        sFallbackPrefix,
+        sFallbackSuffix,
+        sFallbackDefaultTag
+    );
+}
+
 string DL_ResolveBlacksmithWorkKindAtHour(object oNpc);
 string DL_ResolveDomesticWorkerWorkKind(object oNpc, int bHasFetch);
 int DL_ProgressWorkAtTarget(object oNpc, object oTarget);
