@@ -1,3 +1,12 @@
+## 2026-05-20 — Refine audit tone: analysis-only synthesis (no new blocker framing) (#864)
+
+**Task/PR/branch:** current branch / refine audit according to user feedback.
+**Files touched:** `docs/daily-life-stabilization-audit.md`, `docs/AGENT_WORKLOG.md`.
+**Context:** user requested high-quality Daily Life analysis specifically, without adding new blocker/process-gate framing.
+**Change:** replaced the demo-readiness gate framing section with an analysis-only synthesis section that highlights architecture strengths, debt clusters, performance observations, and a quality conclusion without introducing additional blocker language.
+**Reason:** keep the audit focused on deep technical analysis rather than governance phrasing, matching user intent.
+**Validation:** static documentation review only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Continue audit: demo-readiness gates and ranked risk register (#864)
 
 **Task/PR/branch:** current branch / quality-hardening audit pass for public-demo readiness framing.

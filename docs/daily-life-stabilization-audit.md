@@ -452,64 +452,58 @@ Broad “all-in-one” simplification across `res/worker/focus/transition/regist
 
 ---
 
-## 20) Public demo-readiness gate (quality bar for #864 closure)
+## 20) Deep analysis synthesis (non-blocking, analysis-only)
 
-If this were prepared for public demonstration, release-readiness for Daily Life should require all gates below to be green.
+This section is analytical only (no new blockers, no process gates).
+It summarizes the most important technical patterns seen in the Daily Life codebase after the full read pass.
 
-### 20.1 Functional gates (must pass)
+### 20.1 Strong architecture points
 
-1. **Full-cycle stability gate**
-   - `blacksmith01` completes full schedule cycle repeatedly without stuck transitions.
-   - No persistent `move_result=running` when physically reached and no active move action exists.
+1. **Clear canonical movement core exists**
+   - `dl_move_job_inc.nss` remains the central movement executor with a canonical reached helper.
+   - This is the correct long-term shape for NWN2 compatibility and performance.
 
-2. **Directive closure gate**
-   - Each directive family (SLEEP/WORK/MEAL/SOCIAL/PUBLIC/CHILL) reaches terminal state through canonical finalize flow.
-   - No contradictory terminal markers (`moving_to_anchor` + reached + no active move action).
+2. **Directive pipeline has an explicit semantic center**
+   - `dl_res_inc.nss` acts as a meaningful semantic hub (resolve -> preempt -> apply -> finalize).
+   - The project already avoids the worst anti-pattern: fragmented directive ownership in many unrelated files.
 
-3. **Transition integrity gate**
-   - Same-area pseudo-zone transitions close correctly.
-   - Cross-area transitions reconcile registry ownership with physical area.
+3. **Transition model is route-contract based, not heavyweight runtime search**
+   - Zone-to-zone route locals keep runtime cost predictable and bounded.
+   - This is aligned with the performance constraints and current setup contract direction.
 
-4. **Worker determinism gate**
-   - Registered NPC is touched by canonical worker path in expected cadence.
-   - Emergency critical touch remains rare and explainable, not dominant.
+4. **Diagnostics are mature and practically useful**
+   - BSMITH contradiction/classification lines plus problem summaries give high debugging leverage.
+   - Observability is already integrated where failures actually occur, not only at outer wrappers.
 
-5. **Setup resilience gate**
-   - Validator catches missing area scripts/locals/routes before runtime debugging.
-   - Setup mistakes do not masquerade as runtime architecture regressions.
+### 20.2 Main technical debt clusters (analysis view)
 
-### 20.2 Observability gates (must pass)
+1. **Ownership overlap around terminal closure**
+   - Focus-side terminalization and directive finalizer intent can still overlap in edge cases.
+   - This does not mean immediate bug, but it raises reasoning complexity and regression risk.
 
-1. **BSMITH contradiction gate**
-   - Contradiction/classify traces remain available for failure replay.
-   - No removal of diagnostic fields that are still referenced by active triage paths.
+2. **Emergency safety-net density is high**
+   - Worker/resolve paths contain several protective repairs for stale reached/running states.
+   - Valuable for stability, but the density makes causality harder to read.
 
-2. **Problem-summary fidelity gate**
-   - `DL_GetNpcProblemSummary` remains consistent with actual first failing stage.
-   - No overbroad “ok” masking of known emergency states.
+3. **Transition compatibility layers are still partially legacy-shaped**
+   - Wrapper/compatibility branches appear to preserve older ownership assumptions.
+   - They are useful now, but they increase cognitive load for future cleanup.
 
-3. **Rollback clarity gate**
-   - Every behavior-changing PR has explicit rollback trigger.
-   - No multi-lane behavior cleanup in one PR.
+4. **Registry repair logic is robust but distributed**
+   - Ownership/handoff correction spans worker + transition + registry includes.
+   - This is effective, yet increases the chance of duplicated assumptions.
 
-### 20.3 Performance/safety gates (must pass)
+### 20.3 Performance-oriented observations
 
-1. No new heartbeat-per-NPC loops.
-2. No unbounded area scans in hot paths.
-3. No replacement of route model with runtime-heavy pathfinding.
-4. No local-key literal renames without migration.
+- The subsystem generally follows good bounded-work patterns (registry/local contracts/routes instead of broad graph solves).
+- The largest potential performance regression risk is accidental future introduction of broad scans in hot worker paths.
+- Current architecture already has the right optimization direction: deterministic owner pipelines plus bounded fallbacks.
 
-### 20.4 Release blocker list (for demo context)
+### 20.4 Quality conclusion of the analysis
 
-Treat as blockers before calling subsystem “public-demo clean”:
-
-- recurrent stale reached/finalize contradictions;
-- unexplained emergency worker bypass spikes;
-- route_missing under known valid setup;
-- registry mismatch after cross-area movement;
-- diagnostic regression that prevents root-cause localization.
-
----
+- The Daily Life subsystem is **not chaotic**; it has a real canonical backbone (worker -> resolver -> move job -> finalize).
+- Most risk comes from **overlap and legacy compatibility density**, not from absence of structure.
+- The existing baseline success (blacksmith full-cycle + validator support) is consistent with this reading.
 
 ## 21) Top-10 risk register (ranked)
 
