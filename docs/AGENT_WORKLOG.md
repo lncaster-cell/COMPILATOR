@@ -1,12 +1,12 @@
-## 2026-05-20 — BSMITH contradiction uses live action for running-state check
+## 2026-05-20 — Canonical post-move ownership: no `DL_RecheckWorkDirectiveAfterMove`
 
-**Task/PR/branch:** current branch / user-requested `running` vs action contradiction refinement.
-**Files touched:** `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** contradiction sampling for `move_result=running` relied on debug local `DL_L_NPC_MOVE_CURRENT_ACTION_DBG`, which is telemetry and can lag relative to the live engine action queue.
-**Change:** in `DL_BsmithDetectContradictions`, switched the contradiction gate to current live `GetCurrentAction(oNpc)` at check time, kept `DL_L_NPC_MOVE_CURRENT_ACTION_DBG` as telemetry, and expanded contradiction payload to include both `action_now` and `action_dbg`.
-**Reason:** keep contradiction truth-source aligned with live action state while preserving diagnostics needed to compare sampled telemetry versus runtime action.
-**Preserve:** anti-noise sampling threshold remains unchanged (`dl_bsmith_bad_action_samples >= 2` for contradiction emission; classify still uses `running_without_moveto`).
-**Validation:** static checks only. Compilation not run; user owns compilation.
+**Task/PR/branch:** current branch / verify post-move hook ownership for work directives.
+**Files touched:** `docs/AGENT_WORKLOG.md`.
+**Context:** user requested confirmation whether `DL_RecheckWorkDirectiveAfterMove` is called from owner threads and to either remove it (if dead) or wire it into a single canonical post-move stage.
+**Change:** performed repository-wide usage and symbol scan in `daily_life/` and confirmed `DL_RecheckWorkDirectiveAfterMove` is absent (no declaration, definition, or callsites). No runtime code change was applied. Canonical post-move closure for directive movement remains in the existing `DL_FinalizeReachedDirectiveMoveJob` path inside resolver flow.
+**Reason:** avoid introducing duplicate finalize/worker logic and keep post-move handling centralized in the current canonical finalize pipeline.
+**Preserve:** keep owner-thread movement closure through existing worker → resolver/apply → finalize flow; do not add parallel post-move hooks that duplicate finalization behavior.
+**Validation:** static grep/search only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Social scene solo animation canonicalization (pool logic)
 
