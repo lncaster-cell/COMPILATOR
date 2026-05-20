@@ -1292,8 +1292,30 @@ int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPas
     SetLocalInt(oArea, DL_L_AREA_PASS_LAST_CANDIDATES, nCandidates);
     return nNpcProcessed;
 }
+int DL_RunTransitionRegistryHandoffTick(object oArea, int nTickStamp)
+{
+    if (!DL_IsAreaObject(oArea))
+    {
+        return 0;
+    }
 
+int DL_RunTransitionRegistryHandoffTick(object oArea, int nTickStamp)
+{
+    if (!DL_IsAreaObject(oArea))
+    {
+        return 0;
+    }
 
+    int nTouched = 0;
+    int i = 0;
+    while (i < DL_TRANSITION_HANDOFF_SLOT_COUNT)
+    {
+        string sSlotKey = DL_GetAreaTransitionHandoffSlotKey(i);
+        object oNpc = GetLocalObject(oArea, sSlotKey);
+        if (GetIsObjectValid(oNpc))
+        {
+            object oNpcArea = GetArea(oNpc);
+            object oRegisteredArea = GetLocalObject(oNpc, DL_L_NPC_REG_AREA);
             if (oNpcArea == oArea)
             {
                 SetLocalInt(oNpc, DL_L_NPC_PROCESSED_BY_RR_DBG, FALSE);
@@ -1580,8 +1602,24 @@ void DL_RunAreaWorkerTick(object oArea)
     DL_MaybeReconcileAreaPlayerCount(oArea);
 
     int nCachedPlayers = DL_GetAreaPlayerCount(oArea);
-    int nActualPlayers = DL_CountPlayersInArea(oArea);
+    int nActualPlayers = nCachedPlayers;
     int nTierBeforeLifecycle = DL_GetAreaTier(oArea);
+    int nNowTick = DL_GetAreaTick(oArea);
+    int nLastRepairCountTick = GetLocalInt(oArea, DL_L_AREA_PLAYER_COUNT_REPAIR_TICK);
+    int bRunRepairCount = FALSE;
+    if (nCachedPlayers <= 0)
+    {
+        if (nNowTick < nLastRepairCountTick || (nNowTick - nLastRepairCountTick) >= DL_PLAYER_COUNT_REPAIR_INTERVAL_TICKS)
+        {
+            bRunRepairCount = TRUE;
+        }
+    }
+
+    if (bRunRepairCount)
+    {
+        nActualPlayers = DL_CountPlayersInArea(oArea);
+        SetLocalInt(oArea, DL_L_AREA_PLAYER_COUNT_REPAIR_TICK, nNowTick);
+    }
     int bStaleRepaired = FALSE;
     int bHotnessRepaired = FALSE;
     int bForcedHotDueToPlayer = FALSE;
