@@ -1,3 +1,5 @@
+#include "dl_shared_keys_inc"
+
 // Daily Life simple transition/navigation helper.
 // Builder contract:
 //   waypoint tag: <from_zone>__<to_zone>
@@ -35,7 +37,6 @@ const string DL_L_AREA_NAV_COUNT = "dl_area_nav_count";
 const string DL_L_AREA_NAV_SLOT_PREFIX = "dl_area_nav_";
 const int DL_AREA_NAV_ROUTE_CAP = 32;
 const string DL_L_AREA_NAV_ZONE_ID = "dl_nav_zone_id";
-const string DL_L_AREA_WORKER_TICK = "dl_worker_tick";
 
 const string DL_L_NAV_INFER_CACHE_TICK = "dl_nav_infer_cache_tick";
 const string DL_L_NAV_INFER_CACHE_AREA = "dl_nav_infer_cache_area";
@@ -582,6 +583,23 @@ void DL_SetPendingTransitionAfterJump(object oNpc, object oOldArea, object oTarg
     SetLocalString(oNpc, "dl_post_jump_result", "queued");
 }
 
+void DL_ClearSafeTransitionRegistryProblemAfterFinalize(object oNpc)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    string sRegistryProblem = GetLocalString(oNpc, "dl_transition_registry_problem");
+    if (sRegistryProblem == "target_area_worker_not_ticking_or_not_owning_npc" ||
+        sRegistryProblem == "post_jump_finalizer_area_not_changed" ||
+        sRegistryProblem == "post_jump_finalizer_registry_repair_failed" ||
+        sRegistryProblem == "post_jump_finalizer_registry_area_mismatch")
+    {
+        DeleteLocalString(oNpc, "dl_transition_registry_problem");
+    }
+}
+
 void DL_FinalizeTransitionAfterQueuedJump(object oNpc)
 {
     if (!GetIsObjectValid(oNpc)) return;
@@ -641,13 +659,7 @@ void DL_FinalizeTransitionAfterQueuedJump(object oNpc)
         DL_NavClearFocusMoveIssueStateAfterJump(oNpc);
         DL_NavSetNpcCurrentZone(oNpc, sTargetZone);
         DL_NavSetDebug(oNpc, sTargetZone, sTargetZone, "", "post_jump_finalizer_same_area_complete");
-        if (GetLocalString(oNpc, "dl_transition_registry_problem") == "target_area_worker_not_ticking_or_not_owning_npc" ||
-            GetLocalString(oNpc, "dl_transition_registry_problem") == "post_jump_finalizer_area_not_changed" ||
-            GetLocalString(oNpc, "dl_transition_registry_problem") == "post_jump_finalizer_registry_repair_failed" ||
-            GetLocalString(oNpc, "dl_transition_registry_problem") == "post_jump_finalizer_registry_area_mismatch")
-        {
-            DeleteLocalString(oNpc, "dl_transition_registry_problem");
-        }
+        DL_ClearSafeTransitionRegistryProblemAfterFinalize(oNpc);
 
         DL_WorkerTouchNpc(oNpc);
         SetLocalInt(oNpc, "dl_post_jump_worker_touch_called", TRUE);
@@ -723,13 +735,7 @@ void DL_FinalizeTransitionAfterQueuedJump(object oNpc)
         DL_NavClearFocusMoveIssueStateAfterJump(oNpc);
         DL_NavSetNpcCurrentZone(oNpc, sTargetZone);
         DL_NavSetDebug(oNpc, sTargetZone, sTargetZone, "", "post_jump_finalizer_complete");
-        if (GetLocalString(oNpc, "dl_transition_registry_problem") == "target_area_worker_not_ticking_or_not_owning_npc" ||
-            GetLocalString(oNpc, "dl_transition_registry_problem") == "post_jump_finalizer_area_not_changed" ||
-            GetLocalString(oNpc, "dl_transition_registry_problem") == "post_jump_finalizer_registry_repair_failed" ||
-            GetLocalString(oNpc, "dl_transition_registry_problem") == "post_jump_finalizer_registry_area_mismatch")
-        {
-            DeleteLocalString(oNpc, "dl_transition_registry_problem");
-        }
+        DL_ClearSafeTransitionRegistryProblemAfterFinalize(oNpc);
     }
     else
     {
