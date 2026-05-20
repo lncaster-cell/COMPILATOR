@@ -1,3 +1,13 @@
+## 2026-05-20 — Work waypoint resolver profile helper unification (work roles)
+
+**Task/PR/branch:** current branch / unify repeated work waypoint resolvers in `dl_work_inc.nss`.
+**Files touched:** `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** blacksmith/gate/trader/domestic role resolvers duplicated the same “anchor first, optional fallback by tag profile” pattern with only profile literals changed.
+**Change:** added shared helper `DL_ResolveWorkWaypointByRoleParams` with explicit profile parameters (anchor key + anchor cache key + fallback cache key/prefix/suffix/tag), migrated blacksmith forge/craft/fetch, gate post, trader, and domestic primary/secondary/fetch resolvers to call it, and preserved domestic behavior by passing home area plus empty fallback profile so no fallback lookup runs.
+**Reason:** reduce duplicate resolver logic while preserving existing runtime contracts, role-specific cache keys, and domestic home-area/no-fallback behavior.
+**Preserve:** literal local-key values and fallback literal tags are unchanged; domestic path remains home-area anchored and may validly return `OBJECT_INVALID` without fallback.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Social scene IDs now drive real scene cadence/pools
 
 **Task/PR/branch:** current branch / social scene signature alignment in `dl_social_scene_inc.nss`.

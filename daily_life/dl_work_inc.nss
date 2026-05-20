@@ -4,16 +4,49 @@ const string DL_L_NPC_WORK_ACTION_TARGET = "dl_work_anchor_action_target";
 
 void DL_ExecuteWorkDirective(object oNpc);
 
-object DL_ResolveBlacksmithForgeWaypoint(object oNpc)
+object DL_ResolveWorkWaypointByRoleParams(
+    object oNpc,
+    object oArea,
+    string sAnchorKey,
+    string sAnchorCacheKey,
+    string sFallbackCacheKey,
+    string sFallbackPrefix,
+    string sFallbackSuffix,
+    string sFallbackTag
+)
 {
-    object oWork = DL_GetWorkArea(oNpc);
-    object oWp = DL_GetAreaAnchorWaypoint(oNpc, oWork, "dl_anchor_work_primary", DL_L_NPC_CACHE_WORK_PRIMARY, FALSE);
+    if (!GetIsObjectValid(oArea))
+    {
+        return OBJECT_INVALID;
+    }
+
+    object oWp = DL_GetAreaAnchorWaypoint(oNpc, oArea, sAnchorKey, sAnchorCacheKey, FALSE);
     if (GetIsObjectValid(oWp))
     {
         return oWp;
     }
+
+    if (sFallbackCacheKey == "" || sFallbackPrefix == "" || sFallbackSuffix == "" || sFallbackTag == "")
+    {
+        return OBJECT_INVALID;
+    }
+
     return DL_ResolveNpcWaypointWithFallbackTag(
         oNpc,
+        sFallbackCacheKey,
+        sFallbackPrefix,
+        sFallbackSuffix,
+        sFallbackTag
+    );
+}
+
+object DL_ResolveBlacksmithForgeWaypoint(object oNpc)
+{
+    return DL_ResolveWorkWaypointByRoleParams(
+        oNpc,
+        DL_GetWorkArea(oNpc),
+        "dl_anchor_work_primary",
+        DL_L_NPC_CACHE_WORK_PRIMARY,
         DL_L_NPC_CACHE_WORK_FORGE,
         "dl_work_",
         "_forge",
@@ -22,14 +55,11 @@ object DL_ResolveBlacksmithForgeWaypoint(object oNpc)
 }
 object DL_ResolveBlacksmithCraftWaypoint(object oNpc)
 {
-    object oWork = DL_GetWorkArea(oNpc);
-    object oWp = DL_GetAreaAnchorWaypoint(oNpc, oWork, "dl_anchor_work_secondary", DL_L_NPC_CACHE_WORK_SECONDARY, FALSE);
-    if (GetIsObjectValid(oWp))
-    {
-        return oWp;
-    }
-    return DL_ResolveNpcWaypointWithFallbackTag(
+    return DL_ResolveWorkWaypointByRoleParams(
         oNpc,
+        DL_GetWorkArea(oNpc),
+        "dl_anchor_work_secondary",
+        DL_L_NPC_CACHE_WORK_SECONDARY,
         DL_L_NPC_CACHE_WORK_CRAFT,
         "dl_work_",
         "_craft",
@@ -39,25 +69,24 @@ object DL_ResolveBlacksmithCraftWaypoint(object oNpc)
 
 object DL_ResolveBlacksmithFetchWaypoint(object oNpc)
 {
-    object oWork = DL_GetWorkArea(oNpc);
-    object oWp = DL_GetAreaAnchorWaypoint(oNpc, oWork, "dl_anchor_work_fetch", DL_L_NPC_CACHE_WORK_FETCH, FALSE);
-    if (GetIsObjectValid(oWp))
-    {
-        return oWp;
-    }
-
-    return OBJECT_INVALID;
+    return DL_ResolveWorkWaypointByRoleParams(
+        oNpc,
+        DL_GetWorkArea(oNpc),
+        "dl_anchor_work_fetch",
+        DL_L_NPC_CACHE_WORK_FETCH,
+        "",
+        "",
+        "",
+        ""
+    );
 }
 object DL_ResolveGatePostWaypoint(object oNpc)
 {
-    object oWork = DL_GetWorkArea(oNpc);
-    object oWp = DL_GetAreaAnchorWaypoint(oNpc, oWork, "dl_anchor_work_primary", DL_L_NPC_CACHE_WORK_PRIMARY, FALSE);
-    if (GetIsObjectValid(oWp))
-    {
-        return oWp;
-    }
-    return DL_ResolveNpcWaypointWithFallbackTag(
+    return DL_ResolveWorkWaypointByRoleParams(
         oNpc,
+        DL_GetWorkArea(oNpc),
+        "dl_anchor_work_primary",
+        DL_L_NPC_CACHE_WORK_PRIMARY,
         DL_L_NPC_CACHE_WORK_POST,
         "dl_work_",
         "_post",
@@ -66,14 +95,11 @@ object DL_ResolveGatePostWaypoint(object oNpc)
 }
 object DL_ResolveTraderWaypoint(object oNpc)
 {
-    object oWork = DL_GetWorkArea(oNpc);
-    object oWp = DL_GetAreaAnchorWaypoint(oNpc, oWork, "dl_anchor_work_primary", DL_L_NPC_CACHE_WORK_PRIMARY, FALSE);
-    if (GetIsObjectValid(oWp))
-    {
-        return oWp;
-    }
-    return DL_ResolveNpcWaypointWithFallbackTag(
+    return DL_ResolveWorkWaypointByRoleParams(
         oNpc,
+        DL_GetWorkArea(oNpc),
+        "dl_anchor_work_primary",
+        DL_L_NPC_CACHE_WORK_PRIMARY,
         DL_L_NPC_CACHE_WORK_TRADE,
         "dl_work_",
         "_trade",
@@ -82,35 +108,44 @@ object DL_ResolveTraderWaypoint(object oNpc)
 }
 object DL_ResolveDomesticWorkerWaypoint(object oNpc)
 {
-    object oHome = DL_GetHomeArea(oNpc);
-    if (!GetIsObjectValid(oHome))
-    {
-        return OBJECT_INVALID;
-    }
-
-    return DL_GetAreaAnchorWaypoint(oNpc, oHome, "dl_anchor_work_primary", DL_L_NPC_CACHE_WORK_PRIMARY, FALSE);
+    return DL_ResolveWorkWaypointByRoleParams(
+        oNpc,
+        DL_GetHomeArea(oNpc),
+        "dl_anchor_work_primary",
+        DL_L_NPC_CACHE_WORK_PRIMARY,
+        "",
+        "",
+        "",
+        ""
+    );
 }
 
 object DL_ResolveDomesticWorkerSecondaryWaypoint(object oNpc)
 {
-    object oHome = DL_GetHomeArea(oNpc);
-    if (!GetIsObjectValid(oHome))
-    {
-        return OBJECT_INVALID;
-    }
-
-    return DL_GetAreaAnchorWaypoint(oNpc, oHome, "dl_anchor_work_secondary", DL_L_NPC_CACHE_WORK_SECONDARY, FALSE);
+    return DL_ResolveWorkWaypointByRoleParams(
+        oNpc,
+        DL_GetHomeArea(oNpc),
+        "dl_anchor_work_secondary",
+        DL_L_NPC_CACHE_WORK_SECONDARY,
+        "",
+        "",
+        "",
+        ""
+    );
 }
 
 object DL_ResolveDomesticWorkerFetchWaypoint(object oNpc)
 {
-    object oHome = DL_GetHomeArea(oNpc);
-    if (!GetIsObjectValid(oHome))
-    {
-        return OBJECT_INVALID;
-    }
-
-    return DL_GetAreaAnchorWaypoint(oNpc, oHome, "dl_anchor_work_fetch", DL_L_NPC_CACHE_WORK_FETCH, FALSE);
+    return DL_ResolveWorkWaypointByRoleParams(
+        oNpc,
+        DL_GetHomeArea(oNpc),
+        "dl_anchor_work_fetch",
+        DL_L_NPC_CACHE_WORK_FETCH,
+        "",
+        "",
+        "",
+        ""
+    );
 }
 
 string DL_ResolveDomesticWorkerWorkKind(object oNpc, int bHasFetch)
