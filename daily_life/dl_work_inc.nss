@@ -9,6 +9,10 @@ const string DL_L_NPC_WORK_RESOLVE_MISSING_DIAG = "dl_work_resolve_missing_diag"
 
 
 void DL_ExecuteWorkDirective(object oNpc);
+object DL_ResolveWorkWaypointByRoleParams(object oNpc, object oArea, string sAnchorKey, string sAnchorCacheKey, string sFallbackCacheKey, string sFallbackPrefix, string sFallbackSuffix, string sFallbackDefaultTag);
+string DL_ResolveBlacksmithWorkKindAtHour(object oNpc);
+string DL_ResolveDomesticWorkerWorkKind(object oNpc, int bHasFetch);
+int DL_ProgressWorkAtTarget(object oNpc, object oTarget);
 
 object DL_ResolveWorkAnchorWithFallback(
     object oNpc,
@@ -39,9 +43,9 @@ object DL_ResolveWorkAnchorWithFallback(
     return DL_ResolveNpcWaypointWithFallbackTag(
         oNpc,
         sFallbackCacheKey,
-        sFallbackPrefix,
+        "dl_work_",
         sFallbackSuffix,
-        sFallbackTag
+        sFallbackDefaultTag
     );
 }
 
@@ -114,7 +118,7 @@ object DL_ResolveBlacksmithWorkAnchorByKind(object oNpc, string sKind)
     return DL_ResolveWorkAnchorByKind(
         oNpc,
         DL_GetWorkArea(oNpc),
-        DL_WORK_KIND_WORK,
+        DL_WORK_KIND_FORGE,
         DL_L_NPC_CACHE_WORK_FORGE,
         "_forge",
         "dl_work_forge"
@@ -123,7 +127,7 @@ object DL_ResolveBlacksmithWorkAnchorByKind(object oNpc, string sKind)
 
 object DL_ResolveBlacksmithForgeWaypoint(object oNpc)
 {
-    return DL_ResolveBlacksmithWorkAnchorByKind(oNpc, DL_WORK_KIND_WORK);
+    return DL_ResolveBlacksmithWorkAnchorByKind(oNpc, DL_WORK_KIND_FORGE);
 }
 
 object DL_ResolveBlacksmithCraftWaypoint(object oNpc)
@@ -166,7 +170,7 @@ object DL_ResolveDomesticWorkAnchorByKind(object oNpc, string sKind)
 
 object DL_ResolveDomesticWorkerWaypoint(object oNpc)
 {
-    return DL_ResolveDomesticWorkAnchorByKind(oNpc, DL_WORK_KIND_WORK);
+    return DL_ResolveDomesticWorkAnchorByKind(oNpc, DL_WORK_KIND_FORGE);
 }
 
 object DL_ResolveDomesticWorkerSecondaryWaypoint(object oNpc)

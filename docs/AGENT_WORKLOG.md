@@ -1,3 +1,13 @@
+## 2026-05-20 — Emergency Daily Life compile recovery after refactor stack
+
+**Task/PR/branch:** current branch / emergency compile recovery for Daily Life main.
+**Files touched:** `daily_life/dl_res_inc.nss`, `daily_life/dl_transition_inc.nss`, `daily_life/dl_work_inc.nss`, `daily_life/dl_social_scene_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** recent helper-cleanup/refactor stack introduced include-order and symbol-contract regressions (missing wrappers/prototypes, removed compatibility hook, and one bad social-scene call signature), causing widespread compile failures across transition/work/sleep/focus/res includes.
+**Change:** restored compile-compatibility surface with minimal behavior impact: added no-op `DL_LogChatDebugEvent` shim; restored transition execution compatibility wrappers (`DL_HasTransitionExecutionState`, `DL_ClearTransitionExecutionStateWithReason`) by delegating to current transition-state helpers; added narrow forward declarations in transition/work includes for later-defined helpers; fixed broken fallback argument names in work anchor fallback call; replaced invalid `DL_WORK_KIND_WORK` artifact with existing `DL_WORK_KIND_FORGE` kind; fixed solo social-scene call to pass required `oNpc` and `nStep` args.
+**Reason:** recover main compilability by restoring pre-refactor symbol contracts and call signatures instead of introducing new runtime behavior.
+**Preserve:** no movement/transition/directive/registry redesign; no local-key literal migrations; wrappers intentionally preserve existing owner pipeline.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Work kind helper unification for primary/secondary/fetch
 
 **Task/PR/branch:** current branch / user request to centralize work target resolution by kind in `dl_work_inc.nss`.

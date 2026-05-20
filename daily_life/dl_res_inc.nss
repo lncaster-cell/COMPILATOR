@@ -2,6 +2,23 @@
 #include "dl_move_job_decl_inc"
 #include "dl_transition_inc"
 
+
+// Compile-compatibility shims/wrappers preserved for include-order stability.
+void DL_LogChatDebugEvent(object oNpc, string sKind, string sPayload)
+{
+    // Intentionally no-op: legacy diagnostic hook retained for compile compatibility.
+}
+
+int DL_HasTransitionExecutionState(object oNpc)
+{
+    return DL_IsTransitionExecutionActive(oNpc);
+}
+
+void DL_ClearTransitionExecutionStateWithReason(object oNpc, string sReason, string sOwner)
+{
+    DL_ClearTransitionExecutionStateOwner(oNpc, sReason, sOwner);
+}
+
 // Step 05+: resolver/materialization skeleton.
 string DL_GetNpcProblemSummary(object oNpc);
 // Scope: basic BLACKSMITH/GATE_POST/TRADER WORK/SLEEP window split.
