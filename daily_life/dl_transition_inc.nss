@@ -80,6 +80,16 @@ void DL_WorkerTouchNpc(object oNpc);
 int DL_RemoveStaleNpcReferenceFromAreaRegistry(object oArea, object oNpc);
 void DL_BsmithTraceStage(object oNpc, string sStage, string sNote);
 
+void DL_TraceTransitionFinalizer(object oNpc, string sResult, string sExtra)
+{
+    string sNote = "result=" + sResult;
+    if (sExtra != "")
+    {
+        sNote = sNote + " " + sExtra;
+    }
+    DL_BsmithTraceStage(oNpc, "TRANSITION_FINALIZER", sNote);
+}
+
 string DL_GetAreaNavigationSlotKey(int nSlot)
 {
     if (nSlot < 0) nSlot = 0;
@@ -273,14 +283,17 @@ void DL_ClearTransitionExecutionState(object oNpc)
     DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC);
 }
 
-
-void DL_ClearTransitionExecutionStateWithReason(object oNpc, string sReason, string sOwner)
+void DL_ApplyPostJumpCompletionSuccess(object oNpc, string sTargetZone, string sReason)
 {
-    if (!GetIsObjectValid(oNpc)) return;
+    DL_ClearTransitionExecutionState(oNpc);
+    DL_NavClearFocusMoveIssueStateAfterJump(oNpc);
+    DL_NavSetNpcCurrentZone(oNpc, sTargetZone);
+    DL_NavSetDebug(oNpc, sTargetZone, sTargetZone, "", sReason);
 
-    // Guard: while post-jump finalizer is expected and still queued, do not clear
-    // transition execution locals from non-finalizer owners.
-    if (GetLocalInt(oNpc, "dl_transition_pending_finalizer_expected") == TRUE)
+    if (GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_TARGET_AREA_WORKER_NOT_TICKING_OR_NOT_OWNING_NPC ||
+        GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_AREA_NOT_CHANGED ||
+        GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_REGISTRY_REPAIR_FAILED ||
+        GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_REGISTRY_AREA_MISMATCH)
     {
         string sPostJumpResult = GetLocalString(oNpc, "dl_post_jump_result");
         if (sPostJumpResult == "" || sPostJumpResult == DL_POST_JUMP_RESULT_QUEUED)
@@ -294,7 +307,12 @@ void DL_ClearTransitionExecutionStateWithReason(object oNpc, string sReason, str
         }
     }
 
-    DL_ClearTransitionExecutionState(oNpc);
+    DL_WorkerTouchNpc(oNpc);
+    SetLocalInt(oNpc, "dl_post_jump_worker_touch_called", TRUE);
+    SetLocalString(oNpc, "dl_transition_registry_worker_touch_area", GetLocalString(oNpc, "dl_worker_touch_area"));
+    SetLocalString(oNpc, "dl_post_jump_result", sReason);
+    DL_BsmithTraceStage(oNpc, "TRANSITION_FINALIZER", sReason);
+    DeleteLocalInt(oNpc, "dl_transition_pending_finalizer_expected");
 }
 
 void DL_NavSetState(object oNpc, string sStatus, string sTargetZone, string sDiagnostic)
