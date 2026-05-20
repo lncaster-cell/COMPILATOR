@@ -1,11 +1,11 @@
-## 2026-05-20 — Work target debug payload helper unification
+## 2026-05-20 — Work missing-target helper unification in dl_work_inc
 
-**Task/PR/branch:** current branch / unify work-target debug payload emission in `dl_work_inc.nss`.  
-**Files touched:** `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.  
-**Context:** work target debug emission needed a single payload builder/choke point while chat-debug remains no-op.  
-**Change:** added `DL_BuildWorkTargetDebugPayload` and `DL_LogWorkTargetDebug` helpers; routed all work target debug emissions in work directive branches through the unified helper instead of branch-local direct calls; preserved `"target_work"` event key and payload format (`target dir=WORK area=<...> anchor=<...> kind=<...>`).  
-**Reason:** remove repetition and prepare one safe switch point for future migration from chat-debug to `DL_BsmithTraceStage` without touching each branch again.  
-**Preserve:** diagnostic textual keys/format unchanged; helper only centralizes construction/emission path.  
+**Task/PR/branch:** current branch / unify missing-work-target handling in `DL_ExecuteWorkDirective`.
+**Files touched:** `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** blacksmith/gate/domestic/trader branches duplicated the same missing-waypoint guard pattern with branch-specific reason strings.
+**Change:** added `DL_HandleMissingWorkTarget(oNpc, sKind, bOk, sReason)` helper (no ref/output parameters) and migrated all four role branches to use it while preserving early-return control flow and existing reason literals: `need_forge_and_craft_waypoints`, `need_post_waypoint`, `need_home_domestic_anchors`, `need_trade_waypoint`.
+**Reason:** reduce repeated guard code and keep one canonical missing-target handling path without changing runtime behavior.
+**Preserve:** early return behavior remains unchanged per branch; no local-key literal contracts or role-resolution logic were renamed.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Work waypoint resolver profile helper unification (work roles)

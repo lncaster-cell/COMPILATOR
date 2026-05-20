@@ -455,28 +455,16 @@ void DL_SetWorkMissingState(object oNpc, string sKind, string sDiagnostic)
     DL_ClearActivityPresentation(oNpc);
     DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "work");
 }
-
-string DL_BuildWorkTargetDebugPayload(object oTarget, string sKind)
+int DL_HandleMissingWorkTarget(object oNpc, string sKind, int bOk, string sReason)
 {
-    return "target dir=WORK area=" + GetTag(GetArea(oTarget)) +
-           " anchor=" + GetTag(oTarget) +
-           " kind=" + sKind;
-}
-
-void DL_LogWorkTargetDebug(object oNpc, object oTarget, string sKind)
-{
-    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
+    if (bOk)
     {
-        return;
+        return TRUE;
     }
 
-    string sPayload = DL_BuildWorkTargetDebugPayload(oTarget, sKind);
-    DL_LogChatDebugEvent(oNpc, "target_work", sPayload);
-
-    // Chat-debug is currently no-op; keep a single choke point for future switch,
-    // e.g. DL_BsmithTraceStage(oNpc, "WORK_TARGET", sPayload).
+    DL_SetWorkMissingState(oNpc, sKind, sReason);
+    return FALSE;
 }
-
 void DL_SetWorkTargetState(object oNpc, string sKind, object oTarget)
 {
     string sTargetTag = GetTag(oTarget);
@@ -588,14 +576,87 @@ void DL_ExecuteWorkDirective(object oNpc)
         return;
     }
 
-    object oTarget = DL_ResolveWorkTargetForProfile(oNpc, sProfile, "", OBJECT_INVALID, "");
-    if (!GetIsObjectValid(oTarget))
+    if (sProfile == DL_PROFILE_BLACKSMITH)
     {
-        DL_SetWorkMissingState(
-            oNpc,
-            GetLocalString(oNpc, DL_L_NPC_WORK_RESOLVE_KIND),
-            GetLocalString(oNpc, DL_L_NPC_WORK_RESOLVE_ERROR)
-        );
+        string sKind = DL_ResolveBlacksmithWorkKindAtHour(oNpc);
+        object oForge = DL_ResolveBlacksmithForgeWaypoint(oNpc);
+        object oCraft = DL_ResolveBlacksmithCraftWaypoint(oNpc);
+        object oFetch = DL_ResolveBlacksmithFetchWaypoint(oNpc);
+
+        if (!DL_HandleMissingWorkTarget(oNpc, sKind, GetIsObjectValid(oForge) && GetIsObjectValid(oCraft), "need_forge_and_craft_waypoints"))
+        {
+            return;
+        }
+
+        object oTarget = oForge;
+        if (sKind == DL_WORK_KIND_CRAFT)
+        {
+            oTarget = oCraft;
+        }
+        else if (sKind == DL_WORK_KIND_FETCH)
+        {
+            if (GetIsObjectValid(oFetch))
+            {
+                oTarget = oFetch;
+            }
+            else
+            {
+                sKind = DL_WORK_KIND_CRAFT;
+                oTarget = oCraft;
+            }
+        }
+
+        DL_SetWorkTargetState(oNpc, sKind, oTarget);
+        DL_ProgressWorkAtTarget(oNpc, oTarget);
+        return;
+    }
+
+    if (sProfile == DL_PROFILE_GATE_POST)
+    {
+        object oPost = DL_ResolveGatePostWaypoint(oNpc);
+
+        if (!DL_HandleMissingWorkTarget(oNpc, DL_WORK_KIND_POST, GetIsObjectValid(oPost), "need_post_waypoint"))
+        {
+            return;
+        }
+
+        DL_SetWorkTargetState(oNpc, DL_WORK_KIND_POST, oPost);
+        DL_ProgressWorkAtTarget(oNpc, oPost);
+        return;
+    }
+
+    if (sProfile == DL_PROFILE_DOMESTIC_WORKER)
+    {
+        object oPrimary = DL_ResolveDomesticWorkerWaypoint(oNpc);
+        object oSecondary = DL_ResolveDomesticWorkerSecondaryWaypoint(oNpc);
+        object oFetch = DL_ResolveDomesticWorkerFetchWaypoint(oNpc);
+        int bHasFetch = GetIsObjectValid(oFetch);
+
+        if (!DL_HandleMissingWorkTarget(oNpc, DL_WORK_KIND_DOMESTIC, GetIsObjectValid(oPrimary) && GetIsObjectValid(oSecondary), "need_home_domestic_anchors"))
+        {
+            return;
+        }
+
+        string sKind = DL_ResolveDomesticWorkerWorkKind(oNpc, bHasFetch);
+        object oHomeWork = oPrimary;
+        if (sKind == DL_WORK_KIND_CRAFT)
+        {
+            oHomeWork = oSecondary;
+        }
+        else if (sKind == DL_WORK_KIND_FETCH)
+        {
+            oHomeWork = oFetch;
+        }
+
+        DL_SetWorkTargetState(oNpc, sKind, oHomeWork);
+        DL_ProgressWorkAtTarget(oNpc, oHomeWork);
+        return;
+    }
+
+    object oTrade = DL_ResolveTraderWaypoint(oNpc);
+
+    if (!DL_HandleMissingWorkTarget(oNpc, DL_WORK_KIND_TRADE, GetIsObjectValid(oTrade), "need_trade_waypoint"))
+    {
         return;
     }
 
