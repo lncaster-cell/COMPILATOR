@@ -334,3 +334,15 @@ Entry template:
 **Reason:** restore canonical registry ownership/helper implementation in the registry include so existing worker/registry fallback repair call sites can compile and keep compact slot-array semantics.
 **Preserve:** no movement/transition/directive/worker scheduling behavior changes; no BSMITH diagnostic changes; forward declaration kept for compile-order compatibility.
 **Validation:** static checks only. Compilation not run; user owns compilation.
+
+## 2026-05-20 — Refactor: reduce WORK/transition duplication without behavior change
+
+**Task/PR/branch:** current branch / Daily Life refactor pass.
+**Files touched:** `daily_life/dl_work_inc.nss`, `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Change:**
+- Added `DL_ResolveWorkAnchorWithFallback(...)` and migrated repeated forge/craft/fetch/post/trade waypoint resolution to this shared helper.
+- Added `DL_LogWorkTargetSelection(...)` and `DL_ApplyWorkTargetAndProgress(...)` to collapse repeated target-state + debug + progress blocks in `DL_ExecuteWorkDirective`.
+- Added `DL_ShouldClearTransitionRegistryProblemOnPostJumpSuccess(...)` and replaced duplicated OR-chains used to clear `dl_transition_registry_problem` in post-jump success branches.
+**Reason:** reduce duplicate code paths while preserving active Daily Life movement/transition behavior and diagnostics contracts.
+**Validation:** static diff/grep review only. Compilation not run; user owns compilation.
+**Preserve:** no local-key literal values changed; existing BSMITH/invariant workflow preserved.

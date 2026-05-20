@@ -665,10 +665,7 @@ void DL_FinalizeTransitionAfterQueuedJump(object oNpc)
         DL_NavClearFocusMoveIssueStateAfterJump(oNpc);
         DL_NavSetNpcCurrentZone(oNpc, sTargetZone);
         DL_NavSetDebug(oNpc, sTargetZone, sTargetZone, "", "post_jump_finalizer_same_area_complete");
-        if (GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_TARGET_AREA_WORKER_NOT_TICKING_OR_NOT_OWNING_NPC ||
-            GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_AREA_NOT_CHANGED ||
-            GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_REGISTRY_REPAIR_FAILED ||
-            GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_REGISTRY_AREA_MISMATCH)
+        if (DL_ShouldClearTransitionRegistryProblemOnPostJumpSuccess(GetLocalString(oNpc, "dl_transition_registry_problem")))
         {
             DeleteLocalString(oNpc, "dl_transition_registry_problem");
         }
@@ -747,10 +744,7 @@ void DL_FinalizeTransitionAfterQueuedJump(object oNpc)
         DL_NavClearFocusMoveIssueStateAfterJump(oNpc);
         DL_NavSetNpcCurrentZone(oNpc, sTargetZone);
         DL_NavSetDebug(oNpc, sTargetZone, sTargetZone, "", "post_jump_finalizer_complete");
-        if (GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_TARGET_AREA_WORKER_NOT_TICKING_OR_NOT_OWNING_NPC ||
-            GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_AREA_NOT_CHANGED ||
-            GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_REGISTRY_REPAIR_FAILED ||
-            GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_REGISTRY_AREA_MISMATCH)
+        if (DL_ShouldClearTransitionRegistryProblemOnPostJumpSuccess(GetLocalString(oNpc, "dl_transition_registry_problem")))
         {
             DeleteLocalString(oNpc, "dl_transition_registry_problem");
         }
@@ -971,4 +965,11 @@ int DL_TryExecuteTransitionAtWaypoint(object oNpc, object oTargetWp)
     string sMoveOwner = GetLocalString(oNpc, "dl_move_owner");
     if (sMoveOwner == "") sMoveOwner = "transition";
     return DL_NavTryAdvanceToZoneForOwner(oNpc, sTargetZone, sMoveOwner);
+}
+int DL_ShouldClearTransitionRegistryProblemOnPostJumpSuccess(string sProblem)
+{
+    return sProblem == DL_TRANSITION_REGISTRY_PROBLEM_TARGET_AREA_WORKER_NOT_TICKING_OR_NOT_OWNING_NPC ||
+        sProblem == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_AREA_NOT_CHANGED ||
+        sProblem == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_REGISTRY_REPAIR_FAILED ||
+        sProblem == DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_REGISTRY_AREA_MISMATCH;
 }
