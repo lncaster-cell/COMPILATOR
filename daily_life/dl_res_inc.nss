@@ -226,10 +226,6 @@ string DL_GetDirectiveDebugLabel(int nDirective)
     }
     return "NONE";
 }
-void DL_LogChatDebugEvent(object oNpc, string sKind, string sPayload)
-{
-    // Old broad Daily Life chat/debug output was removed; use DL_BsmithTraceStage for the temporary blacksmith trace.
-}
 void DL_LogMarkupIssueOnce(object oNpc, string sKey, string sMessage)
 {
     if (!GetIsObjectValid(oNpc))
@@ -877,9 +873,7 @@ int DL_ShouldUseDirectiveFastPath(object oNpc, int nEffectiveDirective)
         return FALSE;
     }
 
-    if (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" ||
-        GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) != "" ||
-        GetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC) != "")
+    if (DL_HasTransitionExecutionState(oNpc))
     {
         return FALSE;
     }
@@ -1033,16 +1027,16 @@ void DL_RecoverReachedFocusAnchorMoveState(object oNpc)
 
     if (DL_IsFocusRecoverySocialTarget(oNpc, oTarget))
     {
-        DL_ClearFocusMoveIssueState(oNpc);
+        DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
         DL_ClearTransitionExecutionState(oNpc);
         DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
         SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "on_social_anchor");
         SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oTarget));
         AssignCommand(oNpc, SetFacing(GetFacing(oTarget)));
-        DL_LogChatDebugEvent(
+        DL_BsmithTraceStage(
             oNpc,
-            "social_recover_reached_anchor",
-            "social_recover_reached_anchor anchor=" + GetTag(oTarget) +
+            "SOCIAL_RECOVER_REACHED_ANCHOR",
+            "anchor=" + GetTag(oTarget) +
                 " dist=" + FloatToString(GetDistanceBetween(oNpc, oTarget), 1, 2) +
                 " current_action=" + IntToString(GetCurrentAction(oNpc))
         );
@@ -1054,7 +1048,7 @@ void DL_RecoverReachedFocusAnchorMoveState(object oNpc)
         return;
     }
 
-    DL_ClearFocusMoveIssueState(oNpc);
+    DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
     DeleteLocalString(oNpc, DL_L_NPC_FOCUS_STATUS);
     DeleteLocalString(oNpc, DL_L_NPC_FOCUS_TARGET);
     DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
@@ -1336,11 +1330,9 @@ void DL_PreemptOldDirectiveState(object oNpc, int nPrevDirective, int nEffective
         bClearedTransition = TRUE;
     }
 
-    if (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" ||
-        GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) != "" ||
-        GetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC) != "")
+    if (DL_HasTransitionExecutionState(oNpc))
     {
-        DL_ClearTransitionExecutionState(oNpc);
+        DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "res");
         bClearedTransition = TRUE;
     }
 
@@ -1423,16 +1415,16 @@ int DL_BridgeLegacyDirectiveAnchorMoveJob(object oNpc, int nDirective)
     }
 
     DL_ClearTransitionExecutionState(oNpc);
-    DL_ClearFocusMoveIssueState(oNpc);
+    DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
     DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
     // Canonical focus/anchor move command path:
     // keep all move-job issue state through DL_IssueFocusMoveAction.
     DL_IssueFocusMoveAction(oNpc, oAnchor);
     string sAnchorZone = DL_NavGetAnchorZoneId(oAnchor);
     DL_NavSetDebug(oNpc, DL_NavGetNpcCurrentZone(oNpc), sAnchorZone, sAnchorZone, sReason);
-    DL_LogChatDebugEvent(
+    DL_BsmithTraceStage(
         oNpc,
-        sReason,
+        "DIRECTIVE_BRIDGE_MOVE",
         sReason +
             " owner=" + sOwner +
             " anchor=" + GetTag(oAnchor) +
@@ -1519,7 +1511,7 @@ int DL_FinalizeReachedDirectiveMoveJob(object oNpc, int nEffectiveDirective)
     SetLocalString(oNpc, DL_L_NPC_REACHED_MOVE_OWNER_DBG, sOwner);
     SetLocalString(oNpc, DL_L_NPC_REACHED_MOVE_TARGET_DBG, sTargetTag);
     DeleteLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC);
-    DL_ClearTransitionExecutionState(oNpc);
+    DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "res");
 
     if (sOwner == DL_MOVE_OWNER_PUBLIC && nEffectiveDirective == DL_DIR_PUBLIC)
     {
@@ -1529,7 +1521,7 @@ int DL_FinalizeReachedDirectiveMoveJob(object oNpc, int nEffectiveDirective)
             sAnim = "talk01";
         }
         DL_ClearMoveJob(oNpc);
-        DL_ClearFocusMoveIssueState(oNpc);
+        DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
         DL_ClearTransitionExecutionState(oNpc);
         DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
         SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "on_public_anchor");
@@ -1678,7 +1670,7 @@ int DL_EmergencyCloseReachedMoveInvariant(object oNpc, int nEffectiveDirective)
     if (sOwner == DL_MOVE_OWNER_PUBLIC && nEffectiveDirective == DL_DIR_PUBLIC && sTargetTag != "")
     {
         DL_ClearMoveJob(oNpc);
-        DL_ClearFocusMoveIssueState(oNpc);
+        DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
         DL_ClearTransitionExecutionState(oNpc);
         SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "on_public_anchor");
         SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, sTargetTag);
@@ -1694,7 +1686,7 @@ int DL_EmergencyCloseReachedMoveInvariant(object oNpc, int nEffectiveDirective)
     if (sOwner == DL_MOVE_OWNER_SOCIAL && nEffectiveDirective == DL_DIR_SOCIAL && sTargetTag != "")
     {
         DL_ClearMoveJob(oNpc);
-        DL_ClearFocusMoveIssueState(oNpc);
+        DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
         DL_ClearTransitionExecutionState(oNpc);
         SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "on_social_anchor");
         SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, sTargetTag);
