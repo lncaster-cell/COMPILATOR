@@ -1,3 +1,13 @@
+## 2026-05-20 — Transition registry-problem cleanup helper canonicalization
+
+**Task/PR/branch:** current branch / deduplicate safe post-jump registry-problem cleanup path.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `DL_FinalizeTransitionAfterQueuedJump` had duplicated inline cleanup conditions for `dl_transition_registry_problem` in both same-area and expected-area success branches.
+**Change:** added local helper `DL_ClearSafeTransitionRegistryProblemAfterFinalize` that clears `dl_transition_registry_problem` only for the canonical safe set: `target_area_worker_not_ticking_or_not_owning_npc`, `post_jump_finalizer_area_not_changed`, `post_jump_finalizer_registry_repair_failed`, `post_jump_finalizer_registry_area_mismatch`; replaced both duplicated inline blocks with helper calls.
+**Reason:** keep behavior identical while reducing duplication and centralizing the allowed-clear contract in one place for safer maintenance.
+**Preserve:** no local-key literal renames; existing transition trace/diagnostic strings and finalizer result strings are unchanged.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Nav stale-zone guard in current-zone sync
 
 **Task/PR/branch:** current branch / stale current-zone resync guard for transition navigation.
