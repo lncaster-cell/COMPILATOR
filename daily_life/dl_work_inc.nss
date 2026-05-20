@@ -353,6 +353,28 @@ void DL_SetWorkMissingState(object oNpc, string sKind, string sDiagnostic)
     DL_ClearActivityPresentation(oNpc);
     DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "work");
 }
+
+string DL_BuildWorkTargetDebugPayload(object oTarget, string sKind)
+{
+    return "target dir=WORK area=" + GetTag(GetArea(oTarget)) +
+           " anchor=" + GetTag(oTarget) +
+           " kind=" + sKind;
+}
+
+void DL_LogWorkTargetDebug(object oNpc, object oTarget, string sKind)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
+    {
+        return;
+    }
+
+    string sPayload = DL_BuildWorkTargetDebugPayload(oTarget, sKind);
+    DL_LogChatDebugEvent(oNpc, "target_work", sPayload);
+
+    // Chat-debug is currently no-op; keep a single choke point for future switch,
+    // e.g. DL_BsmithTraceStage(oNpc, "WORK_TARGET", sPayload).
+}
+
 void DL_SetWorkTargetState(object oNpc, string sKind, object oTarget)
 {
     string sTargetTag = GetTag(oTarget);
@@ -399,6 +421,13 @@ void DL_IssueWorkMoveAction(object oNpc, object oTarget)
         DL_WORK_ANCHOR_RADIUS
     );
 }
+void DL_ApplyResolvedWorkTarget(object oNpc, string sKind, object oTarget)
+{
+    DL_SetWorkTargetState(oNpc, sKind, oTarget);
+    SetLocalString(oNpc, DL_L_NPC_WORK_DIAGNOSTIC, "target:" + GetTag(oTarget));
+    DL_ProgressWorkAtTarget(oNpc, oTarget);
+}
+
 int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
 {
     if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
@@ -421,10 +450,19 @@ int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
         return TRUE;
     }
 
-    DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_WORK_ACTION_STAMP, DL_L_NPC_WORK_ACTION_TARGET);
-    DL_ClearMoveJob(oNpc);
+    DL_SetAnchorTerminalStatus(
+        oNpc,
+        DL_L_NPC_WORK_STATUS,
+        DL_WORK_STATUS_ON_ANCHOR,
+        "",
+        OBJECT_INVALID,
+        DL_L_NPC_WORK_ACTION_STAMP,
+        DL_L_NPC_WORK_ACTION_TARGET,
+        TRUE,
+        TRUE,
+        FALSE
+    );
     DL_ClearTransitionExecutionState(oNpc);
-    SetLocalString(oNpc, DL_L_NPC_WORK_STATUS, DL_WORK_STATUS_ON_ANCHOR);
     DL_FaceWorkTargetOrientation(oNpc, oTarget);
     DL_ApplyArchiveActivityPresentation(oNpc, DL_DIR_WORK);
     DL_PlayWorkAnimation(oNpc);
