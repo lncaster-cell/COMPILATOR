@@ -261,6 +261,30 @@ void DL_ClearTransitionExecutionState(object oNpc)
     DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC);
 }
 
+
+void DL_ClearTransitionExecutionStateWithReason(object oNpc, string sReason, string sOwner)
+{
+    if (!GetIsObjectValid(oNpc)) return;
+
+    // Guard: while post-jump finalizer is expected and still queued, do not clear
+    // transition execution locals from non-finalizer owners.
+    if (GetLocalInt(oNpc, "dl_transition_pending_finalizer_expected") == TRUE)
+    {
+        string sPostJumpResult = GetLocalString(oNpc, "dl_post_jump_result");
+        if (sPostJumpResult == "" || sPostJumpResult == "queued")
+        {
+            SetLocalString(
+                oNpc,
+                DL_L_NPC_TRANSITION_DIAGNOSTIC,
+                "clear_guard_pending_post_jump owner=" + sOwner + " reason=" + sReason + " result=" + sPostJumpResult
+            );
+            return;
+        }
+    }
+
+    DL_ClearTransitionExecutionState(oNpc);
+}
+
 void DL_NavSetState(object oNpc, string sStatus, string sTargetZone, string sDiagnostic)
 {
     if (!GetIsObjectValid(oNpc)) return;
