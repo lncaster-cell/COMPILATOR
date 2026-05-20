@@ -1309,34 +1309,16 @@ int DL_RunTransitionRegistryHandoffTick(object oArea, int nTickStamp)
 void DL_WorkerTouchNpc(object oNpc)
 {
     object oCurrentArea = GetArea(oNpc);
-    object oRegisteredArea = GetLocalObject(oNpc, DL_L_NPC_REG_AREA);
     string sCurrentArea = "";
-    string sRegisteredArea = "";
     if (GetIsObjectValid(oCurrentArea))
     {
         sCurrentArea = GetTag(oCurrentArea);
     }
-    if (GetIsObjectValid(oRegisteredArea))
-    {
-        sRegisteredArea = GetTag(oRegisteredArea);
-    }
-    SetLocalString(oNpc, "dl_registry_current_physical_area", sCurrentArea);
-    SetLocalString(oNpc, "dl_registry_area_before_repair", sRegisteredArea);
     SetLocalString(oNpc, "dl_worker_touch_area", sCurrentArea);
 
     if (!DL_IsActivePipelineNpc(oNpc))
     {
         return;
-    }
-
-    if (oRegisteredArea != oCurrentArea)
-    {
-        if (!DL_EnsureNpcRegisteredInCurrentArea(oNpc))
-        {
-            SetLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC, "registry_repair_verify_failed");
-            DL_MaybeLogNpcDiagnostic(oNpc, "worker_registry_repair", TRUE);
-            return;
-        }
     }
 
     if (!DL_EnsureNpcRegisteredInCurrentArea(oNpc))
@@ -1346,13 +1328,6 @@ void DL_WorkerTouchNpc(object oNpc)
         return;
     }
 
-    oRegisteredArea = GetLocalObject(oNpc, DL_L_NPC_REG_AREA);
-    sRegisteredArea = "";
-    if (GetIsObjectValid(oRegisteredArea))
-    {
-        sRegisteredArea = GetTag(oRegisteredArea);
-    }
-    SetLocalString(oNpc, "dl_registry_area_after_repair", sRegisteredArea);
     DL_BsmithTraceStage(oNpc, "REGISTRY_CHECK", "after_repair");
     DL_ClearStaleTransitionHandoffProblemIfOwned(oNpc);
     if (GetLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC) == "registry_repair_verify_failed")
