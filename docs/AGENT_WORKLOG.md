@@ -1,3 +1,13 @@
+## 2026-05-20 — Transition registry problem clear whitelist helper unification
+
+**Task/PR/branch:** current branch / user-requested helper extraction in transition finalizer cleanup.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** the same OR whitelist for clearing `dl_transition_registry_problem` after successful finalizer existed in multiple places, with one raw-string variant and drift risk.
+**Change:** extracted `DL_ShouldClearTransitionRegistryProblemOnSuccess(string sProblem)` with one canonical whitelist based on `DL_TRANSITION_REGISTRY_PROBLEM_*` constants and replaced duplicate inline OR blocks with helper calls.
+**Reason:** keep one source of truth for “safe-to-clear on success” transition registry problems, reduce divergence risk, and preserve existing runtime literal contracts.
+**Preserve:** only the recoverable transition/finalizer pipeline problem codes are auto-cleared on successful finalizer; no local-key literal value changes.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Social scene IDs now drive real scene cadence/pools
 
 **Task/PR/branch:** current branch / social scene signature alignment in `dl_social_scene_inc.nss`.
