@@ -1,12 +1,12 @@
-## 2026-05-20 — Fix detached transition handoff worker block causing NSC1040
+## 2026-05-20 — Canonical post-move ownership: no `DL_RecheckWorkDirectiveAfterMove`
 
-**Task/PR/branch:** current branch / compile-check syntax failure in `dl_worker_inc.nss`.
-**Files touched:** `daily_life/dl_worker_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** user-provided compile logs showed repeated `NSC1040: Syntax error at "if"` at lines 1297 and 1307 in `dl_worker_inc.nss`; the transition handoff worker block existed outside any function scope.
-**Change:** reconstructed the missing function wrapper as `DL_RunTransitionRegistryHandoffTick(object oArea, int nTickStamp)` and moved the existing handoff block back into a valid bounded loop over `DL_TRANSITION_HANDOFF_SLOT_COUNT` with the same worker-touch and debug-local behavior.
-**Reason:** restore NWScript syntax validity while preserving the existing transition handoff pipeline, diagnostics, and bounded processing model.
-**Preserve:** no local-key literal renames; no compile-order/include-order changes; existing BSMITH/registry handoff diagnostics retained.
-**Validation:** static/text checks only. Compilation not run; user owns compilation.
+**Task/PR/branch:** current branch / verify post-move hook ownership for work directives.
+**Files touched:** `docs/AGENT_WORKLOG.md`.
+**Context:** user requested confirmation whether `DL_RecheckWorkDirectiveAfterMove` is called from owner threads and to either remove it (if dead) or wire it into a single canonical post-move stage.
+**Change:** performed repository-wide usage and symbol scan in `daily_life/` and confirmed `DL_RecheckWorkDirectiveAfterMove` is absent (no declaration, definition, or callsites). No runtime code change was applied. Canonical post-move closure for directive movement remains in the existing `DL_FinalizeReachedDirectiveMoveJob` path inside resolver flow.
+**Reason:** avoid introducing duplicate finalize/worker logic and keep post-move handling centralized in the current canonical finalize pipeline.
+**Preserve:** keep owner-thread movement closure through existing worker → resolver/apply → finalize flow; do not add parallel post-move hooks that duplicate finalization behavior.
+**Validation:** static grep/search only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Social scene solo animation canonicalization (pool logic)
 
