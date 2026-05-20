@@ -1,3 +1,13 @@
+## 2026-05-20 — Transition registry handoff canonical entrypoint restored
+
+**Task/PR/branch:** current branch / handoff entrypoint audit in area worker/resync cycles.
+**Files touched:** `daily_life/dl_worker_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `DL_RunTransitionRegistryHandoffTick` was called from HOT worker, WARM maintenance, and enter-resync ticks, but the function body/signature was missing in `dl_worker_inc.nss` (left as orphaned block), so canonical handoff execution point was not explicit/maintainable.
+**Change:** restored `int DL_RunTransitionRegistryHandoffTick(object oArea, int nTickStamp)` as a bounded slot-based handoff processor (`DL_TRANSITION_HANDOFF_SLOT_COUNT`), keeping all existing touch/debug/rebuild behavior and reusing `DL_WorkerTouchNpc` pipeline.
+**Reason:** make the canonical handoff entrypoint factual and executable exactly where worker/resync cycles invoke it, without adding scans/polling or new ownership paths.
+**Preserve:** canonical handoff entrypoint remains area-owner tick path (`DL_RunAreaWorkerTick`, `DL_RunAreaWarmMaintenanceTick`, `DL_RunAreaEnterResyncTick`); keep bounded slot queue model and existing BSMITH/transition diagnostics.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Social scene solo animation canonicalization (pool logic)
 
 **Task/PR/branch:** current branch / user-requested social scene cleanup.
