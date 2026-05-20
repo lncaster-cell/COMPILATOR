@@ -229,7 +229,7 @@ void DL_TickSocialScene(object oNpc, object oAnchor, object oPartner, int bPartn
             if (nSoloStep == 1) sPool = "sad_speaker";
             if (nSoloStep == 2) sPool = "neutral_speaker";
         }
-        sAnim = DL_SelectSocialSceneAnim(sPool, sLastAnim);
+        sAnim = DL_SelectSocialSceneAnim(sPool, sLastAnim, oNpc, nStep);
     }
     else
     {

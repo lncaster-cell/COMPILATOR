@@ -2,6 +2,34 @@
 #include "dl_move_job_decl_inc"
 #include "dl_transition_inc"
 
+
+// Compile-compatibility shims/wrappers preserved for include-order stability.
+void DL_LogChatDebugEvent(object oNpc, string sKind, string sPayload)
+{
+    // Intentionally no-op: legacy diagnostic hook retained for compile compatibility.
+}
+
+int DL_HasTransitionExecutionState(object oNpc)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return FALSE;
+    }
+
+    return GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" ||
+        GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) != "";
+}
+
+void DL_ClearTransitionExecutionStateWithReason(object oNpc, string sReason, string sOwner)
+{
+    DL_ClearTransitionExecutionState(oNpc);
+
+    if (GetIsObjectValid(oNpc) && sReason != "")
+    {
+        SetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC, sReason);
+    }
+}
+
 // Step 05+: resolver/materialization skeleton.
 string DL_GetNpcProblemSummary(object oNpc);
 // Scope: basic BLACKSMITH/GATE_POST/TRADER WORK/SLEEP window split.
@@ -300,8 +328,8 @@ void DL_ApplyMaterializationSkeleton(object oNpc, int nDirective)
 
 #include "dl_anchor_cache_inc"
 #include "dl_presentation_inc"
-#include "dl_sleep_inc"
 #include "dl_anchor_move_inc"
+#include "dl_sleep_inc"
 #include "dl_move_job_inc"
 #include "dl_work_inc"
 #include "dl_focus_inc"

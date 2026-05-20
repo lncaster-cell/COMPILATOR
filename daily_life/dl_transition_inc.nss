@@ -301,7 +301,7 @@ void DL_ApplyPostJumpCompletionSuccess(object oNpc, string sTargetZone, string s
             SetLocalString(
                 oNpc,
                 DL_L_NPC_TRANSITION_DIAGNOSTIC,
-                "clear_guard_pending_post_jump owner=" + sOwner + " reason=" + sReason + " result=" + sPostJumpResult
+                "clear_guard_pending_post_jump reason=" + sReason + " result=" + sPostJumpResult
             );
             return;
         }
@@ -672,6 +672,10 @@ object DL_ResolveTransitionExitWaypointFromEntry(object oEntryWp)
 
     return DL_NavFindTransitionByTag(DL_NavMakeTransitionTag(sTo, sFrom));
 }
+
+int DL_ShouldClearTransitionRegistryProblemOnSuccess(string sProblem);
+void DL_FinalizePostJumpTransitionResult(object oNpc, string sResult, int bTouchCalled, string sTraceNote);
+int DL_NavTryAdvanceToZoneForOwner(object oNpc, string sTargetZone, string sMoveOwner);
 
 void DL_SetPendingTransitionAfterJump(object oNpc, object oOldArea, object oTargetArea, string sTargetZone, string sExitTag)
 {

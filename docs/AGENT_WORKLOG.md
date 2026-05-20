@@ -1,3 +1,23 @@
+## 2026-05-20 — Fix remaining Daily Life compile-order wrappers
+
+**Task/PR/branch:** current branch / follow-up emergency compile recovery after prior stack fix.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** reduced compile set still failed on three roots: undeclared `sOwner` in post-jump helper diagnostic text, compatibility wrappers calling non-existent transition helpers, and sleep include failing to see anchor-move helpers.
+**Change:** removed invalid `owner=` fragment from `DL_ApplyPostJumpCompletionSuccess` diagnostic string (no new state added); rewired `DL_HasTransitionExecutionState` to existing transition locals (`DL_L_NPC_TRANSITION_STATUS`/`DL_L_NPC_TRANSITION_TARGET`) and `DL_ClearTransitionExecutionStateWithReason` to `DL_ClearTransitionExecutionState` plus optional diagnostic reason writeback; reordered includes so `dl_anchor_move_inc` is parsed before `dl_sleep_inc` while keeping `dl_move_job_decl_inc` available first.
+**Reason:** restore compile-compatible existing contracts with minimal behavior impact and no subsystem redesign.
+**Preserve:** no movement/transition/directive/registry/worker/nav behavior redesign; no local-key literal changes.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
+## 2026-05-20 — Emergency Daily Life compile recovery after refactor stack
+
+**Task/PR/branch:** current branch / emergency compile recovery for Daily Life main.
+**Files touched:** `daily_life/dl_res_inc.nss`, `daily_life/dl_transition_inc.nss`, `daily_life/dl_work_inc.nss`, `daily_life/dl_social_scene_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** recent helper-cleanup/refactor stack introduced include-order and symbol-contract regressions (missing wrappers/prototypes, removed compatibility hook, and one bad social-scene call signature), causing widespread compile failures across transition/work/sleep/focus/res includes.
+**Change:** restored compile-compatibility surface with minimal behavior impact: added no-op `DL_LogChatDebugEvent` shim; restored transition execution compatibility wrappers (`DL_HasTransitionExecutionState`, `DL_ClearTransitionExecutionStateWithReason`) by delegating to current transition-state helpers; added narrow forward declarations in transition/work includes for later-defined helpers; fixed broken fallback argument names in work anchor fallback call; replaced invalid `DL_WORK_KIND_WORK` artifact with existing `DL_WORK_KIND_FORGE` kind; fixed solo social-scene call to pass required `oNpc` and `nStep` args.
+**Reason:** recover main compilability by restoring pre-refactor symbol contracts and call signatures instead of introducing new runtime behavior.
+**Preserve:** no movement/transition/directive/registry redesign; no local-key literal migrations; wrappers intentionally preserve existing owner pipeline.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Work kind helper unification for primary/secondary/fetch
 
 **Task/PR/branch:** current branch / user request to centralize work target resolution by kind in `dl_work_inc.nss`.
