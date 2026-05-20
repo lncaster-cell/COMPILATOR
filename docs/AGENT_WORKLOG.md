@@ -1,11 +1,11 @@
-## 2026-05-20 — Canonical running-state ownership for move jobs
+## 2026-05-20 — Registry-owner enforcement for stale-slot removal/repair debug flow
 
-**Task/PR/branch:** current branch / Daily Life move-result running canonicalization.
-**Files touched:** `daily_life/dl_move_job_inc.nss`, `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** `DL_L_NPC_MOVE_RESULT=running` was written from multiple branches with mixed semantics (active move, transition wait, reissue), and resolver invariants inferred waiting state via duplicated secondary checks.
-**Change:** introduced canonical helper `DL_SetMoveJobRunningState` plus state reader `DL_GetMoveJobRunningState` with explicit subtypes (`running_active`, `running_waiting_transition`, `running_reissue`), routed move-job running writes through this owner helper, and updated resolver contradiction/classification transition-wait invariants to use the same canonical running-state semantics.
-**Reason:** keep one owner path for running-state writes, preserve compatibility (`move_result` still equals `running`), and eliminate duplicated secondary-branch semantics drift.
-**Preserve:** existing transition compatibility fallback remains (transition status can still suppress action-queue contradiction when non-idle).
+**Task/PR/branch:** current branch / worker→registry ownership cleanup for stale-slot + repair debug.
+**Files touched:** `daily_life/dl_worker_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** worker touch path duplicated pre/post-repair bookkeeping around registry ownership while `dl_registry_inc.nss` already owns stale-slot removal, slot-repair, and stale-old-area debug contracts.
+**Change:** removed worker-local pre/post-repair duplication in `DL_WorkerTouchNpc` (extra area mismatch branch and direct writes of `dl_registry_current_physical_area`, `dl_registry_area_before_repair`, `dl_registry_area_after_repair`); worker now keeps only worker context (`dl_worker_touch_area`) and calls canonical registry-owner API `DL_EnsureNpcRegisteredInCurrentArea` once, preserving existing failure diagnostic/tracing behavior.
+**Reason:** enforce single ownership of stale-removal/repair debug state in `dl_registry_inc.nss` and prevent drift between worker and registry branches.
+**Preserve:** literal debug/local-key names unchanged; transition handoff/worker call-sites continue reading the same registry debug keys populated by registry-owner code.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Transition registry problem codes: remove raw string literals
