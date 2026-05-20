@@ -294,3 +294,13 @@ Entry template:
 **Reason:** document the setup contract before adding validator code or changing runtime behavior, so future NPC setup errors can be separated from movement/worker regressions.
 **Preserve:** documentation-only change; do not treat this as runtime validation, and do not remove existing Daily Life diagnostics based only on this document.
 **Validation:** documentation/static checks only. Compilation not run; user owns validation.
+
+## 2026-05-20 — Nav zone inference call-graph pass + 1-tick bounded cache
+
+**Task/PR/branch:** current branch / user request to profile inference call-graph and reduce repeated scans.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** in one pipeline pass, `DL_NavPrepareTargetZoneFromAnchor` can invoke both current-zone and target-zone inference paths: `DL_NavSyncCurrentZoneFromArea -> DL_NavResolveCurrentZoneFromPosition -> DL_NavTryResolveZoneFromNearbyAnchors` and then `DL_NavGetAnchorZoneId -> DL_NavTryResolveTargetZoneFromTransitionWaypoints`, causing back-to-back area waypoint scans.
+**Change:** added bounded per-subject nav inference cache locals (`dl_nav_infer_cache_*`) keyed by area tag + kind + area worker tick (`dl_worker_tick`) with TTL=1 worker tick; applied cache to `DL_NavTryResolveZoneFromTransitionWaypoints` and `DL_NavTryResolveZoneFromNearbyAnchors` without changing fallback scan logic or caps.
+**Reason:** avoid repeated same-tick inference scans in the same owner pipeline while preserving canonical behavior and existing bounded fallback semantics.
+**Preserve:** `DL_NAV_AREA_SCAN_CAP` remains unchanged and still bounds fallback loops; no global polling loop/path was introduced.
+**Validation:** static checks only. Compilation not run; user owns compilation.

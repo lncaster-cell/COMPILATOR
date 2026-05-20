@@ -1292,8 +1292,30 @@ int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPas
     SetLocalInt(oArea, DL_L_AREA_PASS_LAST_CANDIDATES, nCandidates);
     return nNpcProcessed;
 }
+int DL_RunTransitionRegistryHandoffTick(object oArea, int nTickStamp)
+{
+    if (!DL_IsAreaObject(oArea))
+    {
+        return 0;
+    }
 
+int DL_RunTransitionRegistryHandoffTick(object oArea, int nTickStamp)
+{
+    if (!DL_IsAreaObject(oArea))
+    {
+        return 0;
+    }
 
+    int nTouched = 0;
+    int i = 0;
+    while (i < DL_TRANSITION_HANDOFF_SLOT_COUNT)
+    {
+        string sSlotKey = DL_GetAreaTransitionHandoffSlotKey(i);
+        object oNpc = GetLocalObject(oArea, sSlotKey);
+        if (GetIsObjectValid(oNpc))
+        {
+            object oNpcArea = GetArea(oNpc);
+            object oRegisteredArea = GetLocalObject(oNpc, DL_L_NPC_REG_AREA);
             if (oNpcArea == oArea)
             {
                 SetLocalInt(oNpc, DL_L_NPC_PROCESSED_BY_RR_DBG, FALSE);
