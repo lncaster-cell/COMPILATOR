@@ -1,11 +1,11 @@
-## 2026-05-20 — Work resolver consolidation by profile/anchor role
+## 2026-05-20 — Work waypoint resolver profile helper unification (work roles)
 
-**Task/PR/branch:** current branch / `dl_work_inc.nss` resolver consolidation with minimal behavior diff.
+**Task/PR/branch:** current branch / unify repeated work waypoint resolvers in `dl_work_inc.nss`.
 **Files touched:** `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** work-anchor resolution had many near-identical resolver functions (profile-specific pass-through/duplicate logic), increasing maintenance risk in active Daily Life directive paths.
-**Change:** added two universal resolvers: `DL_ResolveWorkAnchorByArea` (single anchor+fallback resolver) and `DL_ResolveWorkAnchorByProfile` (profile + anchor-role mapping: primary/secondary/fetch). Kept thin public wrappers (`DL_ResolveBlacksmith*`, `DL_ResolveGatePostWaypoint`, `DL_ResolveTraderWaypoint`, `DL_ResolveDomesticWorker*`) only as readability/semantic entry points, now delegating to the unified resolver. Removed duplicate pass-through internals while preserving existing fallback tags and cache keys.
-**Reason:** reduce duplicated resolver logic and keep `DL_ExecuteWorkDirective` call sites behavior-stable with minimal diff.
-**Preserve:** no local-key literal contract changes; existing WORK directive flow/fallback semantics stay intact.
+**Context:** blacksmith/gate/trader/domestic role resolvers duplicated the same “anchor first, optional fallback by tag profile” pattern with only profile literals changed.
+**Change:** added shared helper `DL_ResolveWorkWaypointByRoleParams` with explicit profile parameters (anchor key + anchor cache key + fallback cache key/prefix/suffix/tag), migrated blacksmith forge/craft/fetch, gate post, trader, and domestic primary/secondary/fetch resolvers to call it, and preserved domestic behavior by passing home area plus empty fallback profile so no fallback lookup runs.
+**Reason:** reduce duplicate resolver logic while preserving existing runtime contracts, role-specific cache keys, and domestic home-area/no-fallback behavior.
+**Preserve:** literal local-key values and fallback literal tags are unchanged; domestic path remains home-area anchored and may validly return `OBJECT_INVALID` without fallback.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Social scene IDs now drive real scene cadence/pools
