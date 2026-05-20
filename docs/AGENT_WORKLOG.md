@@ -1,3 +1,12 @@
+## 2026-05-20 — Daily Life stabilization audit refresh after baseline success (#864)
+
+**Task/PR/branch:** current branch / audit refresh for post-baseline cleanup mapping.
+**Files touched:** `docs/daily-life-stabilization-audit.md`, `docs/AGENT_WORKLOG.md`.
+**Context:** blacksmith01 full-cycle baseline is currently successful, validator is already working, and #861 is closed; #864 remains the debt tracker.
+**Change:** rewrote the audit document into a strict pipeline/ownership/debt map with requested classifications (canonical/fallback/emergency/diagnostic/obsolete/unknown-risky), overlap analysis, phased cleanup buckets, a small next cleanup PR recommendation, and manual validation checklist without runtime behavior edits.
+**Reason:** provide a practical, low-risk cleanup map so future PRs can reduce Daily Life debt without breaking the working baseline.
+**Validation:** static documentation review only. Compilation not run; user owns compilation.
+
 ## 2026-05-19 — Compact default output for manual Daily Life setup validator
 
 **Task/PR/branch:** current branch / compact validator output by default.
