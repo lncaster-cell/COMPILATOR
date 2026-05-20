@@ -1,3 +1,13 @@
+## 2026-05-20 — Nav infer cache invalidation contract + debug reasons
+
+**Task/PR/branch:** current branch / explicit invalidation for `dl_nav_infer_cache_*`.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** bounded nav infer cache (tick+area+kind) reduced repeated scans, but invalidation moments were implicit, making rare transition edge cases harder to diagnose.
+**Change:** added `DL_NavInvalidateInferZoneCache` helper that clears all `DL_L_NAV_INFER_CACHE_*` locals and writes a nav-debug reason `infer_cache_invalidated:<reason>`; invoked it on transition execution-state clear, transition finalize success paths (`post_jump_finalizer_same_area_complete`, `post_jump_finalizer_complete`, completed-transition finalize), and when stored nav-zone area contract no longer matches NPC area (`zone_area_changed`) during sync.
+**Reason:** keep current bounded-cache behavior while explicitly documenting/enforcing when cached inference is stale across area/transition lifecycle edges.
+**Preserve:** cache key model remains `tick + area + kind`; no new scans/polling; existing scan caps/inference fallbacks unchanged.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Transition registry problem codes: remove raw string literals
 
 **Task/PR/branch:** current branch / literal-to-constant cleanup for transition registry problem codes.
