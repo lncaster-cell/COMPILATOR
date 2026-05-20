@@ -1,3 +1,13 @@
+## 2026-05-20 — Transition post-jump success helper unification
+
+**Task/PR/branch:** current branch / refactor same-area and complete success branches in transition finalizer.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `DL_FinalizeTransitionAfterQueuedJump` had duplicated success logic in `post_jump_finalizer_same_area_complete` and `post_jump_finalizer_complete` branches (debug/apply/cleanup/zone set + worker touch + trace/result flags).
+**Change:** added `DL_ApplyPostJumpCompletionSuccess(oNpc, sTargetZone, sReason)` helper and migrated both success branches to it while preserving existing literal reason values (`post_jump_finalizer_same_area_complete`, `post_jump_finalizer_complete`). Kept branch-specific behavior outside helper (`dl_transition_registry_handoff_touch_called` false for same-area, and registry handoff request for cross-area complete).
+**Reason:** enforce one canonical implementation for successful post-jump completion side effects and reduce future branch drift in active transition debugging paths.
+**Preserve:** no local-key literal contract renames; no change to failure paths (`area_not_changed`, `registry_repair_failed`, `registry_area_mismatch`, `unexpected_area`) or cross-area registry repair ordering.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Social scene IDs now drive real scene cadence/pools
 
 **Task/PR/branch:** current branch / social scene signature alignment in `dl_social_scene_inc.nss`.
