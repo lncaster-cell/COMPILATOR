@@ -1399,9 +1399,9 @@ int DL_BridgeLegacyDirectiveAnchorMoveJob(object oNpc, int nDirective)
     DL_ClearTransitionExecutionState(oNpc);
     DL_ClearFocusMoveIssueState(oNpc);
     DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
-    SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "moving_to_anchor");
-    SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oAnchor));
-    DL_BeginMoveJobToObject(oNpc, sOwner, "anchor", oAnchor, DL_WORK_ANCHOR_RADIUS);
+    // Canonical focus/anchor move command path:
+    // keep all move-job issue state through DL_IssueFocusMoveAction.
+    DL_IssueFocusMoveAction(oNpc, oAnchor);
     string sAnchorZone = DL_NavGetAnchorZoneId(oAnchor);
     DL_NavSetDebug(oNpc, DL_NavGetNpcCurrentZone(oNpc), sAnchorZone, sAnchorZone, sReason);
     DL_LogChatDebugEvent(
