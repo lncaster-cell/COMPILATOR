@@ -1,11 +1,11 @@
-## 2026-05-20 — Transition lifecycle contract unification + stale-state diagnostics
+## 2026-05-20 — Work anchor transition-state safe clear/handoff guard
 
-**Task/PR/branch:** current branch / unify transition lifecycle ownership for transition locals.
-**Files touched:** `daily_life/dl_transition_inc.nss`, `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** transition lifecycle locals (`DL_L_NPC_TRANSITION_STATUS`, `DL_L_NPC_TRANSITION_TARGET`, `DL_L_NPC_TRANSITION_DIAGNOSTIC`) were used across subsystems with partial direct checks/writes, which increased stale-state risk after directive/finalizer closure.
-**Change:** documented a canonical lifecycle contract in `dl_transition_inc.nss`; added owner helpers `DL_HasTransitionExecutionState`, `DL_MarkTransitionDiagnostic`, and `DL_ReportStaleTransitionState`; switched target-zone prepare path to canonical state writer (`DL_NavSetState`); converted post-jump finalizer diagnostic writes to canonical diagnostic owner; replaced scattered triple-local presence checks in resolver with canonical state helper and added targeted stale-state report before cleanup in directive preempt/recovery paths.
-**Reason:** keep one owner include for transition lifecycle state semantics, reduce cross-subsystem drift, and make stale leftovers diagnosable without broad polling or duplicate cleanup logic.
-**Preserve:** local-key literal values are unchanged; cleanup owner remains `DL_ClearTransitionExecutionState`; future subsystems should call owner helpers instead of duplicating STATUS/TARGET/DIAGNOSTIC checks/writes.
+**Task/PR/branch:** current branch / DL_ProgressWorkAtTarget transition-finalizer overlap hardening.
+**Files touched:** `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `DL_ProgressWorkAtTarget` could reach work anchor while transition status was still active (`moving_to_entry`/`transitioning`) and clear transition locals directly, overlapping active transition finalizer/owner flow.
+**Change:** added guarded transition-clear behavior in `DL_ProgressWorkAtTarget`: clear transition state only when transition is inactive (`""|idle|failed`); for active transition states, skip direct clear and route control through `DL_NavTryAdvanceToZoneForOwner(..., DL_MOVE_OWNER_WORK)` owner path; if handoff cannot advance, keep transition keys and skip clear. Added diagnostic local `dl_work_transition_clear_reason` for clear/skip reasons. Also tagged transition clear reason in work reset/missing-state clear paths.
+**Reason:** preserve transition owner/finalizer contracts and avoid unsafe direct deletion of transition keys while transition pipeline is still active.
+**Preserve:** transition key literals remain unchanged; owner-path handoff remains bounded and diagnosable via reason tags.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Transition registry problem codes: remove raw string literals
