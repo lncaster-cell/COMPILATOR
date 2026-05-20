@@ -1,14 +1,14 @@
-## 2026-05-20 — #864 dead-code micro-prune: redundant branch in social scene step count
+## 2026-05-20 — Transition registry-problem cleanup helper canonicalization
 
-**Task/PR/branch:** current branch / dead-code-only cleanup per #864 audit map and PR #875 context.
-**Files touched:** `daily_life/dl_social_scene_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** requested to remove only statically provable dead Daily Life code without behavior change and without touching canonical/emergency/fallback/unknown-risky paths.
-**Change:** removed a redundant conditional branch in `DL_GetSocialSceneStepCount` that returned `8` in both true/false outcomes; function now directly returns `8`.
-**Reason:** repository-wide static inspection shows the branch had no semantic effect and did not participate in movement/transition/finalizer/worker/route logic; this is a minimal safe code-size reduction.
-**Preserve:** social scene runtime contracts and local-key literals unchanged; no BSMITH diagnostics touched; no canonical/emergency/fallback movement pipeline code touched.
-**Validation:** static search/diff checks only. Compilation not run; user owns compilation.
+**Task/PR/branch:** current branch / deduplicate safe post-jump registry-problem cleanup path.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `DL_FinalizeTransitionAfterQueuedJump` had duplicated inline cleanup conditions for `dl_transition_registry_problem` in both same-area and expected-area success branches.
+**Change:** added local helper `DL_ClearSafeTransitionRegistryProblemAfterFinalize` that clears `dl_transition_registry_problem` only for the canonical safe set: `target_area_worker_not_ticking_or_not_owning_npc`, `post_jump_finalizer_area_not_changed`, `post_jump_finalizer_registry_repair_failed`, `post_jump_finalizer_registry_area_mismatch`; replaced both duplicated inline blocks with helper calls.
+**Reason:** keep behavior identical while reducing duplication and centralizing the allowed-clear contract in one place for safer maintenance.
+**Preserve:** no local-key literal renames; existing transition trace/diagnostic strings and finalizer result strings are unchanged.
+**Validation:** static checks only. Compilation not run; user owns compilation.
 
-## 2026-05-20 — Canonical post-move ownership: no `DL_RecheckWorkDirectiveAfterMove`
+## 2026-05-20 — Nav stale-zone guard in current-zone sync
 
 **Task/PR/branch:** current branch / stale current-zone resync guard for transition navigation.
 **Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
