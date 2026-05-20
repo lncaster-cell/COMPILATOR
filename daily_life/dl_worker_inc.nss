@@ -1475,6 +1475,9 @@ void DL_RunAreaEnterResyncTick(object oArea)
         return;
     }
 
+    int nTickStamp = DL_GetAreaTick(oArea);
+    DL_RunTransitionRegistryHandoffTick(oArea, nTickStamp);
+
     int nBudget = DL_GetAreaResyncBudget(oArea);
     nBudget = DL_ConsumeModuleNpcBudget(nBudget);
     if (nBudget <= 0)
@@ -1486,7 +1489,6 @@ void DL_RunAreaEnterResyncTick(object oArea)
     }
 
     int nCursor = GetLocalInt(oArea, DL_L_AREA_ENTER_RESYNC_CURSOR);
-    int nTickStamp = DL_GetAreaTick(oArea);
     int nNpcProcessed = DL_RunAreaNpcRoundRobinPass(oArea, nCursor, nBudget, DL_AREA_PASS_MODE_RESYNC, nTickStamp);
     int nNpcSeen = GetLocalInt(oArea, DL_L_AREA_PASS_LAST_SEEN);
 
@@ -1529,6 +1531,7 @@ void DL_RunAreaWarmMaintenanceTick(object oArea)
     }
 
     int nTickStamp = DL_GetAreaTick(oArea);
+    DL_RunTransitionRegistryHandoffTick(oArea, nTickStamp);
     if (DL_ProcessCriticalAreaCursorNpc(oArea, DL_AREA_PASS_MODE_WARM, nTickStamp, "warm"))
     {
         return;
@@ -1712,6 +1715,8 @@ void DL_RunAreaWorkerTick(object oArea)
         }
     }
 
+    int nTickStamp = DL_GetAreaTick(oArea);
+    DL_RunTransitionRegistryHandoffTick(oArea, nTickStamp);
     DL_RunAreaEnterResyncTick(oArea);
 
     // HOT area worker must not depend on shared module budget or critical/emergency bypasses.
@@ -1722,7 +1727,6 @@ void DL_RunAreaWorkerTick(object oArea)
     }
 
     int nCursor = DL_GetAreaWorkerCursor(oArea);
-    int nTickStamp = DL_GetAreaTick(oArea);
     int nNpcProcessed = DL_RunAreaNpcRoundRobinPass(oArea, nCursor, nBudget, DL_AREA_PASS_MODE_WORKER, nTickStamp);
     int nNpcSeen = GetLocalInt(oArea, DL_L_AREA_PASS_LAST_SEEN);
 
