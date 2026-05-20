@@ -1,3 +1,13 @@
+## 2026-05-20 — Fix detached transition handoff worker block causing NSC1040
+
+**Task/PR/branch:** current branch / compile-check syntax failure in `dl_worker_inc.nss`.
+**Files touched:** `daily_life/dl_worker_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** user-provided compile logs showed repeated `NSC1040: Syntax error at "if"` at lines 1297 and 1307 in `dl_worker_inc.nss`; the transition handoff worker block existed outside any function scope.
+**Change:** reconstructed the missing function wrapper as `DL_RunTransitionRegistryHandoffTick(object oArea, int nTickStamp)` and moved the existing handoff block back into a valid bounded loop over `DL_TRANSITION_HANDOFF_SLOT_COUNT` with the same worker-touch and debug-local behavior.
+**Reason:** restore NWScript syntax validity while preserving the existing transition handoff pipeline, diagnostics, and bounded processing model.
+**Preserve:** no local-key literal renames; no compile-order/include-order changes; existing BSMITH/registry handoff diagnostics retained.
+**Validation:** static/text checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Social scene solo animation canonicalization (pool logic)
 
 **Task/PR/branch:** current branch / user-requested social scene cleanup.
