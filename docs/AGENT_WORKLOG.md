@@ -1,3 +1,12 @@
+## 2026-05-20 — Continue audit: full daily_life script coverage pass (#864)
+
+**Task/PR/branch:** current branch / maximize audit depth with full script pass.
+**Files touched:** `docs/daily-life-stabilization-audit.md`, `docs/AGENT_WORKLOG.md`.
+**Context:** user requested maximal audit depth and full `daily_life/` script review while avoiding compiler/toolchain/stock compiler scripts.
+**Change:** added a full inventory section to the audit with coverage totals, role-based file grouping, high-risk/high-mass file list, compile-order include discipline notes, concentrated debt boundaries, and scope guardrails for next PR selection.
+**Reason:** provide a complete map of the Daily Life code surface so #864 cleanup can stay incremental and avoid broad regressions.
+**Validation:** static documentation review only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Continue audit: cleanup-readiness matrix and risk lanes (#864)
 
 **Task/PR/branch:** current branch / continued audit iteration.

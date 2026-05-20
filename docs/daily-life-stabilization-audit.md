@@ -386,3 +386,66 @@ Before touching Daily Life cleanup code under #864, the agent should explicitly 
 
 If any of the above is unknown, default to evidence/docs PR rather than behavior rewrite.
 
+
+---
+
+## 19) Full `daily_life/` script inventory audit (read-all pass)
+
+Per current request, a full read pass was executed across all scripts under `daily_life/` (excluding compiler/toolchain and stock compiler scripts).
+
+### 19.1 Coverage summary
+
+- Total files read under `daily_life/`: **49**.
+- Includes/docs + runtime scripts were both reviewed.
+- Approximate total reviewed lines: **~4988** (textual read pass).
+
+### 19.2 Inventory by role
+
+| Role | Files |
+|---|---|
+| Area bootstrap/runtime entry points | `dl_a_enter.nss`, `dl_a_exit.nss`, `dl_a_hb.nss`, `dl_userdef.nss`, `dl_spawn.nss`, `dl_load.nss` |
+| Core pipeline includes | `dl_res_inc.nss`, `dl_worker_inc.nss`, `dl_move_job_inc.nss`, `dl_transition_inc.nss`, `dl_focus_inc.nss`, `dl_sleep_inc.nss`, `dl_work_inc.nss`, `dl_registry_inc.nss`, `dl_diag_inc.nss`, `dl_sched_inc.nss` |
+| Runtime contracts/lifecycle/resync | `dl_runtime_contract_inc.nss`, `dl_lifecycle_inc.nss`, `dl_resync_inc.nss`, `dl_core_inc.nss` |
+| Presentation/anchors/movement helpers | `dl_anchor_cache_inc.nss`, `dl_anchor_move_inc.nss`, `dl_presentation_inc.nss`, `dl_activity_archive_anim_inc.nss`, `dl_social_scene_inc.nss` |
+| Debug/ops tooling | `dl_dbg_setup.nss`, `dl_dbg_time.nss`, `bsmith_trace_off.nss`, smoke scripts `dl_smk_*.nss`, `dl_smoke_ev.nss` |
+| Crime/legal subsystem | `dl_cr_crime_inc.nss`, `dl_city_response_inc.nss`, `dl_legal_inc.nss`, `dl_cr_detain_accept.nss`, `dl_cr_detain_refuse.nss`, `dl_lg_resolve_detain.nss`, `dl_lg_resolve_fine.nss`, `dl_cr_restricted_trg.nss` |
+| Event handlers (damage/death/open/etc.) | `dl_damaged.nss`, `dl_death.nss`, `dl_open.nss`, `dl_disturbed.nss`, `dl_perception.nss`, `dl_blocked.nss`, `dl_blocked_inc.nss` |
+| Setup docs/contracts | `SOCIAL_SETUP.md` |
+
+### 19.3 High-mass/high-risk files (by size and ownership depth)
+
+These files currently dominate behavior surface and should remain high-caution for any cleanup:
+
+- `dl_res_inc.nss` (~2056 lines, directive/apply/finalize ownership).
+- `dl_worker_inc.nss` (~1741 lines, worker scheduling + emergency touch paths).
+- `dl_focus_inc.nss` (~1277 lines, focus/anchor progression + overlap debt).
+- `dl_registry_inc.nss` (~1144 lines, registration/handoff/fallback repair surface).
+- `dl_transition_inc.nss` (~862 lines, route/zone/transition/handoff paths).
+- `dl_move_job_inc.nss` (~814 lines, canonical movement lifecycle/reached logic).
+
+### 19.4 Compile-order/safety-critical include discipline
+
+- `dl_move_job_decl_inc.nss` remains declaration-only contract surface.
+- Cleanup PRs must preserve “declaration-only” constraints (no bodies/default args/constants).
+- This include is safe for hygiene review, unsafe for behavior logic injection.
+
+### 19.5 Cross-subsystem debt concentration
+
+From full inventory review, debt is concentrated at these boundaries:
+
+1. **Directive apply ↔ movement reached/finalize** (`dl_res_inc.nss` + `dl_move_job_inc.nss`).
+2. **Worker touch ↔ emergency bypass** (`dl_worker_inc.nss` + `dl_diag_inc.nss`).
+3. **Focus progression ↔ terminal closure** (`dl_focus_inc.nss` + `dl_res_inc.nss`).
+4. **Transition routing ↔ registry handoff repair** (`dl_transition_inc.nss` + `dl_registry_inc.nss` + worker fallback scans).
+
+This confirms the earlier #864 map: cleanup must stay single-lane and evidence-driven.
+
+### 19.6 “Do not expand scope” guard after full pass
+
+Even with full repository script coverage, the safest next step is still:
+- docs/comment classification hardening;
+- then targeted evidence PRs;
+- only then narrow behavior changes one overlap family at a time.
+
+Broad “all-in-one” simplification across `res/worker/focus/transition/registry` remains high regression risk against the current working baseline.
+
