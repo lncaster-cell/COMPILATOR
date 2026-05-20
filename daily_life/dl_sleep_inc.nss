@@ -296,8 +296,7 @@ void DL_ExecuteSleepDirective(object oNpc)
     int bCommittedToBed = nPhase == DL_SLEEP_PHASE_JUMPING || nPhase == DL_SLEEP_PHASE_ON_BED;
     int bMayUseNavigation = DL_ShouldAttemptSleepNavigation(oNpc);
 
-    DL_NavPrepareTargetZoneFromAnchor(oNpc, oApproach);
-    if (!bCommittedToBed && bMayUseNavigation && DL_NavTryAdvanceToZoneForOwner(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET), DL_MOVE_OWNER_SLEEP))
+    if (!bCommittedToBed && bMayUseNavigation && DL_NavTryAdvanceFromAnchorForOwner(oNpc, oApproach, DL_MOVE_OWNER_SLEEP))
     {
         DL_MarkSleepNavigationInProgress(oNpc, GetTag(oApproach));
         return;
@@ -331,8 +330,7 @@ void DL_ExecuteSleepDirective(object oNpc)
         sStatus = DL_SLEEP_STATUS_APPROACH_REACHED;
     }
 
-    DL_NavPrepareTargetZoneFromAnchor(oNpc, oBed);
-    if (bMayUseNavigation && DL_NavTryAdvanceToZoneForOwner(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET), DL_MOVE_OWNER_SLEEP))
+    if (bMayUseNavigation && DL_NavTryAdvanceFromAnchorForOwner(oNpc, oBed, DL_MOVE_OWNER_SLEEP))
     {
         DL_MarkSleepNavigationInProgress(oNpc, GetTag(oBed));
         return;
@@ -359,9 +357,19 @@ void DL_ExecuteSleepDirective(object oNpc)
     }
 
     DL_ClearSleepActionIssueState(oNpc);
-    DL_ClearMoveJob(oNpc);
+    DL_SetAnchorTerminalStatus(
+        oNpc,
+        DL_L_NPC_SLEEP_STATUS,
+        DL_SLEEP_STATUS_ON_BED,
+        "",
+        OBJECT_INVALID,
+        "",
+        "",
+        TRUE,
+        FALSE,
+        FALSE
+    );
     DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "sleep");
     SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_ON_BED);
-    SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_SLEEP_STATUS_ON_BED);
     DL_LogChatDebugEvent(oNpc, DL_SLEEP_STATUS_ON_BED, "on_bed anchor=" + GetTag(oBed));
 }
