@@ -1,11 +1,11 @@
-## 2026-05-20 — Area worker: remove same-tick double player recount, keep bounded repair recount
+## 2026-05-20 — Nav stale-zone guard in current-zone sync
 
-**Task/PR/branch:** current branch / user-requested `DL_MaybeReconcileAreaPlayerCount` + worker hotness pass optimization.
-**Files touched:** `daily_life/dl_worker_inc.nss`, `daily_life/dl_registry_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** area worker tick performed `DL_MaybeReconcileAreaPlayerCount` and then immediately ran `DL_CountPlayersInArea` again in the same tick, causing duplicate area scans on the hot path.
-**Change:** switched worker hotness flow to use reconciled cached player count as primary `nActualPlayers` source; kept a bounded protective recount only in repair mode (`cached<=0`) and only every `DL_PLAYER_COUNT_REPAIR_INTERVAL_TICKS` via `DL_L_AREA_PLAYER_COUNT_REPAIR_TICK`.
-**Reason:** remove redundant same-tick recount while preserving diagnosable recovery path and forced HOT repair when players are physically present but cached count is stale.
-**Preserve:** `DL_L_AREA_*_DBG` hotness debug locals remain intact; forced HOT path on confirmed real player presence remains intact.
+**Task/PR/branch:** current branch / stale current-zone resync guard for transition navigation.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `DL_NavSyncCurrentZoneFromArea` preserved existing same-area nav zone to protect pseudo-zones, but could also preserve stale `dl_nav_zone_current` when position evidence no longer matched nearby nav anchors/transitions.
+**Change:** added a narrow stale-zone guard in `DL_NavSyncCurrentZoneFromArea`: before preserving existing zone, confirm it via nearby anchor-zone inference and (if anchor evidence is absent) nearby transition-waypoint inference; if contradicted by nearby evidence, emit nav debug reason `sync_stale_zone_guard` and allow canonical resync through `DL_NavResolveCurrentZoneFromPosition`; if no nearby evidence exists, preserve existing zone as before.
+**Reason:** keep same-area pseudo-zone stability while allowing bounded, evidence-based recovery from stale current-zone state without adding new global scans or changing local-key literal contracts.
+**Preserve:** no changes to local-key literal values; reuse existing inference helpers and existing area-scan caps only.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Social scene solo animation canonicalization (pool logic)
