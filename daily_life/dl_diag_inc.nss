@@ -41,7 +41,7 @@ string DL_GetNpcProblemSummary(object oNpc)
     if (GetLocalString(oNpc, "dl_post_jump_result") == "post_jump_finalizer_complete" &&
         GetIsObjectValid(oCurrentArea) &&
         oRegisteredArea == oCurrentArea &&
-        GetLocalString(oNpc, "dl_transition_registry_problem") == "target_area_worker_not_ticking_or_not_owning_npc")
+        GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_TARGET_AREA_WORKER_NOT_TICKING_OR_NOT_OWNING_NPC)
     {
         DeleteLocalString(oNpc, "dl_transition_registry_problem");
     }

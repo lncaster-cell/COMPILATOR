@@ -1,12 +1,12 @@
-## 2026-05-20 — Registry stale-removal ownership consolidation (worker -> registry owner)
+## 2026-05-20 — Transition registry problem codes: remove raw string literals
 
-**Task/PR/branch:** current branch / user-requested owner consolidation for stale registry cleanup.
-**Files touched:** `daily_life/dl_worker_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** worker code still had duplicate physical slot-repair logic (`DL_RepairAreaRegistrySlot`) and inlined stale-removal branches overlapping `dl_registry_inc.nss` owner routines.
-**Change:** removed worker-local `DL_RepairAreaRegistrySlot` implementation and reduced `DL_RemoveStaleNpcReferenceFromAreaRegistrySlot` in worker to a thin bounded delegating call to `DL_RemoveStaleNpcReferenceFromAreaRegistry` (registry owner), preserving worker-side context only.
-**Reason:** enforce single ownership in `dl_registry_inc.nss` for physical stale reference deletion + slot repair + registry-local cleanup/debug contracts, and remove duplicate branch paths from worker.
-**Preserve:** no new scans introduced; worker call-sites still go through existing bounded pipelines and existing registry scan caps.
-**Validation:** static grep/diff checks only. Compilation not run; user owns compilation.
+**Task/PR/branch:** current branch / literal-to-constant cleanup for transition registry problem codes.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `daily_life/dl_worker_inc.nss`, `daily_life/dl_registry_inc.nss`, `daily_life/dl_diag_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** transition registry problem code comparisons/assignments used repeated raw string literals, increasing drift risk in active Daily Life diagnostics/handoff paths.
+**Change:** declared shared compiler-safe global string constants for all used `dl_transition_registry_problem` codes in `dl_transition_inc.nss` and replaced raw literal comparisons/assignments in transition/worker paths; also replaced remaining comparisons in Daily Life registry/diagnostic includes and verified static search has no old literal comparisons in `daily_life/*.nss`.
+**Reason:** preserve runtime literal contract values while centralizing code usage and reducing typo/divergence risk across owner and observer paths.
+**Preserve:** literal code values are unchanged; only symbolic usage in code paths was updated.
+**Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Nav stale-zone guard in current-zone sync
 

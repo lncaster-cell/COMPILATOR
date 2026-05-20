@@ -721,7 +721,7 @@ void DL_OnAreaEnterBootstrap(object oArea, object oEnter)
 
         if (oRegisteredArea == oArea)
         {
-            if (GetLocalString(oEnter, "dl_transition_registry_problem") == "target_area_worker_not_ticking_or_not_owning_npc")
+            if (GetLocalString(oEnter, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_TARGET_AREA_WORKER_NOT_TICKING_OR_NOT_OWNING_NPC)
             {
                 DeleteLocalString(oEnter, "dl_transition_registry_problem");
             }
