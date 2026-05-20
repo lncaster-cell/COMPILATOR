@@ -42,17 +42,25 @@ const string DL_L_NPC_FROZEN_HB_WAS_SET = "dl_npc_frozen_hb_was_set";
 const string DL_L_NPC_FROZEN_HB_SCRIPT = "dl_npc_frozen_hb_script";
 
 const int DL_WORKER_BUDGET_MIN = 1;
+// CAP POLICY (worker-hotpath): warm-area per-tick touch budget.
 const int DL_WORKER_BUDGET_WARM = 2;
+// CAP POLICY (worker-hotpath): hot-area per-tick touch budget.
 const int DL_WORKER_BUDGET_HOT = 4;
+// CAP POLICY (worker-hotpath): absolute per-area tick ceiling.
 const int DL_WORKER_BUDGET_MAX = 12;
 const int DL_RESYNC_BUDGET_MIN = 1;
+// CAP POLICY (warm path): area-enter/resync budget for warm areas.
 const int DL_RESYNC_BUDGET_WARM = 1;
+// CAP POLICY (warm path): area-enter/resync budget for hot areas.
 const int DL_RESYNC_BUDGET_HOT = 2;
+// CAP POLICY (warm path): absolute resync ceiling per area tick.
 const int DL_RESYNC_BUDGET_MAX = 6;
 const int DL_PLAYER_COUNT_RECONCILE_INTERVAL_TICKS = 30;
 const int DL_PLAYER_COUNT_REPAIR_INTERVAL_TICKS = 10;
 const int DL_WARM_MAINTENANCE_INTERVAL_TICKS = 20;
 const int DL_WARM_TO_FROZEN_TIMEOUT_TICKS = 100;
+// CAP POLICY (warm path / registry-repair fallback): bounded stale-slot scan
+// for repair so fallback remains cheap and deterministic.
 const int DL_STALE_REGISTRY_REPAIR_SCAN_CAP = 8;
 
 const string DL_L_AREA_PASS_LAST_SEEN = "dl_area_pass_last_seen";
@@ -69,7 +77,11 @@ const int DL_MODULE_NPC_BUDGET_DEFAULT = 24;
 const int DL_MODULE_NPC_BUDGET_MAX = 128;
 const int DL_MODULE_BUDGET_PRESSURE_TRIGGER = 6;
 const int DL_MODULE_BUDGET_RELIEF_TRIGGER = 4;
+// CAP POLICY (worker-hotpath under pressure): when module budget pressure is
+// active, per-area worker budget is clamped to this ceiling.
 const int DL_MODULE_WORKER_PRESSURE_CAP = 3;
+// CAP POLICY (warm path under pressure): resync budget clamp under module
+// pressure to protect hot worker throughput.
 const int DL_MODULE_RESYNC_PRESSURE_CAP = 1;
 
 // Forward declarations for mutually-recursive registration helpers.
@@ -839,6 +851,42 @@ void DL_CleanupNpcRegistrySlotIfOwned(object oNpc, object oArea, int nSlot)
 
     DL_DeleteAreaRegistrySlot(oArea, nLastSlot);
     SetLocalInt(oArea, DL_L_AREA_REG_COUNT, nLastSlot);
+    SetLocalInt(oArea, DL_L_AREA_REG_SEQ, GetLocalInt(oArea, DL_L_AREA_REG_SEQ) + 1);
+}
+
+void DL_RepairAreaRegistrySlot(object oArea, int nSlot, int nCount)
+{
+    if (!GetIsObjectValid(oArea))
+    {
+        return;
+    }
+
+    if (nCount <= 0 || nSlot < 0 || nSlot >= nCount)
+    {
+        return;
+    }
+
+    int nLastSlot = nCount - 1;
+    if (nSlot != nLastSlot)
+    {
+        object oTailNpc = DL_GetAreaRegistryNpcAtSlot(oArea, nLastSlot);
+        DL_SetAreaRegistryNpcAtSlot(oArea, nSlot, oTailNpc);
+        if (GetIsObjectValid(oTailNpc))
+        {
+            SetLocalInt(oTailNpc, DL_L_NPC_REG_SLOT, nSlot);
+            SetLocalObject(oTailNpc, DL_L_NPC_REG_AREA, oArea);
+        }
+    }
+
+    DL_DeleteAreaRegistrySlot(oArea, nLastSlot);
+    if (nLastSlot > 0)
+    {
+        SetLocalInt(oArea, DL_L_AREA_REG_COUNT, nLastSlot);
+    }
+    else
+    {
+        DeleteLocalInt(oArea, DL_L_AREA_REG_COUNT);
+    }
     SetLocalInt(oArea, DL_L_AREA_REG_SEQ, GetLocalInt(oArea, DL_L_AREA_REG_SEQ) + 1);
 }
 

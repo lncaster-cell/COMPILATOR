@@ -226,10 +226,6 @@ string DL_GetDirectiveDebugLabel(int nDirective)
     }
     return "NONE";
 }
-void DL_LogChatDebugEvent(object oNpc, string sKind, string sPayload)
-{
-    // Old broad Daily Life chat/debug output was removed; use DL_BsmithTraceStage for the temporary blacksmith trace.
-}
 void DL_LogMarkupIssueOnce(object oNpc, string sKey, string sMessage)
 {
     if (!GetIsObjectValid(oNpc))
@@ -504,14 +500,12 @@ void DL_BsmithDetectContradictions(object oNpc, string sStage, object oMoveObj, 
     {
         DL_BsmithContradiction(oNpc, "WORKER_AREA_MISMATCH", "worker=" + GetLocalString(oNpc, "dl_worker_touch_area") + " actual=" + DL_BsmithAreaTag(oNpc));
     }
+    string sRunningState = DL_GetMoveJobRunningState(oNpc);
     int bWaitingForTransition =
-        sMoveResult == DL_MOVE_RESULT_RUNNING &&
-        (
-            GetLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC) == "waiting_for_transition" ||
-            GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE) == DL_NAV_MOVE_PHASE_TRANSITION_TO_AREA ||
-            (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" &&
-             GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "idle")
-        );
+        sRunningState == DL_MOVE_STATE_WAITING_TRANSITION ||
+        (sMoveResult == DL_MOVE_RESULT_RUNNING &&
+            GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" &&
+            GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "idle");
 
     int nCurrentActionNow = GetCurrentAction(oNpc);
     int nCurrentActionDbg = GetLocalInt(oNpc, DL_L_NPC_MOVE_CURRENT_ACTION_DBG);
@@ -535,13 +529,25 @@ void DL_BsmithDetectContradictions(object oNpc, string sStage, object oMoveObj, 
     if (sMoveTag != "" && GetIsObjectValid(oMoveObj))
     {
         object oPrev = GetLocalObject(oNpc, "dl_bsmith_last_target_obj");
-        if (GetLocalString(oNpc, "dl_bsmith_last_target_tag") == sMoveTag && GetIsObjectValid(oPrev) && oPrev != oMoveObj)
+        string sPrevTag = GetLocalString(oNpc, "dl_bsmith_last_target_tag");
+        string sPrevArea = GetLocalString(oNpc, "dl_bsmith_last_target_area");
+        string sNewArea = DL_BsmithAreaTag(oMoveObj);
+        float fRawDist = GetDistanceBetween(oNpc, oMoveObj);
+        int bStableIdentityContext =
+            sPrevTag == sMoveTag &&
+            sPrevArea == sNewArea &&
+            GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_AREA) == sNewArea &&
+            fRawDist <= 10.00;
+        int bRecentTransitionFinalize =
+            GetLocalString(oNpc, "dl_post_jump_result") == "post_jump_finalizer_complete" ||
+            GetLocalString(oNpc, "dl_post_jump_result") == "post_jump_finalizer_same_area_complete";
+        if (bStableIdentityContext && !bRecentTransitionFinalize && GetIsObjectValid(oPrev) && oPrev != oMoveObj)
         {
-            DL_BsmithContradiction(oNpc, "TARGET_IDENTITY_CHANGED", "tag=" + sMoveTag + " prev_area=" + GetLocalString(oNpc, "dl_bsmith_last_target_area") + " new_area=" + DL_BsmithAreaTag(oMoveObj));
+            DL_BsmithContradiction(oNpc, "TARGET_IDENTITY_CHANGED", "tag=" + sMoveTag + " prev_area=" + sPrevArea + " new_area=" + sNewArea + " raw=" + FloatToString(fRawDist, 1, 2));
             DL_BsmithClassify(oNpc, "TARGET_RESOLUTION_BUG", "medium", "target_identity_changed");
         }
         SetLocalString(oNpc, "dl_bsmith_last_target_tag", sMoveTag);
-        SetLocalString(oNpc, "dl_bsmith_last_target_area", DL_BsmithAreaTag(oMoveObj));
+        SetLocalString(oNpc, "dl_bsmith_last_target_area", sNewArea);
         SetLocalObject(oNpc, "dl_bsmith_last_target_obj", oMoveObj);
     }
 }
@@ -552,14 +558,12 @@ void DL_BsmithMaybeClassify(object oNpc, string sProblem)
     {
         DL_BsmithClassify(oNpc, "PATHFINDING_OR_COLLISION_BLOCKED", "medium", "no_progress_reissues=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_MOVE_REISSUE_COUNT)));
     }
+    string sRunningState = DL_GetMoveJobRunningState(oNpc);
     int bWaitingForTransition =
-        GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_RUNNING &&
-        (
-            GetLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC) == "waiting_for_transition" ||
-            GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE) == DL_NAV_MOVE_PHASE_TRANSITION_TO_AREA ||
-            (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" &&
-             GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "idle")
-        );
+        sRunningState == DL_MOVE_STATE_WAITING_TRANSITION ||
+        (GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_RUNNING &&
+            GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" &&
+            GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "idle");
 
     if (!bWaitingForTransition && GetLocalInt(oNpc, "dl_bsmith_bad_action_samples") >= 3)
     {
@@ -869,9 +873,7 @@ int DL_ShouldUseDirectiveFastPath(object oNpc, int nEffectiveDirective)
         return FALSE;
     }
 
-    if (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" ||
-        GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) != "" ||
-        GetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC) != "")
+    if (DL_HasTransitionExecutionState(oNpc))
     {
         return FALSE;
     }
@@ -1031,10 +1033,10 @@ void DL_RecoverReachedFocusAnchorMoveState(object oNpc)
         SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "on_social_anchor");
         SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oTarget));
         AssignCommand(oNpc, SetFacing(GetFacing(oTarget)));
-        DL_LogChatDebugEvent(
+        DL_BsmithTraceStage(
             oNpc,
-            "social_recover_reached_anchor",
-            "social_recover_reached_anchor anchor=" + GetTag(oTarget) +
+            "SOCIAL_RECOVER_REACHED_ANCHOR",
+            "anchor=" + GetTag(oTarget) +
                 " dist=" + FloatToString(GetDistanceBetween(oNpc, oTarget), 1, 2) +
                 " current_action=" + IntToString(GetCurrentAction(oNpc))
         );
@@ -1328,9 +1330,7 @@ void DL_PreemptOldDirectiveState(object oNpc, int nPrevDirective, int nEffective
         bClearedTransition = TRUE;
     }
 
-    if (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" ||
-        GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) != "" ||
-        GetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC) != "")
+    if (DL_HasTransitionExecutionState(oNpc))
     {
         DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "res");
         bClearedTransition = TRUE;
@@ -1422,9 +1422,9 @@ int DL_BridgeLegacyDirectiveAnchorMoveJob(object oNpc, int nDirective)
     DL_IssueFocusMoveAction(oNpc, oAnchor);
     string sAnchorZone = DL_NavGetAnchorZoneId(oAnchor);
     DL_NavSetDebug(oNpc, DL_NavGetNpcCurrentZone(oNpc), sAnchorZone, sAnchorZone, sReason);
-    DL_LogChatDebugEvent(
+    DL_BsmithTraceStage(
         oNpc,
-        sReason,
+        "DIRECTIVE_BRIDGE_MOVE",
         sReason +
             " owner=" + sOwner +
             " anchor=" + GetTag(oAnchor) +
