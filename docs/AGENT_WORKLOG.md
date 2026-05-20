@@ -1,24 +1,14 @@
-## 2026-05-20 — Fix shared DL_L_AREA_WORKER_TICK include ownership
+## 2026-05-20 — #864 dead-code micro-prune: redundant branch in social scene step count
 
-**Task/PR/branch:** current branch / Daily Life compile blocker follow-up.
-**Files touched:** `daily_life/dl_shared_keys_inc.nss`, `daily_life/dl_registry_inc.nss`, `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** `DL_L_AREA_WORKER_TICK` was used across transition and registry/worker code, but ownership in only one include caused include-order compile errors (`undeclared identifier` / `must be initialized before referenced`).
-**Change:** created a tiny shared include `dl_shared_keys_inc.nss` containing exactly `const string DL_L_AREA_WORKER_TICK = "dl_worker_tick";`; included it from `dl_registry_inc.nss` and `dl_transition_inc.nss`; removed direct local definitions from both includes.
-**Reason:** restore single-source ownership of the shared key while preserving NWScript include-order compatibility and avoiding duplicate definitions.
-**Preserve:** literal local-key value unchanged (`"dl_worker_tick"`), symbol name unchanged (`DL_L_AREA_WORKER_TICK`), no runtime behavior changes.
-**Validation:** static grep checks only. Compilation not run; user owns compilation.
+**Task/PR/branch:** current branch / dead-code-only cleanup per #864 audit map and PR #875 context.
+**Files touched:** `daily_life/dl_social_scene_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** requested to remove only statically provable dead Daily Life code without behavior change and without touching canonical/emergency/fallback/unknown-risky paths.
+**Change:** removed a redundant conditional branch in `DL_GetSocialSceneStepCount` that returned `8` in both true/false outcomes; function now directly returns `8`.
+**Reason:** repository-wide static inspection shows the branch had no semantic effect and did not participate in movement/transition/finalizer/worker/route logic; this is a minimal safe code-size reduction.
+**Preserve:** social scene runtime contracts and local-key literals unchanged; no BSMITH diagnostics touched; no canonical/emergency/fallback movement pipeline code touched.
+**Validation:** static search/diff checks only. Compilation not run; user owns compilation.
 
-## 2026-05-20 — Fix Daily Life compile blockers after #877
-
-**Task/PR/branch:** current branch / post-#877 compile blocker repair.
-**Files touched:** `daily_life/dl_transition_inc.nss`, `daily_life/dl_worker_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** compiler reported hard blockers: duplicate `DL_L_AREA_WORKER_TICK` definition (`dl_registry_inc.nss` and `dl_transition_inc.nss`) and a duplicated/nested `DL_RunTransitionRegistryHandoffTick` function declaration in `dl_worker_inc.nss`, which likely caused cascading parser errors in downstream includes.
-**Change:** removed duplicate `DL_L_AREA_WORKER_TICK` definition from `dl_transition_inc.nss` and kept the canonical registry-owned definition in `dl_registry_inc.nss`; removed the accidental second nested `DL_RunTransitionRegistryHandoffTick` header so the file now has exactly one valid definition.
-**Reason:** restore compile structure with the smallest possible patch while preserving existing Daily Life runtime behavior and contracts.
-**Preserve:** no local-key literal value changes (`"dl_worker_tick"` unchanged), no movement/transition/directive/registry/worker scheduling logic changes, no BSMITH diagnostic changes.
-**Validation:** static checks only. Compilation not run; user owns compilation.
-
-## 2026-05-20 — Nav stale-zone guard in current-zone sync
+## 2026-05-20 — Canonical post-move ownership: no `DL_RecheckWorkDirectiveAfterMove`
 
 **Task/PR/branch:** current branch / stale current-zone resync guard for transition navigation.
 **Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
