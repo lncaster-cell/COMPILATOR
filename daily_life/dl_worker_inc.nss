@@ -1292,6 +1292,12 @@ int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPas
     SetLocalInt(oArea, DL_L_AREA_PASS_LAST_CANDIDATES, nCandidates);
     return nNpcProcessed;
 }
+int DL_RunTransitionRegistryHandoffTick(object oArea, int nTickStamp)
+{
+    if (!DL_IsAreaObject(oArea))
+    {
+        return 0;
+    }
 
 int DL_RunTransitionRegistryHandoffTick(object oArea, int nTickStamp)
 {
