@@ -60,16 +60,16 @@ void DL_ResetCustomAnimationBeforeAnchorMove(object oNpc)
     PlayCustomAnimation(oNpc, "%", FALSE);
 }
 
-void DL_IssueAnchorMoveWithLocalsAndBeginJob(
+
+
+void DL_PrepareAnchorMoveToObject(
     object oNpc,
     object oTarget,
     string sStatusKey,
     string sMovingStatus,
     string sTargetKey,
     string sActionTargetKey,
-    string sMoveOwner,
-    string sMovePhase,
-    float fMoveRadius
+    string sActionStampKey
 )
 {
     if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
@@ -77,20 +77,19 @@ void DL_IssueAnchorMoveWithLocalsAndBeginJob(
         return;
     }
 
-    string sTargetTag = GetTag(oTarget);
-
     if (sStatusKey != "")
     {
         SetLocalString(oNpc, sStatusKey, sMovingStatus);
     }
     if (sTargetKey != "")
     {
-        SetLocalString(oNpc, sTargetKey, sTargetTag);
+        SetLocalString(oNpc, sTargetKey, GetTag(oTarget));
     }
     if (sActionTargetKey != "")
     {
-        SetLocalString(oNpc, sActionTargetKey, sTargetTag);
+        SetLocalString(oNpc, sActionTargetKey, GetTag(oTarget));
     }
 
-    DL_BeginMoveJobToObject(oNpc, sMoveOwner, sMovePhase, oTarget, fMoveRadius);
+    DL_ClearAnchorMoveIssueState(oNpc, sActionStampKey, "");
+    DL_ClearTransitionExecutionState(oNpc);
 }

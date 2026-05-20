@@ -1,21 +1,11 @@
-## 2026-05-20 — Anchor move issue helper for focus/work move issue path
+## 2026-05-20 — Shared pre-move helper for anchor approach setup
 
-**Task/PR/branch:** current branch / user-requested anchor move helper extraction in Daily Life.
-**Files touched:** `daily_life/dl_anchor_move_inc.nss`, `daily_life/dl_focus_inc.nss`, `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** focus/work anchor move issue functions duplicated the same local-state setup + `DL_BeginMoveJobToObject` call shape with profile-specific owner/phase/radius values.
-**Change:** added parameterized helper `DL_IssueAnchorMoveWithLocalsAndBeginJob` in `dl_anchor_move_inc.nss` and switched `DL_IssueFocusMoveAction` and `DL_IssueWorkMoveAction` to call it. Helper keeps status/target/action-target locals and move-job begin in one bounded path with caller-supplied status/owner/phase/radius parameters.
-**Reason:** remove duplication while preserving current pipeline contracts and literal values (`moving_to_anchor`, owner/phase strings, `DL_WORK_ANCHOR_RADIUS`) per caller.
-**Preserve:** clear-state flows and existing diagnostics were not removed; helper only centralizes issue-time local writes + move-job begin.
-**Validation:** static checks only. Compilation not run; user owns compilation.
-
-## 2026-05-20 — Social scene IDs now drive real scene cadence/pools
-
-**Task/PR/branch:** current branch / explicit invalidation for `dl_nav_infer_cache_*`.
-**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** bounded nav infer cache (tick+area+kind) reduced repeated scans, but invalidation moments were implicit, making rare transition edge cases harder to diagnose.
-**Change:** added `DL_NavInvalidateInferZoneCache` helper that clears all `DL_L_NAV_INFER_CACHE_*` locals and writes a nav-debug reason `infer_cache_invalidated:<reason>`; invoked it on transition execution-state clear, transition finalize success paths (`post_jump_finalizer_same_area_complete`, `post_jump_finalizer_complete`, completed-transition finalize), and when stored nav-zone area contract no longer matches NPC area (`zone_area_changed`) during sync.
-**Reason:** keep current bounded-cache behavior while explicitly documenting/enforcing when cached inference is stale across area/transition lifecycle edges.
-**Preserve:** cache key model remains `tick + area + kind`; no new scans/polling; existing scan caps/inference fallbacks unchanged.
+**Task/PR/branch:** current branch / unify pre-`DL_BeginMoveJobToObject` preparation for anchor/profile movement.
+**Files touched:** `daily_life/dl_anchor_move_inc.nss`, `daily_life/dl_work_inc.nss`, `daily_life/dl_focus_inc.nss`, `daily_life/dl_sleep_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** work/focus/sleep approach paths duplicated pre-move setup (`status`/`target`/`action_target`) with slightly different local ordering, making move-issue/transition prep easier to drift.
+**Change:** added shared helper `DL_PrepareAnchorMoveToObject` in `dl_anchor_move_inc.nss` to set status/target/action-target, clear owner stamp-based move-issue state, and clear transition execution state before move-job start; wired it into `DL_IssueWorkMoveAction`, `DL_IssueFocusMoveAction`, and sleep approach move start before `DL_BeginMoveJobToObject`.
+**Reason:** keep profile-specific owner/phase/radius decisions local while centralizing common pre-move state prep and preserving diagnostics/local-key contracts.
+**Preserve:** do not change `DL_MOVE_OWNER_*`, move phase strings, or radii in profile logic; keep diagnostic/status keys unchanged.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Transition registry problem codes: remove raw string literals
