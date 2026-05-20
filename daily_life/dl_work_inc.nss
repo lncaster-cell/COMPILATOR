@@ -10,15 +10,14 @@ const string DL_L_NPC_WORK_RESOLVE_MISSING_DIAG = "dl_work_resolve_missing_diag"
 
 void DL_ExecuteWorkDirective(object oNpc);
 
-object DL_ResolveWorkWaypointByRoleParams(
+object DL_ResolveWorkAnchorWithFallback(
     object oNpc,
     object oArea,
     string sAnchorKey,
-    string sAnchorCacheKey,
+    string sCacheKey,
     string sFallbackCacheKey,
-    string sFallbackPrefix,
     string sFallbackSuffix,
-    string sFallbackTag
+    string sFallbackDefaultTag
 )
 {
     if (!GetIsObjectValid(oArea))
@@ -26,13 +25,13 @@ object DL_ResolveWorkWaypointByRoleParams(
         return OBJECT_INVALID;
     }
 
-    object oWp = DL_GetAreaAnchorWaypoint(oNpc, oArea, sAnchorKey, sAnchorCacheKey, FALSE);
+    object oWp = DL_GetAreaAnchorWaypoint(oNpc, oArea, sAnchorKey, sCacheKey, FALSE);
     if (GetIsObjectValid(oWp))
     {
         return oWp;
     }
 
-    if (sFallbackCacheKey == "" || sFallbackPrefix == "" || sFallbackSuffix == "" || sFallbackTag == "")
+    if (sFallbackSuffix == "" || sFallbackDefaultTag == "" || sFallbackCacheKey == "")
     {
         return OBJECT_INVALID;
     }
@@ -40,78 +39,48 @@ object DL_ResolveWorkWaypointByRoleParams(
     return DL_ResolveNpcWaypointWithFallbackTag(
         oNpc,
         sFallbackCacheKey,
-        sFallbackPrefix,
+        "dl_work_",
         sFallbackSuffix,
-        sFallbackTag
+        sFallbackDefaultTag
     );
 }
 
 object DL_ResolveBlacksmithForgeWaypoint(object oNpc)
 {
-    return DL_ResolveWorkWaypointByRoleParams(
-        oNpc,
-        DL_GetWorkArea(oNpc),
-        "dl_anchor_work_primary",
-        DL_L_NPC_CACHE_WORK_PRIMARY,
-        DL_L_NPC_CACHE_WORK_FORGE,
-        "dl_work_",
-        "_forge",
-        "dl_work_forge"
+    object oWork = DL_GetWorkArea(oNpc);
+    return DL_ResolveWorkAnchorWithFallback(
+        oNpc, oWork, "dl_anchor_work_primary", DL_L_NPC_CACHE_WORK_PRIMARY, DL_L_NPC_CACHE_WORK_FORGE, "_forge", "dl_work_forge"
     );
 }
 object DL_ResolveBlacksmithCraftWaypoint(object oNpc)
 {
-    return DL_ResolveWorkWaypointByRoleParams(
-        oNpc,
-        DL_GetWorkArea(oNpc),
-        "dl_anchor_work_secondary",
-        DL_L_NPC_CACHE_WORK_SECONDARY,
-        DL_L_NPC_CACHE_WORK_CRAFT,
-        "dl_work_",
-        "_craft",
-        "dl_work_craft"
+    object oWork = DL_GetWorkArea(oNpc);
+    return DL_ResolveWorkAnchorWithFallback(
+        oNpc, oWork, "dl_anchor_work_secondary", DL_L_NPC_CACHE_WORK_SECONDARY, DL_L_NPC_CACHE_WORK_CRAFT, "_craft", "dl_work_craft"
     );
 }
 
 object DL_ResolveBlacksmithFetchWaypoint(object oNpc)
 {
-    return DL_ResolveWorkWaypointByRoleParams(
-        oNpc,
-        DL_GetWorkArea(oNpc),
-        "dl_anchor_work_fetch",
-        DL_L_NPC_CACHE_WORK_FETCH,
-        "",
-        "",
-        "",
-        ""
+    object oWork = DL_GetWorkArea(oNpc);
+    return DL_ResolveWorkAnchorWithFallback(
+        oNpc, oWork, "dl_anchor_work_fetch", DL_L_NPC_CACHE_WORK_FETCH, "", "", ""
     );
 }
 
 object DL_ResolveGatePostWaypoint(object oNpc)
 {
-    return DL_ResolveWorkWaypointByRoleParams(
-        oNpc,
-        DL_GetWorkArea(oNpc),
-        "dl_anchor_work_primary",
-        DL_L_NPC_CACHE_WORK_PRIMARY,
-        DL_L_NPC_CACHE_WORK_POST,
-        "dl_work_",
-        "_post",
-        "dl_work_post"
+    object oWork = DL_GetWorkArea(oNpc);
+    return DL_ResolveWorkAnchorWithFallback(
+        oNpc, oWork, "dl_anchor_work_primary", DL_L_NPC_CACHE_WORK_PRIMARY, DL_L_NPC_CACHE_WORK_POST, "_post", "dl_work_post"
     );
 }
 
 object DL_ResolveTraderWaypoint(object oNpc)
 {
-    return DL_ResolveWorkWaypointByRoleParams(
-        oNpc,
-        DL_GetWorkArea(oNpc),
-        "dl_anchor_work_primary",
-        DL_L_NPC_CACHE_WORK_PRIMARY,
-        DL_L_NPC_CACHE_WORK_TRADE,
-        "dl_work_",
-        "_trade",
-        "dl_work_trade"
+    object oWork = DL_GetWorkArea(oNpc);
+    return DL_ResolveWorkAnchorWithFallback(
+        oNpc, oWork, "dl_anchor_work_primary", DL_L_NPC_CACHE_WORK_PRIMARY, DL_L_NPC_CACHE_WORK_TRADE, "_trade", "dl_work_trade"
     );
 }
 
@@ -511,13 +480,27 @@ void DL_IssueWorkMoveAction(object oNpc, object oTarget)
         DL_WORK_ANCHOR_RADIUS
     );
 }
-void DL_ApplyResolvedWorkTarget(object oNpc, string sKind, object oTarget)
+
+void DL_LogWorkTargetSelection(object oNpc, object oTarget, string sKind)
 {
-    DL_SetWorkTargetState(oNpc, sKind, oTarget);
-    SetLocalString(oNpc, DL_L_NPC_WORK_DIAGNOSTIC, "target:" + GetTag(oTarget));
-    DL_ProgressWorkAtTarget(oNpc, oTarget);
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
+    {
+        return;
+    }
+
+    DL_LogChatDebugEvent(
+        oNpc,
+        "target_work",
+        "target dir=WORK area=" + GetTag(GetArea(oTarget)) + " anchor=" + GetTag(oTarget) + " kind=" + sKind
+    );
 }
 
+void DL_ApplyWorkTargetAndProgress(object oNpc, string sKind, object oTarget)
+{
+    DL_SetWorkTargetState(oNpc, sKind, oTarget);
+    DL_LogWorkTargetSelection(oNpc, oTarget, sKind);
+    DL_ProgressWorkAtTarget(oNpc, oTarget);
+}
 int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
 {
     if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
@@ -606,8 +589,7 @@ void DL_ExecuteWorkDirective(object oNpc)
             }
         }
 
-        DL_SetWorkTargetState(oNpc, sKind, oTarget);
-        DL_ProgressWorkAtTarget(oNpc, oTarget);
+        DL_ApplyWorkTargetAndProgress(oNpc, sKind, oTarget);
         return;
     }
 
@@ -620,8 +602,7 @@ void DL_ExecuteWorkDirective(object oNpc)
             return;
         }
 
-        DL_SetWorkTargetState(oNpc, DL_WORK_KIND_POST, oPost);
-        DL_ProgressWorkAtTarget(oNpc, oPost);
+        DL_ApplyWorkTargetAndProgress(oNpc, DL_WORK_KIND_POST, oPost);
         return;
     }
 
@@ -648,8 +629,7 @@ void DL_ExecuteWorkDirective(object oNpc)
             oHomeWork = oFetch;
         }
 
-        DL_SetWorkTargetState(oNpc, sKind, oHomeWork);
-        DL_ProgressWorkAtTarget(oNpc, oHomeWork);
+        DL_ApplyWorkTargetAndProgress(oNpc, sKind, oHomeWork);
         return;
     }
 
@@ -660,6 +640,5 @@ void DL_ExecuteWorkDirective(object oNpc)
         return;
     }
 
-    DL_SetWorkTargetState(oNpc, GetLocalString(oNpc, DL_L_NPC_WORK_RESOLVE_KIND), oTarget);
-    DL_ProgressWorkAtTarget(oNpc, oTarget);
+    DL_ApplyWorkTargetAndProgress(oNpc, DL_WORK_KIND_TRADE, oTrade);
 }
