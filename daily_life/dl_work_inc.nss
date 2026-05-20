@@ -1,5 +1,8 @@
 const string DL_L_NPC_WORK_ACTION_STAMP = "dl_work_anchor_action_stamp";
 const string DL_L_NPC_WORK_ACTION_TARGET = "dl_work_anchor_action_target";
+const string DL_WORK_STATUS_MISSING_WAYPOINTS = "missing_waypoints";
+const string DL_WORK_STATUS_MOVING_TO_ANCHOR = "moving_to_anchor";
+const string DL_WORK_STATUS_ON_ANCHOR = "on_anchor";
 
 
 void DL_ExecuteWorkDirective(object oNpc);
@@ -53,7 +56,7 @@ object DL_ResolveBlacksmithForgeWaypoint(object oNpc)
         "dl_work_forge"
     );
 }
-object DL_ResolveBlacksmithCraftWaypoint(object oNpc)
+object DL_ResolveWorkAnchorByProfile(object oNpc, string sProfile, string sAnchorRole)
 {
     return DL_ResolveWorkWaypointByRoleParams(
         oNpc,
@@ -62,9 +65,17 @@ object DL_ResolveBlacksmithCraftWaypoint(object oNpc)
         DL_L_NPC_CACHE_WORK_SECONDARY,
         DL_L_NPC_CACHE_WORK_CRAFT,
         "dl_work_",
-        "_craft",
-        "dl_work_craft"
+        sFallbackSuffix,
+        sFallbackDefaultTag
     );
+}
+object DL_ResolveBlacksmithForgeWaypoint(object oNpc)
+{
+    return DL_ResolveWorkAnchorByProfile(oNpc, DL_PROFILE_BLACKSMITH, "primary");
+}
+object DL_ResolveBlacksmithCraftWaypoint(object oNpc)
+{
+    return DL_ResolveWorkAnchorByProfile(oNpc, DL_PROFILE_BLACKSMITH, "secondary");
 }
 
 object DL_ResolveBlacksmithFetchWaypoint(object oNpc)
@@ -172,10 +183,6 @@ string DL_ResolveDomesticWorkerWorkKind(object oNpc, int bHasFetch)
 
     return DL_WORK_KIND_CRAFT;
 }
-void DL_ClearWorkMoveIssueState(object oNpc)
-{
-    DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_WORK_ACTION_STAMP, DL_L_NPC_WORK_ACTION_TARGET);
-}
 int DL_HasWorkPresentationState(object oNpc)
 {
     if (!GetIsObjectValid(oNpc))
@@ -215,9 +222,9 @@ void DL_ClearWorkExecutionState(object oNpc)
     DeleteLocalString(oNpc, DL_L_NPC_WORK_TARGET);
     DeleteLocalString(oNpc, DL_L_NPC_WORK_STATUS);
     DeleteLocalString(oNpc, DL_L_NPC_WORK_DIAGNOSTIC);
-    DL_ClearWorkMoveIssueState(oNpc);
+    DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_WORK_ACTION_STAMP, DL_L_NPC_WORK_ACTION_TARGET);
     DL_ClearActivityPresentation(oNpc);
-    DL_ClearTransitionExecutionState(oNpc);
+    DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "work");
 }
 string DL_ResolveBlacksmithWorkKindAtHour(object oNpc)
 {
@@ -242,19 +249,19 @@ string DL_ResolveBlacksmithWorkKindAtHour(object oNpc)
 void DL_SetWorkMissingState(object oNpc, string sKind, string sDiagnostic)
 {
     SetLocalString(oNpc, DL_L_NPC_WORK_KIND, sKind);
-    SetLocalString(oNpc, DL_L_NPC_WORK_STATUS, "missing_waypoints");
+    SetLocalString(oNpc, DL_L_NPC_WORK_STATUS, DL_WORK_STATUS_MISSING_WAYPOINTS);
     SetLocalString(oNpc, DL_L_NPC_WORK_DIAGNOSTIC, sDiagnostic);
     DeleteLocalString(oNpc, DL_L_NPC_WORK_TARGET);
-    DL_ClearWorkMoveIssueState(oNpc);
+    DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_WORK_ACTION_STAMP, DL_L_NPC_WORK_ACTION_TARGET);
     DL_ClearActivityPresentation(oNpc);
-    DL_ClearTransitionExecutionState(oNpc);
+    DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "work");
 }
 void DL_SetWorkTargetState(object oNpc, string sKind, object oTarget)
 {
     string sTargetTag = GetTag(oTarget);
     if (GetLocalString(oNpc, DL_L_NPC_WORK_TARGET) != sTargetTag)
     {
-        DL_ClearWorkMoveIssueState(oNpc);
+        DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_WORK_ACTION_STAMP, DL_L_NPC_WORK_ACTION_TARGET);
     }
 
     SetLocalString(oNpc, DL_L_NPC_WORK_KIND, sKind);
@@ -276,22 +283,24 @@ int DL_ShouldIssueWorkMoveAction(object oNpc, object oTarget)
         oNpc,
         oTarget,
         DL_L_NPC_WORK_STATUS,
-        "moving_to_anchor",
+        DL_WORK_STATUS_MOVING_TO_ANCHOR,
         DL_L_NPC_WORK_ACTION_TARGET,
         DL_L_NPC_WORK_ACTION_STAMP
     );
 }
 void DL_IssueWorkMoveAction(object oNpc, object oTarget)
 {
-    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
-    {
-        return;
-    }
-
-    SetLocalString(oNpc, DL_L_NPC_WORK_STATUS, "moving_to_anchor");
-    SetLocalString(oNpc, DL_L_NPC_WORK_TARGET, GetTag(oTarget));
-    SetLocalString(oNpc, DL_L_NPC_WORK_ACTION_TARGET, GetTag(oTarget));
-    DL_BeginMoveJobToObject(oNpc, DL_MOVE_OWNER_WORK, GetLocalString(oNpc, DL_L_NPC_WORK_KIND), oTarget, DL_WORK_ANCHOR_RADIUS);
+    DL_BeginAnchorMoveJob(
+        oNpc,
+        oTarget,
+        DL_L_NPC_WORK_STATUS,
+        "moving_to_anchor",
+        DL_L_NPC_WORK_TARGET,
+        DL_L_NPC_WORK_ACTION_TARGET,
+        DL_MOVE_OWNER_WORK,
+        GetLocalString(oNpc, DL_L_NPC_WORK_KIND),
+        DL_WORK_ANCHOR_RADIUS
+    );
 }
 int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
 {
@@ -315,14 +324,13 @@ int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
         return TRUE;
     }
 
-    DL_ClearWorkMoveIssueState(oNpc);
+    DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_WORK_ACTION_STAMP, DL_L_NPC_WORK_ACTION_TARGET);
     DL_ClearMoveJob(oNpc);
     DL_ClearTransitionExecutionState(oNpc);
-    SetLocalString(oNpc, DL_L_NPC_WORK_STATUS, "on_anchor");
+    SetLocalString(oNpc, DL_L_NPC_WORK_STATUS, DL_WORK_STATUS_ON_ANCHOR);
     DL_FaceWorkTargetOrientation(oNpc, oTarget);
     DL_ApplyArchiveActivityPresentation(oNpc, DL_DIR_WORK);
     DL_PlayWorkAnimation(oNpc);
-    DL_LogChatDebugEvent(oNpc, "on_work_anchor", "on_work_anchor anchor=" + GetTag(oTarget));
     return TRUE;
 }
 void DL_ExecuteWorkDirective(object oNpc)
@@ -375,11 +383,6 @@ void DL_ExecuteWorkDirective(object oNpc)
         }
 
         DL_SetWorkTargetState(oNpc, sKind, oTarget);
-        DL_LogChatDebugEvent(
-            oNpc,
-            "target_work",
-            "target dir=WORK area=" + GetTag(GetArea(oTarget)) + " anchor=" + GetTag(oTarget) + " kind=" + sKind
-        );
         DL_ProgressWorkAtTarget(oNpc, oTarget);
         return;
     }
@@ -395,11 +398,6 @@ void DL_ExecuteWorkDirective(object oNpc)
         }
 
         DL_SetWorkTargetState(oNpc, DL_WORK_KIND_POST, oPost);
-        DL_LogChatDebugEvent(
-            oNpc,
-            "target_work",
-            "target dir=WORK area=" + GetTag(GetArea(oPost)) + " anchor=" + GetTag(oPost) + " kind=" + DL_WORK_KIND_POST
-        );
         DL_ProgressWorkAtTarget(oNpc, oPost);
         return;
     }
@@ -429,11 +427,6 @@ void DL_ExecuteWorkDirective(object oNpc)
         }
 
         DL_SetWorkTargetState(oNpc, sKind, oHomeWork);
-        DL_LogChatDebugEvent(
-            oNpc,
-            "target_work",
-            "target dir=WORK area=" + GetTag(GetArea(oHomeWork)) + " anchor=" + GetTag(oHomeWork) + " kind=" + sKind
-        );
         DL_ProgressWorkAtTarget(oNpc, oHomeWork);
         return;
     }
@@ -447,10 +440,5 @@ void DL_ExecuteWorkDirective(object oNpc)
     }
 
     DL_SetWorkTargetState(oNpc, DL_WORK_KIND_TRADE, oTrade);
-    DL_LogChatDebugEvent(
-        oNpc,
-        "target_work",
-        "target dir=WORK area=" + GetTag(GetArea(oTrade)) + " anchor=" + GetTag(oTrade) + " kind=" + DL_WORK_KIND_TRADE
-    );
     DL_ProgressWorkAtTarget(oNpc, oTrade);
 }
