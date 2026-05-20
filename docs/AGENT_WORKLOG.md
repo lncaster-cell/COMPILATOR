@@ -344,3 +344,13 @@ Entry template:
 **Reason:** preserve runtime literal contracts while reducing drift/typo risk and keeping registry-problem cleanup behavior explicit and complete.
 **Preserve:** literal string values were not changed.
 **Validation:** static checks only. Compilation not run; user owns compilation.
+
+## 2026-05-20 — Unified status constants for directive/focus finalize paths
+
+**Task/PR/branch:** current branch / status literal deduplication request.
+**Files touched:** `daily_life/dl_focus_inc.nss`, `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** finalize/recovery/apply paths still mixed raw status literals with constants in `SetLocalString(...STATUS, ...)` and status comparisons.
+**Change:** added a focused `DL_FOCUS_STATUS_*` constants block in `dl_focus_inc.nss`; replaced raw status literals in `dl_res_inc.nss` with owner/status constants for focus/work/sleep (`moving_to_anchor`, `on_public_anchor`, `on_social_anchor`, `on_anchor`, `on_bed`) including SetLocalString status writes and compatible status checks; documented the explicit stable-stage mapping (`PUBLIC/SOCIAL/MEAL/CHILL/WORK/SLEEP -> owner-specific status`) inline in `DL_IsDirectiveStableAfterReachedFinalize`.
+**Reason:** preserve literal runtime values while deduplicating access paths and reducing drift/typo risk across finalize and invariant code.
+**Preserve:** literal string values were not changed; this is a symbolic-constant normalization only.
+**Validation:** static checks only. Compilation not run; user owns compilation.

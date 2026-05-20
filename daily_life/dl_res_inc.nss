@@ -488,7 +488,7 @@ void DL_BsmithDetectContradictions(object oNpc, string sStage, object oMoveObj, 
     {
         DL_BsmithContradiction(oNpc, "MOVE_TARGET_WRONG_AREA", "npc_area=" + DL_BsmithAreaTag(oNpc) + " target_area=" + DL_BsmithAreaTag(oMoveObj));
     }
-    if (sFocusStatus == "moving_to_anchor" && GetIsObjectValid(oFocusObj) && GetArea(oFocusObj) != oNpcArea)
+    if (sFocusStatus == DL_FOCUS_STATUS_MOVING_TO_ANCHOR && GetIsObjectValid(oFocusObj) && GetArea(oFocusObj) != oNpcArea)
     {
         DL_BsmithContradiction(oNpc, "FOCUS_TARGET_WRONG_AREA", "npc_area=" + DL_BsmithAreaTag(oNpc) + " target_area=" + DL_BsmithAreaTag(oFocusObj));
     }
@@ -886,13 +886,13 @@ int DL_ShouldUseDirectiveFastPath(object oNpc, int nEffectiveDirective)
     if (nEffectiveDirective == DL_DIR_SLEEP)
     {
         return GetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE) == DL_SLEEP_PHASE_ON_BED &&
-               GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) == "on_bed" &&
+               GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) == DL_SLEEP_STATUS_ON_BED &&
                GetLocalString(oNpc, DL_L_NPC_SLEEP_TARGET) != "";
     }
 
     if (nEffectiveDirective == DL_DIR_WORK)
     {
-        return GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) == "on_anchor" &&
+        return GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) == DL_WORK_STATUS_ON_ANCHOR &&
                GetLocalString(oNpc, DL_L_NPC_WORK_TARGET) != "";
     }
 
@@ -905,14 +905,14 @@ int DL_ShouldUseDirectiveFastPath(object oNpc, int nEffectiveDirective)
 
     if (nEffectiveDirective == DL_DIR_SOCIAL)
     {
-        return GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "on_social_anchor" &&
+        return GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR &&
                GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) != "" &&
                !DL_HasMoveJob(oNpc);
     }
 
     if (nEffectiveDirective == DL_DIR_PUBLIC)
     {
-        return GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "on_public_anchor" &&
+        return GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == DL_FOCUS_STATUS_ON_PUBLIC_ANCHOR &&
                GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) != "" &&
                !DL_HasMoveJob(oNpc);
     }
@@ -933,7 +933,7 @@ void DL_RefreshWorkPresentationOnFastPath(object oNpc)
     }
 
     if (GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE) != DL_DIR_WORK ||
-        GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) != "on_anchor" ||
+        GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) != DL_WORK_STATUS_ON_ANCHOR ||
         GetLocalString(oNpc, DL_L_NPC_WORK_TARGET) == "")
     {
         return;
@@ -1009,7 +1009,7 @@ void DL_RecoverReachedFocusAnchorMoveState(object oNpc)
         return;
     }
 
-    if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) != "moving_to_anchor")
+    if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) != DL_FOCUS_STATUS_MOVING_TO_ANCHOR)
     {
         return;
     }
@@ -1030,7 +1030,7 @@ void DL_RecoverReachedFocusAnchorMoveState(object oNpc)
         DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
         DL_ClearTransitionExecutionState(oNpc);
         DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
-        SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "on_social_anchor");
+        SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR);
         SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oTarget));
         AssignCommand(oNpc, SetFacing(GetFacing(oTarget)));
         DL_BsmithTraceStage(
@@ -1271,12 +1271,12 @@ int DL_IsFocusStateCompatibleWithDirective(object oNpc, int nDirective)
         return TRUE;
     }
 
-    if (sFocusStatus == "on_public_anchor") return nDirective == DL_DIR_PUBLIC;
-    if (sFocusStatus == "on_social_anchor") return nDirective == DL_DIR_SOCIAL;
+    if (sFocusStatus == DL_FOCUS_STATUS_ON_PUBLIC_ANCHOR) return nDirective == DL_DIR_PUBLIC;
+    if (sFocusStatus == DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR) return nDirective == DL_DIR_SOCIAL;
     if (GetSubString(sFocusStatus, 0, 15) == "on_meal_anchor") return nDirective == DL_DIR_MEAL;
     if (sFocusStatus == "on_chill_anchor") return nDirective == DL_DIR_CHILL;
 
-    if (sFocusStatus == "moving_to_anchor")
+    if (sFocusStatus == DL_FOCUS_STATUS_MOVING_TO_ANCHOR)
     {
         return DL_DirectiveUsesFocusState(nDirective) &&
                DL_IsMoveJobOwnerCompatibleWithDirective(oNpc, nDirective);
@@ -1524,7 +1524,7 @@ int DL_FinalizeReachedDirectiveMoveJob(object oNpc, int nEffectiveDirective)
         DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
         DL_ClearTransitionExecutionState(oNpc);
         DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
-        SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "on_public_anchor");
+        SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, DL_FOCUS_STATUS_ON_PUBLIC_ANCHOR);
         SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, sTargetTag);
         AssignCommand(oNpc, SetFacing(GetFacing(oTarget)));
         PlayCustomAnimation(oNpc, sAnim, TRUE);
@@ -1602,14 +1602,21 @@ void DL_TraceApplyPipeline(object oNpc, string sStage)
 
 int DL_IsDirectiveStableAfterReachedFinalize(object oNpc, int nEffectiveDirective)
 {
+    // Stable-stage mapping (general "arrived and settled" stage -> owner status):
+    // PUBLIC  -> DL_FOCUS_STATUS_ON_PUBLIC_ANCHOR
+    // SOCIAL  -> DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR
+    // MEAL    -> DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX*
+    // CHILL   -> DL_FOCUS_STATUS_ON_CHILL_ANCHOR
+    // WORK    -> DL_WORK_STATUS_ON_ANCHOR
+    // SLEEP   -> DL_SLEEP_STATUS_ON_BED
     if (nEffectiveDirective == DL_DIR_PUBLIC)
     {
-        return GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "on_public_anchor" &&
+        return GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == DL_FOCUS_STATUS_ON_PUBLIC_ANCHOR &&
                GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) != "";
     }
     if (nEffectiveDirective == DL_DIR_SOCIAL)
     {
-        return GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "on_social_anchor" &&
+        return GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR &&
                GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) != "";
     }
     if (nEffectiveDirective == DL_DIR_MEAL)
@@ -1624,12 +1631,12 @@ int DL_IsDirectiveStableAfterReachedFinalize(object oNpc, int nEffectiveDirectiv
     }
     if (nEffectiveDirective == DL_DIR_WORK)
     {
-        return GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) == "on_anchor" &&
+        return GetLocalString(oNpc, DL_L_NPC_WORK_STATUS) == DL_WORK_STATUS_ON_ANCHOR &&
                GetLocalString(oNpc, DL_L_NPC_WORK_TARGET) != "";
     }
     if (nEffectiveDirective == DL_DIR_SLEEP)
     {
-        return GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) == "on_bed" &&
+        return GetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS) == DL_SLEEP_STATUS_ON_BED &&
                GetLocalString(oNpc, DL_L_NPC_SLEEP_TARGET) != "";
     }
     return TRUE;
@@ -1672,7 +1679,7 @@ int DL_EmergencyCloseReachedMoveInvariant(object oNpc, int nEffectiveDirective)
         DL_ClearMoveJob(oNpc);
         DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
         DL_ClearTransitionExecutionState(oNpc);
-        SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "on_public_anchor");
+        SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, DL_FOCUS_STATUS_ON_PUBLIC_ANCHOR);
         SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, sTargetTag);
         DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
         DeleteLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC);
@@ -1688,7 +1695,7 @@ int DL_EmergencyCloseReachedMoveInvariant(object oNpc, int nEffectiveDirective)
         DL_ClearMoveJob(oNpc);
         DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
         DL_ClearTransitionExecutionState(oNpc);
-        SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "on_social_anchor");
+        SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR);
         SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, sTargetTag);
         DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
         DeleteLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC);
@@ -1735,7 +1742,7 @@ void DL_EnforceReachedMoveApplyExitInvariant(object oNpc, int nEffectiveDirectiv
 {
     if (DL_IsMoveJobAtTargetNow(oNpc) &&
         (GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_RUNNING ||
-            GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "moving_to_anchor"))
+            GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == DL_FOCUS_STATUS_MOVING_TO_ANCHOR))
     {
         SetLocalInt(oNpc, DL_L_NPC_INVARIANT_REACHED_MOVE_STILL_RUNNING_DBG, TRUE);
         DL_BsmithTraceStage(oNpc, "INVARIANT", "invariant_violation_reached_move_still_running");
