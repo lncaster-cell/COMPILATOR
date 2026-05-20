@@ -1,3 +1,13 @@
+## 2026-05-20 — Work target apply helper for directive branches
+
+**Task/PR/branch:** current branch / `DL_ApplyResolvedWorkTarget` extraction in `dl_work_inc.nss`.
+**Files touched:** `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** profile branches in `DL_ExecuteWorkDirective` repeated the same apply sequence after resolving `sKind/oTarget`.
+**Change:** added helper `DL_ApplyResolvedWorkTarget(oNpc, sKind, oTarget)` that runs `DL_SetWorkTargetState`, writes target diagnostic (`dl_npc_work_diagnostic=target:<tag>`), then calls `DL_ProgressWorkAtTarget`; replaced blacksmith/gate/domestic/trader branch tails with this helper while keeping each branch responsible only for resolving kind/target and missing-waypoint guards.
+**Reason:** remove duplicated apply code and centralize target-apply ordering without changing branch-level target selection logic.
+**Preserve:** apply order remains `SetWorkTargetState -> target diagnostic -> ProgressWorkAtTarget`; missing-waypoint behavior and profile-specific resolution paths remain unchanged.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Work waypoint resolver profile helper unification (work roles)
 
 **Task/PR/branch:** current branch / unify repeated work waypoint resolvers in `dl_work_inc.nss`.
