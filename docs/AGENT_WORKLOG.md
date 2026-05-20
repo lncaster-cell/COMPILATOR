@@ -1,11 +1,11 @@
-## 2026-05-20 — Unified anchor-move helper for work/focus/sleep move-job setup
+## 2026-05-20 — Work resolver consolidation by profile/anchor role
 
-**Task/PR/branch:** current branch / user-requested dedup of anchor move-job call sites.
-**Files touched:** `daily_life/dl_anchor_move_inc.nss`, `daily_life/dl_work_inc.nss`, `daily_life/dl_focus_inc.nss`, `daily_life/dl_sleep_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** Work/Focus/Sleep anchor movement paths repeated the same pre-move boilerplate (status + target/action-target locals + `DL_BeginMoveJobToObject`) with owner/phase differences.
-**Change:** added shared helper `DL_BeginAnchorMoveJob(...)` in `dl_anchor_move_inc.nss` that sets status key/value, target key/action-target key, and starts move-job with owner/phase/radius; replaced duplicated setup in `DL_IssueWorkMoveAction`, `DL_IssueFocusMoveAction`, and sleep approach move branch in `DL_ExecuteSleepDirective`.
-**Reason:** keep behavior and contract literals unchanged while centralizing a hot recurring pattern and reducing drift risk across directive owners.
-**Preserve:** owner-specific owners/status/phase remain explicit at call sites; extra call-site logic (navigation checks, seat/bed handling, transition/finalize flow) remains outside the helper and untouched.
+**Task/PR/branch:** current branch / `dl_work_inc.nss` resolver consolidation with minimal behavior diff.
+**Files touched:** `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** work-anchor resolution had many near-identical resolver functions (profile-specific pass-through/duplicate logic), increasing maintenance risk in active Daily Life directive paths.
+**Change:** added two universal resolvers: `DL_ResolveWorkAnchorByArea` (single anchor+fallback resolver) and `DL_ResolveWorkAnchorByProfile` (profile + anchor-role mapping: primary/secondary/fetch). Kept thin public wrappers (`DL_ResolveBlacksmith*`, `DL_ResolveGatePostWaypoint`, `DL_ResolveTraderWaypoint`, `DL_ResolveDomesticWorker*`) only as readability/semantic entry points, now delegating to the unified resolver. Removed duplicate pass-through internals while preserving existing fallback tags and cache keys.
+**Reason:** reduce duplicated resolver logic and keep `DL_ExecuteWorkDirective` call sites behavior-stable with minimal diff.
+**Preserve:** no local-key literal contract changes; existing WORK directive flow/fallback semantics stay intact.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Social scene IDs now drive real scene cadence/pools
