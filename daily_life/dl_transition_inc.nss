@@ -388,7 +388,46 @@ void DL_NavSyncCurrentZoneFromArea(object oNpc)
         string sExistingAreaTag = GetLocalString(oNpc, DL_L_NPC_NAV_ZONE_AREA);
         if (!GetIsObjectValid(oExistingArea) || sExistingAreaTag == "" || sExistingAreaTag == GetTag(oExistingArea))
         {
-            return;
+            // Narrow stale-guard: if runtime current-zone is not confirmed by nearby
+            // anchors or nearby transition waypoints for the NPC's current position,
+            // allow a resync instead of hard-preserving potentially stale zone state.
+            string sNearbyAnchorZone = DL_NavTryResolveZoneFromNearbyAnchors(oNpc);
+            string sNearbyTransitionZone = "";
+            if (sNearbyAnchorZone == "")
+            {
+                sNearbyTransitionZone = DL_NavTryResolveCurrentZoneFromNearbyTransitionWaypoints(oNpc);
+            }
+
+            int bZoneConfirmed = FALSE;
+            if (sNearbyAnchorZone != "")
+            {
+                bZoneConfirmed = (sNearbyAnchorZone == sExistingZone);
+            }
+            else if (sNearbyTransitionZone != "")
+            {
+                bZoneConfirmed = (sNearbyTransitionZone == sExistingZone);
+            }
+
+            if (bZoneConfirmed)
+            {
+                return;
+            }
+
+            if (sNearbyAnchorZone != "" || sNearbyTransitionZone != "")
+            {
+                string sResyncHint = sNearbyAnchorZone;
+                if (sResyncHint == "") sResyncHint = sNearbyTransitionZone;
+                DL_NavSetDebug(oNpc, sExistingZone, sResyncHint, "", "sync_stale_zone_guard");
+            }
+
+            // No nearby evidence that contradicts/pins current zone: preserve existing
+            // same-area zone and avoid area-tag fallback churn for pseudo-zones.
+            if (sNearbyAnchorZone == "" && sNearbyTransitionZone == "")
+            {
+                return;
+            }
+
+            // Otherwise let the canonical position resolver below perform resync.
         }
     }
 
