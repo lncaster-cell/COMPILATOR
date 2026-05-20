@@ -1,3 +1,13 @@
+## 2026-05-20 — #864 Lane A: remove dead unused diagnostic wrappers
+
+**Task/PR/branch:** current branch / Issue #864 cleanup campaign.
+**Files touched:** `daily_life/dl_diag_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** targeted dead/obsolete diagnostic scan in `daily_life/*.nss` after #876/#877 baseline.
+**Change:** removed two unused diagnostic wrapper functions: `DL_LogNpcDiagnostic` and `DL_GetNpcDiagnosticSignature`. Core in-use diagnostic path (`DL_MaybeLogNpcDiagnostic` + `DL_LogNpcDiagnosticWithSummary` + `DL_GetNpcDiagnosticSignatureWithSummary`) is unchanged.
+**Reason:** both removed wrappers had zero call sites and only forwarded to already-used functions; removing them reduces dead code without touching runtime movement/transition/directive/registry/worker behavior.
+**Preserve:** BSMITH trace workflow and `DL_GetNpcProblemSummary` logic are unchanged.
+**Validation:** static checks/grep only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — #864 Lane A: remove dead Daily Life chat-debug plumbing
 
 **Task/PR/branch:** current branch / PR #877 refresh on post-#876 baseline.
