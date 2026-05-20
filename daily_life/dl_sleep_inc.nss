@@ -157,7 +157,7 @@ void DL_DelayedSleepExitJumpToApproach(object oNpc, location lApproach)
 
     AssignCommand(oNpc, ClearAllActions(TRUE));
     AssignCommand(oNpc, ActionJumpToLocation(lApproach));
-    DL_ClearTransitionExecutionState(oNpc);
+    DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "sleep");
     DL_LogChatDebugEvent(oNpc, "sleep_exit_return", "returned_to_approach=1");
 }
 int DL_TryExitSleepToApproach(object oNpc)
@@ -171,7 +171,7 @@ int DL_TryExitSleepToApproach(object oNpc)
     if (!GetIsObjectValid(oApproach))
     {
         AssignCommand(oNpc, ClearAllActions(TRUE));
-        DL_ClearTransitionExecutionState(oNpc);
+        DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "sleep");
         SetLocalString(oNpc, DL_L_NPC_SLEEP_DIAGNOSTIC, "sleep_exit_approach_missing");
         DL_LogChatDebugEvent(oNpc, "sleep_exit_failed", "approach_valid=0 reason=missing_waypoint");
         return TRUE;
@@ -179,7 +179,7 @@ int DL_TryExitSleepToApproach(object oNpc)
 
     AssignCommand(oNpc, ClearAllActions(TRUE));
     AssignCommand(oNpc, ActionPlayAnimation(ANIMATION_LOOPING_PAUSE, 1.0, 0.1));
-    DL_ClearTransitionExecutionState(oNpc);
+    DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "sleep");
     DL_LogChatDebugEvent(
         oNpc,
         "sleep_exit_queue_return",
@@ -225,7 +225,7 @@ void DL_ClearSleepExecutionState(object oNpc)
     DeleteLocalString(oNpc, DL_L_NPC_SLEEP_STATUS);
     DeleteLocalString(oNpc, DL_L_NPC_SLEEP_TARGET);
     DeleteLocalString(oNpc, DL_L_NPC_SLEEP_DIAGNOSTIC);
-    DL_ClearTransitionExecutionState(oNpc);
+    DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "sleep");
 }
 void DL_SetSleepMissingState(object oNpc)
 {
@@ -234,7 +234,7 @@ void DL_SetSleepMissingState(object oNpc)
     SetLocalString(oNpc, DL_L_NPC_SLEEP_DIAGNOSTIC, "sleep_waypoints_missing");
     DL_ClearSleepActionIssueState(oNpc);
     DeleteLocalString(oNpc, DL_L_NPC_SLEEP_TARGET);
-    DL_ClearTransitionExecutionState(oNpc);
+    DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "sleep");
 }
 void DL_SetSleepTargetState(object oNpc, object oBed)
 {
@@ -352,7 +352,7 @@ void DL_ExecuteSleepDirective(object oNpc)
 
     DL_ClearSleepActionIssueState(oNpc);
     DL_ClearMoveJob(oNpc);
-    DL_ClearTransitionExecutionState(oNpc);
+    DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "sleep");
     SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_ON_BED);
     SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_SLEEP_STATUS_ON_BED);
     DL_LogChatDebugEvent(oNpc, DL_SLEEP_STATUS_ON_BED, "on_bed anchor=" + GetTag(oBed));
