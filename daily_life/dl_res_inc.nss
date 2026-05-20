@@ -226,10 +226,6 @@ string DL_GetDirectiveDebugLabel(int nDirective)
     }
     return "NONE";
 }
-void DL_LogChatDebugEvent(object oNpc, string sKind, string sPayload)
-{
-    // Old broad Daily Life chat/debug output was removed; use DL_BsmithTraceStage for the temporary blacksmith trace.
-}
 void DL_LogMarkupIssueOnce(object oNpc, string sKey, string sMessage)
 {
     if (!GetIsObjectValid(oNpc))
@@ -877,9 +873,7 @@ int DL_ShouldUseDirectiveFastPath(object oNpc, int nEffectiveDirective)
         return FALSE;
     }
 
-    if (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" ||
-        GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) != "" ||
-        GetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC) != "")
+    if (DL_HasTransitionExecutionState(oNpc))
     {
         return FALSE;
     }
@@ -1034,15 +1028,16 @@ void DL_RecoverReachedFocusAnchorMoveState(object oNpc)
     if (DL_IsFocusRecoverySocialTarget(oNpc, oTarget))
     {
         DL_ClearFocusMoveIssueState(oNpc);
+        DL_ReportStaleTransitionState(oNpc, "directive_preempt");
         DL_ClearTransitionExecutionState(oNpc);
         DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
         SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "on_social_anchor");
         SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oTarget));
         AssignCommand(oNpc, SetFacing(GetFacing(oTarget)));
-        DL_LogChatDebugEvent(
+        DL_BsmithTraceStage(
             oNpc,
-            "social_recover_reached_anchor",
-            "social_recover_reached_anchor anchor=" + GetTag(oTarget) +
+            "SOCIAL_RECOVER_REACHED_ANCHOR",
+            "anchor=" + GetTag(oTarget) +
                 " dist=" + FloatToString(GetDistanceBetween(oNpc, oTarget), 1, 2) +
                 " current_action=" + IntToString(GetCurrentAction(oNpc))
         );
@@ -1336,10 +1331,9 @@ void DL_PreemptOldDirectiveState(object oNpc, int nPrevDirective, int nEffective
         bClearedTransition = TRUE;
     }
 
-    if (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" ||
-        GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) != "" ||
-        GetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC) != "")
+    if (DL_HasTransitionExecutionState(oNpc))
     {
+        DL_ReportStaleTransitionState(oNpc, "directive_state_preempt");
         DL_ClearTransitionExecutionState(oNpc);
         bClearedTransition = TRUE;
     }
@@ -1430,9 +1424,9 @@ int DL_BridgeLegacyDirectiveAnchorMoveJob(object oNpc, int nDirective)
     DL_IssueFocusMoveAction(oNpc, oAnchor);
     string sAnchorZone = DL_NavGetAnchorZoneId(oAnchor);
     DL_NavSetDebug(oNpc, DL_NavGetNpcCurrentZone(oNpc), sAnchorZone, sAnchorZone, sReason);
-    DL_LogChatDebugEvent(
+    DL_BsmithTraceStage(
         oNpc,
-        sReason,
+        "DIRECTIVE_BRIDGE_MOVE",
         sReason +
             " owner=" + sOwner +
             " anchor=" + GetTag(oAnchor) +

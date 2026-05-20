@@ -1,3 +1,5 @@
+// CAP POLICY (worker-hotpath): shared nth-tag waypoint lookup bound used by
+// focus/move helpers to prevent unbounded GetObjectByTag probing.
 const int DL_WAYPOINT_TAG_SEARCH_CAP = 64;
 
 object DL_GetNpcCachedWaypointByTag(object oNpc, string sCacheLocal, string sTag)
