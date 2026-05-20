@@ -1,3 +1,13 @@
+## 2026-05-20 — Social scene step source unification (time-based)
+
+**Task/PR/branch:** current branch / user-requested social scene step source cleanup.
+**Files touched:** `daily_life/dl_social_scene_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** social-scene tick used time-based phase (`nNow % nStepCount`) but still wrote/cleared `DL_L_NPC_SOCIAL_SCENE_STEP`, creating redundant dead state.
+**Change:** kept time-based phase as the single source of truth and removed `DL_L_NPC_SOCIAL_SCENE_STEP` contract usage from declarations, cleanup, and per-tick writes.
+**Reason:** eliminate competing/unused step state and keep debug locals consistent with actual phase scheduling.
+**Preserve:** `DL_L_NPC_SOCIAL_SCENE_PHASE` remains the emitted phase value, and `DL_L_NPC_SOCIAL_SCENE_NEXT_MINUTE` remains the scheduling gate; no change to wait/phase logic.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Social scene solo animation canonicalization (pool logic)
 
 **Task/PR/branch:** current branch / user-requested social scene cleanup.
