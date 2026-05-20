@@ -1,3 +1,13 @@
+## 2026-05-20 — Unified terminal anchor-status helper for work/social/sleep
+
+**Task/PR/branch:** current branch / unify terminal stable status assignments with owner-aware helper hooks.
+**Files touched:** `daily_life/dl_anchor_move_inc.nss`, `daily_life/dl_work_inc.nss`, `daily_life/dl_focus_inc.nss`, `daily_life/dl_sleep_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** terminal/stable status writes for WORK (`on_anchor`), SOCIAL focus (`on_social_anchor`), and SLEEP (`on_bed`) were set through repeated inline patterns with partially duplicated side effects.
+**Change:** added shared helper `DL_SetAnchorTerminalStatus` in anchor-move include with explicit parameters for status key/value, optional target key/anchor, and optional hooks (clear move-issue state, clear move job, face anchor). Migrated three targeted terminal writes to use the helper while keeping subsystem-specific actions (`DL_ClearTransitionExecutionState*`, animations, work orientation/presentation, diagnostics/logs) in their owner paths.
+**Reason:** reduce duplication and centralize stable-status write pattern without changing literal status contracts or forcing unrelated side effects.
+**Preserve:** literal status values remain unchanged (`"on_anchor"`, `"on_social_anchor"`, `"on_bed"`); optional hooks must stay opt-in so callers only trigger required side effects.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Work waypoint resolver profile helper unification (work roles)
 
 **Task/PR/branch:** current branch / unify repeated work waypoint resolvers in `dl_work_inc.nss`.
