@@ -301,7 +301,7 @@ void DL_ApplyPostJumpCompletionSuccess(object oNpc, string sTargetZone, string s
             SetLocalString(
                 oNpc,
                 DL_L_NPC_TRANSITION_DIAGNOSTIC,
-                "clear_guard_pending_post_jump owner=" + sOwner + " reason=" + sReason + " result=" + sPostJumpResult
+                "clear_guard_pending_post_jump reason=" + sReason + " result=" + sPostJumpResult
             );
             return;
         }

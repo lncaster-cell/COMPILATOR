@@ -1,3 +1,13 @@
+## 2026-05-20 — Fix remaining Daily Life compile-order wrappers
+
+**Task/PR/branch:** current branch / follow-up emergency compile recovery after prior stack fix.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** reduced compile set still failed on three roots: undeclared `sOwner` in post-jump helper diagnostic text, compatibility wrappers calling non-existent transition helpers, and sleep include failing to see anchor-move helpers.
+**Change:** removed invalid `owner=` fragment from `DL_ApplyPostJumpCompletionSuccess` diagnostic string (no new state added); rewired `DL_HasTransitionExecutionState` to existing transition locals (`DL_L_NPC_TRANSITION_STATUS`/`DL_L_NPC_TRANSITION_TARGET`) and `DL_ClearTransitionExecutionStateWithReason` to `DL_ClearTransitionExecutionState` plus optional diagnostic reason writeback; reordered includes so `dl_anchor_move_inc` is parsed before `dl_sleep_inc` while keeping `dl_move_job_decl_inc` available first.
+**Reason:** restore compile-compatible existing contracts with minimal behavior impact and no subsystem redesign.
+**Preserve:** no movement/transition/directive/registry/worker/nav behavior redesign; no local-key literal changes.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Emergency Daily Life compile recovery after refactor stack
 
 **Task/PR/branch:** current branch / emergency compile recovery for Daily Life main.
