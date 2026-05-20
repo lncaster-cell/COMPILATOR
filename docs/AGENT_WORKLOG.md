@@ -1,11 +1,11 @@
-## 2026-05-20 — Transition handoff tick wired into area-pass owner paths
+## 2026-05-20 — Social scene solo animation canonicalization (pool logic)
 
-**Task/PR/branch:** current branch / transition registry handoff investigation in `dl_worker_inc.nss`.
-**Files touched:** `daily_life/dl_worker_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** `DL_RunTransitionRegistryHandoffTick` existed with bounded slot processing (`DL_TRANSITION_HANDOFF_SLOT_COUNT`) but had no call sites, so area transition handoff slots could remain pending unless touched indirectly by other paths.
-**Change:** added explicit owner-pass calls to `DL_RunTransitionRegistryHandoffTick(oArea, nTickStamp)` in all area worker pass entrypoints: HOT worker tick, WARM maintenance tick, and area-enter RESYNC tick; reused existing per-pass `nTickStamp` and kept processing bounded to the fixed handoff slot count.
-**Reason:** restore canonical transition handoff servicing in the real area-worker pipeline without introducing duplicate finalizer logic, broad scans, or polling replacements.
-**Preserve:** handoff tick stays a bounded pre-pass reconciliation step; directive/finalizer ownership remains in existing `DL_WorkerTouchNpc -> resolve/apply/finalize` flow and transition finalizer contracts remain unchanged.
+**Task/PR/branch:** current branch / user-requested social scene cleanup.
+**Files touched:** `daily_life/dl_social_scene_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** solo social-scene animation selection had two competing mechanisms: unused helper `DL_GetSocialSceneSoloAnim` and active pool-based selection inside `DL_TickSocialScene`.
+**Change:** selected pool-based solo animation selection as canonical and removed dead helper `DL_GetSocialSceneSoloAnim`; kept `bSolo` branch behavior and all existing `DL_L_NPC_SOCIAL_SCENE_*` debug locals/contracts unchanged.
+**Reason:** preserve current runtime behavior while eliminating duplicate/competing selection path and making canonical ownership explicit in one place (`DL_TickSocialScene`).
+**Preserve:** do not rename or alter `DL_L_NPC_SOCIAL_SCENE_*` local-key literals; keep social-scene diagnostics/state locals intact.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — #864 Lane A: remove dead unused diagnostic wrappers

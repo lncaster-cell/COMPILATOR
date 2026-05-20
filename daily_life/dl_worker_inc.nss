@@ -622,11 +622,6 @@ int DL_NpcNeedsCriticalWorkerTouch(object oNpc)
     return FALSE;
 }
 
-int DL_ShouldBypassLastTouchGate(object oNpc)
-{
-    return DL_NpcNeedsCriticalWorkerTouch(oNpc);
-}
-
 object DL_GetAreaWorkerCursorNpc(object oArea)
 {
     int nCount = GetLocalInt(oArea, DL_L_AREA_REG_COUNT);
@@ -1298,42 +1293,6 @@ int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPas
     return nNpcProcessed;
 }
 
-int DL_RunTransitionRegistryHandoffTick(object oArea, int nTickStamp)
-{
-    if (!DL_IsAreaObject(oArea))
-    {
-        return 0;
-    }
-
-    int nTouched = 0;
-    int i = 0;
-    while (i < DL_TRANSITION_HANDOFF_SLOT_COUNT)
-    {
-        string sSlotKey = DL_GetAreaTransitionHandoffSlotKey(i);
-        object oNpc = GetLocalObject(oArea, sSlotKey);
-        if (GetIsObjectValid(oNpc))
-        {
-            object oNpcArea = GetArea(oNpc);
-            object oRegisteredArea = GetLocalObject(oNpc, DL_L_NPC_REG_AREA);
-            string sRegisteredAreaBefore = "";
-            string sNpcArea = "";
-            if (GetIsObjectValid(oRegisteredArea))
-            {
-                sRegisteredAreaBefore = GetTag(oRegisteredArea);
-            }
-            if (GetIsObjectValid(oNpcArea))
-            {
-                sNpcArea = GetTag(oNpcArea);
-            }
-
-            SetLocalString(oNpc, "dl_transition_registry_worker_tick_area", GetTag(oArea));
-            SetLocalInt(oNpc, "dl_transition_registry_handoff_slot", i);
-            SetLocalInt(oNpc, "dl_transition_registry_handoff_seen", TRUE);
-            SetLocalInt(oNpc, "dl_transition_registry_handoff_touch_called", FALSE);
-            SetLocalString(oNpc, "dl_transition_registry_npc_area", sNpcArea);
-            SetLocalString(oNpc, "dl_transition_registry_reg_area_before", sRegisteredAreaBefore);
-            SetLocalString(oNpc, "dl_transition_registry_reg_area_after", sRegisteredAreaBefore);
-            DL_SetTransitionRegistryHandoffDebug(oNpc, OBJECT_INVALID, oArea);
 
             if (oNpcArea == oArea)
             {
