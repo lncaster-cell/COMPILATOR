@@ -325,12 +325,12 @@ Entry template:
 **Preserve:** `DL_NAV_AREA_SCAN_CAP` remains unchanged and still bounds fallback loops; no global polling loop/path was introduced.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
-## 2026-05-20 — Unify post-jump finalizer result closure helper
+## 2026-05-20 — Transition finalizer problem-code constants + cleanup whitelist alignment
 
-**Task/PR/branch:** current branch / DL post-jump finalizer return-path consolidation.
+**Task/PR/branch:** current branch / user-requested literal-code normalization in transition finalizer.
 **Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** `DL_FinalizeTransitionAfterQueuedJump` used repeated per-branch result writes (`dl_post_jump_result`), trace calls, and scattered `DeleteLocalInt("dl_transition_pending_finalizer_expected")`, which made return-path behavior inconsistent.
-**Change:** added `DL_FinalizePostJumpTransitionResult(oNpc, sResult, bClearExpectedFlag, sTraceReason)` and routed all finalizer return paths through it. The helper centralizes result write + finalizer trace + expected-flag handling. Default behavior now clears `dl_transition_pending_finalizer_expected` on completion/failure exits; the only preserved-flag exception is `post_jump_finalizer_not_expected`, which now records explicit diagnostic local `dl_transition_finalizer_expected_persist_reason`.
-**Reason:** enforce one canonical finalizer closure mechanism and remove scattered/manual flag cleanup while preserving current transition ownership and diagnostics.
-**Preserve:** keep `dl_transition_pending_finalizer_expected` persistence only for truly expected carry-over cases; do not remove explicit persist-reason diagnostic local.
+**Context:** several `dl_transition_registry_problem` post-jump finalizer codes were still used as raw string literals in comparisons/assignments, and safe-clear whitelist did not include the full post-jump code set now used by finalizer paths.
+**Change:** added compiler-safe shared string constants for remaining post-jump registry-problem literals (`post_jump_finalizer_not_expected`, `post_jump_finalizer_unexpected_area`), replaced literal assignments/comparisons with constants, and expanded clear-on-success whitelist checks to cover all relevant post-jump finalizer problem codes.
+**Reason:** preserve runtime literal contracts while reducing drift/typo risk and keeping registry-problem cleanup behavior explicit and complete.
+**Preserve:** literal string values were not changed.
 **Validation:** static checks only. Compilation not run; user owns compilation.
