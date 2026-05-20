@@ -1,3 +1,13 @@
+## 2026-05-20 — Social scene solo animation canonicalization (pool logic)
+
+**Task/PR/branch:** current branch / user-requested social scene cleanup.
+**Files touched:** `daily_life/dl_social_scene_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** solo social-scene animation selection had two competing mechanisms: unused helper `DL_GetSocialSceneSoloAnim` and active pool-based selection inside `DL_TickSocialScene`.
+**Change:** selected pool-based solo animation selection as canonical and removed dead helper `DL_GetSocialSceneSoloAnim`; kept `bSolo` branch behavior and all existing `DL_L_NPC_SOCIAL_SCENE_*` debug locals/contracts unchanged.
+**Reason:** preserve current runtime behavior while eliminating duplicate/competing selection path and making canonical ownership explicit in one place (`DL_TickSocialScene`).
+**Preserve:** do not rename or alter `DL_L_NPC_SOCIAL_SCENE_*` local-key literals; keep social-scene diagnostics/state locals intact.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — #864 Lane A: remove dead unused diagnostic wrappers
 
 **Task/PR/branch:** current branch / Issue #864 cleanup campaign.
