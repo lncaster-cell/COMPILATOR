@@ -357,9 +357,19 @@ void DL_ExecuteSleepDirective(object oNpc)
     }
 
     DL_ClearSleepActionIssueState(oNpc);
-    DL_ClearMoveJob(oNpc);
+    DL_SetAnchorTerminalStatus(
+        oNpc,
+        DL_L_NPC_SLEEP_STATUS,
+        DL_SLEEP_STATUS_ON_BED,
+        "",
+        OBJECT_INVALID,
+        "",
+        "",
+        TRUE,
+        FALSE,
+        FALSE
+    );
     DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "sleep");
     SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_ON_BED);
-    SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, DL_SLEEP_STATUS_ON_BED);
     DL_LogChatDebugEvent(oNpc, DL_SLEEP_STATUS_ON_BED, "on_bed anchor=" + GetTag(oBed));
 }
