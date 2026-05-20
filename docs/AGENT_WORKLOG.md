@@ -1,3 +1,13 @@
+## 2026-05-20 — BSMITH target identity contradiction: stabilize context + transition-finalizer filter
+
+**Task/PR/branch:** current branch / TARGET_IDENTITY_CHANGED false-positive hardening in resolver diagnostics.
+**Files touched:** `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `TARGET_IDENTITY_CHANGED` around `dl_bsmith_last_target_obj` could overreact to object-handle churn during legitimate retarget/re-registration windows, especially around recent transition finalization.
+**Change:** tightened contradiction gating to prioritize stable identity context (`tag + area + move_target_area + bounded distance`) and demoted object-handle mismatch to a secondary signal; added a narrow suppression filter when `dl_post_jump_result` indicates recent transition finalizer completion (`post_jump_finalizer_complete` or `post_jump_finalizer_same_area_complete`); preserved existing contradiction/classification keys and pipeline diagnostics.
+**Reason:** reduce false positives while keeping useful TARGET_IDENTITY_CHANGED signal for same-tag same-area target churn in stable route context.
+**Preserve:** do not rename/remove existing BSMITH diagnostic keys or contradiction code paths; object-handle mismatch is diagnostic-only under stable context, not the primary identity verdict.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Transition registry problem codes: remove raw string literals
 
 **Task/PR/branch:** current branch / literal-to-constant cleanup for transition registry problem codes.
