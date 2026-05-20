@@ -1,3 +1,13 @@
+## 2026-05-20 — Registry-owner enforcement for stale-slot removal/repair debug flow
+
+**Task/PR/branch:** current branch / worker→registry ownership cleanup for stale-slot + repair debug.
+**Files touched:** `daily_life/dl_worker_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** worker touch path duplicated pre/post-repair bookkeeping around registry ownership while `dl_registry_inc.nss` already owns stale-slot removal, slot-repair, and stale-old-area debug contracts.
+**Change:** removed worker-local pre/post-repair duplication in `DL_WorkerTouchNpc` (extra area mismatch branch and direct writes of `dl_registry_current_physical_area`, `dl_registry_area_before_repair`, `dl_registry_area_after_repair`); worker now keeps only worker context (`dl_worker_touch_area`) and calls canonical registry-owner API `DL_EnsureNpcRegisteredInCurrentArea` once, preserving existing failure diagnostic/tracing behavior.
+**Reason:** enforce single ownership of stale-removal/repair debug state in `dl_registry_inc.nss` and prevent drift between worker and registry branches.
+**Preserve:** literal debug/local-key names unchanged; transition handoff/worker call-sites continue reading the same registry debug keys populated by registry-owner code.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Transition registry problem codes: remove raw string literals
 
 **Task/PR/branch:** current branch / literal-to-constant cleanup for transition registry problem codes.
