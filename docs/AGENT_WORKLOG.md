@@ -1,11 +1,11 @@
-## 2026-05-20 — Registry-owner enforcement for stale-slot removal/repair debug flow
+## 2026-05-20 — BSMITH target identity contradiction: stabilize context + transition-finalizer filter
 
-**Task/PR/branch:** current branch / worker→registry ownership cleanup for stale-slot + repair debug.
-**Files touched:** `daily_life/dl_worker_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** worker touch path duplicated pre/post-repair bookkeeping around registry ownership while `dl_registry_inc.nss` already owns stale-slot removal, slot-repair, and stale-old-area debug contracts.
-**Change:** removed worker-local pre/post-repair duplication in `DL_WorkerTouchNpc` (extra area mismatch branch and direct writes of `dl_registry_current_physical_area`, `dl_registry_area_before_repair`, `dl_registry_area_after_repair`); worker now keeps only worker context (`dl_worker_touch_area`) and calls canonical registry-owner API `DL_EnsureNpcRegisteredInCurrentArea` once, preserving existing failure diagnostic/tracing behavior.
-**Reason:** enforce single ownership of stale-removal/repair debug state in `dl_registry_inc.nss` and prevent drift between worker and registry branches.
-**Preserve:** literal debug/local-key names unchanged; transition handoff/worker call-sites continue reading the same registry debug keys populated by registry-owner code.
+**Task/PR/branch:** current branch / TARGET_IDENTITY_CHANGED false-positive hardening in resolver diagnostics.
+**Files touched:** `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `TARGET_IDENTITY_CHANGED` around `dl_bsmith_last_target_obj` could overreact to object-handle churn during legitimate retarget/re-registration windows, especially around recent transition finalization.
+**Change:** tightened contradiction gating to prioritize stable identity context (`tag + area + move_target_area + bounded distance`) and demoted object-handle mismatch to a secondary signal; added a narrow suppression filter when `dl_post_jump_result` indicates recent transition finalizer completion (`post_jump_finalizer_complete` or `post_jump_finalizer_same_area_complete`); preserved existing contradiction/classification keys and pipeline diagnostics.
+**Reason:** reduce false positives while keeping useful TARGET_IDENTITY_CHANGED signal for same-tag same-area target churn in stable route context.
+**Preserve:** do not rename/remove existing BSMITH diagnostic keys or contradiction code paths; object-handle mismatch is diagnostic-only under stable context, not the primary identity verdict.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Transition registry problem codes: remove raw string literals
