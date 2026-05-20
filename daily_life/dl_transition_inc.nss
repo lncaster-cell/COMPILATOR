@@ -74,6 +74,34 @@ void DL_NavSetDebug(object oNpc, string sCurrentZone, string sTargetZone, string
     SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_REASON, sReason);
 }
 
+void DL_NavSetExtendedDebug(
+    object oNpc,
+    string sCurrentZone,
+    string sTargetZone,
+    string sNextZone,
+    string sReason,
+    string sNpcArea,
+    string sTargetArea,
+    string sOldTransitionStatus,
+    string sTransitionTarget,
+    string sAnchorTag,
+    int nCurrentAction
+)
+{
+    if (!GetIsObjectValid(oNpc)) return;
+
+    DL_NavSetDebug(oNpc, sCurrentZone, sTargetZone, sNextZone, sReason);
+    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_NPC_AREA, sNpcArea);
+    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_TARGET_AREA, sTargetArea);
+    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_CURRENT_ZONE, sCurrentZone);
+    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_TARGET_ZONE, sTargetZone);
+    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_OLD_TRANSITION_STATUS, sOldTransitionStatus);
+    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_TRANSITION_TARGET, sTransitionTarget);
+    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_ANCHOR_TAG, sAnchorTag);
+    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_FOCUS_TARGET, sAnchorTag);
+    SetLocalInt(oNpc, DL_L_NPC_NAV_DEBUG_CURRENT_ACTION, nCurrentAction);
+}
+
 void DL_NavSetPostTransitionCompleteDebug(
     object oNpc,
     object oTargetAnchor,
@@ -91,13 +119,19 @@ void DL_NavSetPostTransitionCompleteDebug(
     if (GetIsObjectValid(oNpcArea)) sNpcArea = GetTag(oNpcArea);
     if (GetIsObjectValid(oTargetArea)) sTargetArea = GetTag(oTargetArea);
 
-    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_NPC_AREA, sNpcArea);
-    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_TARGET_AREA, sTargetArea);
-    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_CURRENT_ZONE, sCurrentZone);
-    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_TARGET_ZONE, sTargetZone);
-    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_OLD_TRANSITION_STATUS, sOldTransitionStatus);
-    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_FOCUS_TARGET, GetTag(oTargetAnchor));
-    SetLocalInt(oNpc, DL_L_NPC_NAV_DEBUG_CURRENT_ACTION, GetCurrentAction(oNpc));
+    DL_NavSetExtendedDebug(
+        oNpc,
+        sCurrentZone,
+        sTargetZone,
+        "",
+        "post_transition_complete",
+        sNpcArea,
+        sTargetArea,
+        sOldTransitionStatus,
+        sTargetZone,
+        GetTag(oTargetAnchor),
+        GetCurrentAction(oNpc)
+    );
 }
 
 void DL_NavClearFocusMoveIssueStateAfterJump(object oNpc)
@@ -151,7 +185,19 @@ void DL_NavSetTransitionFinalizeSkippedDebug(
     if (GetIsObjectValid(oTargetArea)) sTargetArea = GetTag(oTargetArea);
     if (GetIsObjectValid(oTargetAnchor)) sAnchorTag = GetTag(oTargetAnchor);
 
-    DL_NavSetDebug(oNpc, DL_NavGetNpcCurrentZone(oNpc), sTransitionTarget, "", sReason);
+    DL_NavSetExtendedDebug(
+        oNpc,
+        DL_NavGetNpcCurrentZone(oNpc),
+        sTransitionTarget,
+        "",
+        sReason,
+        sNpcArea,
+        sTargetArea,
+        sTransitionStatus,
+        sTransitionTarget,
+        sAnchorTag,
+        GetCurrentAction(oNpc)
+    );
     SetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC,
         sReason +
         " npc_area=" + sNpcArea +
@@ -160,11 +206,6 @@ void DL_NavSetTransitionFinalizeSkippedDebug(
         " transition_target=" + sTransitionTarget +
         " anchor_tag=" + sAnchorTag
     );
-    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_NPC_AREA, sNpcArea);
-    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_TARGET_AREA, sTargetArea);
-    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_OLD_TRANSITION_STATUS, sTransitionStatus);
-    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_TRANSITION_TARGET, sTransitionTarget);
-    SetLocalString(oNpc, DL_L_NPC_NAV_DEBUG_ANCHOR_TAG, sAnchorTag);
 }
 
 void DL_NavSetNpcCurrentZone(object oNpc, string sZone)

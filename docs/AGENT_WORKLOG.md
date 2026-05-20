@@ -1,3 +1,13 @@
+## 2026-05-20 — Transition nav extended debug helper unification
+
+**Task/PR/branch:** current branch / unify DL transition nav extended debug writes.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** transition debug setters were manually duplicating writes of `DL_L_NPC_NAV_DEBUG_*` fields across post-transition-complete and finalize-skipped paths, risking inconsistent required field population.
+**Change:** added shared helper `DL_NavSetExtendedDebug(...)` that writes the full extended nav debug set (including required `current/target/next/reason` plus area/anchor/transition fields) and switched `DL_NavSetPostTransitionCompleteDebug` and `DL_NavSetTransitionFinalizeSkippedDebug` to use it without removing any existing debug keys.
+**Reason:** keep one canonical write path for extended transition nav diagnostics and prevent drift between debug producers while preserving existing contracts/keys.
+**Preserve:** literal debug local-key values unchanged; `DL_L_NPC_TRANSITION_DIAGNOSTIC` string payload remains intact.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Transition registry problem codes: remove raw string literals
 
 **Task/PR/branch:** current branch / literal-to-constant cleanup for transition registry problem codes.
