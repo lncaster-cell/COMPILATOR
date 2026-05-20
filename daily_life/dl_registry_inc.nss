@@ -842,6 +842,42 @@ void DL_CleanupNpcRegistrySlotIfOwned(object oNpc, object oArea, int nSlot)
     SetLocalInt(oArea, DL_L_AREA_REG_SEQ, GetLocalInt(oArea, DL_L_AREA_REG_SEQ) + 1);
 }
 
+void DL_RepairAreaRegistrySlot(object oArea, int nSlot, int nCount)
+{
+    if (!GetIsObjectValid(oArea))
+    {
+        return;
+    }
+
+    if (nCount <= 0 || nSlot < 0 || nSlot >= nCount)
+    {
+        return;
+    }
+
+    int nLastSlot = nCount - 1;
+    if (nSlot != nLastSlot)
+    {
+        object oTailNpc = DL_GetAreaRegistryNpcAtSlot(oArea, nLastSlot);
+        DL_SetAreaRegistryNpcAtSlot(oArea, nSlot, oTailNpc);
+        if (GetIsObjectValid(oTailNpc))
+        {
+            SetLocalInt(oTailNpc, DL_L_NPC_REG_SLOT, nSlot);
+            SetLocalObject(oTailNpc, DL_L_NPC_REG_AREA, oArea);
+        }
+    }
+
+    DL_DeleteAreaRegistrySlot(oArea, nLastSlot);
+    if (nLastSlot > 0)
+    {
+        SetLocalInt(oArea, DL_L_AREA_REG_COUNT, nLastSlot);
+    }
+    else
+    {
+        DeleteLocalInt(oArea, DL_L_AREA_REG_COUNT);
+    }
+    SetLocalInt(oArea, DL_L_AREA_REG_SEQ, GetLocalInt(oArea, DL_L_AREA_REG_SEQ) + 1);
+}
+
 void DL_SetStaleOldAreaRegistryDebug(object oNpc, object oArea, int nSlot, int bRemoved)
 {
     if (!GetIsObjectValid(oNpc))
