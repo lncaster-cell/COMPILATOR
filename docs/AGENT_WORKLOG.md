@@ -10,12 +10,12 @@
 
 ## 2026-05-20 — Social scene IDs now drive real scene cadence/pools
 
-**Task/PR/branch:** current branch / social scene signature alignment in `dl_social_scene_inc.nss`.
-**Files touched:** `daily_life/dl_social_scene_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** social-scene helpers accepted `sSceneId`/`nStep` but effectively ignored scene identity in cadence/rule selection, creating pseudo data-driven signatures.
-**Change:** kept data-driven approach and wired scene identity into real branches: added `DL_SOCIAL_SCENE_TAVERN_LIVE`, made step-count and wait logic scene-aware, updated speaker/solo pool selection to branch by scene, and updated `DL_TickSocialScene` calls to pass/consume arguments matching actual logic.
-**Reason:** remove fake parameters while preserving extensibility: `DL_SOCIAL_SCENE_DEFAULT` keeps current baseline behavior, and alternative scene IDs now have concrete rules.
-**Preserve:** `DL_L_NPC_SOCIAL_SCENE_*` local-key literal contracts are unchanged.
+**Task/PR/branch:** current branch / explicit invalidation for `dl_nav_infer_cache_*`.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** bounded nav infer cache (tick+area+kind) reduced repeated scans, but invalidation moments were implicit, making rare transition edge cases harder to diagnose.
+**Change:** added `DL_NavInvalidateInferZoneCache` helper that clears all `DL_L_NAV_INFER_CACHE_*` locals and writes a nav-debug reason `infer_cache_invalidated:<reason>`; invoked it on transition execution-state clear, transition finalize success paths (`post_jump_finalizer_same_area_complete`, `post_jump_finalizer_complete`, completed-transition finalize), and when stored nav-zone area contract no longer matches NPC area (`zone_area_changed`) during sync.
+**Reason:** keep current bounded-cache behavior while explicitly documenting/enforcing when cached inference is stale across area/transition lifecycle edges.
+**Preserve:** cache key model remains `tick + area + kind`; no new scans/polling; existing scan caps/inference fallbacks unchanged.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Transition registry problem codes: remove raw string literals
@@ -335,12 +335,12 @@ Entry template:
 **Preserve:** `DL_NAV_AREA_SCAN_CAP` remains unchanged and still bounds fallback loops; no global polling loop/path was introduced.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
-## 2026-05-20 — Restore missing DL_RepairAreaRegistrySlot body (Daily Life compile blocker)
+## 2026-05-20 — Transition finalizer problem-code constants + cleanup whitelist alignment
 
-**Task/PR/branch:** current branch / Daily Life compile blocker fix for missing registry helper body.
-**Files touched:** `daily_life/dl_registry_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** multiple Daily Life scripts failed compile because `DL_RepairAreaRegistrySlot` was declared and called but had no function body in `dl_registry_inc.nss`.
-**Change:** implemented `DL_RepairAreaRegistrySlot` in `dl_registry_inc.nss` as compact dense-registry slot repair: validates area/slot/count, swaps last-slot NPC into removed slot when needed, updates moved NPC registry locals (`DL_L_NPC_REG_SLOT`, `DL_L_NPC_REG_AREA`), deletes old tail slot local, decrements area registry count, and bumps `DL_L_AREA_REG_SEQ`.
-**Reason:** restore canonical registry ownership/helper implementation in the registry include so existing worker/registry fallback repair call sites can compile and keep compact slot-array semantics.
-**Preserve:** no movement/transition/directive/worker scheduling behavior changes; no BSMITH diagnostic changes; forward declaration kept for compile-order compatibility.
+**Task/PR/branch:** current branch / user-requested literal-code normalization in transition finalizer.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** several `dl_transition_registry_problem` post-jump finalizer codes were still used as raw string literals in comparisons/assignments, and safe-clear whitelist did not include the full post-jump code set now used by finalizer paths.
+**Change:** added compiler-safe shared string constants for remaining post-jump registry-problem literals (`post_jump_finalizer_not_expected`, `post_jump_finalizer_unexpected_area`), replaced literal assignments/comparisons with constants, and expanded clear-on-success whitelist checks to cover all relevant post-jump finalizer problem codes.
+**Reason:** preserve runtime literal contracts while reducing drift/typo risk and keeping registry-problem cleanup behavior explicit and complete.
+**Preserve:** literal string values were not changed.
 **Validation:** static checks only. Compilation not run; user owns compilation.
