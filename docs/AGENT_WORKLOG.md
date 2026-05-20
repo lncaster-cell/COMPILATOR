@@ -1,3 +1,13 @@
+## 2026-05-20 — Work target debug payload helper unification
+
+**Task/PR/branch:** current branch / unify work-target debug payload emission in `dl_work_inc.nss`.  
+**Files touched:** `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.  
+**Context:** work target debug emission needed a single payload builder/choke point while chat-debug remains no-op.  
+**Change:** added `DL_BuildWorkTargetDebugPayload` and `DL_LogWorkTargetDebug` helpers; routed all work target debug emissions in work directive branches through the unified helper instead of branch-local direct calls; preserved `"target_work"` event key and payload format (`target dir=WORK area=<...> anchor=<...> kind=<...>`).  
+**Reason:** remove repetition and prepare one safe switch point for future migration from chat-debug to `DL_BsmithTraceStage` without touching each branch again.  
+**Preserve:** diagnostic textual keys/format unchanged; helper only centralizes construction/emission path.  
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Work waypoint resolver profile helper unification (work roles)
 
 **Task/PR/branch:** current branch / unify repeated work waypoint resolvers in `dl_work_inc.nss`.
