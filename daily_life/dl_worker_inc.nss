@@ -1299,13 +1299,6 @@ int DL_RunTransitionRegistryHandoffTick(object oArea, int nTickStamp)
         return 0;
     }
 
-int DL_RunTransitionRegistryHandoffTick(object oArea, int nTickStamp)
-{
-    if (!DL_IsAreaObject(oArea))
-    {
-        return 0;
-    }
-
     int nTouched = 0;
     int i = 0;
     while (i < DL_TRANSITION_HANDOFF_SLOT_COUNT)
