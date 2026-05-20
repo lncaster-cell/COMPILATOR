@@ -1,3 +1,13 @@
+## 2026-05-20 — #864 dead-code micro-prune: redundant branch in social scene step count
+
+**Task/PR/branch:** current branch / dead-code-only cleanup per #864 audit map and PR #875 context.
+**Files touched:** `daily_life/dl_social_scene_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** requested to remove only statically provable dead Daily Life code without behavior change and without touching canonical/emergency/fallback/unknown-risky paths.
+**Change:** removed a redundant conditional branch in `DL_GetSocialSceneStepCount` that returned `8` in both true/false outcomes; function now directly returns `8`.
+**Reason:** repository-wide static inspection shows the branch had no semantic effect and did not participate in movement/transition/finalizer/worker/route logic; this is a minimal safe code-size reduction.
+**Preserve:** social scene runtime contracts and local-key literals unchanged; no BSMITH diagnostics touched; no canonical/emergency/fallback movement pipeline code touched.
+**Validation:** static search/diff checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Canonical post-move ownership: no `DL_RecheckWorkDirectiveAfterMove`
 
 **Task/PR/branch:** current branch / verify post-move hook ownership for work directives.

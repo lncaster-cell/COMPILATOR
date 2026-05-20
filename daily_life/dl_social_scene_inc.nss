@@ -19,7 +19,6 @@ const int DL_SOCIAL_SCENE_SOLO_WAIT_MINUTES = 3;
 
 int DL_GetSocialSceneStepCount(string sSceneId)
 {
-    if (sSceneId == DL_SOCIAL_SCENE_DEFAULT) return 8;
     return 8;
 }
 
