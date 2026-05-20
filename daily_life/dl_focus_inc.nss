@@ -1121,12 +1121,20 @@ int DL_TryStartSocialSceneAtReachedAnchor(object oNpc, object oAnchor, object oP
         return FALSE;
     }
 
-    DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
+    DL_SetAnchorTerminalStatus(
+        oNpc,
+        DL_L_NPC_FOCUS_STATUS,
+        DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR,
+        DL_L_NPC_FOCUS_TARGET,
+        oAnchor,
+        DL_L_NPC_FOCUS_ACTION_STAMP,
+        DL_L_NPC_FOCUS_ACTION_TARGET,
+        FALSE,
+        TRUE,
+        TRUE
+    );
     DL_ClearTransitionExecutionState(oNpc);
     DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
-    SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR);
-    SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oAnchor));
-    AssignCommand(oNpc, SetFacing(GetFacing(oAnchor)));
     DL_LogChatDebugEvent(oNpc, DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR, "on_social_anchor anchor=" + GetTag(oAnchor));
     DL_TickSocialScene(oNpc, oAnchor, oPartner, bPartnerOnAnchor);
     return TRUE;

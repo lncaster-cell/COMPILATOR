@@ -60,6 +60,48 @@ void DL_ResetCustomAnimationBeforeAnchorMove(object oNpc)
     PlayCustomAnimation(oNpc, "%", FALSE);
 }
 
+
+
+void DL_SetAnchorTerminalStatus(
+    object oNpc,
+    string sStatusKey,
+    string sStatusValue,
+    string sTargetKey,
+    object oAnchor,
+    string sIssueStampKey,
+    string sIssueTargetKey,
+    int bClearMoveJob,
+    int bClearMoveIssueState,
+    int bFaceAnchor
+)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    if (bClearMoveIssueState)
+    {
+        DL_ClearAnchorMoveIssueState(oNpc, sIssueStampKey, sIssueTargetKey);
+    }
+
+    if (bClearMoveJob)
+    {
+        DL_ClearMoveJob(oNpc);
+    }
+
+    SetLocalString(oNpc, sStatusKey, sStatusValue);
+
+    if (sTargetKey != "" && GetIsObjectValid(oAnchor))
+    {
+        SetLocalString(oNpc, sTargetKey, GetTag(oAnchor));
+    }
+
+    if (bFaceAnchor && GetIsObjectValid(oAnchor))
+    {
+        AssignCommand(oNpc, SetFacing(GetFacing(oAnchor)));
+    }
+}
 void DL_BeginAnchorMoveJob(
     object oNpc,
     object oTarget,

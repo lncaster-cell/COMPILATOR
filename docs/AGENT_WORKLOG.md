@@ -1,11 +1,21 @@
-## 2026-05-20 — Transition post-jump success helper unification
+## 2026-05-20 — Unified terminal anchor-status helper for work/social/sleep
 
-**Task/PR/branch:** current branch / refactor same-area and complete success branches in transition finalizer.
-**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** `DL_FinalizeTransitionAfterQueuedJump` had duplicated success logic in `post_jump_finalizer_same_area_complete` and `post_jump_finalizer_complete` branches (debug/apply/cleanup/zone set + worker touch + trace/result flags).
-**Change:** added `DL_ApplyPostJumpCompletionSuccess(oNpc, sTargetZone, sReason)` helper and migrated both success branches to it while preserving existing literal reason values (`post_jump_finalizer_same_area_complete`, `post_jump_finalizer_complete`). Kept branch-specific behavior outside helper (`dl_transition_registry_handoff_touch_called` false for same-area, and registry handoff request for cross-area complete).
-**Reason:** enforce one canonical implementation for successful post-jump completion side effects and reduce future branch drift in active transition debugging paths.
-**Preserve:** no local-key literal contract renames; no change to failure paths (`area_not_changed`, `registry_repair_failed`, `registry_area_mismatch`, `unexpected_area`) or cross-area registry repair ordering.
+**Task/PR/branch:** current branch / unify terminal stable status assignments with owner-aware helper hooks.
+**Files touched:** `daily_life/dl_anchor_move_inc.nss`, `daily_life/dl_work_inc.nss`, `daily_life/dl_focus_inc.nss`, `daily_life/dl_sleep_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** terminal/stable status writes for WORK (`on_anchor`), SOCIAL focus (`on_social_anchor`), and SLEEP (`on_bed`) were set through repeated inline patterns with partially duplicated side effects.
+**Change:** added shared helper `DL_SetAnchorTerminalStatus` in anchor-move include with explicit parameters for status key/value, optional target key/anchor, and optional hooks (clear move-issue state, clear move job, face anchor). Migrated three targeted terminal writes to use the helper while keeping subsystem-specific actions (`DL_ClearTransitionExecutionState*`, animations, work orientation/presentation, diagnostics/logs) in their owner paths.
+**Reason:** reduce duplication and centralize stable-status write pattern without changing literal status contracts or forcing unrelated side effects.
+**Preserve:** literal status values remain unchanged (`"on_anchor"`, `"on_social_anchor"`, `"on_bed"`); optional hooks must stay opt-in so callers only trigger required side effects.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
+## 2026-05-20 — Work waypoint resolver profile helper unification (work roles)
+
+**Task/PR/branch:** current branch / unify repeated work waypoint resolvers in `dl_work_inc.nss`.
+**Files touched:** `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** blacksmith/gate/trader/domestic role resolvers duplicated the same “anchor first, optional fallback by tag profile” pattern with only profile literals changed.
+**Change:** added shared helper `DL_ResolveWorkWaypointByRoleParams` with explicit profile parameters (anchor key + anchor cache key + fallback cache key/prefix/suffix/tag), migrated blacksmith forge/craft/fetch, gate post, trader, and domestic primary/secondary/fetch resolvers to call it, and preserved domestic behavior by passing home area plus empty fallback profile so no fallback lookup runs.
+**Reason:** reduce duplicate resolver logic while preserving existing runtime contracts, role-specific cache keys, and domestic home-area/no-fallback behavior.
+**Preserve:** literal local-key values and fallback literal tags are unchanged; domestic path remains home-area anchored and may validly return `OBJECT_INVALID` without fallback.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Social scene IDs now drive real scene cadence/pools
