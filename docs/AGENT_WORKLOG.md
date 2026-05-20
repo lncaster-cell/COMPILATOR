@@ -324,3 +324,13 @@ Entry template:
 **Reason:** avoid repeated same-tick inference scans in the same owner pipeline while preserving canonical behavior and existing bounded fallback semantics.
 **Preserve:** `DL_NAV_AREA_SCAN_CAP` remains unchanged and still bounds fallback loops; no global polling loop/path was introduced.
 **Validation:** static checks only. Compilation not run; user owns compilation.
+
+## 2026-05-20 — Unify post-jump finalizer result closure helper
+
+**Task/PR/branch:** current branch / DL post-jump finalizer return-path consolidation.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `DL_FinalizeTransitionAfterQueuedJump` used repeated per-branch result writes (`dl_post_jump_result`), trace calls, and scattered `DeleteLocalInt("dl_transition_pending_finalizer_expected")`, which made return-path behavior inconsistent.
+**Change:** added `DL_FinalizePostJumpTransitionResult(oNpc, sResult, bClearExpectedFlag, sTraceReason)` and routed all finalizer return paths through it. The helper centralizes result write + finalizer trace + expected-flag handling. Default behavior now clears `dl_transition_pending_finalizer_expected` on completion/failure exits; the only preserved-flag exception is `post_jump_finalizer_not_expected`, which now records explicit diagnostic local `dl_transition_finalizer_expected_persist_reason`.
+**Reason:** enforce one canonical finalizer closure mechanism and remove scattered/manual flag cleanup while preserving current transition ownership and diagnostics.
+**Preserve:** keep `dl_transition_pending_finalizer_expected` persistence only for truly expected carry-over cases; do not remove explicit persist-reason diagnostic local.
+**Validation:** static checks only. Compilation not run; user owns compilation.

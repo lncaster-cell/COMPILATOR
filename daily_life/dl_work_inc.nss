@@ -1,5 +1,6 @@
 const string DL_L_NPC_WORK_ACTION_STAMP = "dl_work_anchor_action_stamp";
 const string DL_L_NPC_WORK_ACTION_TARGET = "dl_work_anchor_action_target";
+const string DL_L_NPC_WORK_TRANSITION_CLEAR_REASON_DBG = "dl_work_transition_clear_reason";
 
 
 void DL_ExecuteWorkDirective(object oNpc);
@@ -182,6 +183,7 @@ void DL_ClearWorkExecutionState(object oNpc)
     DeleteLocalString(oNpc, DL_L_NPC_WORK_DIAGNOSTIC);
     DL_ClearWorkMoveIssueState(oNpc);
     DL_ClearActivityPresentation(oNpc);
+    SetLocalString(oNpc, DL_L_NPC_WORK_TRANSITION_CLEAR_REASON_DBG, "work_execution_state_reset");
     DL_ClearTransitionExecutionState(oNpc);
 }
 string DL_ResolveBlacksmithWorkKindAtHour(object oNpc)
@@ -212,6 +214,7 @@ void DL_SetWorkMissingState(object oNpc, string sKind, string sDiagnostic)
     DeleteLocalString(oNpc, DL_L_NPC_WORK_TARGET);
     DL_ClearWorkMoveIssueState(oNpc);
     DL_ClearActivityPresentation(oNpc);
+    SetLocalString(oNpc, DL_L_NPC_WORK_TRANSITION_CLEAR_REASON_DBG, "work_missing_state_reset");
     DL_ClearTransitionExecutionState(oNpc);
 }
 void DL_SetWorkTargetState(object oNpc, string sKind, object oTarget)
@@ -282,7 +285,44 @@ int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
 
     DL_ClearWorkMoveIssueState(oNpc);
     DL_ClearMoveJob(oNpc);
-    DL_ClearTransitionExecutionState(oNpc);
+    string sTransitionStatus = GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS);
+    string sTransitionTarget = GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET);
+    int bTransitionInactive = (sTransitionStatus == "" || sTransitionStatus == "idle" || sTransitionStatus == "failed");
+
+    if (bTransitionInactive)
+    {
+        SetLocalString(oNpc, DL_L_NPC_WORK_TRANSITION_CLEAR_REASON_DBG, "work_anchor_transition_inactive");
+        DL_ClearTransitionExecutionState(oNpc);
+    }
+    else if (sTransitionStatus == "moving_to_entry" || sTransitionStatus == "transitioning")
+    {
+        if (DL_NavTryAdvanceToZoneForOwner(oNpc, sTransitionTarget, DL_MOVE_OWNER_WORK))
+        {
+            SetLocalString(
+                oNpc,
+                DL_L_NPC_WORK_TRANSITION_CLEAR_REASON_DBG,
+                "work_anchor_skip_clear_owner_handoff_active status=" + sTransitionStatus + " target=" + sTransitionTarget
+            );
+            return TRUE;
+        }
+
+        SetLocalString(
+            oNpc,
+            DL_L_NPC_WORK_TRANSITION_CLEAR_REASON_DBG,
+            "work_anchor_skip_clear_owner_handoff_blocked status=" + sTransitionStatus + " target=" + sTransitionTarget
+        );
+        return TRUE;
+    }
+    else
+    {
+        SetLocalString(
+            oNpc,
+            DL_L_NPC_WORK_TRANSITION_CLEAR_REASON_DBG,
+            "work_anchor_skip_clear_unknown_status status=" + sTransitionStatus + " target=" + sTransitionTarget
+        );
+        return TRUE;
+    }
+
     SetLocalString(oNpc, DL_L_NPC_WORK_STATUS, "on_anchor");
     DL_FaceWorkTargetOrientation(oNpc, oTarget);
     DL_ApplyArchiveActivityPresentation(oNpc, DL_DIR_WORK);
