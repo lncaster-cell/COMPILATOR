@@ -1,11 +1,11 @@
-## 2026-05-20 — Transition registry-problem cleanup helper canonicalization
+## 2026-05-20 — Move tick transition-wait semantics aligned with contradiction checks
 
-**Task/PR/branch:** current branch / deduplicate safe post-jump registry-problem cleanup path.
-**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** `DL_FinalizeTransitionAfterQueuedJump` had duplicated inline cleanup conditions for `dl_transition_registry_problem` in both same-area and expected-area success branches.
-**Change:** added local helper `DL_ClearSafeTransitionRegistryProblemAfterFinalize` that clears `dl_transition_registry_problem` only for the canonical safe set: `target_area_worker_not_ticking_or_not_owning_npc`, `post_jump_finalizer_area_not_changed`, `post_jump_finalizer_registry_repair_failed`, `post_jump_finalizer_registry_area_mismatch`; replaced both duplicated inline blocks with helper calls.
-**Reason:** keep behavior identical while reducing duplication and centralizing the allowed-clear contract in one place for safer maintenance.
-**Preserve:** no local-key literal renames; existing transition trace/diagnostic strings and finalizer result strings are unchanged.
+**Task/PR/branch:** current branch / transition-wait canonicalization in move tick + resolver contradiction alignment.
+**Files touched:** `daily_life/dl_move_job_inc.nss`, `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** in `DL_TickMoveJob`, cross-area target branch marked `move_result=running` with diagnostic `waiting_for_transition`, but contradiction/classification path could still treat that as ordinary `running_without_moveto`.
+**Change:** in cross-area branch, explicitly stamp canonical move phase `DL_NAV_MOVE_PHASE_TRANSITION_TO_AREA` while preserving existing `waiting_for_transition` diagnostic and BSMITH trace; in resolver contradiction/classification checks, gate `ACTION_QUEUE_NOT_RUNNING` sampling/classification when move job is in transition-wait semantic state (diagnostic/phase/transition-status evidence).
+**Reason:** keep one canonical waiting-for-transition semantic without introducing duplicate state machines, and avoid false contradiction-class alarms for expected no-`ACTION_MOVETOPOINT` periods during transition handoff.
+**Preserve:** existing `waiting_for_transition` diagnostic channel and BSMITH trace fields are unchanged and remain active.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Nav stale-zone guard in current-zone sync

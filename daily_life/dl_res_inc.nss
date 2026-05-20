@@ -504,9 +504,18 @@ void DL_BsmithDetectContradictions(object oNpc, string sStage, object oMoveObj, 
     {
         DL_BsmithContradiction(oNpc, "WORKER_AREA_MISMATCH", "worker=" + GetLocalString(oNpc, "dl_worker_touch_area") + " actual=" + DL_BsmithAreaTag(oNpc));
     }
+    int bWaitingForTransition =
+        sMoveResult == DL_MOVE_RESULT_RUNNING &&
+        (
+            GetLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC) == "waiting_for_transition" ||
+            GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE) == DL_NAV_MOVE_PHASE_TRANSITION_TO_AREA ||
+            (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" &&
+             GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "idle")
+        );
+
     int nCurrentActionNow = GetCurrentAction(oNpc);
     int nCurrentActionDbg = GetLocalInt(oNpc, DL_L_NPC_MOVE_CURRENT_ACTION_DBG);
-    if (sMoveResult == DL_MOVE_RESULT_RUNNING && nCurrentActionNow != ACTION_MOVETOPOINT)
+    if (sMoveResult == DL_MOVE_RESULT_RUNNING && !bWaitingForTransition && nCurrentActionNow != ACTION_MOVETOPOINT)
     {
         int nBad = GetLocalInt(oNpc, "dl_bsmith_bad_action_samples") + 1;
         SetLocalInt(oNpc, "dl_bsmith_bad_action_samples", nBad);
@@ -543,7 +552,16 @@ void DL_BsmithMaybeClassify(object oNpc, string sProblem)
     {
         DL_BsmithClassify(oNpc, "PATHFINDING_OR_COLLISION_BLOCKED", "medium", "no_progress_reissues=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_MOVE_REISSUE_COUNT)));
     }
-    if (GetLocalInt(oNpc, "dl_bsmith_bad_action_samples") >= 3)
+    int bWaitingForTransition =
+        GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_RUNNING &&
+        (
+            GetLocalString(oNpc, DL_L_NPC_MOVE_DIAGNOSTIC) == "waiting_for_transition" ||
+            GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE) == DL_NAV_MOVE_PHASE_TRANSITION_TO_AREA ||
+            (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" &&
+             GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "idle")
+        );
+
+    if (!bWaitingForTransition && GetLocalInt(oNpc, "dl_bsmith_bad_action_samples") >= 3)
     {
         DL_BsmithClassify(oNpc, "ACTION_QUEUE_NOT_RUNNING", "high", "running_without_moveto");
     }
