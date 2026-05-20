@@ -1,3 +1,13 @@
+## 2026-05-20 — Unified anchor-move helper for work/focus/sleep move-job setup
+
+**Task/PR/branch:** current branch / user-requested dedup of anchor move-job call sites.
+**Files touched:** `daily_life/dl_anchor_move_inc.nss`, `daily_life/dl_work_inc.nss`, `daily_life/dl_focus_inc.nss`, `daily_life/dl_sleep_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** Work/Focus/Sleep anchor movement paths repeated the same pre-move boilerplate (status + target/action-target locals + `DL_BeginMoveJobToObject`) with owner/phase differences.
+**Change:** added shared helper `DL_BeginAnchorMoveJob(...)` in `dl_anchor_move_inc.nss` that sets status key/value, target key/action-target key, and starts move-job with owner/phase/radius; replaced duplicated setup in `DL_IssueWorkMoveAction`, `DL_IssueFocusMoveAction`, and sleep approach move branch in `DL_ExecuteSleepDirective`.
+**Reason:** keep behavior and contract literals unchanged while centralizing a hot recurring pattern and reducing drift risk across directive owners.
+**Preserve:** owner-specific owners/status/phase remain explicit at call sites; extra call-site logic (navigation checks, seat/bed handling, transition/finalize flow) remains outside the helper and untouched.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Social scene IDs now drive real scene cadence/pools
 
 **Task/PR/branch:** current branch / social scene signature alignment in `dl_social_scene_inc.nss`.

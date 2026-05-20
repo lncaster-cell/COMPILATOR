@@ -300,9 +300,17 @@ void DL_ExecuteSleepDirective(object oNpc)
     if (!bCommittedToBed && GetDistanceBetween(oNpc, oApproach) > DL_SLEEP_APPROACH_RADIUS)
     {
         SetLocalInt(oNpc, DL_L_NPC_SLEEP_PHASE, DL_SLEEP_PHASE_MOVING);
-        SetLocalString(oNpc, DL_L_NPC_SLEEP_STATUS, "moving_to_approach");
-        SetLocalString(oNpc, DL_L_NPC_SLEEP_TARGET, GetTag(oApproach));
-        DL_BeginMoveJobToObject(oNpc, DL_MOVE_OWNER_SLEEP, "approach", oApproach, DL_SLEEP_APPROACH_RADIUS);
+        DL_BeginAnchorMoveJob(
+            oNpc,
+            oApproach,
+            DL_L_NPC_SLEEP_STATUS,
+            "moving_to_approach",
+            DL_L_NPC_SLEEP_TARGET,
+            DL_L_NPC_SLEEP_TARGET,
+            DL_MOVE_OWNER_SLEEP,
+            "approach",
+            DL_SLEEP_APPROACH_RADIUS
+        );
         return;
     }
 
