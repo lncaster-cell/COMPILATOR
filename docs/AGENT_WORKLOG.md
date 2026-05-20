@@ -1,3 +1,13 @@
+## 2026-05-20 — Canonical running-state ownership for move jobs
+
+**Task/PR/branch:** current branch / Daily Life move-result running canonicalization.
+**Files touched:** `daily_life/dl_move_job_inc.nss`, `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `DL_L_NPC_MOVE_RESULT=running` was written from multiple branches with mixed semantics (active move, transition wait, reissue), and resolver invariants inferred waiting state via duplicated secondary checks.
+**Change:** introduced canonical helper `DL_SetMoveJobRunningState` plus state reader `DL_GetMoveJobRunningState` with explicit subtypes (`running_active`, `running_waiting_transition`, `running_reissue`), routed move-job running writes through this owner helper, and updated resolver contradiction/classification transition-wait invariants to use the same canonical running-state semantics.
+**Reason:** keep one owner path for running-state writes, preserve compatibility (`move_result` still equals `running`), and eliminate duplicated secondary-branch semantics drift.
+**Preserve:** existing transition compatibility fallback remains (transition status can still suppress action-queue contradiction when non-idle).
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Transition registry problem codes: remove raw string literals
 
 **Task/PR/branch:** current branch / literal-to-constant cleanup for transition registry problem codes.
