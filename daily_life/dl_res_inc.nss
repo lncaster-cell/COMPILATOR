@@ -877,9 +877,7 @@ int DL_ShouldUseDirectiveFastPath(object oNpc, int nEffectiveDirective)
         return FALSE;
     }
 
-    if (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" ||
-        GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) != "" ||
-        GetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC) != "")
+    if (DL_HasTransitionExecutionState(oNpc))
     {
         return FALSE;
     }
@@ -1034,6 +1032,7 @@ void DL_RecoverReachedFocusAnchorMoveState(object oNpc)
     if (DL_IsFocusRecoverySocialTarget(oNpc, oTarget))
     {
         DL_ClearFocusMoveIssueState(oNpc);
+        DL_ReportStaleTransitionState(oNpc, "directive_preempt");
         DL_ClearTransitionExecutionState(oNpc);
         DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
         SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "on_social_anchor");
@@ -1336,10 +1335,9 @@ void DL_PreemptOldDirectiveState(object oNpc, int nPrevDirective, int nEffective
         bClearedTransition = TRUE;
     }
 
-    if (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" ||
-        GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) != "" ||
-        GetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC) != "")
+    if (DL_HasTransitionExecutionState(oNpc))
     {
+        DL_ReportStaleTransitionState(oNpc, "directive_state_preempt");
         DL_ClearTransitionExecutionState(oNpc);
         bClearedTransition = TRUE;
     }

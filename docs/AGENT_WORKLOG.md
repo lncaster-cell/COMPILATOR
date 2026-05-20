@@ -1,11 +1,11 @@
-## 2026-05-20 — Social scene IDs now drive real scene cadence/pools
+## 2026-05-20 — Transition lifecycle contract unification + stale-state diagnostics
 
-**Task/PR/branch:** current branch / social scene signature alignment in `dl_social_scene_inc.nss`.
-**Files touched:** `daily_life/dl_social_scene_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** social-scene helpers accepted `sSceneId`/`nStep` but effectively ignored scene identity in cadence/rule selection, creating pseudo data-driven signatures.
-**Change:** kept data-driven approach and wired scene identity into real branches: added `DL_SOCIAL_SCENE_TAVERN_LIVE`, made step-count and wait logic scene-aware, updated speaker/solo pool selection to branch by scene, and updated `DL_TickSocialScene` calls to pass/consume arguments matching actual logic.
-**Reason:** remove fake parameters while preserving extensibility: `DL_SOCIAL_SCENE_DEFAULT` keeps current baseline behavior, and alternative scene IDs now have concrete rules.
-**Preserve:** `DL_L_NPC_SOCIAL_SCENE_*` local-key literal contracts are unchanged.
+**Task/PR/branch:** current branch / unify transition lifecycle ownership for transition locals.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** transition lifecycle locals (`DL_L_NPC_TRANSITION_STATUS`, `DL_L_NPC_TRANSITION_TARGET`, `DL_L_NPC_TRANSITION_DIAGNOSTIC`) were used across subsystems with partial direct checks/writes, which increased stale-state risk after directive/finalizer closure.
+**Change:** documented a canonical lifecycle contract in `dl_transition_inc.nss`; added owner helpers `DL_HasTransitionExecutionState`, `DL_MarkTransitionDiagnostic`, and `DL_ReportStaleTransitionState`; switched target-zone prepare path to canonical state writer (`DL_NavSetState`); converted post-jump finalizer diagnostic writes to canonical diagnostic owner; replaced scattered triple-local presence checks in resolver with canonical state helper and added targeted stale-state report before cleanup in directive preempt/recovery paths.
+**Reason:** keep one owner include for transition lifecycle state semantics, reduce cross-subsystem drift, and make stale leftovers diagnosable without broad polling or duplicate cleanup logic.
+**Preserve:** local-key literal values are unchanged; cleanup owner remains `DL_ClearTransitionExecutionState`; future subsystems should call owner helpers instead of duplicating STATUS/TARGET/DIAGNOSTIC checks/writes.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Transition registry problem codes: remove raw string literals
