@@ -1,3 +1,13 @@
+## 2026-05-20 — Canonical anchor move issue path for focus bridge
+
+**Task/PR/branch:** current branch / user-requested anchor move canonicalization.
+**Files touched:** `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** focus-like anchor move command issuing had a duplicate local implementation in directive move-bridge (`DL_TryRecoverMissingAnchorMoveJobFromDirective`) that manually set focus locals and started move job, parallel to canonical helper `DL_IssueFocusMoveAction`.
+**Change:** replaced duplicate inline anchor move issue block with a call to `DL_IssueFocusMoveAction(oNpc, oAnchor)`, while preserving existing pre-clear steps (`DL_ClearTransitionExecutionState`, `DL_ClearFocusMoveIssueState`, focus diagnostic clear), bridge reason selection, nav debug, and BSMITH/chat diagnostics.
+**Reason:** enforce one canonical command-issue entry path for focus anchor movement and avoid drift between bridge path and regular focus pipeline; preserve existing move/debug invariant fields.
+**Preserve:** no local-key literal renames; no removal of active movement/BSMITH diagnostics; no compiler/toolchain changes.
+**Validation:** static grep/diff review only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Social scene solo animation canonicalization (pool logic)
 
 **Task/PR/branch:** current branch / user-requested social scene cleanup.
