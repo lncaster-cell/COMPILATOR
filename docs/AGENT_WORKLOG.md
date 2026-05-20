@@ -325,12 +325,12 @@ Entry template:
 **Preserve:** `DL_NAV_AREA_SCAN_CAP` remains unchanged and still bounds fallback loops; no global polling loop/path was introduced.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
-## 2026-05-20 — Restore missing DL_RepairAreaRegistrySlot body (Daily Life compile blocker)
+## 2026-05-20 — Unify post-jump finalizer result closure helper
 
-**Task/PR/branch:** current branch / Daily Life compile blocker fix for missing registry helper body.
-**Files touched:** `daily_life/dl_registry_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** multiple Daily Life scripts failed compile because `DL_RepairAreaRegistrySlot` was declared and called but had no function body in `dl_registry_inc.nss`.
-**Change:** implemented `DL_RepairAreaRegistrySlot` in `dl_registry_inc.nss` as compact dense-registry slot repair: validates area/slot/count, swaps last-slot NPC into removed slot when needed, updates moved NPC registry locals (`DL_L_NPC_REG_SLOT`, `DL_L_NPC_REG_AREA`), deletes old tail slot local, decrements area registry count, and bumps `DL_L_AREA_REG_SEQ`.
-**Reason:** restore canonical registry ownership/helper implementation in the registry include so existing worker/registry fallback repair call sites can compile and keep compact slot-array semantics.
-**Preserve:** no movement/transition/directive/worker scheduling behavior changes; no BSMITH diagnostic changes; forward declaration kept for compile-order compatibility.
+**Task/PR/branch:** current branch / DL post-jump finalizer return-path consolidation.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `DL_FinalizeTransitionAfterQueuedJump` used repeated per-branch result writes (`dl_post_jump_result`), trace calls, and scattered `DeleteLocalInt("dl_transition_pending_finalizer_expected")`, which made return-path behavior inconsistent.
+**Change:** added `DL_FinalizePostJumpTransitionResult(oNpc, sResult, bClearExpectedFlag, sTraceReason)` and routed all finalizer return paths through it. The helper centralizes result write + finalizer trace + expected-flag handling. Default behavior now clears `dl_transition_pending_finalizer_expected` on completion/failure exits; the only preserved-flag exception is `post_jump_finalizer_not_expected`, which now records explicit diagnostic local `dl_transition_finalizer_expected_persist_reason`.
+**Reason:** enforce one canonical finalizer closure mechanism and remove scattered/manual flag cleanup while preserving current transition ownership and diagnostics.
+**Preserve:** keep `dl_transition_pending_finalizer_expected` persistence only for truly expected carry-over cases; do not remove explicit persist-reason diagnostic local.
 **Validation:** static checks only. Compilation not run; user owns compilation.
