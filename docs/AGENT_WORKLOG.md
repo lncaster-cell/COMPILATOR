@@ -1,3 +1,13 @@
+## 2026-05-20 — Transition finalizer outcome code centralization + shared outcome writer
+
+**Task/PR/branch:** current branch / centralize finalizer reason/result constants in `dl_transition_inc.nss`.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** transition finalizer paths still mixed centralized problem constants with raw literals across post-jump result writes, nav-debug reasons, and BSMITH stage usage.
+**Change:** grouped full post-jump finalizer reason/result codes into one constant block, replaced raw literals in `SetLocalString(... "dl_post_jump_result" ...)`, `DL_NavSetDebug` finalizer reasons, and `DL_BsmithTraceStage` finalizer stage calls, and added `DL_SetFinalizerOutcomeState` helper to write result + diagnostic + registry problem + optional trace note in one call for failure outcomes.
+**Reason:** keep literal contract values unchanged while reducing drift/typo risk and making finalizer outcome reporting consistent in one helper.
+**Preserve:** all literal string values remain exactly the same runtime contracts; no transition pipeline ownership changes.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Work waypoint resolver profile helper unification (work roles)
 
 **Task/PR/branch:** current branch / unify repeated work waypoint resolvers in `dl_work_inc.nss`.

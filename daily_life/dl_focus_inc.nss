@@ -226,7 +226,6 @@ int DL_ProgressFocusAtTarget(object oNpc, object oTarget, string sOnAnchorStatus
         return FALSE;
     }
 
-    DL_NavPrepareTargetZoneFromAnchor(oNpc, oTarget);
     int bFinalizedTransition = DL_NavTryFinalizeCompletedTransition(oNpc, oTarget);
     if (bFinalizedTransition)
     {
@@ -243,7 +242,7 @@ int DL_ProgressFocusAtTarget(object oNpc, object oTarget, string sOnAnchorStatus
                 " current_action=" + IntToString(GetLocalInt(oNpc, "dl_nav_debug_current_action"))
         );
     }
-    if (!bFinalizedTransition && DL_NavTryAdvanceToZoneForOwner(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET), DL_GetFocusMoveOwner(oNpc)))
+    if (!bFinalizedTransition && DL_NavTryAdvanceFromAnchorForOwner(oNpc, oTarget, DL_GetFocusMoveOwner(oNpc)))
     {
         return TRUE;
     }
@@ -853,8 +852,7 @@ void DL_ExecuteMealDirective(object oNpc)
         "target dir=MEAL area=" + GetTag(GetArea(oMeal)) + " anchor=" + GetTag(oMeal) + " kind=" + sMealKind
     );
 
-    DL_NavPrepareTargetZoneFromAnchor(oNpc, oMeal);
-    if (DL_NavTryAdvanceToZoneForOwner(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET), DL_GetFocusMoveOwner(oNpc)))
+    if (DL_NavTryAdvanceFromAnchorForOwner(oNpc, oMeal, DL_GetFocusMoveOwner(oNpc)))
     {
         return;
     }
@@ -1011,8 +1009,7 @@ int DL_ProgressChillAtSeat(object oNpc, object oSeat)
         return FALSE;
     }
 
-    DL_NavPrepareTargetZoneFromAnchor(oNpc, oSeat);
-    if (DL_NavTryAdvanceToZoneForOwner(oNpc, GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET), DL_GetFocusMoveOwner(oNpc)))
+    if (DL_NavTryAdvanceFromAnchorForOwner(oNpc, oSeat, DL_GetFocusMoveOwner(oNpc)))
     {
         return TRUE;
     }
@@ -1131,12 +1128,20 @@ int DL_TryStartSocialSceneAtReachedAnchor(object oNpc, object oAnchor, object oP
         return FALSE;
     }
 
-    DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_FOCUS_ACTION_STAMP, DL_L_NPC_FOCUS_ACTION_TARGET);
+    DL_SetAnchorTerminalStatus(
+        oNpc,
+        DL_L_NPC_FOCUS_STATUS,
+        DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR,
+        DL_L_NPC_FOCUS_TARGET,
+        oAnchor,
+        DL_L_NPC_FOCUS_ACTION_STAMP,
+        DL_L_NPC_FOCUS_ACTION_TARGET,
+        FALSE,
+        TRUE,
+        TRUE
+    );
     DL_ClearTransitionExecutionState(oNpc);
     DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
-    SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR);
-    SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oAnchor));
-    AssignCommand(oNpc, SetFacing(GetFacing(oAnchor)));
     DL_LogChatDebugEvent(oNpc, DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR, "on_social_anchor anchor=" + GetTag(oAnchor));
     DL_TickSocialScene(oNpc, oAnchor, oPartner, bPartnerOnAnchor);
     return TRUE;
