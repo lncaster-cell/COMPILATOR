@@ -1,3 +1,12 @@
+## 2026-05-20 — Continue Daily Life stabilization audit depth mapping (#864)
+
+**Task/PR/branch:** current branch / continue audit per review feedback.
+**Files touched:** `docs/daily-life-stabilization-audit.md`, `docs/AGENT_WORKLOG.md`.
+**Context:** prior audit rewrite was accepted as direction but required continued depth for practical triage and phased debt reduction planning.
+**Change:** extended the audit with: (1) stage-by-stage failure-signature triage map, (2) unknown/risky backlog with explicit evidence requirements before deletions, (3) audit-driven sequencing plan for #864 follow-up PRs, and (4) explicit definition-of-done for finishing the audit phase without behavior changes.
+**Reason:** make #864 actionable for next small cleanup PRs while preserving baseline invariants and avoiding premature runtime path deletion.
+**Validation:** static documentation review only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Daily Life stabilization audit refresh after baseline success (#864)
 
 **Task/PR/branch:** current branch / audit refresh for post-baseline cleanup mapping.

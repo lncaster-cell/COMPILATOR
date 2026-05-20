@@ -191,3 +191,80 @@ Expected outcome for this audit PR:
 ---
 
 Compilation not run; user owns compilation.
+
+---
+
+## 9) Stage-by-stage failure signatures (triage map)
+
+Use this as a quick “first failing stage” locator for #864 follow-up PRs.
+
+| Pipeline stage | Typical failure signature | First files to inspect | Likely classification bucket |
+|---|---|---|---|
+| schedule slot | registered NPC appears untouched, repeated worker skip/problem summary noise | `dl_worker_inc.nss`, `dl_diag_inc.nss` | canonical vs emergency recovery overlap |
+| directive resolver | expected semantic directive not selected (or unexpected social->public fallback) | `dl_res_inc.nss`, `dl_worker_inc.nss` | canonical with fallback |
+| directive preemption | directive changed but stale focus/move/transition locals remain | `dl_res_inc.nss` | canonical + emergency recovery |
+| target resolver | anchor/zone mismatch, route missing, transition target unresolved | `dl_focus_inc.nss`, `dl_sleep_inc.nss`, `dl_transition_inc.nss` | canonical with fallback |
+| movement job start/tick | no move job created, or move job remains running without progress | `dl_move_job_inc.nss`, `dl_res_inc.nss` | canonical + emergency recovery |
+| engine action | `ACTION_MOVETOPOINT` absent while move_result remains running | `dl_move_job_inc.nss`, `dl_res_inc.nss`, `dl_worker_inc.nss` | emergency recovery protection |
+| reached verdict | physically at target but reached not asserted, or contradictory reached states | `dl_move_job_inc.nss`, `dl_res_inc.nss` | canonical + overlap debt |
+| finalizer | reached exists but terminal state not published | `dl_res_inc.nss`, `dl_focus_inc.nss`, `dl_sleep_inc.nss` | canonical + unknown/risky overlap |
+| stable terminal state | focus/sleep/work states contradict move/transition closure | `dl_res_inc.nss`, `dl_focus_inc.nss`, `dl_sleep_inc.nss` | unknown/risky + fallback |
+| diagnostics/worklog | no useful contradiction lines for failure replay | `dl_diag_inc.nss`, `dl_dbg_time.nss`, BSMITH sections in `dl_res_inc.nss` | diagnostic-only |
+
+---
+
+## 10) Unknown/risky backlog to de-risk before deletions
+
+These are the main “don’t delete yet” audit hotspots that still need evidence from runtime sessions before simplification.
+
+1. **Focus terminalization overlap**
+   - Why risky: focus progression can set terminal states while finalizer also owns terminalization.
+   - De-risk evidence needed: traces proving only one path closes terminal state per directive cycle.
+
+2. **Critical worker bypass trigger spread**
+   - Why risky: multiple trigger sources (problem summary + move/focus/owner mismatch signals).
+   - De-risk evidence needed: per-trigger hit counts over stable cycles to find truly redundant triggers.
+
+3. **Transition compatibility wrappers**
+   - Why risky: legacy owner wrappers may still be hit in rare zone setups.
+   - De-risk evidence needed: bounded instrumentation showing wrapper call frequency and call origin.
+
+4. **Registry catchup fallback scans**
+   - Why risky: removal can hide intermittent area registration drifts.
+   - De-risk evidence needed: stable multi-cycle runs with zero stale-slot repairs required.
+
+5. **Reached-repair multiplicity**
+   - Why risky: several emergency closures prevent stale running state; naive reduction can resurrect #861-style symptoms.
+   - De-risk evidence needed: canonical reached/finalize path stability under full cycle with contradiction checks silent.
+
+---
+
+## 11) Audit-driven sequencing for #864 (no behavior changes in first pass)
+
+Recommended sequence for upcoming debt-reduction PRs:
+
+1. **Classification annotation PR** (comments/docs only, no behavior change).
+2. **Diagnostic observability normalization PR** (preserve fields, reduce duplicate noise only).
+3. **Evidence PR** for unknown/risky branches (bounded counters/traces only if required).
+4. **Single-overlap consolidation PR** (choose one overlap family only, e.g., focus/finalizer closure).
+5. **Post-consolidation cleanup PR** (remove now-proven obsolete branch fragments).
+
+Guardrails for each step:
+- keep blacksmith01 full-cycle baseline green;
+- keep validator behavior unchanged;
+- keep route model unchanged (`route_<current_zone>__<target_zone>`);
+- no broad scans/polling/graph pathfinding additions;
+- no deletion-first strategy without runtime evidence.
+
+---
+
+## 12) Definition of done for the audit phase
+
+The audit phase under #864 should be considered complete when all are true:
+
+- Canonical path ownership is documented and agreed (this document + subsystem index updates).
+- Each emergency/fallback path has an explicit keep/later/remove decision gate.
+- Unknown/risky items have concrete evidence plans (not speculative rewrites).
+- Next cleanup PR scope is small (3–5 changes), single-theme, and behavior-safe by design.
+- Baseline guarantees remain explicit: blacksmith01 cycle success preserved, validator preserved, #861 remains closed.
+
