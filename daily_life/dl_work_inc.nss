@@ -324,6 +324,13 @@ void DL_IssueWorkMoveAction(object oNpc, object oTarget)
         DL_WORK_ANCHOR_RADIUS
     );
 }
+void DL_ApplyResolvedWorkTarget(object oNpc, string sKind, object oTarget)
+{
+    DL_SetWorkTargetState(oNpc, sKind, oTarget);
+    SetLocalString(oNpc, DL_L_NPC_WORK_DIAGNOSTIC, "target:" + GetTag(oTarget));
+    DL_ProgressWorkAtTarget(oNpc, oTarget);
+}
+
 int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
 {
     if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
@@ -346,10 +353,19 @@ int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
         return TRUE;
     }
 
-    DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_WORK_ACTION_STAMP, DL_L_NPC_WORK_ACTION_TARGET);
-    DL_ClearMoveJob(oNpc);
+    DL_SetAnchorTerminalStatus(
+        oNpc,
+        DL_L_NPC_WORK_STATUS,
+        DL_WORK_STATUS_ON_ANCHOR,
+        "",
+        OBJECT_INVALID,
+        DL_L_NPC_WORK_ACTION_STAMP,
+        DL_L_NPC_WORK_ACTION_TARGET,
+        TRUE,
+        TRUE,
+        FALSE
+    );
     DL_ClearTransitionExecutionState(oNpc);
-    SetLocalString(oNpc, DL_L_NPC_WORK_STATUS, DL_WORK_STATUS_ON_ANCHOR);
     DL_FaceWorkTargetOrientation(oNpc, oTarget);
     DL_ApplyArchiveActivityPresentation(oNpc, DL_DIR_WORK);
     DL_PlayWorkAnimation(oNpc);
