@@ -1,3 +1,13 @@
+## 2026-05-20 — Fix Daily Life compile blockers after #877
+
+**Task/PR/branch:** current branch / post-#877 compile blocker repair.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `daily_life/dl_worker_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** compiler reported hard blockers: duplicate `DL_L_AREA_WORKER_TICK` definition (`dl_registry_inc.nss` and `dl_transition_inc.nss`) and a duplicated/nested `DL_RunTransitionRegistryHandoffTick` function declaration in `dl_worker_inc.nss`, which likely caused cascading parser errors in downstream includes.
+**Change:** removed duplicate `DL_L_AREA_WORKER_TICK` definition from `dl_transition_inc.nss` and kept the canonical registry-owned definition in `dl_registry_inc.nss`; removed the accidental second nested `DL_RunTransitionRegistryHandoffTick` header so the file now has exactly one valid definition.
+**Reason:** restore compile structure with the smallest possible patch while preserving existing Daily Life runtime behavior and contracts.
+**Preserve:** no local-key literal value changes (`"dl_worker_tick"` unchanged), no movement/transition/directive/registry/worker scheduling logic changes, no BSMITH diagnostic changes.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Nav stale-zone guard in current-zone sync
 
 **Task/PR/branch:** current branch / stale current-zone resync guard for transition navigation.
