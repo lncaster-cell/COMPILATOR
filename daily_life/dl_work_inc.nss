@@ -256,6 +256,28 @@ void DL_SetWorkMissingState(object oNpc, string sKind, string sDiagnostic)
     DL_ClearActivityPresentation(oNpc);
     DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "work");
 }
+
+string DL_BuildWorkTargetDebugPayload(object oTarget, string sKind)
+{
+    return "target dir=WORK area=" + GetTag(GetArea(oTarget)) +
+           " anchor=" + GetTag(oTarget) +
+           " kind=" + sKind;
+}
+
+void DL_LogWorkTargetDebug(object oNpc, object oTarget, string sKind)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
+    {
+        return;
+    }
+
+    string sPayload = DL_BuildWorkTargetDebugPayload(oTarget, sKind);
+    DL_LogChatDebugEvent(oNpc, "target_work", sPayload);
+
+    // Chat-debug is currently no-op; keep a single choke point for future switch,
+    // e.g. DL_BsmithTraceStage(oNpc, "WORK_TARGET", sPayload).
+}
+
 void DL_SetWorkTargetState(object oNpc, string sKind, object oTarget)
 {
     string sTargetTag = GetTag(oTarget);
@@ -398,7 +420,9 @@ void DL_ExecuteWorkDirective(object oNpc)
             }
         }
 
-        DL_ApplyResolvedWorkTarget(oNpc, sKind, oTarget);
+        DL_SetWorkTargetState(oNpc, sKind, oTarget);
+        DL_LogWorkTargetDebug(oNpc, oTarget, sKind);
+        DL_ProgressWorkAtTarget(oNpc, oTarget);
         return;
     }
 
@@ -412,7 +436,9 @@ void DL_ExecuteWorkDirective(object oNpc)
             return;
         }
 
-        DL_ApplyResolvedWorkTarget(oNpc, DL_WORK_KIND_POST, oPost);
+        DL_SetWorkTargetState(oNpc, DL_WORK_KIND_POST, oPost);
+        DL_LogWorkTargetDebug(oNpc, oPost, DL_WORK_KIND_POST);
+        DL_ProgressWorkAtTarget(oNpc, oPost);
         return;
     }
 
@@ -440,7 +466,9 @@ void DL_ExecuteWorkDirective(object oNpc)
             oHomeWork = oFetch;
         }
 
-        DL_ApplyResolvedWorkTarget(oNpc, sKind, oHomeWork);
+        DL_SetWorkTargetState(oNpc, sKind, oHomeWork);
+        DL_LogWorkTargetDebug(oNpc, oHomeWork, sKind);
+        DL_ProgressWorkAtTarget(oNpc, oHomeWork);
         return;
     }
 
@@ -452,5 +480,7 @@ void DL_ExecuteWorkDirective(object oNpc)
         return;
     }
 
-    DL_ApplyResolvedWorkTarget(oNpc, DL_WORK_KIND_TRADE, oTrade);
+    DL_SetWorkTargetState(oNpc, DL_WORK_KIND_TRADE, oTrade);
+    DL_LogWorkTargetDebug(oNpc, oTrade, DL_WORK_KIND_TRADE);
+    DL_ProgressWorkAtTarget(oNpc, oTrade);
 }
