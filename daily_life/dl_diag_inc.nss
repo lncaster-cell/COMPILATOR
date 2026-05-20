@@ -173,24 +173,34 @@ string DL_GetNpcProblemSummary(object oNpc)
     return "ok";
 }
 
-void DL_LogNpcDiagnostic(object oNpc, string sSource)
+void DL_LogNpcDiagnosticWithSummary(object oNpc, string sSource, string sSummary)
 {
     if (!GetIsObjectValid(oNpc))
     {
         return;
     }
 
-    DL_BsmithTraceStage(oNpc, "PROBLEM_SUMMARY", sSource + ":" + DL_GetNpcProblemSummary(oNpc));
+    DL_BsmithTraceStage(oNpc, "PROBLEM_SUMMARY", sSource + ":" + sSummary);
+}
+
+void DL_LogNpcDiagnostic(object oNpc, string sSource)
+{
+    DL_LogNpcDiagnosticWithSummary(oNpc, sSource, DL_GetNpcProblemSummary(oNpc));
+}
+
+string DL_GetNpcDiagnosticSignatureWithSummary(object oNpc, string sSummary)
+{
+    return DL_GetDirectiveLabel(GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE)) + "|" +
+           GetLocalString(oNpc, DL_L_NPC_STATE) + "|" +
+           sSummary + "|" +
+           GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) + "|" +
+           GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) + "|" +
+           GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS);
 }
 
 string DL_GetNpcDiagnosticSignature(object oNpc)
 {
-    return DL_GetDirectiveLabel(GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE)) + "|" +
-           GetLocalString(oNpc, DL_L_NPC_STATE) + "|" +
-           DL_GetNpcProblemSummary(oNpc) + "|" +
-           GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) + "|" +
-           GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) + "|" +
-           GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS);
+    return DL_GetNpcDiagnosticSignatureWithSummary(oNpc, DL_GetNpcProblemSummary(oNpc));
 }
 
 void DL_MaybeLogNpcDiagnostic(object oNpc, string sSource, int bForce)
@@ -200,12 +210,13 @@ void DL_MaybeLogNpcDiagnostic(object oNpc, string sSource, int bForce)
         return;
     }
 
-    string sSignature = DL_GetNpcDiagnosticSignature(oNpc);
+    string sSummary = DL_GetNpcProblemSummary(oNpc);
+    string sSignature = DL_GetNpcDiagnosticSignatureWithSummary(oNpc, sSummary);
     if (!bForce && GetLocalString(oNpc, DL_L_NPC_DIAG_LAST_SIG) == sSignature)
     {
         return;
     }
 
     SetLocalString(oNpc, DL_L_NPC_DIAG_LAST_SIG, sSignature);
-    DL_LogNpcDiagnostic(oNpc, sSource);
+    DL_LogNpcDiagnosticWithSummary(oNpc, sSource, sSummary);
 }
