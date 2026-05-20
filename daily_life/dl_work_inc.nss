@@ -4,21 +4,6 @@ const string DL_L_NPC_WORK_ACTION_TARGET = "dl_work_anchor_action_target";
 
 void DL_ExecuteWorkDirective(object oNpc);
 
-void DL_RecheckWorkDirectiveAfterMove(object oNpc)
-{
-    if (!GetIsObjectValid(oNpc))
-    {
-        return;
-    }
-
-    if (GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE) != DL_DIR_WORK)
-    {
-        return;
-    }
-
-    DL_ExecuteWorkDirective(oNpc);
-}
-
 object DL_ResolveBlacksmithForgeWaypoint(object oNpc)
 {
     object oWork = DL_GetWorkArea(oNpc);
