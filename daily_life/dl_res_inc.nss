@@ -504,13 +504,15 @@ void DL_BsmithDetectContradictions(object oNpc, string sStage, object oMoveObj, 
     {
         DL_BsmithContradiction(oNpc, "WORKER_AREA_MISMATCH", "worker=" + GetLocalString(oNpc, "dl_worker_touch_area") + " actual=" + DL_BsmithAreaTag(oNpc));
     }
-    if (sMoveResult == DL_MOVE_RESULT_RUNNING && GetLocalInt(oNpc, DL_L_NPC_MOVE_CURRENT_ACTION_DBG) != ACTION_MOVETOPOINT)
+    int nCurrentActionNow = GetCurrentAction(oNpc);
+    int nCurrentActionDbg = GetLocalInt(oNpc, DL_L_NPC_MOVE_CURRENT_ACTION_DBG);
+    if (sMoveResult == DL_MOVE_RESULT_RUNNING && nCurrentActionNow != ACTION_MOVETOPOINT)
     {
         int nBad = GetLocalInt(oNpc, "dl_bsmith_bad_action_samples") + 1;
         SetLocalInt(oNpc, "dl_bsmith_bad_action_samples", nBad);
         if (nBad >= 2)
         {
-            DL_BsmithContradiction(oNpc, "ACTION_QUEUE_NOT_RUNNING", "result=running action=" + IntToString(GetLocalInt(oNpc, DL_L_NPC_MOVE_CURRENT_ACTION_DBG)) + " samples=" + IntToString(nBad));
+            DL_BsmithContradiction(oNpc, "ACTION_QUEUE_NOT_RUNNING", "result=running action_now=" + IntToString(nCurrentActionNow) + " action_dbg=" + IntToString(nCurrentActionDbg) + " samples=" + IntToString(nBad));
         }
     }
     else
