@@ -355,12 +355,12 @@ Entry template:
 **Preserve:** literal string values were not changed.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
-## 2026-05-20 — Work directive profile router unification in dl_work_inc
+## 2026-05-20 — Work directive profile-resolve extraction and unified post-resolve pipeline
 
-**Task/PR/branch:** current branch / unify profile routing for work target resolution.
+**Task/PR/branch:** current branch / refactor `DL_ExecuteWorkDirective` profile branches into shared resolver pipeline.
 **Files touched:** `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** work directive execution contained profile-specific apply logic branches and duplicated resolution behavior; file also had broken duplicate resolver fragments near top.
-**Change:** introduced `DL_ResolveWorkForProfile(oNpc, sProfile)` as a single profile router that resolves kind/target/missing-diagnostic into temporary resolver locals, kept small profile-specific waypoint resolvers, and moved common apply path (`DL_SetWorkTargetState` + `DL_ProgressWorkAtTarget` + missing-state handling) into one place in `DL_ExecuteWorkDirective`.
-**Reason:** preserve existing behavior/contracts while reducing profile-branch duplication and making new profile extension additive via one resolver branch plus shared apply path.
-**Preserve:** existing local-key literals for runtime behavior are unchanged; domestic resolver remains home-area anchored; no new scans/polling introduced.
-**Validation:** static checks only. Compilation not run; user owns compilation.
+**Context:** work directive execution had per-profile duplicated target-selection/missing-state/apply-progress logic, and file contained a broken duplicate blacksmith resolver fragment.
+**Change:** removed duplicate/broken resolver fragment; restored explicit blacksmith craft resolver; added helper `DL_ResolveWorkTargetForProfile(oNpc, sProfile, sKindOut, oTargetOut, sErrorOut)` using NWScript-safe structured-return pattern (object return + locals for kind/error, no reference parameters); unified `DL_ExecuteWorkDirective` post-resolve pipeline to one flow: missing-state handling via resolver error, then `DL_SetWorkTargetState`, then `DL_ProgressWorkAtTarget`.
+**Reason:** preserve existing profile-specific `kind/target` semantics and existing status/error literals while eliminating duplicated directive branches and keeping one canonical execution pipeline after resolve.
+**Preserve:** current literal missing-state diagnostics (`need_forge_and_craft_waypoints`, `need_post_waypoint`, `need_home_domestic_anchors`, `need_trade_waypoint`) and work status literals are unchanged.
+**Validation:** static search/review only. Compilation not run; user owns compilation.

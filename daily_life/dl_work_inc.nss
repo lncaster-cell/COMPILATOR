@@ -59,7 +59,6 @@ object DL_ResolveBlacksmithForgeWaypoint(object oNpc)
         "dl_work_forge"
     );
 }
-
 object DL_ResolveBlacksmithCraftWaypoint(object oNpc)
 {
     return DL_ResolveWorkWaypointByRoleParams(
@@ -280,6 +279,109 @@ string DL_ResolveDomesticWorkerWorkKind(object oNpc, int bHasFetch)
 
     return DL_WORK_KIND_CRAFT;
 }
+string DL_L_NPC_WORK_RESOLVE_KIND = "dl_work_resolve_kind";
+string DL_L_NPC_WORK_RESOLVE_ERROR = "dl_work_resolve_error";
+
+void DL_ClearWorkResolveState(object oNpc)
+{
+    DeleteLocalString(oNpc, DL_L_NPC_WORK_RESOLVE_KIND);
+    DeleteLocalString(oNpc, DL_L_NPC_WORK_RESOLVE_ERROR);
+}
+void DL_SetWorkResolveState(object oNpc, string sKind, string sError)
+{
+    SetLocalString(oNpc, DL_L_NPC_WORK_RESOLVE_KIND, sKind);
+    SetLocalString(oNpc, DL_L_NPC_WORK_RESOLVE_ERROR, sError);
+}
+object DL_ResolveWorkTargetForProfile(object oNpc, string sProfile, string sKindOut, object oTargetOut, string sErrorOut)
+{
+    DL_ClearWorkResolveState(oNpc);
+
+    if (sProfile == DL_PROFILE_BLACKSMITH)
+    {
+        string sKind = DL_ResolveBlacksmithWorkKindAtHour(oNpc);
+        object oForge = DL_ResolveBlacksmithForgeWaypoint(oNpc);
+        object oCraft = DL_ResolveBlacksmithCraftWaypoint(oNpc);
+        object oFetch = DL_ResolveBlacksmithFetchWaypoint(oNpc);
+
+        if (!GetIsObjectValid(oForge) || !GetIsObjectValid(oCraft))
+        {
+            DL_SetWorkResolveState(oNpc, sKind, "need_forge_and_craft_waypoints");
+            return OBJECT_INVALID;
+        }
+
+        object oTarget = oForge;
+        if (sKind == DL_WORK_KIND_CRAFT)
+        {
+            oTarget = oCraft;
+        }
+        else if (sKind == DL_WORK_KIND_FETCH)
+        {
+            if (GetIsObjectValid(oFetch))
+            {
+                oTarget = oFetch;
+            }
+            else
+            {
+                sKind = DL_WORK_KIND_CRAFT;
+                oTarget = oCraft;
+            }
+        }
+
+        DL_SetWorkResolveState(oNpc, sKind, "");
+        return oTarget;
+    }
+
+    if (sProfile == DL_PROFILE_GATE_POST)
+    {
+        object oPost = DL_ResolveGatePostWaypoint(oNpc);
+        if (!GetIsObjectValid(oPost))
+        {
+            DL_SetWorkResolveState(oNpc, DL_WORK_KIND_POST, "need_post_waypoint");
+            return OBJECT_INVALID;
+        }
+
+        DL_SetWorkResolveState(oNpc, DL_WORK_KIND_POST, "");
+        return oPost;
+    }
+
+    if (sProfile == DL_PROFILE_DOMESTIC_WORKER)
+    {
+        object oPrimary = DL_ResolveDomesticWorkerWaypoint(oNpc);
+        object oSecondary = DL_ResolveDomesticWorkerSecondaryWaypoint(oNpc);
+        object oFetch = DL_ResolveDomesticWorkerFetchWaypoint(oNpc);
+        int bHasFetch = GetIsObjectValid(oFetch);
+
+        if (!GetIsObjectValid(oPrimary) || !GetIsObjectValid(oSecondary))
+        {
+            DL_SetWorkResolveState(oNpc, DL_WORK_KIND_DOMESTIC, "need_home_domestic_anchors");
+            return OBJECT_INVALID;
+        }
+
+        string sKind = DL_ResolveDomesticWorkerWorkKind(oNpc, bHasFetch);
+        object oTarget = oPrimary;
+        if (sKind == DL_WORK_KIND_CRAFT)
+        {
+            oTarget = oSecondary;
+        }
+        else if (sKind == DL_WORK_KIND_FETCH)
+        {
+            oTarget = oFetch;
+        }
+
+        DL_SetWorkResolveState(oNpc, sKind, "");
+        return oTarget;
+    }
+
+    object oTrade = DL_ResolveTraderWaypoint(oNpc);
+    if (!GetIsObjectValid(oTrade))
+    {
+        DL_SetWorkResolveState(oNpc, DL_WORK_KIND_TRADE, "need_trade_waypoint");
+        return OBJECT_INVALID;
+    }
+
+    DL_SetWorkResolveState(oNpc, DL_WORK_KIND_TRADE, "");
+    return oTrade;
+}
 int DL_HasWorkPresentationState(object oNpc)
 {
     if (!GetIsObjectValid(oNpc))
@@ -486,24 +588,17 @@ void DL_ExecuteWorkDirective(object oNpc)
         return;
     }
 
-    if (!DL_ResolveWorkForProfile(oNpc, sProfile))
+    object oTarget = DL_ResolveWorkTargetForProfile(oNpc, sProfile, "", OBJECT_INVALID, "");
+    if (!GetIsObjectValid(oTarget))
     {
         DL_SetWorkMissingState(
             oNpc,
-            GetLocalString(oNpc, DL_L_NPC_WORK_RESOLVED_KIND),
-            GetLocalString(oNpc, DL_L_NPC_WORK_RESOLVE_MISSING_DIAG)
+            GetLocalString(oNpc, DL_L_NPC_WORK_RESOLVE_KIND),
+            GetLocalString(oNpc, DL_L_NPC_WORK_RESOLVE_ERROR)
         );
-        DeleteLocalString(oNpc, DL_L_NPC_WORK_RESOLVED_KIND);
-        DeleteLocalString(oNpc, DL_L_NPC_WORK_RESOLVE_MISSING_DIAG);
-        DeleteLocalObject(oNpc, DL_L_NPC_WORK_RESOLVED_TARGET);
         return;
     }
 
-    string sKind = GetLocalString(oNpc, DL_L_NPC_WORK_RESOLVED_KIND);
-    object oTarget = GetLocalObject(oNpc, DL_L_NPC_WORK_RESOLVED_TARGET);
-    DL_SetWorkTargetState(oNpc, sKind, oTarget);
+    DL_SetWorkTargetState(oNpc, GetLocalString(oNpc, DL_L_NPC_WORK_RESOLVE_KIND), oTarget);
     DL_ProgressWorkAtTarget(oNpc, oTarget);
-    DeleteLocalString(oNpc, DL_L_NPC_WORK_RESOLVED_KIND);
-    DeleteLocalString(oNpc, DL_L_NPC_WORK_RESOLVE_MISSING_DIAG);
-    DeleteLocalObject(oNpc, DL_L_NPC_WORK_RESOLVED_TARGET);
 }
