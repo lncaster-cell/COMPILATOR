@@ -248,15 +248,17 @@ int DL_ShouldIssueWorkMoveAction(object oNpc, object oTarget)
 }
 void DL_IssueWorkMoveAction(object oNpc, object oTarget)
 {
-    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
-    {
-        return;
-    }
-
-    SetLocalString(oNpc, DL_L_NPC_WORK_STATUS, "moving_to_anchor");
-    SetLocalString(oNpc, DL_L_NPC_WORK_TARGET, GetTag(oTarget));
-    SetLocalString(oNpc, DL_L_NPC_WORK_ACTION_TARGET, GetTag(oTarget));
-    DL_BeginMoveJobToObject(oNpc, DL_MOVE_OWNER_WORK, GetLocalString(oNpc, DL_L_NPC_WORK_KIND), oTarget, DL_WORK_ANCHOR_RADIUS);
+    DL_IssueAnchorMoveWithLocalsAndBeginJob(
+        oNpc,
+        oTarget,
+        DL_L_NPC_WORK_STATUS,
+        "moving_to_anchor",
+        DL_L_NPC_WORK_TARGET,
+        DL_L_NPC_WORK_ACTION_TARGET,
+        DL_MOVE_OWNER_WORK,
+        GetLocalString(oNpc, DL_L_NPC_WORK_KIND),
+        DL_WORK_ANCHOR_RADIUS
+    );
 }
 int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
 {

@@ -60,3 +60,37 @@ void DL_ResetCustomAnimationBeforeAnchorMove(object oNpc)
     PlayCustomAnimation(oNpc, "%", FALSE);
 }
 
+void DL_IssueAnchorMoveWithLocalsAndBeginJob(
+    object oNpc,
+    object oTarget,
+    string sStatusKey,
+    string sMovingStatus,
+    string sTargetKey,
+    string sActionTargetKey,
+    string sMoveOwner,
+    string sMovePhase,
+    float fMoveRadius
+)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
+    {
+        return;
+    }
+
+    string sTargetTag = GetTag(oTarget);
+
+    if (sStatusKey != "")
+    {
+        SetLocalString(oNpc, sStatusKey, sMovingStatus);
+    }
+    if (sTargetKey != "")
+    {
+        SetLocalString(oNpc, sTargetKey, sTargetTag);
+    }
+    if (sActionTargetKey != "")
+    {
+        SetLocalString(oNpc, sActionTargetKey, sTargetTag);
+    }
+
+    DL_BeginMoveJobToObject(oNpc, sMoveOwner, sMovePhase, oTarget, fMoveRadius);
+}

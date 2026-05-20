@@ -1,3 +1,13 @@
+## 2026-05-20 — Anchor move issue helper for focus/work move issue path
+
+**Task/PR/branch:** current branch / user-requested anchor move helper extraction in Daily Life.
+**Files touched:** `daily_life/dl_anchor_move_inc.nss`, `daily_life/dl_focus_inc.nss`, `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** focus/work anchor move issue functions duplicated the same local-state setup + `DL_BeginMoveJobToObject` call shape with profile-specific owner/phase/radius values.
+**Change:** added parameterized helper `DL_IssueAnchorMoveWithLocalsAndBeginJob` in `dl_anchor_move_inc.nss` and switched `DL_IssueFocusMoveAction` and `DL_IssueWorkMoveAction` to call it. Helper keeps status/target/action-target locals and move-job begin in one bounded path with caller-supplied status/owner/phase/radius parameters.
+**Reason:** remove duplication while preserving current pipeline contracts and literal values (`moving_to_anchor`, owner/phase strings, `DL_WORK_ANCHOR_RADIUS`) per caller.
+**Preserve:** clear-state flows and existing diagnostics were not removed; helper only centralizes issue-time local writes + move-job begin.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Social scene IDs now drive real scene cadence/pools
 
 **Task/PR/branch:** current branch / social scene signature alignment in `dl_social_scene_inc.nss`.

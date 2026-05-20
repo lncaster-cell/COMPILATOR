@@ -67,15 +67,17 @@ string DL_GetFocusMoveOwner(object oNpc)
 }
 void DL_IssueFocusMoveAction(object oNpc, object oTarget)
 {
-    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
-    {
-        return;
-    }
-
-    SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, "moving_to_anchor");
-    SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oTarget));
-    SetLocalString(oNpc, DL_L_NPC_FOCUS_ACTION_TARGET, GetTag(oTarget));
-    DL_BeginMoveJobToObject(oNpc, DL_GetFocusMoveOwner(oNpc), "anchor", oTarget, DL_WORK_ANCHOR_RADIUS);
+    DL_IssueAnchorMoveWithLocalsAndBeginJob(
+        oNpc,
+        oTarget,
+        DL_L_NPC_FOCUS_STATUS,
+        "moving_to_anchor",
+        DL_L_NPC_FOCUS_TARGET,
+        DL_L_NPC_FOCUS_ACTION_TARGET,
+        DL_GetFocusMoveOwner(oNpc),
+        "anchor",
+        DL_WORK_ANCHOR_RADIUS
+    );
 }
 void DL_ClearFocusExecutionState(object oNpc)
 {
