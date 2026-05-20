@@ -4,7 +4,6 @@
 // DelayCommand chains, NPC heartbeats, global managers, and area scans.
 
 const string DL_L_NPC_SOCIAL_SCENE_ID = "dl_social_scene_id";
-const string DL_L_NPC_SOCIAL_SCENE_STEP = "dl_social_scene_step";
 const string DL_L_NPC_SOCIAL_SCENE_NEXT_MINUTE = "dl_social_scene_next_minute";
 const string DL_L_NPC_SOCIAL_SCENE_ROLE = "dl_social_scene_role";
 const string DL_L_NPC_SOCIAL_SCENE_LAST_ANIM = "dl_social_scene_last_anim";
@@ -118,7 +117,6 @@ void DL_ClearSocialSceneState(object oNpc)
     if (!GetIsObjectValid(oNpc)) return;
 
     DeleteLocalString(oNpc, DL_L_NPC_SOCIAL_SCENE_ID);
-    DeleteLocalInt(oNpc, DL_L_NPC_SOCIAL_SCENE_STEP);
     DeleteLocalInt(oNpc, DL_L_NPC_SOCIAL_SCENE_NEXT_MINUTE);
     DeleteLocalString(oNpc, DL_L_NPC_SOCIAL_SCENE_ROLE);
     DeleteLocalString(oNpc, DL_L_NPC_SOCIAL_SCENE_LAST_ANIM);
@@ -209,6 +207,5 @@ void DL_TickSocialScene(object oNpc, object oAnchor, object oPartner, int bPartn
     SetLocalInt(oNpc, DL_L_NPC_SOCIAL_SCENE_ACTIVE, bActiveSpeaker);
     SetLocalInt(oNpc, DL_L_NPC_SOCIAL_SCENE_PHASE, nStep);
     SetLocalInt(oNpc, DL_L_NPC_SOCIAL_SCENE_PLAY_RESULT, bPlayResult);
-    SetLocalInt(oNpc, DL_L_NPC_SOCIAL_SCENE_STEP, (nStep + 1) % nStepCount);
     SetLocalInt(oNpc, DL_L_NPC_SOCIAL_SCENE_NEXT_MINUTE, nNow + nWait);
 }
