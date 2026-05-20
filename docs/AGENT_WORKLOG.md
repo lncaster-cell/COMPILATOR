@@ -354,3 +354,13 @@ Entry template:
 **Reason:** preserve runtime literal contracts while reducing drift/typo risk and keeping registry-problem cleanup behavior explicit and complete.
 **Preserve:** literal string values were not changed.
 **Validation:** static checks only. Compilation not run; user owns compilation.
+
+## 2026-05-20 — Work directive profile router unification in dl_work_inc
+
+**Task/PR/branch:** current branch / unify profile routing for work target resolution.
+**Files touched:** `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** work directive execution contained profile-specific apply logic branches and duplicated resolution behavior; file also had broken duplicate resolver fragments near top.
+**Change:** introduced `DL_ResolveWorkForProfile(oNpc, sProfile)` as a single profile router that resolves kind/target/missing-diagnostic into temporary resolver locals, kept small profile-specific waypoint resolvers, and moved common apply path (`DL_SetWorkTargetState` + `DL_ProgressWorkAtTarget` + missing-state handling) into one place in `DL_ExecuteWorkDirective`.
+**Reason:** preserve existing behavior/contracts while reducing profile-branch duplication and making new profile extension additive via one resolver branch plus shared apply path.
+**Preserve:** existing local-key literals for runtime behavior are unchanged; domestic resolver remains home-area anchored; no new scans/polling introduced.
+**Validation:** static checks only. Compilation not run; user owns compilation.

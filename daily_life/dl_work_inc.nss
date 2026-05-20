@@ -3,6 +3,9 @@ const string DL_L_NPC_WORK_ACTION_TARGET = "dl_work_anchor_action_target";
 const string DL_WORK_STATUS_MISSING_WAYPOINTS = "missing_waypoints";
 const string DL_WORK_STATUS_MOVING_TO_ANCHOR = "moving_to_anchor";
 const string DL_WORK_STATUS_ON_ANCHOR = "on_anchor";
+const string DL_L_NPC_WORK_RESOLVED_KIND = "dl_work_resolved_kind";
+const string DL_L_NPC_WORK_RESOLVED_TARGET = "dl_work_resolved_target";
+const string DL_L_NPC_WORK_RESOLVE_MISSING_DIAG = "dl_work_resolve_missing_diag";
 
 
 void DL_ExecuteWorkDirective(object oNpc);
@@ -56,7 +59,8 @@ object DL_ResolveBlacksmithForgeWaypoint(object oNpc)
         "dl_work_forge"
     );
 }
-object DL_ResolveWorkAnchorByProfile(object oNpc, string sProfile, string sAnchorRole)
+
+object DL_ResolveBlacksmithCraftWaypoint(object oNpc)
 {
     return DL_ResolveWorkWaypointByRoleParams(
         oNpc,
@@ -65,17 +69,9 @@ object DL_ResolveWorkAnchorByProfile(object oNpc, string sProfile, string sAncho
         DL_L_NPC_CACHE_WORK_SECONDARY,
         DL_L_NPC_CACHE_WORK_CRAFT,
         "dl_work_",
-        sFallbackSuffix,
-        sFallbackDefaultTag
+        "_craft",
+        "dl_work_craft"
     );
-}
-object DL_ResolveBlacksmithForgeWaypoint(object oNpc)
-{
-    return DL_ResolveWorkAnchorByProfile(oNpc, DL_PROFILE_BLACKSMITH, "primary");
-}
-object DL_ResolveBlacksmithCraftWaypoint(object oNpc)
-{
-    return DL_ResolveWorkAnchorByProfile(oNpc, DL_PROFILE_BLACKSMITH, "secondary");
 }
 
 object DL_ResolveBlacksmithFetchWaypoint(object oNpc)
@@ -91,6 +87,7 @@ object DL_ResolveBlacksmithFetchWaypoint(object oNpc)
         ""
     );
 }
+
 object DL_ResolveGatePostWaypoint(object oNpc)
 {
     return DL_ResolveWorkWaypointByRoleParams(
@@ -104,6 +101,7 @@ object DL_ResolveGatePostWaypoint(object oNpc)
         "dl_work_post"
     );
 }
+
 object DL_ResolveTraderWaypoint(object oNpc)
 {
     return DL_ResolveWorkWaypointByRoleParams(
@@ -117,6 +115,7 @@ object DL_ResolveTraderWaypoint(object oNpc)
         "dl_work_trade"
     );
 }
+
 object DL_ResolveDomesticWorkerWaypoint(object oNpc)
 {
     return DL_ResolveWorkWaypointByRoleParams(
@@ -157,6 +156,104 @@ object DL_ResolveDomesticWorkerFetchWaypoint(object oNpc)
         "",
         ""
     );
+}
+
+int DL_ResolveWorkForProfile(object oNpc, string sProfile)
+{
+    object oTarget = OBJECT_INVALID;
+    string sKind = "";
+    string sMissingDiagnostic = "";
+
+    if (sProfile == DL_PROFILE_BLACKSMITH)
+    {
+        string sBlacksmithKind = DL_ResolveBlacksmithWorkKindAtHour(oNpc);
+        object oForge = DL_ResolveBlacksmithForgeWaypoint(oNpc);
+        object oCraft = DL_ResolveBlacksmithCraftWaypoint(oNpc);
+        object oFetch = DL_ResolveBlacksmithFetchWaypoint(oNpc);
+
+        if (!GetIsObjectValid(oForge) || !GetIsObjectValid(oCraft))
+        {
+            SetLocalString(oNpc, DL_L_NPC_WORK_RESOLVED_KIND, sBlacksmithKind);
+            SetLocalString(oNpc, DL_L_NPC_WORK_RESOLVE_MISSING_DIAG, "need_forge_and_craft_waypoints");
+            DeleteLocalObject(oNpc, DL_L_NPC_WORK_RESOLVED_TARGET);
+            return FALSE;
+        }
+
+        oTarget = oForge;
+        if (sBlacksmithKind == DL_WORK_KIND_CRAFT)
+        {
+            oTarget = oCraft;
+        }
+        else if (sBlacksmithKind == DL_WORK_KIND_FETCH)
+        {
+            if (GetIsObjectValid(oFetch))
+            {
+                oTarget = oFetch;
+            }
+            else
+            {
+                sBlacksmithKind = DL_WORK_KIND_CRAFT;
+                oTarget = oCraft;
+            }
+        }
+
+        SetLocalString(oNpc, DL_L_NPC_WORK_RESOLVED_KIND, sBlacksmithKind);
+        SetLocalObject(oNpc, DL_L_NPC_WORK_RESOLVED_TARGET, oTarget);
+        DeleteLocalString(oNpc, DL_L_NPC_WORK_RESOLVE_MISSING_DIAG);
+        return TRUE;
+    }
+
+    if (sProfile == DL_PROFILE_GATE_POST)
+    {
+        oTarget = DL_ResolveGatePostWaypoint(oNpc);
+        sKind = DL_WORK_KIND_POST;
+        sMissingDiagnostic = "need_post_waypoint";
+    }
+    else if (sProfile == DL_PROFILE_TRADER)
+    {
+        oTarget = DL_ResolveTraderWaypoint(oNpc);
+        sKind = DL_WORK_KIND_TRADE;
+        sMissingDiagnostic = "need_trade_waypoint";
+    }
+    else if (sProfile == DL_PROFILE_DOMESTIC_WORKER)
+    {
+        object oPrimary = DL_ResolveDomesticWorkerWaypoint(oNpc);
+        object oSecondary = DL_ResolveDomesticWorkerSecondaryWaypoint(oNpc);
+        object oFetch = DL_ResolveDomesticWorkerFetchWaypoint(oNpc);
+        int bHasFetch = GetIsObjectValid(oFetch);
+
+        if (!GetIsObjectValid(oPrimary) || !GetIsObjectValid(oSecondary))
+        {
+            SetLocalString(oNpc, DL_L_NPC_WORK_RESOLVED_KIND, DL_WORK_KIND_DOMESTIC);
+            SetLocalString(oNpc, DL_L_NPC_WORK_RESOLVE_MISSING_DIAG, "need_home_domestic_anchors");
+            DeleteLocalObject(oNpc, DL_L_NPC_WORK_RESOLVED_TARGET);
+            return FALSE;
+        }
+
+        sKind = DL_ResolveDomesticWorkerWorkKind(oNpc, bHasFetch);
+        oTarget = oPrimary;
+        if (sKind == DL_WORK_KIND_CRAFT)
+        {
+            oTarget = oSecondary;
+        }
+        else if (sKind == DL_WORK_KIND_FETCH)
+        {
+            oTarget = oFetch;
+        }
+    }
+
+    if (!GetIsObjectValid(oTarget))
+    {
+        SetLocalString(oNpc, DL_L_NPC_WORK_RESOLVED_KIND, sKind);
+        SetLocalString(oNpc, DL_L_NPC_WORK_RESOLVE_MISSING_DIAG, sMissingDiagnostic);
+        DeleteLocalObject(oNpc, DL_L_NPC_WORK_RESOLVED_TARGET);
+        return FALSE;
+    }
+
+    SetLocalString(oNpc, DL_L_NPC_WORK_RESOLVED_KIND, sKind);
+    SetLocalObject(oNpc, DL_L_NPC_WORK_RESOLVED_TARGET, oTarget);
+    DeleteLocalString(oNpc, DL_L_NPC_WORK_RESOLVE_MISSING_DIAG);
+    return TRUE;
 }
 
 string DL_ResolveDomesticWorkerWorkKind(object oNpc, int bHasFetch)
@@ -389,98 +486,24 @@ void DL_ExecuteWorkDirective(object oNpc)
         return;
     }
 
-    if (sProfile == DL_PROFILE_BLACKSMITH)
+    if (!DL_ResolveWorkForProfile(oNpc, sProfile))
     {
-        string sKind = DL_ResolveBlacksmithWorkKindAtHour(oNpc);
-        object oForge = DL_ResolveBlacksmithForgeWaypoint(oNpc);
-        object oCraft = DL_ResolveBlacksmithCraftWaypoint(oNpc);
-        object oFetch = DL_ResolveBlacksmithFetchWaypoint(oNpc);
-
-        if (!GetIsObjectValid(oForge) || !GetIsObjectValid(oCraft))
-        {
-            DL_SetWorkMissingState(oNpc, sKind, "need_forge_and_craft_waypoints");
-            return;
-        }
-
-        object oTarget = oForge;
-        if (sKind == DL_WORK_KIND_CRAFT)
-        {
-            oTarget = oCraft;
-        }
-        else if (sKind == DL_WORK_KIND_FETCH)
-        {
-            if (GetIsObjectValid(oFetch))
-            {
-                oTarget = oFetch;
-            }
-            else
-            {
-                sKind = DL_WORK_KIND_CRAFT;
-                oTarget = oCraft;
-            }
-        }
-
-        DL_SetWorkTargetState(oNpc, sKind, oTarget);
-        DL_LogWorkTargetDebug(oNpc, oTarget, sKind);
-        DL_ProgressWorkAtTarget(oNpc, oTarget);
+        DL_SetWorkMissingState(
+            oNpc,
+            GetLocalString(oNpc, DL_L_NPC_WORK_RESOLVED_KIND),
+            GetLocalString(oNpc, DL_L_NPC_WORK_RESOLVE_MISSING_DIAG)
+        );
+        DeleteLocalString(oNpc, DL_L_NPC_WORK_RESOLVED_KIND);
+        DeleteLocalString(oNpc, DL_L_NPC_WORK_RESOLVE_MISSING_DIAG);
+        DeleteLocalObject(oNpc, DL_L_NPC_WORK_RESOLVED_TARGET);
         return;
     }
 
-    if (sProfile == DL_PROFILE_GATE_POST)
-    {
-        object oPost = DL_ResolveGatePostWaypoint(oNpc);
-
-        if (!GetIsObjectValid(oPost))
-        {
-            DL_SetWorkMissingState(oNpc, DL_WORK_KIND_POST, "need_post_waypoint");
-            return;
-        }
-
-        DL_SetWorkTargetState(oNpc, DL_WORK_KIND_POST, oPost);
-        DL_LogWorkTargetDebug(oNpc, oPost, DL_WORK_KIND_POST);
-        DL_ProgressWorkAtTarget(oNpc, oPost);
-        return;
-    }
-
-    if (sProfile == DL_PROFILE_DOMESTIC_WORKER)
-    {
-        object oPrimary = DL_ResolveDomesticWorkerWaypoint(oNpc);
-        object oSecondary = DL_ResolveDomesticWorkerSecondaryWaypoint(oNpc);
-        object oFetch = DL_ResolveDomesticWorkerFetchWaypoint(oNpc);
-        int bHasFetch = GetIsObjectValid(oFetch);
-
-        if (!GetIsObjectValid(oPrimary) || !GetIsObjectValid(oSecondary))
-        {
-            DL_SetWorkMissingState(oNpc, DL_WORK_KIND_DOMESTIC, "need_home_domestic_anchors");
-            return;
-        }
-
-        string sKind = DL_ResolveDomesticWorkerWorkKind(oNpc, bHasFetch);
-        object oHomeWork = oPrimary;
-        if (sKind == DL_WORK_KIND_CRAFT)
-        {
-            oHomeWork = oSecondary;
-        }
-        else if (sKind == DL_WORK_KIND_FETCH)
-        {
-            oHomeWork = oFetch;
-        }
-
-        DL_SetWorkTargetState(oNpc, sKind, oHomeWork);
-        DL_LogWorkTargetDebug(oNpc, oHomeWork, sKind);
-        DL_ProgressWorkAtTarget(oNpc, oHomeWork);
-        return;
-    }
-
-    object oTrade = DL_ResolveTraderWaypoint(oNpc);
-
-    if (!GetIsObjectValid(oTrade))
-    {
-        DL_SetWorkMissingState(oNpc, DL_WORK_KIND_TRADE, "need_trade_waypoint");
-        return;
-    }
-
-    DL_SetWorkTargetState(oNpc, DL_WORK_KIND_TRADE, oTrade);
-    DL_LogWorkTargetDebug(oNpc, oTrade, DL_WORK_KIND_TRADE);
-    DL_ProgressWorkAtTarget(oNpc, oTrade);
+    string sKind = GetLocalString(oNpc, DL_L_NPC_WORK_RESOLVED_KIND);
+    object oTarget = GetLocalObject(oNpc, DL_L_NPC_WORK_RESOLVED_TARGET);
+    DL_SetWorkTargetState(oNpc, sKind, oTarget);
+    DL_ProgressWorkAtTarget(oNpc, oTarget);
+    DeleteLocalString(oNpc, DL_L_NPC_WORK_RESOLVED_KIND);
+    DeleteLocalString(oNpc, DL_L_NPC_WORK_RESOLVE_MISSING_DIAG);
+    DeleteLocalObject(oNpc, DL_L_NPC_WORK_RESOLVED_TARGET);
 }
