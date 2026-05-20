@@ -1,3 +1,13 @@
+## 2026-05-20 — Work anchor resolver helper unification in dl_work_inc
+
+**Task/PR/branch:** current branch / unify work-anchor waypoint resolve helpers.
+**Files touched:** `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** multiple work waypoint resolvers duplicated the same area-source (work/home), anchor lookup, and optional fallback-tag resolution shape.
+**Change:** added shared helper `DL_ResolveWorkAnchorWaypoint(oNpc, sAreaSource, sAnchorLocalKey, sCacheKey, sFallbackSuffix, sFallbackTag)` and migrated blacksmith forge/craft, gate post, trader, and domestic primary/secondary/fetch resolvers to it (also routed blacksmith fetch through the same helper with empty fallback params). Fallback-disabled fetch branches still return `OBJECT_INVALID` when anchor lookup misses.
+**Reason:** reduce duplicate resolver code while preserving existing local-key literals, cache-key usage, and fallback tag/suffix contracts.
+**Preserve:** literal keys/tags/suffixes (`dl_anchor_work_*`, `dl_work_*`) unchanged; no runtime behavior expansion for fetch branches without fallback.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Transition registry problem codes: remove raw string literals
 
 **Task/PR/branch:** current branch / literal-to-constant cleanup for transition registry problem codes.
