@@ -331,10 +331,19 @@ int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
         return TRUE;
     }
 
-    DL_ClearAnchorMoveIssueState(oNpc, DL_L_NPC_WORK_ACTION_STAMP, DL_L_NPC_WORK_ACTION_TARGET);
-    DL_ClearMoveJob(oNpc);
+    DL_SetAnchorTerminalStatus(
+        oNpc,
+        DL_L_NPC_WORK_STATUS,
+        DL_WORK_STATUS_ON_ANCHOR,
+        "",
+        OBJECT_INVALID,
+        DL_L_NPC_WORK_ACTION_STAMP,
+        DL_L_NPC_WORK_ACTION_TARGET,
+        TRUE,
+        TRUE,
+        FALSE
+    );
     DL_ClearTransitionExecutionState(oNpc);
-    SetLocalString(oNpc, DL_L_NPC_WORK_STATUS, DL_WORK_STATUS_ON_ANCHOR);
     DL_FaceWorkTargetOrientation(oNpc, oTarget);
     DL_ApplyArchiveActivityPresentation(oNpc, DL_DIR_WORK);
     DL_PlayWorkAnimation(oNpc);
