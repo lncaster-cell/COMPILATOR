@@ -60,3 +60,68 @@ void DL_ResetCustomAnimationBeforeAnchorMove(object oNpc)
     PlayCustomAnimation(oNpc, "%", FALSE);
 }
 
+
+
+void DL_SetAnchorTerminalStatus(
+    object oNpc,
+    string sStatusKey,
+    string sStatusValue,
+    string sTargetKey,
+    object oAnchor,
+    string sIssueStampKey,
+    string sIssueTargetKey,
+    int bClearMoveJob,
+    int bClearMoveIssueState,
+    int bFaceAnchor
+)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return;
+    }
+
+    if (bClearMoveIssueState)
+    {
+        DL_ClearAnchorMoveIssueState(oNpc, sIssueStampKey, sIssueTargetKey);
+    }
+
+    if (bClearMoveJob)
+    {
+        DL_ClearMoveJob(oNpc);
+    }
+
+    SetLocalString(oNpc, sStatusKey, sStatusValue);
+
+    if (sTargetKey != "" && GetIsObjectValid(oAnchor))
+    {
+        SetLocalString(oNpc, sTargetKey, GetTag(oAnchor));
+    }
+
+    if (bFaceAnchor && GetIsObjectValid(oAnchor))
+    {
+        AssignCommand(oNpc, SetFacing(GetFacing(oAnchor)));
+    }
+}
+void DL_BeginAnchorMoveJob(
+    object oNpc,
+    object oTarget,
+    string sStatusKey,
+    string sStatusValue,
+    string sTargetKey,
+    string sActionTargetKey,
+    string sOwner,
+    string sPhase,
+    float fRadius
+)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
+    {
+        return;
+    }
+
+    string sTargetTag = GetTag(oTarget);
+    SetLocalString(oNpc, sStatusKey, sStatusValue);
+    SetLocalString(oNpc, sTargetKey, sTargetTag);
+    SetLocalString(oNpc, sActionTargetKey, sTargetTag);
+    DL_BeginMoveJobToObject(oNpc, sOwner, sPhase, oTarget, fRadius);
+}

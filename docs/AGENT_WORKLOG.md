@@ -1,11 +1,31 @@
+## 2026-05-20 — Transition finalizer outcome code centralization + shared outcome writer
+
+**Task/PR/branch:** current branch / centralize finalizer reason/result constants in `dl_transition_inc.nss`.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** transition finalizer paths still mixed centralized problem constants with raw literals across post-jump result writes, nav-debug reasons, and BSMITH stage usage.
+**Change:** grouped full post-jump finalizer reason/result codes into one constant block, replaced raw literals in `SetLocalString(... "dl_post_jump_result" ...)`, `DL_NavSetDebug` finalizer reasons, and `DL_BsmithTraceStage` finalizer stage calls, and added `DL_SetFinalizerOutcomeState` helper to write result + diagnostic + registry problem + optional trace note in one call for failure outcomes.
+**Reason:** keep literal contract values unchanged while reducing drift/typo risk and making finalizer outcome reporting consistent in one helper.
+**Preserve:** all literal string values remain exactly the same runtime contracts; no transition pipeline ownership changes.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
+## 2026-05-20 — Work waypoint resolver profile helper unification (work roles)
+
+**Task/PR/branch:** current branch / unify repeated work waypoint resolvers in `dl_work_inc.nss`.
+**Files touched:** `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** blacksmith/gate/trader/domestic role resolvers duplicated the same “anchor first, optional fallback by tag profile” pattern with only profile literals changed.
+**Change:** added shared helper `DL_ResolveWorkWaypointByRoleParams` with explicit profile parameters (anchor key + anchor cache key + fallback cache key/prefix/suffix/tag), migrated blacksmith forge/craft/fetch, gate post, trader, and domestic primary/secondary/fetch resolvers to call it, and preserved domestic behavior by passing home area plus empty fallback profile so no fallback lookup runs.
+**Reason:** reduce duplicate resolver logic while preserving existing runtime contracts, role-specific cache keys, and domestic home-area/no-fallback behavior.
+**Preserve:** literal local-key values and fallback literal tags are unchanged; domestic path remains home-area anchored and may validly return `OBJECT_INVALID` without fallback.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Social scene IDs now drive real scene cadence/pools
 
-**Task/PR/branch:** current branch / social scene signature alignment in `dl_social_scene_inc.nss`.
-**Files touched:** `daily_life/dl_social_scene_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** social-scene helpers accepted `sSceneId`/`nStep` but effectively ignored scene identity in cadence/rule selection, creating pseudo data-driven signatures.
-**Change:** kept data-driven approach and wired scene identity into real branches: added `DL_SOCIAL_SCENE_TAVERN_LIVE`, made step-count and wait logic scene-aware, updated speaker/solo pool selection to branch by scene, and updated `DL_TickSocialScene` calls to pass/consume arguments matching actual logic.
-**Reason:** remove fake parameters while preserving extensibility: `DL_SOCIAL_SCENE_DEFAULT` keeps current baseline behavior, and alternative scene IDs now have concrete rules.
-**Preserve:** `DL_L_NPC_SOCIAL_SCENE_*` local-key literal contracts are unchanged.
+**Task/PR/branch:** current branch / explicit invalidation for `dl_nav_infer_cache_*`.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** bounded nav infer cache (tick+area+kind) reduced repeated scans, but invalidation moments were implicit, making rare transition edge cases harder to diagnose.
+**Change:** added `DL_NavInvalidateInferZoneCache` helper that clears all `DL_L_NAV_INFER_CACHE_*` locals and writes a nav-debug reason `infer_cache_invalidated:<reason>`; invoked it on transition execution-state clear, transition finalize success paths (`post_jump_finalizer_same_area_complete`, `post_jump_finalizer_complete`, completed-transition finalize), and when stored nav-zone area contract no longer matches NPC area (`zone_area_changed`) during sync.
+**Reason:** keep current bounded-cache behavior while explicitly documenting/enforcing when cached inference is stale across area/transition lifecycle edges.
+**Preserve:** cache key model remains `tick + area + kind`; no new scans/polling; existing scan caps/inference fallbacks unchanged.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Transition registry problem codes: remove raw string literals
@@ -325,14 +345,14 @@ Entry template:
 **Preserve:** `DL_NAV_AREA_SCAN_CAP` remains unchanged and still bounds fallback loops; no global polling loop/path was introduced.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
-## 2026-05-20 — Restore missing DL_RepairAreaRegistrySlot body (Daily Life compile blocker)
+## 2026-05-20 — Transition finalizer problem-code constants + cleanup whitelist alignment
 
-**Task/PR/branch:** current branch / Daily Life compile blocker fix for missing registry helper body.
-**Files touched:** `daily_life/dl_registry_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** multiple Daily Life scripts failed compile because `DL_RepairAreaRegistrySlot` was declared and called but had no function body in `dl_registry_inc.nss`.
-**Change:** implemented `DL_RepairAreaRegistrySlot` in `dl_registry_inc.nss` as compact dense-registry slot repair: validates area/slot/count, swaps last-slot NPC into removed slot when needed, updates moved NPC registry locals (`DL_L_NPC_REG_SLOT`, `DL_L_NPC_REG_AREA`), deletes old tail slot local, decrements area registry count, and bumps `DL_L_AREA_REG_SEQ`.
-**Reason:** restore canonical registry ownership/helper implementation in the registry include so existing worker/registry fallback repair call sites can compile and keep compact slot-array semantics.
-**Preserve:** no movement/transition/directive/worker scheduling behavior changes; no BSMITH diagnostic changes; forward declaration kept for compile-order compatibility.
+**Task/PR/branch:** current branch / user-requested literal-code normalization in transition finalizer.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** several `dl_transition_registry_problem` post-jump finalizer codes were still used as raw string literals in comparisons/assignments, and safe-clear whitelist did not include the full post-jump code set now used by finalizer paths.
+**Change:** added compiler-safe shared string constants for remaining post-jump registry-problem literals (`post_jump_finalizer_not_expected`, `post_jump_finalizer_unexpected_area`), replaced literal assignments/comparisons with constants, and expanded clear-on-success whitelist checks to cover all relevant post-jump finalizer problem codes.
+**Reason:** preserve runtime literal contracts while reducing drift/typo risk and keeping registry-problem cleanup behavior explicit and complete.
+**Preserve:** literal string values were not changed.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Refactor: reduce WORK/transition duplication without behavior change
