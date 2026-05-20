@@ -1,3 +1,13 @@
+## 2026-05-20 — Remove dead chat-debug event layer from Daily Life resolver/work paths
+
+**Task/PR/branch:** current branch / user-requested diagnostic cleanup (`DL_LogChatDebugEvent` removal).
+**Files touched:** `daily_life/dl_res_inc.nss`, `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** resolver/work includes still contained dead chat-debug wrapper usage after prior cleanup, creating a no-op diagnostic layer in active directive-related paths.
+**Change:** removed `DL_LogChatDebugEvent` function from resolver include, removed all remaining call sites in resolver/work includes, and replaced two observability points in resolver with targeted `DL_BsmithTraceStage` events (`SOCIAL_RECOVER_REACHED_ANCHOR`, `DIRECTIVE_BRIDGE_MOVE`) to keep focused blacksmith-stage diagnostics without broad/noisy chat-debug plumbing.
+**Reason:** eliminate dead diagnostics while preserving active BSMITH tracing workflow and avoiding runtime behavior changes in directive/move pipelines.
+**Preserve:** movement/directive/finalizer logic and local-key runtime contracts are unchanged; only dead/no-op diagnostics were removed or mapped to existing trace mechanism.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Transition registry problem codes: remove raw string literals
 
 **Task/PR/branch:** current branch / literal-to-constant cleanup for transition registry problem codes.
