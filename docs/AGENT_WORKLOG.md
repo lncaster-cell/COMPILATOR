@@ -1,11 +1,11 @@
-## 2026-05-20 — Transition registry handoff canonical entrypoint restored
+## 2026-05-20 — Social scene step source unification (time-based)
 
-**Task/PR/branch:** current branch / handoff entrypoint audit in area worker/resync cycles.
-**Files touched:** `daily_life/dl_worker_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** `DL_RunTransitionRegistryHandoffTick` was called from HOT worker, WARM maintenance, and enter-resync ticks, but the function body/signature was missing in `dl_worker_inc.nss` (left as orphaned block), so canonical handoff execution point was not explicit/maintainable.
-**Change:** restored `int DL_RunTransitionRegistryHandoffTick(object oArea, int nTickStamp)` as a bounded slot-based handoff processor (`DL_TRANSITION_HANDOFF_SLOT_COUNT`), keeping all existing touch/debug/rebuild behavior and reusing `DL_WorkerTouchNpc` pipeline.
-**Reason:** make the canonical handoff entrypoint factual and executable exactly where worker/resync cycles invoke it, without adding scans/polling or new ownership paths.
-**Preserve:** canonical handoff entrypoint remains area-owner tick path (`DL_RunAreaWorkerTick`, `DL_RunAreaWarmMaintenanceTick`, `DL_RunAreaEnterResyncTick`); keep bounded slot queue model and existing BSMITH/transition diagnostics.
+**Task/PR/branch:** current branch / user-requested social scene step source cleanup.
+**Files touched:** `daily_life/dl_social_scene_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** social-scene tick used time-based phase (`nNow % nStepCount`) but still wrote/cleared `DL_L_NPC_SOCIAL_SCENE_STEP`, creating redundant dead state.
+**Change:** kept time-based phase as the single source of truth and removed `DL_L_NPC_SOCIAL_SCENE_STEP` contract usage from declarations, cleanup, and per-tick writes.
+**Reason:** eliminate competing/unused step state and keep debug locals consistent with actual phase scheduling.
+**Preserve:** `DL_L_NPC_SOCIAL_SCENE_PHASE` remains the emitted phase value, and `DL_L_NPC_SOCIAL_SCENE_NEXT_MINUTE` remains the scheduling gate; no change to wait/phase logic.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Social scene solo animation canonicalization (pool logic)
