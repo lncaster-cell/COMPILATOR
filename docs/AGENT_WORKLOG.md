@@ -1,3 +1,13 @@
+## 2026-05-20 — Transition clear owner-wrapper + pending post-jump guard
+
+**Task/PR/branch:** current branch / owner-aware transition clear routing.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `daily_life/dl_sleep_inc.nss`, `daily_life/dl_work_inc.nss`, `daily_life/dl_focus_inc.nss`, `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** direct transition-state clears from multiple owner subsystems could wipe transition execution locals while a queued post-jump finalizer was still expected.
+**Change:** added `DL_ClearTransitionExecutionStateWithReason(oNpc, sReason, sOwner)` in transition include; wrapper preserves existing key-clear semantics by delegating to `DL_ClearTransitionExecutionState`, but now blocks owner-initiated clears when `dl_transition_pending_finalizer_expected==TRUE` and post-jump result is still pending/queued, recording a guard diagnostic reason. Replaced direct clear calls in sleep/work/focus/res includes with the owner-wrapper.
+**Reason:** keep transition finalizer ownership/stage integrity and avoid premature state erasure during expected post-jump completion.
+**Preserve:** `DL_L_NPC_TRANSITION_*` literal local-key contracts remain unchanged; finalizer-owned direct clears inside transition pipeline were not rewritten.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Transition registry problem codes: remove raw string literals
 
 **Task/PR/branch:** current branch / literal-to-constant cleanup for transition registry problem codes.

@@ -182,7 +182,7 @@ void DL_ClearWorkExecutionState(object oNpc)
     DeleteLocalString(oNpc, DL_L_NPC_WORK_DIAGNOSTIC);
     DL_ClearWorkMoveIssueState(oNpc);
     DL_ClearActivityPresentation(oNpc);
-    DL_ClearTransitionExecutionState(oNpc);
+    DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "work");
 }
 string DL_ResolveBlacksmithWorkKindAtHour(object oNpc)
 {
@@ -212,7 +212,7 @@ void DL_SetWorkMissingState(object oNpc, string sKind, string sDiagnostic)
     DeleteLocalString(oNpc, DL_L_NPC_WORK_TARGET);
     DL_ClearWorkMoveIssueState(oNpc);
     DL_ClearActivityPresentation(oNpc);
-    DL_ClearTransitionExecutionState(oNpc);
+    DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "work");
 }
 void DL_SetWorkTargetState(object oNpc, string sKind, object oTarget)
 {
@@ -282,7 +282,7 @@ int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
 
     DL_ClearWorkMoveIssueState(oNpc);
     DL_ClearMoveJob(oNpc);
-    DL_ClearTransitionExecutionState(oNpc);
+    DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "work");
     SetLocalString(oNpc, DL_L_NPC_WORK_STATUS, "on_anchor");
     DL_FaceWorkTargetOrientation(oNpc, oTarget);
     DL_ApplyArchiveActivityPresentation(oNpc, DL_DIR_WORK);
