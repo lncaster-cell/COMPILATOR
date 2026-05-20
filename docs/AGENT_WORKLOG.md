@@ -1,3 +1,12 @@
+## 2026-05-20 — #864 Lane A: deduplicate problem-summary diagnostic evaluation
+
+**Task/PR/branch:** current branch / Issue #864 targeted cleanup (diagnostic-noise lane).
+**Files touched:** `daily_life/dl_diag_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `DL_MaybeLogNpcDiagnostic` evaluated `DL_GetNpcProblemSummary` twice (signature + log path), which could produce noisy/uneven traces and duplicate summary computation in a hot diagnostic path.
+**Change:** introduced summary-aware helpers (`DL_LogNpcDiagnosticWithSummary`, `DL_GetNpcDiagnosticSignatureWithSummary`) and updated `DL_MaybeLogNpcDiagnostic` to compute summary once, reuse it for signature and BSMITH `PROBLEM_SUMMARY` output, while preserving existing diagnostic fields and call contracts.
+**Reason:** keep #864 cleanup incremental and safe by reducing duplicate diagnostic work/noise without changing directive/move/finalizer behavior.
+**Validation:** static text review only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Annotation-only micro-PR: classify critical Daily Life paths (#864)
 
 **Task/PR/branch:** current branch / first cleanup micro-step after audit.
