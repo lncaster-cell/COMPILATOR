@@ -112,13 +112,6 @@ string DL_SelectSocialSceneAnim(string sPool, string sLastAnim)
     return sAnim;
 }
 
-string DL_GetSocialSceneSoloAnim(int nStep)
-{
-    if (nStep == 0) return "bored";
-    if (nStep == 1) return "sigh";
-    return "shrug";
-}
-
 void DL_ClearSocialSceneState(object oNpc)
 {
     if (!GetIsObjectValid(oNpc)) return;

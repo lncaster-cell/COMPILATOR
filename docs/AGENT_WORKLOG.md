@@ -1,3 +1,13 @@
+## 2026-05-20 — #864 Lane A: remove zero-call legacy helpers from Daily Life pipeline
+
+**Task/PR/branch:** current branch / dead-code cleanup requested for owner-pipeline consistency.
+**Files touched:** `daily_life/dl_anchor_move_inc.nss`, `daily_life/dl_social_scene_inc.nss`, `daily_life/dl_work_inc.nss`, `daily_life/dl_worker_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** seven helper functions had no call sites in `daily_life/*.nss`, so they were outside the canonical worker/directive/finalizer movement pipeline and created maintenance ambiguity.
+**Change:** removed unused implementations: `DL_GetSocialSceneSoloAnim`, `DL_RecheckWorkDirectiveAfterMove`, `DL_IssueAnchorMoveExact`, `DL_IssueAnchorMoveRanged`, `DL_ResetStalledAnchorMoveForReissue`, `DL_ShouldBypassLastTouchGate`, and `DL_RunTransitionRegistryHandoffTick`.
+**Reason:** each function had zero in-repo call sites and no declaration/call-chain ownership in current active pipelines; removing dead code is safer than reintroducing non-canonical side paths and preserves the one-canonical-reached/finalizer invariants.
+**Preserve:** active movement invariants, worker touch pipeline, and BSMITH diagnostics are unchanged; no local-key literal migrations were introduced.
+**Validation:** static search checks only (dead-name sweep in `daily_life/*.nss`). Compilation not run; user owns compilation.
+
 ## 2026-05-20 — #864 Lane A: remove dead unused diagnostic wrappers
 
 **Task/PR/branch:** current branch / Issue #864 cleanup campaign.
