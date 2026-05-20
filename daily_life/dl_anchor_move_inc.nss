@@ -19,6 +19,34 @@ void DL_ClearAnchorMoveIssueState(object oNpc, string sStampKey, string sActionT
     }
 }
 
+int DL_GetAnchorMoveActionStamp()
+{
+    return (GetTimeHour() * 3600) + (GetTimeMinute() * 60) + GetTimeSecond();
+}
+
+int DL_ShouldReissueAnchorMoveAction(object oNpc, string sKey, int nReissueSeconds)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return FALSE;
+    }
+
+    if (GetCurrentAction(oNpc) != ACTION_MOVETOPOINT)
+    {
+        return TRUE;
+    }
+
+    int nNow = DL_GetAnchorMoveActionStamp();
+    int nLast = GetLocalInt(oNpc, sKey);
+
+    if (nLast <= 0 || nNow < nLast || (nNow - nLast) >= nReissueSeconds)
+    {
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
 int DL_ShouldIssueAnchorMoveAction(
     object oNpc,
     object oTarget,
@@ -43,7 +71,7 @@ int DL_ShouldIssueAnchorMoveAction(
         return TRUE;
     }
 
-    return DL_ShouldReissueSleepMoveAction(oNpc, sStampKey);
+    return DL_ShouldReissueAnchorMoveAction(oNpc, sStampKey, 6);
 }
 
 void DL_ResetCustomAnimationBeforeAnchorMove(object oNpc)

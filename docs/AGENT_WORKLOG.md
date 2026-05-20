@@ -1,3 +1,13 @@
+## 2026-05-20 — Fix anchor move reissue helper ownership
+
+**Task/PR/branch:** current branch / emergency compile recovery for Daily Life main.
+**Files touched:** `daily_life/dl_anchor_move_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `dl_anchor_move_inc.nss` called sleep-specific `DL_ShouldReissueSleepMoveAction` defined in `dl_sleep_inc.nss`, creating shared->sleep include ownership dependency and cascading undeclared identifier compile failures.
+**Change:** moved generic move-action reissue decision into anchor helper via `DL_GetAnchorMoveActionStamp` and `DL_ShouldReissueAnchorMoveAction`, and switched `DL_ShouldIssueAnchorMoveAction` to use the generic helper with a 6-second interval.
+**Reason:** restore compile-order ownership (shared anchor helper no longer depends on sleep include internals) while preserving current reissue timing behavior.
+**Preserve:** no movement/transition/directive/registry/worker behavior redesign; no contract literal changes.
+**Validation:** compilation/check attempted per task; see current task report.
+
 ## 2026-05-20 — Fix remaining Daily Life compile-order wrappers
 
 **Task/PR/branch:** current branch / follow-up emergency compile recovery after prior stack fix.
