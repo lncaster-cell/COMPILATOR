@@ -29,12 +29,19 @@ const string DL_NAV_ROUTE_PREFIX = "route_";
 const float DL_NAV_ENTRY_RADIUS = 1.60;
 const float DL_NAV_ZONE_INFER_RADIUS = 1.80;
 const string DL_NAV_MOVE_PHASE_TRANSITION_TO_AREA = "transition_to_area";
+// CAP POLICY (warm path / nav-resolution): bounded area sweep for nearby
+// transition/anchor inference. Budget rationale: max 128 object iterations per
+// inference pass keeps worst-case bounded while allowing multi-room areas to
+// expose enough waypoints for deterministic zone resolution.
 const int DL_NAV_AREA_SCAN_CAP = 128;
+// CAP POLICY (warm path / nav-resolution): hard bound for repeated
+// GetObjectByTag(tag, nth) probing when resolving transition tags.
 const int DL_NAV_TRANSITION_TAG_SEARCH_CAP = 64;
 
 const string DL_L_AREA_NAV_READY = "dl_area_nav_ready";
 const string DL_L_AREA_NAV_COUNT = "dl_area_nav_count";
 const string DL_L_AREA_NAV_SLOT_PREFIX = "dl_area_nav_";
+// CAP POLICY (warm path / nav-resolution): max route hops resolved per request.
 const int DL_AREA_NAV_ROUTE_CAP = 32;
 const string DL_L_AREA_NAV_ZONE_ID = "dl_nav_zone_id";
 

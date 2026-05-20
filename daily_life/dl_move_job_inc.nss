@@ -2,6 +2,9 @@
 // Movement directives own presentation state; this job owns generic movement
 // lifecycle: target resolution, reach checks, action reissue, and failure state.
 
+// CAP POLICY (worker-hotpath): this resolution can run from worker touch/apply
+// loops, so tag lookup must stay tightly bounded. Budget rationale: 64 keeps
+// duplicate-tag ambiguity diagnosable without unbounded nth-tag scanning.
 const int DL_MOVE_TARGET_SEARCH_CAP = 64;
 const float DL_MOVE_DEFAULT_RADIUS = 1.60;
 const string DL_L_NPC_MOVE_REACHED_FINALIZED_DBG = "move_reached_finalized";
