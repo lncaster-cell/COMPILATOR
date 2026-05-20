@@ -29,12 +29,19 @@ const string DL_NAV_ROUTE_PREFIX = "route_";
 const float DL_NAV_ENTRY_RADIUS = 1.60;
 const float DL_NAV_ZONE_INFER_RADIUS = 1.80;
 const string DL_NAV_MOVE_PHASE_TRANSITION_TO_AREA = "transition_to_area";
+// CAP POLICY (warm path / nav-resolution): bounded area sweep for nearby
+// transition/anchor inference. Budget rationale: max 128 object iterations per
+// inference pass keeps worst-case bounded while allowing multi-room areas to
+// expose enough waypoints for deterministic zone resolution.
 const int DL_NAV_AREA_SCAN_CAP = 128;
+// CAP POLICY (warm path / nav-resolution): hard bound for repeated
+// GetObjectByTag(tag, nth) probing when resolving transition tags.
 const int DL_NAV_TRANSITION_TAG_SEARCH_CAP = 64;
 
 const string DL_L_AREA_NAV_READY = "dl_area_nav_ready";
 const string DL_L_AREA_NAV_COUNT = "dl_area_nav_count";
 const string DL_L_AREA_NAV_SLOT_PREFIX = "dl_area_nav_";
+// CAP POLICY (warm path / nav-resolution): max route hops resolved per request.
 const int DL_AREA_NAV_ROUTE_CAP = 32;
 const string DL_L_AREA_NAV_ZONE_ID = "dl_nav_zone_id";
 
@@ -184,6 +191,47 @@ void DL_NavSetNpcCurrentZone(object oNpc, string sZone)
     {
         SetLocalString(oNpc, DL_L_NPC_NAV_ZONE_AREA, GetTag(oArea));
     }
+}
+
+
+// Transition lifecycle contract (owner: dl_transition_inc):
+// - DL_NavSetState(...) is the canonical writer for STATUS/TARGET/DIAGNOSTIC during prepare/advance/fail paths.
+// - DL_ClearTransitionExecutionState(...) is the canonical cleanup owner and must be used by directive/focus/work/sleep/move owners on completion/preemption.
+// - DL_MarkTransitionDiagnostic(...) is the canonical targeted diagnostic writer for stale/finalizer outcomes.
+
+int DL_HasTransitionExecutionState(object oNpc)
+{
+    if (!GetIsObjectValid(oNpc)) return FALSE;
+    return GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" ||
+           GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) != "" ||
+           GetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC) != "";
+}
+
+void DL_MarkTransitionDiagnostic(object oNpc, string sDiagnostic)
+{
+    if (!GetIsObjectValid(oNpc)) return;
+    if (sDiagnostic == "")
+    {
+        DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC);
+        return;
+    }
+
+    string sStatus = GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS);
+    string sTarget = GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET);
+    SetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC,
+        sDiagnostic +
+        " status=" + sStatus +
+        " target=" + sTarget +
+        " action=" + IntToString(GetCurrentAction(oNpc))
+    );
+}
+
+void DL_ReportStaleTransitionState(object oNpc, string sOwnerStage)
+{
+    if (!DL_HasTransitionExecutionState(oNpc)) return;
+
+    DL_MarkTransitionDiagnostic(oNpc, "stale_transition_state owner=" + sOwnerStage);
+    DL_BsmithTraceStage(oNpc, "TRANSITION_STALE", sOwnerStage);
 }
 
 void DL_ClearTransitionExecutionState(object oNpc)
@@ -509,7 +557,7 @@ void DL_NavPrepareTargetZoneFromAnchor(object oNpc, object oTargetAnchor)
         return;
     }
 
-    SetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET, sTargetZone);
+    DL_NavSetState(oNpc, "prepared", sTargetZone, "");
     DL_NavSetDebug(oNpc, sCurrentZone, sTargetZone, "", "prepared");
 }
 
@@ -779,7 +827,7 @@ void DL_FinalizeTransitionAfterQueuedJump(object oNpc)
     else
     {
         sResult = "post_jump_finalizer_unexpected_area";
-        SetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC,
+        DL_MarkTransitionDiagnostic(oNpc,
             sResult +
             " current_area=" + sCurrentArea +
             " expected_area=" + sExpectedArea +

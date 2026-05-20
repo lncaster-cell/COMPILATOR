@@ -1,3 +1,13 @@
+## 2026-05-20 — Daily Life cap policy unification and cap inventory
+
+**Task/PR/branch:** current branch / cap-policy standardization for `daily_life/`.
+**Files touched:** `daily_life/dl_move_job_inc.nss`, `daily_life/dl_anchor_cache_inc.nss`, `daily_life/dl_focus_inc.nss`, `daily_life/dl_transition_inc.nss`, `daily_life/dl_registry_inc.nss`, `daily_life/dl_cr_crime_inc.nss`, `docs/daily-life-cap-policy.md`, `docs/AGENT_WORKLOG.md`.
+**Context:** scan/lookup caps were spread across subsystems without one shared classification and rationale map, making future tuning risky in hot worker paths.
+**Change:** consolidated cap inventory into a dedicated policy document with HOT/WARM/COLD criticality plus policy groups (`worker-hotpath`, `nav-resolution`, `crime-reactions`), and added inline CAP POLICY comments next to key constants in Daily Life includes (especially hotpath constants) documenting budget intent and limit rationale.
+**Reason:** preserve bounded runtime behavior while making cap tuning explicit, auditable, and less likely to introduce accidental hot-path inflation.
+**Preserve:** keep existing cap values and local-key literal contracts unchanged; this PR is policy/annotation plus documentation inventory, not behavioral rewrite.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Transition registry problem codes: remove raw string literals
 
 **Task/PR/branch:** current branch / literal-to-constant cleanup for transition registry problem codes.
