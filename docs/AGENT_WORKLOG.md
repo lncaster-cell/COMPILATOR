@@ -1,3 +1,12 @@
+## 2026-05-20 — Continue audit: cleanup-readiness matrix and risk lanes (#864)
+
+**Task/PR/branch:** current branch / continued audit iteration.
+**Files touched:** `docs/daily-life-stabilization-audit.md`, `docs/AGENT_WORKLOG.md`.
+**Context:** continued audit requested again; need tighter execution map for selecting first safe cleanup lane after docs-first phase.
+**Change:** added file-by-file cleanup readiness matrix, behavior-cleanup risk heatmap lanes (A–E), and an audit continuity checklist for future agents to prevent mixed-scope/risky PRs.
+**Reason:** make #864 planning deterministic and reduce chance of broad refactor regressions against working blacksmith baseline.
+**Validation:** static documentation review only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Continue audit: obsolete-candidate gates and evidence template (#864)
 
 **Task/PR/branch:** current branch / continue Daily Life audit depth.

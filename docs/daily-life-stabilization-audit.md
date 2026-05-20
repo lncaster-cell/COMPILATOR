@@ -333,3 +333,56 @@ This template is process-only and does not require runtime behavior changes by i
 
 Both micro-PRs remain fully compatible with current constraints: baseline preservation, no route changes, no runtime-heavy additions.
 
+
+---
+
+## 16) File-by-file cleanup readiness matrix (for #864)
+
+This matrix turns the audit into immediate planning guidance. “Readiness” means **readiness for a small cleanup PR**, not readiness for broad refactor.
+
+| File | Canonical ownership confidence | Cleanup readiness | Allowed now | Blocked until evidence | Notes |
+|---|---|---|---|---|---|
+| `daily_life/dl_move_job_inc.nss` | high | low | comment-only classification notes | logic simplification of reached/no-progress branches | Canonical movement controller; high blast radius. |
+| `daily_life/dl_res_inc.nss` | high | low/medium | comment-only labels around emergency closures | finalizer path consolidation | Contains core apply/finalize and active BSMITH diagnostics. |
+| `daily_life/dl_worker_inc.nss` | high | medium | annotate critical bypass intent and invariants | narrowing bypass triggers | Owner is clear, but trigger interactions remain debt-heavy. |
+| `daily_life/dl_transition_inc.nss` | medium/high | medium | document wrapper compatibility status | removing wrapper paths | Route model stable; wrapper usage still needs measured evidence. |
+| `daily_life/dl_focus_inc.nss` | medium | low | classify legacy recovery blocks | closure-path unification with finalizer | Main overlap hotspot with finalizer terminalization. |
+| `daily_life/dl_sleep_inc.nss` | medium | low | no-op docs only | sleep transition/action-flow refactor | Engine-sensitive behavior; avoid speculative changes. |
+| `daily_life/dl_registry_inc.nss` | high | medium | docs clarification of ownership/handoff contracts | pruning fallback scan/repair mechanisms | Fallback paths are safety nets; reduction needs runtime proof. |
+| `daily_life/dl_diag_inc.nss` | medium/high | medium | deduplicate phrasing/docs around problem summaries | reducing fields used by critical classification | Some diagnostics influence emergency routing decisions. |
+| `daily_life/dl_dbg_time.nss` | high | medium/high | output wording/structure cleanup only | removing BSMITH summary lines used during failure triage | Manual bounded tool; low runtime risk if behavior unchanged. |
+| `daily_life/dl_move_job_decl_inc.nss` | high | high (declaration hygiene only) | maintain declaration-only discipline | adding bodies/default args/constants | Compile-order contract file; no behavior logic allowed. |
+
+---
+
+## 17) Risk heatmap for first behavior-changing cleanup PRs
+
+When #864 moves from docs-first to behavior cleanup, choose one of these lanes and avoid mixing lanes.
+
+| Lane | Primary target | Expected value | Risk level | Hard constraints |
+|---|---|---|---|---|
+| Lane A | reduce duplicate diagnostic noise only | cleaner triage, faster issue reading | low/medium | preserve all decision-driving diagnostics |
+| Lane B | narrow one critical bypass trigger family | less emergency-path churn | medium/high | never reduce multiple trigger families in one PR |
+| Lane C | unify one focus reached-recovery path with canonical finalizer | lower overlap debt | high | only one directive family at a time; keep rollback path explicit |
+| Lane D | deprecate one transition wrapper call-site cluster | clearer transition ownership | high | must show wrapper-hit evidence first |
+| Lane E | tune registry fallback budgets/entry conditions | lower hot-path maintenance cost | high | only after stable cycles show no stale-slot dependence |
+
+Recommendation for first behavior-changing cleanup under #864:
+- prefer **Lane A** first, then re-evaluate counters/contradictions before any Lane B–E change.
+
+---
+
+## 18) Audit continuity checklist for future agents
+
+Before touching Daily Life cleanup code under #864, the agent should explicitly verify:
+
+1. #861 remains closed and non-blocking.
+2. `blacksmith01` full-cycle baseline is still the protected reference.
+3. Validator behavior remains intact and is not treated as blocker.
+4. Route model assumptions remain zone-to-zone (`route_<current_zone>__<target_zone>`).
+5. Planned PR scope is one overlap family only.
+6. Planned PR states rollback trigger in advance.
+7. PR preserves BSMITH contradiction/classify observability unless change is diagnostics-only and proven safe.
+
+If any of the above is unknown, default to evidence/docs PR rather than behavior rewrite.
+
