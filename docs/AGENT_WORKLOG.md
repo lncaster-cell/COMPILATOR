@@ -1,3 +1,12 @@
+## 2026-05-20 — #864 Lane A.2: remove unused chill waypoint mode key constant
+
+**Task/PR/branch:** current branch / Issue #864 Lane A.2 dead-code sweep.
+**Files touched:** `daily_life/dl_focus_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** static dead-code sweep across `daily_life/*.nss` for provably unused symbols while preserving movement/transition/directive/registry/worker behavior and active diagnostics.
+**Change:** removed unused local-key constant `DL_L_NPC_CHILL_WAYPOINT_MODE` (literal `"dl_chill_waypoint_mode"`) from `dl_focus_inc.nss` after confirming no symbol references and no raw-string references remain in Daily Life scripts.
+**Reason:** safe net reduction of dead constant with zero runtime behavior impact.
+**Validation:** static grep/diff checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — #864 Lane A: remove dead Daily Life chat-debug plumbing
 
 **Task/PR/branch:** current branch / PR #877 refresh on post-#876 baseline.

@@ -7,7 +7,6 @@ const string DL_L_NPC_CACHE_MEAL_CHAIR_OBJ = "dl_cache_meal_chair_obj";
 const string DL_L_NPC_CACHE_MEAL_CHAIR_MISSING_UNTIL = "dl_cache_meal_chair_missing_until";
 const string DL_L_NPC_CHILL_SIT_RETRY_UNTIL = "dl_chill_sit_retry_until";
 const string DL_L_NPC_MEAL_SIT_RETRY_UNTIL = "dl_meal_sit_retry_until";
-const string DL_L_NPC_CHILL_WAYPOINT_MODE = "dl_chill_waypoint_mode";
 const string DL_L_NPC_MEAL_LEGACY_ACTION_SIT = "dl_meal_legacy_action_sit";
 const string DL_L_NPC_CHILL_LEGACY_ACTION_SIT = "dl_chill_legacy_action_sit";
 const string DL_L_NPC_FOCUS_ACTION_STAMP = "dl_focus_anchor_action_stamp";
