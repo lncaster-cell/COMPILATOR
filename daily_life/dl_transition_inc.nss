@@ -1,3 +1,5 @@
+#include "dl_shared_keys_inc"
+
 // Daily Life simple transition/navigation helper.
 // Builder contract:
 //   waypoint tag: <from_zone>__<to_zone>
@@ -35,6 +37,11 @@ const string DL_L_AREA_NAV_COUNT = "dl_area_nav_count";
 const string DL_L_AREA_NAV_SLOT_PREFIX = "dl_area_nav_";
 const int DL_AREA_NAV_ROUTE_CAP = 32;
 const string DL_L_AREA_NAV_ZONE_ID = "dl_nav_zone_id";
+
+const string DL_L_NAV_INFER_CACHE_TICK = "dl_nav_infer_cache_tick";
+const string DL_L_NAV_INFER_CACHE_AREA = "dl_nav_infer_cache_area";
+const string DL_L_NAV_INFER_CACHE_KIND = "dl_nav_infer_cache_kind";
+const string DL_L_NAV_INFER_CACHE_ZONE = "dl_nav_infer_cache_zone";
 
 // Implemented in dl_worker_inc / dl_registry_inc; kept as narrow local forward
 // declarations so transition code can finalize queued jumps without changing
@@ -265,12 +272,50 @@ string DL_NavGetAreaZoneId(object oArea)
     return GetTag(oArea);
 }
 
+int DL_NavGetInferCacheTick(object oArea)
+{
+    if (!GetIsObjectValid(oArea)) return -1;
+    return GetLocalInt(oArea, DL_L_AREA_WORKER_TICK);
+}
+
+string DL_NavTryGetInferZoneCache(object oSubject, string sKind, object oArea)
+{
+    if (!GetIsObjectValid(oSubject) || !GetIsObjectValid(oArea) || sKind == "") return "";
+
+    int nTick = DL_NavGetInferCacheTick(oArea);
+    if (nTick <= 0) return "";
+
+    if (GetLocalInt(oSubject, DL_L_NAV_INFER_CACHE_TICK) != nTick) return "";
+    if (GetLocalString(oSubject, DL_L_NAV_INFER_CACHE_AREA) != GetTag(oArea)) return "";
+    if (GetLocalString(oSubject, DL_L_NAV_INFER_CACHE_KIND) != sKind) return "";
+
+    return GetLocalString(oSubject, DL_L_NAV_INFER_CACHE_ZONE);
+}
+
+void DL_NavSetInferZoneCache(object oSubject, string sKind, object oArea, string sZone)
+{
+    if (!GetIsObjectValid(oSubject) || !GetIsObjectValid(oArea) || sKind == "") return;
+
+    int nTick = DL_NavGetInferCacheTick(oArea);
+    if (nTick <= 0) return;
+
+    SetLocalInt(oSubject, DL_L_NAV_INFER_CACHE_TICK, nTick);
+    SetLocalString(oSubject, DL_L_NAV_INFER_CACHE_AREA, GetTag(oArea));
+    SetLocalString(oSubject, DL_L_NAV_INFER_CACHE_KIND, sKind);
+    SetLocalString(oSubject, DL_L_NAV_INFER_CACHE_ZONE, sZone);
+}
+
 string DL_NavTryResolveZoneFromTransitionWaypoints(object oSubject, int bRequireNearby)
 {
     if (!GetIsObjectValid(oSubject)) return "";
 
     object oArea = GetArea(oSubject);
     if (!GetIsObjectValid(oArea)) return "";
+
+    string sCacheKind = "transition_any";
+    if (bRequireNearby) sCacheKind = "transition_near";
+    string sCachedZone = DL_NavTryGetInferZoneCache(oSubject, sCacheKind, oArea);
+    if (sCachedZone != "") return sCachedZone;
 
     float fBestDistance = 1000000.0;
     string sBestZone = "";
@@ -301,6 +346,7 @@ string DL_NavTryResolveZoneFromTransitionWaypoints(object oSubject, int bRequire
         nScanned = nScanned + 1;
     }
 
+    DL_NavSetInferZoneCache(oSubject, sCacheKind, oArea, sBestZone);
     return sBestZone;
 }
 
@@ -336,6 +382,9 @@ string DL_NavTryResolveZoneFromNearbyAnchors(object oNpc)
     object oArea = GetArea(oNpc);
     if (!GetIsObjectValid(oArea)) return "";
 
+    string sCachedZone = DL_NavTryGetInferZoneCache(oNpc, "anchor_near", oArea);
+    if (sCachedZone != "") return sCachedZone;
+
     float fBestDistance = 1000000.0;
     string sBestZone = "";
     int nScanned = 0;
@@ -360,6 +409,7 @@ string DL_NavTryResolveZoneFromNearbyAnchors(object oNpc)
         nScanned = nScanned + 1;
     }
 
+    DL_NavSetInferZoneCache(oNpc, "anchor_near", oArea, sBestZone);
     return sBestZone;
 }
 
@@ -388,7 +438,46 @@ void DL_NavSyncCurrentZoneFromArea(object oNpc)
         string sExistingAreaTag = GetLocalString(oNpc, DL_L_NPC_NAV_ZONE_AREA);
         if (!GetIsObjectValid(oExistingArea) || sExistingAreaTag == "" || sExistingAreaTag == GetTag(oExistingArea))
         {
-            return;
+            // Narrow stale-guard: if runtime current-zone is not confirmed by nearby
+            // anchors or nearby transition waypoints for the NPC's current position,
+            // allow a resync instead of hard-preserving potentially stale zone state.
+            string sNearbyAnchorZone = DL_NavTryResolveZoneFromNearbyAnchors(oNpc);
+            string sNearbyTransitionZone = "";
+            if (sNearbyAnchorZone == "")
+            {
+                sNearbyTransitionZone = DL_NavTryResolveCurrentZoneFromNearbyTransitionWaypoints(oNpc);
+            }
+
+            int bZoneConfirmed = FALSE;
+            if (sNearbyAnchorZone != "")
+            {
+                bZoneConfirmed = (sNearbyAnchorZone == sExistingZone);
+            }
+            else if (sNearbyTransitionZone != "")
+            {
+                bZoneConfirmed = (sNearbyTransitionZone == sExistingZone);
+            }
+
+            if (bZoneConfirmed)
+            {
+                return;
+            }
+
+            if (sNearbyAnchorZone != "" || sNearbyTransitionZone != "")
+            {
+                string sResyncHint = sNearbyAnchorZone;
+                if (sResyncHint == "") sResyncHint = sNearbyTransitionZone;
+                DL_NavSetDebug(oNpc, sExistingZone, sResyncHint, "", "sync_stale_zone_guard");
+            }
+
+            // No nearby evidence that contradicts/pins current zone: preserve existing
+            // same-area zone and avoid area-tag fallback churn for pseudo-zones.
+            if (sNearbyAnchorZone == "" && sNearbyTransitionZone == "")
+            {
+                return;
+            }
+
+            // Otherwise let the canonical position resolver below perform resync.
         }
     }
 

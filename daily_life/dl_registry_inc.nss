@@ -1,9 +1,10 @@
+#include "dl_shared_keys_inc"
+
 const string DL_L_AREA_TIER = "dl_area_tier";
 const string DL_L_AREA_REG_COUNT = "dl_reg_count";
 const string DL_L_AREA_REG_SEQ = "dl_reg_seq";
 const string DL_L_AREA_REG_SLOT_PREFIX = "dl_reg_slot_";
 const string DL_L_NPC_REG_SLOT = "dl_npc_reg_slot";
-const string DL_L_AREA_WORKER_TICK = "dl_worker_tick";
 const string DL_L_NPC_REG_FALLBACK_UNREG_DIAG = "dl_reg_fallback_unreg_diag";
 const string DL_L_NPC_REG_REPAIR_FAILED = "dl_registry_repair_failed";
 const string DL_L_NPC_REG_REPAIR_ATTEMPTED = "dl_registry_repair_attempted";
@@ -20,6 +21,7 @@ const string DL_L_AREA_RESYNC_BUDGET = "dl_area_resync_budget";
 const string DL_L_AREA_PLAYER_COUNT = "dl_area_player_count";
 const string DL_L_AREA_PLAYER_COUNT_INIT = "dl_area_player_count_init";
 const string DL_L_AREA_PLAYER_COUNT_RECONCILE_TICK = "dl_area_player_count_reconcile_tick";
+const string DL_L_AREA_PLAYER_COUNT_REPAIR_TICK = "dl_area_player_count_repair_tick";
 const string DL_L_AREA_ENTER_RESYNC_PENDING = "dl_area_enter_resync_pending";
 const string DL_L_AREA_ENTER_RESYNC_CURSOR = "dl_area_enter_resync_cursor";
 const string DL_L_AREA_ENTER_RESYNC_TOUCHED = "dl_area_enter_resync_touched";
@@ -48,6 +50,7 @@ const int DL_RESYNC_BUDGET_WARM = 1;
 const int DL_RESYNC_BUDGET_HOT = 2;
 const int DL_RESYNC_BUDGET_MAX = 6;
 const int DL_PLAYER_COUNT_RECONCILE_INTERVAL_TICKS = 30;
+const int DL_PLAYER_COUNT_REPAIR_INTERVAL_TICKS = 10;
 const int DL_WARM_MAINTENANCE_INTERVAL_TICKS = 20;
 const int DL_WARM_TO_FROZEN_TIMEOUT_TICKS = 100;
 const int DL_STALE_REGISTRY_REPAIR_SCAN_CAP = 8;
