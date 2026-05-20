@@ -944,6 +944,22 @@ int DL_NavTryFinalizeCompletedTransition(object oNpc, object oTargetAnchor)
     return TRUE;
 }
 
+
+int DL_NavTryAdvanceFromAnchorForOwner(object oNpc, object oTargetAnchor, string sMoveOwner)
+{
+    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTargetAnchor))
+    {
+        return FALSE;
+    }
+
+    DL_NavPrepareTargetZoneFromAnchor(oNpc, oTargetAnchor);
+    return DL_NavTryAdvanceToZoneForOwner(
+        oNpc,
+        GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET),
+        sMoveOwner
+    );
+}
+
 int DL_NavTryAdvanceToZoneForOwner(object oNpc, string sTargetZone, string sMoveOwner)
 {
     if (!GetIsObjectValid(oNpc) || sTargetZone == "")

@@ -344,3 +344,13 @@ Entry template:
 **Reason:** preserve runtime literal contracts while reducing drift/typo risk and keeping registry-problem cleanup behavior explicit and complete.
 **Preserve:** literal string values were not changed.
 **Validation:** static checks only. Compilation not run; user owns compilation.
+
+## 2026-05-20 — Shared anchor→nav helper for work/focus/sleep transitions
+
+**Task/PR/branch:** current branch / unify anchor navigation pre-check pattern across directive executors.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `daily_life/dl_work_inc.nss`, `daily_life/dl_focus_inc.nss`, `daily_life/dl_sleep_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** work/focus/sleep code repeated the same two-step transition pre-check (`DL_NavPrepareTargetZoneFromAnchor` + `DL_NavTryAdvanceToZoneForOwner`) before owner-specific anchor progress logic.
+**Change:** added shared helper `DL_NavTryAdvanceFromAnchorForOwner(oNpc, oTargetAnchor, sMoveOwner)` in transition include; migrated work/focus/sleep call sites to use it and keep their owner-specific fallback progress logic unchanged.
+**Reason:** remove duplication while preserving existing transition local-key contracts, transition reason strings, and owner-specific status/animation/radius behavior in profile-local callbacks.
+**Preserve:** do not rename/alter transition local-key literal values or nav reason strings; fallback anchor-progress behavior remains in directive-specific functions.
+**Validation:** static checks only. Compilation not run; user owns compilation.
