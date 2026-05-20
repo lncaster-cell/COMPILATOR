@@ -355,12 +355,12 @@ Entry template:
 **Preserve:** literal string values were not changed.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
-## 2026-05-20 — Shared anchor→nav helper for work/focus/sleep transitions
+## 2026-05-20 — Unified status constants for directive/focus finalize paths
 
-**Task/PR/branch:** current branch / unify anchor navigation pre-check pattern across directive executors.
-**Files touched:** `daily_life/dl_transition_inc.nss`, `daily_life/dl_work_inc.nss`, `daily_life/dl_focus_inc.nss`, `daily_life/dl_sleep_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** work/focus/sleep code repeated the same two-step transition pre-check (`DL_NavPrepareTargetZoneFromAnchor` + `DL_NavTryAdvanceToZoneForOwner`) before owner-specific anchor progress logic.
-**Change:** added shared helper `DL_NavTryAdvanceFromAnchorForOwner(oNpc, oTargetAnchor, sMoveOwner)` in transition include; migrated work/focus/sleep call sites to use it and keep their owner-specific fallback progress logic unchanged.
-**Reason:** remove duplication while preserving existing transition local-key contracts, transition reason strings, and owner-specific status/animation/radius behavior in profile-local callbacks.
-**Preserve:** do not rename/alter transition local-key literal values or nav reason strings; fallback anchor-progress behavior remains in directive-specific functions.
+**Task/PR/branch:** current branch / status literal deduplication request.
+**Files touched:** `daily_life/dl_focus_inc.nss`, `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** finalize/recovery/apply paths still mixed raw status literals with constants in `SetLocalString(...STATUS, ...)` and status comparisons.
+**Change:** added a focused `DL_FOCUS_STATUS_*` constants block in `dl_focus_inc.nss`; replaced raw status literals in `dl_res_inc.nss` with owner/status constants for focus/work/sleep (`moving_to_anchor`, `on_public_anchor`, `on_social_anchor`, `on_anchor`, `on_bed`) including SetLocalString status writes and compatible status checks; documented the explicit stable-stage mapping (`PUBLIC/SOCIAL/MEAL/CHILL/WORK/SLEEP -> owner-specific status`) inline in `DL_IsDirectiveStableAfterReachedFinalize`.
+**Reason:** preserve literal runtime values while deduplicating access paths and reducing drift/typo risk across finalize and invariant code.
+**Preserve:** literal string values were not changed; this is a symbolic-constant normalization only.
 **Validation:** static checks only. Compilation not run; user owns compilation.
