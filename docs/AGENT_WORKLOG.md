@@ -1,3 +1,13 @@
+## 2026-05-20 — Canonical post-move ownership: no `DL_RecheckWorkDirectiveAfterMove`
+
+**Task/PR/branch:** current branch / verify post-move hook ownership for work directives.
+**Files touched:** `docs/AGENT_WORKLOG.md`.
+**Context:** user requested confirmation whether `DL_RecheckWorkDirectiveAfterMove` is called from owner threads and to either remove it (if dead) or wire it into a single canonical post-move stage.
+**Change:** performed repository-wide usage and symbol scan in `daily_life/` and confirmed `DL_RecheckWorkDirectiveAfterMove` is absent (no declaration, definition, or callsites). No runtime code change was applied. Canonical post-move closure for directive movement remains in the existing `DL_FinalizeReachedDirectiveMoveJob` path inside resolver flow.
+**Reason:** avoid introducing duplicate finalize/worker logic and keep post-move handling centralized in the current canonical finalize pipeline.
+**Preserve:** keep owner-thread movement closure through existing worker → resolver/apply → finalize flow; do not add parallel post-move hooks that duplicate finalization behavior.
+**Validation:** static grep/search only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Social scene solo animation canonicalization (pool logic)
 
 **Task/PR/branch:** current branch / user-requested social scene cleanup.
