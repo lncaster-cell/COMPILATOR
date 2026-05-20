@@ -183,11 +183,6 @@ void DL_LogNpcDiagnosticWithSummary(object oNpc, string sSource, string sSummary
     DL_BsmithTraceStage(oNpc, "PROBLEM_SUMMARY", sSource + ":" + sSummary);
 }
 
-void DL_LogNpcDiagnostic(object oNpc, string sSource)
-{
-    DL_LogNpcDiagnosticWithSummary(oNpc, sSource, DL_GetNpcProblemSummary(oNpc));
-}
-
 string DL_GetNpcDiagnosticSignatureWithSummary(object oNpc, string sSummary)
 {
     return DL_GetDirectiveLabel(GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE)) + "|" +
@@ -196,11 +191,6 @@ string DL_GetNpcDiagnosticSignatureWithSummary(object oNpc, string sSummary)
            GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) + "|" +
            GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) + "|" +
            GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS);
-}
-
-string DL_GetNpcDiagnosticSignature(object oNpc)
-{
-    return DL_GetNpcDiagnosticSignatureWithSummary(oNpc, DL_GetNpcProblemSummary(oNpc));
 }
 
 void DL_MaybeLogNpcDiagnostic(object oNpc, string sSource, int bForce)
