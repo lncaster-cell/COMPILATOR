@@ -268,3 +268,68 @@ The audit phase under #864 should be considered complete when all are true:
 - Next cleanup PR scope is small (3–5 changes), single-theme, and behavior-safe by design.
 - Baseline guarantees remain explicit: blacksmith01 cycle success preserved, validator preserved, #861 remains closed.
 
+
+---
+
+## 13) Candidate obsolete/dead inventory (documentation hypotheses only)
+
+This section marks **hypotheses**, not deletion approvals. A path may be “obsolete/dead candidate” only if evidence confirms no canonical scenario still depends on it.
+
+| Candidate area | Current hypothesis | Why it might be obsolete | Why it might still be needed | Decision gate |
+|---|---|---|---|---|
+| transition-owner wrapper calls around `DL_NavTryAdvanceToZoneForOwner` | likely legacy compatibility | Directive-owned transition model is now canonical | Rare callers may still pass legacy owner in uncommon setups | Collect wrapper-hit traces across full stable cycle + failure replay |
+| social reached-recovery duplicate branches in focus/social execution | partial duplication with finalizer | Canonical finalizer already closes reached move jobs | Some social-anchor edge cases may still bypass canonical closure | Prove identical closure outcome on SOCIAL slot changes over stable runs |
+| repeated reached-running emergency closures in apply/worker | over-defensive overlap | Canonical reached + finalizer invariant should be enough long-term | Edge states from delayed engine action/state drift still possible | Record contradiction counters; only reduce when counters stay silent |
+| registry catchup fallback scan path | heavy fallback | Stable setup/scripts may make fallback rarely useful | Protects against intermittent registration drift after transitions | Track stale-slot repair frequency across multiple cycles |
+
+Note: keep classification conservative until data shows true non-use.
+
+---
+
+## 14) Evidence package template for #864 follow-up PRs
+
+To keep cleanup safe, every debt-reduction PR should attach a compact evidence package:
+
+1. **Scope statement**
+   - One overlap family only (worker bypass, reached/finalize, transition wrapper, etc.).
+
+2. **First failing stage framing**
+   - Observed symptom.
+   - Expected state.
+   - First failing pipeline stage.
+
+3. **Before/after evidence**
+   - BSMITH contradiction/classify summary.
+   - Problem summary frequency.
+   - Any targeted counters/traces used in the PR.
+
+4. **Invariant checklist**
+   - `blacksmith01` full-cycle baseline preserved.
+   - Validator behavior unchanged.
+   - No route-model changes.
+   - No compiler/toolchain touch.
+
+5. **Rollback trigger**
+   - Explicit condition that means rollback/revert is safer than more emergency patching.
+
+This template is process-only and does not require runtime behavior changes by itself.
+
+---
+
+## 15) Next two micro-PR candidates (post-audit, docs-first)
+
+### Micro-PR A (documentation alignment)
+- Update `docs/agent/SUBSYSTEM_INDEX.md` with canonical/fallback/emergency tags for key Daily Life owner paths.
+- Add direct links/names for `DL_ApplyDirectiveSkeleton`, `DL_FinalizeReachedDirectiveMoveJob`, `DL_TickMoveJob`, `DL_NavTryAdvanceToZoneForOwner`, `DL_WorkerTouchNpc`.
+- Goal: reduce future owner-confusion without touching runtime files.
+
+### Micro-PR B (annotation-only in code comments)
+- Add short classification comments near critical bypass/emergency blocks in:
+  - `daily_life/dl_worker_inc.nss`
+  - `daily_life/dl_res_inc.nss`
+  - `daily_life/dl_focus_inc.nss`
+- No behavior edits, no condition rewrites, no local-key changes.
+- Goal: prevent accidental deletion or broad rewrites during future bugfix work.
+
+Both micro-PRs remain fully compatible with current constraints: baseline preservation, no route changes, no runtime-heavy additions.
+

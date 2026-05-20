@@ -1,3 +1,12 @@
+## 2026-05-20 — Continue audit: obsolete-candidate gates and evidence template (#864)
+
+**Task/PR/branch:** current branch / continue Daily Life audit depth.
+**Files touched:** `docs/daily-life-stabilization-audit.md`, `docs/AGENT_WORKLOG.md`.
+**Context:** follow-up continuation requested after prior audit refinements; need clearer decision gates before any runtime-path cleanup.
+**Change:** added (1) candidate obsolete/dead inventory as documentation hypotheses only, (2) explicit decision gates per candidate, (3) compact evidence package template for follow-up cleanup PRs, and (4) two docs-first micro-PR candidates to continue #864 safely without behavior edits.
+**Reason:** convert audit from descriptive map to execution-ready cleanup process while protecting blacksmith01 baseline and current diagnostics.
+**Validation:** static documentation review only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Continue Daily Life stabilization audit depth mapping (#864)
 
 **Task/PR/branch:** current branch / continue audit per review feedback.
