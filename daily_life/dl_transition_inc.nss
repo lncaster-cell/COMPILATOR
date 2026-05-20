@@ -1,3 +1,5 @@
+#include "dl_shared_keys_inc"
+
 // Daily Life simple transition/navigation helper.
 // Builder contract:
 //   waypoint tag: <from_zone>__<to_zone>
@@ -35,7 +37,6 @@ const string DL_L_AREA_NAV_COUNT = "dl_area_nav_count";
 const string DL_L_AREA_NAV_SLOT_PREFIX = "dl_area_nav_";
 const int DL_AREA_NAV_ROUTE_CAP = 32;
 const string DL_L_AREA_NAV_ZONE_ID = "dl_nav_zone_id";
-const string DL_L_AREA_WORKER_TICK = "dl_worker_tick";
 
 const string DL_L_NAV_INFER_CACHE_TICK = "dl_nav_infer_cache_tick";
 const string DL_L_NAV_INFER_CACHE_AREA = "dl_nav_infer_cache_area";
