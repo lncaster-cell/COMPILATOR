@@ -1,3 +1,13 @@
+## 2026-05-20 — Shared pre-move helper for anchor approach setup
+
+**Task/PR/branch:** current branch / unify pre-`DL_BeginMoveJobToObject` preparation for anchor/profile movement.
+**Files touched:** `daily_life/dl_anchor_move_inc.nss`, `daily_life/dl_work_inc.nss`, `daily_life/dl_focus_inc.nss`, `daily_life/dl_sleep_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** work/focus/sleep approach paths duplicated pre-move setup (`status`/`target`/`action_target`) with slightly different local ordering, making move-issue/transition prep easier to drift.
+**Change:** added shared helper `DL_PrepareAnchorMoveToObject` in `dl_anchor_move_inc.nss` to set status/target/action-target, clear owner stamp-based move-issue state, and clear transition execution state before move-job start; wired it into `DL_IssueWorkMoveAction`, `DL_IssueFocusMoveAction`, and sleep approach move start before `DL_BeginMoveJobToObject`.
+**Reason:** keep profile-specific owner/phase/radius decisions local while centralizing common pre-move state prep and preserving diagnostics/local-key contracts.
+**Preserve:** do not change `DL_MOVE_OWNER_*`, move phase strings, or radii in profile logic; keep diagnostic/status keys unchanged.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Transition registry problem codes: remove raw string literals
 
 **Task/PR/branch:** current branch / literal-to-constant cleanup for transition registry problem codes.
