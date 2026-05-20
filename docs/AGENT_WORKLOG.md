@@ -1,11 +1,11 @@
-## 2026-05-20 — Remove dead chat-debug event layer from Daily Life resolver/work paths
+## 2026-05-20 — Nav infer cache invalidation contract + debug reasons
 
-**Task/PR/branch:** current branch / user-requested diagnostic cleanup (`DL_LogChatDebugEvent` removal).
-**Files touched:** `daily_life/dl_res_inc.nss`, `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** resolver/work includes still contained dead chat-debug wrapper usage after prior cleanup, creating a no-op diagnostic layer in active directive-related paths.
-**Change:** removed `DL_LogChatDebugEvent` function from resolver include, removed all remaining call sites in resolver/work includes, and replaced two observability points in resolver with targeted `DL_BsmithTraceStage` events (`SOCIAL_RECOVER_REACHED_ANCHOR`, `DIRECTIVE_BRIDGE_MOVE`) to keep focused blacksmith-stage diagnostics without broad/noisy chat-debug plumbing.
-**Reason:** eliminate dead diagnostics while preserving active BSMITH tracing workflow and avoiding runtime behavior changes in directive/move pipelines.
-**Preserve:** movement/directive/finalizer logic and local-key runtime contracts are unchanged; only dead/no-op diagnostics were removed or mapped to existing trace mechanism.
+**Task/PR/branch:** current branch / explicit invalidation for `dl_nav_infer_cache_*`.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** bounded nav infer cache (tick+area+kind) reduced repeated scans, but invalidation moments were implicit, making rare transition edge cases harder to diagnose.
+**Change:** added `DL_NavInvalidateInferZoneCache` helper that clears all `DL_L_NAV_INFER_CACHE_*` locals and writes a nav-debug reason `infer_cache_invalidated:<reason>`; invoked it on transition execution-state clear, transition finalize success paths (`post_jump_finalizer_same_area_complete`, `post_jump_finalizer_complete`, completed-transition finalize), and when stored nav-zone area contract no longer matches NPC area (`zone_area_changed`) during sync.
+**Reason:** keep current bounded-cache behavior while explicitly documenting/enforcing when cached inference is stale across area/transition lifecycle edges.
+**Preserve:** cache key model remains `tick + area + kind`; no new scans/polling; existing scan caps/inference fallbacks unchanged.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Transition registry problem codes: remove raw string literals

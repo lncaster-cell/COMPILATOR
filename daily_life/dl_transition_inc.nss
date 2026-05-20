@@ -196,49 +196,25 @@ void DL_NavSetNpcCurrentZone(object oNpc, string sZone)
 }
 
 
-// Transition lifecycle contract (owner: dl_transition_inc):
-// - DL_NavSetState(...) is the canonical writer for STATUS/TARGET/DIAGNOSTIC during prepare/advance/fail paths.
-// - DL_ClearTransitionExecutionState(...) is the canonical cleanup owner and must be used by directive/focus/work/sleep/move owners on completion/preemption.
-// - DL_MarkTransitionDiagnostic(...) is the canonical targeted diagnostic writer for stale/finalizer outcomes.
-
-int DL_HasTransitionExecutionState(object oNpc)
+void DL_NavInvalidateInferZoneCache(object oSubject, string sReason)
 {
-    if (!GetIsObjectValid(oNpc)) return FALSE;
-    return GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" ||
-           GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) != "" ||
-           GetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC) != "";
-}
+    if (!GetIsObjectValid(oSubject)) return;
 
-void DL_MarkTransitionDiagnostic(object oNpc, string sDiagnostic)
-{
-    if (!GetIsObjectValid(oNpc)) return;
-    if (sDiagnostic == "")
+    DeleteLocalInt(oSubject, DL_L_NAV_INFER_CACHE_TICK);
+    DeleteLocalString(oSubject, DL_L_NAV_INFER_CACHE_AREA);
+    DeleteLocalString(oSubject, DL_L_NAV_INFER_CACHE_KIND);
+    DeleteLocalString(oSubject, DL_L_NAV_INFER_CACHE_ZONE);
+
+    if (sReason != "")
     {
-        DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC);
-        return;
+        DL_NavSetDebug(oSubject, DL_NavGetNpcCurrentZone(oSubject), "", "", "infer_cache_invalidated:" + sReason);
     }
-
-    string sStatus = GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS);
-    string sTarget = GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET);
-    SetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC,
-        sDiagnostic +
-        " status=" + sStatus +
-        " target=" + sTarget +
-        " action=" + IntToString(GetCurrentAction(oNpc))
-    );
-}
-
-void DL_ReportStaleTransitionState(object oNpc, string sOwnerStage)
-{
-    if (!DL_HasTransitionExecutionState(oNpc)) return;
-
-    DL_MarkTransitionDiagnostic(oNpc, "stale_transition_state owner=" + sOwnerStage);
-    DL_BsmithTraceStage(oNpc, "TRANSITION_STALE", sOwnerStage);
 }
 
 void DL_ClearTransitionExecutionState(object oNpc)
 {
     if (!GetIsObjectValid(oNpc)) return;
+    DL_NavInvalidateInferZoneCache(oNpc, "clear_transition_execution_state");
     DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS);
     DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET);
     DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC);
@@ -535,6 +511,10 @@ void DL_NavSyncCurrentZoneFromArea(object oNpc)
 
             // Otherwise let the canonical position resolver below perform resync.
         }
+        else
+        {
+            DL_NavInvalidateInferZoneCache(oNpc, "zone_area_changed");
+        }
     }
 
     string sCurrentZone = DL_NavResolveCurrentZoneFromPosition(oNpc);
@@ -737,6 +717,7 @@ void DL_FinalizeTransitionAfterQueuedJump(object oNpc)
         sTargetZone != "" &&
         (bPendingExitValid || bJumpTargetWasValid))
     {
+        DL_NavInvalidateInferZoneCache(oNpc, "transition_finalize_same_area_complete");
         DL_ClearTransitionExecutionState(oNpc);
         DL_NavClearFocusMoveIssueStateAfterJump(oNpc);
         DL_NavSetNpcCurrentZone(oNpc, sTargetZone);
@@ -819,6 +800,7 @@ void DL_FinalizeTransitionAfterQueuedJump(object oNpc)
 
     if (GetIsObjectValid(oExpectedArea) && oCurrentArea == oExpectedArea)
     {
+        DL_NavInvalidateInferZoneCache(oNpc, "transition_finalize_complete");
         DL_ClearTransitionExecutionState(oNpc);
         DL_NavClearFocusMoveIssueStateAfterJump(oNpc);
         DL_NavSetNpcCurrentZone(oNpc, sTargetZone);
@@ -914,6 +896,7 @@ int DL_NavTryFinalizeCompletedTransition(object oNpc, object oTargetAnchor)
         sFinalZone = DL_NavGetAreaZoneId(oTargetArea);
     }
 
+    DL_NavInvalidateInferZoneCache(oNpc, "transition_finalize_completed_transition");
     DL_ClearTransitionExecutionState(oNpc);
     DL_NavClearFocusMoveIssueStateAfterJump(oNpc);
     DL_NavSetNpcCurrentZone(oNpc, sFinalZone);
