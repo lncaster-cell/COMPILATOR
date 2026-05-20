@@ -1,3 +1,13 @@
+## 2026-05-20 — Work kind helper unification for primary/secondary/fetch
+
+**Task/PR/branch:** current branch / user request to centralize work target resolution by kind in `dl_work_inc.nss`.
+**Files touched:** `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** work waypoint resolvers in blacksmith/domestic branches duplicated anchor-by-role selection logic (`primary`/`secondary`/`fetch`) and split fallback policy inline per function.
+**Change:** introduced shared `DL_ResolveWorkAnchorByKind` (kind-set `{work/craft/fetch}` mapping to anchor key+cache) and profile-specific wrappers that only choose area/fallback policy (`DL_ResolveBlacksmithWorkAnchorByKind`, `DL_ResolveDomesticWorkAnchorByKind`); blacksmith and domestic primary/secondary/fetch resolvers now reuse this helper.
+**Reason:** remove duplicated role-switch logic while preserving literal anchor keys, cache-key contracts, and profile-specific fallback behavior (including fetch->craft fallback for blacksmith and no-fallback domestic behavior).
+**Preserve:** profile wrappers remain responsible only for profile policy (area + fallback), while shared helper owns kind-to-anchor mapping.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Work waypoint resolver profile helper unification (work roles)
 
 **Task/PR/branch:** current branch / unify repeated work waypoint resolvers in `dl_work_inc.nss`.
