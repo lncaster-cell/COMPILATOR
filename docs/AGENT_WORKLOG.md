@@ -1,11 +1,11 @@
-## 2026-05-20 — Unified terminal anchor-status helper for work/social/sleep
+## 2026-05-20 — Work target apply helper for directive branches
 
-**Task/PR/branch:** current branch / unify terminal stable status assignments with owner-aware helper hooks.
-**Files touched:** `daily_life/dl_anchor_move_inc.nss`, `daily_life/dl_work_inc.nss`, `daily_life/dl_focus_inc.nss`, `daily_life/dl_sleep_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** terminal/stable status writes for WORK (`on_anchor`), SOCIAL focus (`on_social_anchor`), and SLEEP (`on_bed`) were set through repeated inline patterns with partially duplicated side effects.
-**Change:** added shared helper `DL_SetAnchorTerminalStatus` in anchor-move include with explicit parameters for status key/value, optional target key/anchor, and optional hooks (clear move-issue state, clear move job, face anchor). Migrated three targeted terminal writes to use the helper while keeping subsystem-specific actions (`DL_ClearTransitionExecutionState*`, animations, work orientation/presentation, diagnostics/logs) in their owner paths.
-**Reason:** reduce duplication and centralize stable-status write pattern without changing literal status contracts or forcing unrelated side effects.
-**Preserve:** literal status values remain unchanged (`"on_anchor"`, `"on_social_anchor"`, `"on_bed"`); optional hooks must stay opt-in so callers only trigger required side effects.
+**Task/PR/branch:** current branch / `DL_ApplyResolvedWorkTarget` extraction in `dl_work_inc.nss`.
+**Files touched:** `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** profile branches in `DL_ExecuteWorkDirective` repeated the same apply sequence after resolving `sKind/oTarget`.
+**Change:** added helper `DL_ApplyResolvedWorkTarget(oNpc, sKind, oTarget)` that runs `DL_SetWorkTargetState`, writes target diagnostic (`dl_npc_work_diagnostic=target:<tag>`), then calls `DL_ProgressWorkAtTarget`; replaced blacksmith/gate/domestic/trader branch tails with this helper while keeping each branch responsible only for resolving kind/target and missing-waypoint guards.
+**Reason:** remove duplicated apply code and centralize target-apply ordering without changing branch-level target selection logic.
+**Preserve:** apply order remains `SetWorkTargetState -> target diagnostic -> ProgressWorkAtTarget`; missing-waypoint behavior and profile-specific resolution paths remain unchanged.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-20 — Work waypoint resolver profile helper unification (work roles)

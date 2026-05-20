@@ -302,6 +302,13 @@ void DL_IssueWorkMoveAction(object oNpc, object oTarget)
         DL_WORK_ANCHOR_RADIUS
     );
 }
+void DL_ApplyResolvedWorkTarget(object oNpc, string sKind, object oTarget)
+{
+    DL_SetWorkTargetState(oNpc, sKind, oTarget);
+    SetLocalString(oNpc, DL_L_NPC_WORK_DIAGNOSTIC, "target:" + GetTag(oTarget));
+    DL_ProgressWorkAtTarget(oNpc, oTarget);
+}
+
 int DL_ProgressWorkAtTarget(object oNpc, object oTarget)
 {
     if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oTarget))
@@ -391,8 +398,7 @@ void DL_ExecuteWorkDirective(object oNpc)
             }
         }
 
-        DL_SetWorkTargetState(oNpc, sKind, oTarget);
-        DL_ProgressWorkAtTarget(oNpc, oTarget);
+        DL_ApplyResolvedWorkTarget(oNpc, sKind, oTarget);
         return;
     }
 
@@ -406,8 +412,7 @@ void DL_ExecuteWorkDirective(object oNpc)
             return;
         }
 
-        DL_SetWorkTargetState(oNpc, DL_WORK_KIND_POST, oPost);
-        DL_ProgressWorkAtTarget(oNpc, oPost);
+        DL_ApplyResolvedWorkTarget(oNpc, DL_WORK_KIND_POST, oPost);
         return;
     }
 
@@ -435,8 +440,7 @@ void DL_ExecuteWorkDirective(object oNpc)
             oHomeWork = oFetch;
         }
 
-        DL_SetWorkTargetState(oNpc, sKind, oHomeWork);
-        DL_ProgressWorkAtTarget(oNpc, oHomeWork);
+        DL_ApplyResolvedWorkTarget(oNpc, sKind, oHomeWork);
         return;
     }
 
@@ -448,6 +452,5 @@ void DL_ExecuteWorkDirective(object oNpc)
         return;
     }
 
-    DL_SetWorkTargetState(oNpc, DL_WORK_KIND_TRADE, oTrade);
-    DL_ProgressWorkAtTarget(oNpc, oTrade);
+    DL_ApplyResolvedWorkTarget(oNpc, DL_WORK_KIND_TRADE, oTrade);
 }
