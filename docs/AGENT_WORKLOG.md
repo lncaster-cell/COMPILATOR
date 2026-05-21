@@ -1,3 +1,13 @@
+## 2026-05-21 — Transition clear diagnostic now includes owner context (compat-safe)
+
+**Task/PR/branch:** current branch / Daily Life diagnostic context refinement.
+**Files touched:** `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `DL_ClearTransitionExecutionStateWithReason` accepted `sOwner` but wrote only raw `sReason` into `DL_L_NPC_TRANSITION_DIAGNOSTIC`, reducing owner-stage visibility in active BSMITH/transition debugging.
+**Change:** updated `DL_ClearTransitionExecutionStateWithReason` to write `owner=<owner> reason=<reason>` when `sOwner` is non-empty, while preserving legacy write (`sReason` only) when `sOwner == ""`.
+**Reason:** improve transition clear observability across `focus/work/sleep/res` callers without breaking existing checks that expect the old reason-only payload when owner is absent.
+**Preserve:** no local-key literal changes; caller reason literals (e.g., `owner_clear`) unchanged; transition clear pipeline unchanged.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 
 ## 2026-05-21 — Daily Life invariant hardening: stale-critical filter + emergency-close context guard
 

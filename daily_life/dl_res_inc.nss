@@ -26,7 +26,14 @@ void DL_ClearTransitionExecutionStateWithReason(object oNpc, string sReason, str
 
     if (GetIsObjectValid(oNpc) && sReason != "")
     {
-        SetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC, sReason);
+        if (sOwner == "")
+        {
+            SetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC, sReason);
+        }
+        else
+        {
+            SetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC, "owner=" + sOwner + " reason=" + sReason);
+        }
     }
 }
 
