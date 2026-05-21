@@ -1,3 +1,13 @@
+## 2026-05-21 — City Response: split module/area enable local-key contracts
+
+**Task/PR/branch:** current branch / audit `dl_city_response_enabled` literal duplication in city response contracts.
+**Files touched:** `daily_life/dl_city_response_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `DL_L_MODULE_CR_ENABLED` and `DL_L_AREA_CR_ENABLED` in `dl_city_response_inc.nss` used the same literal `"dl_city_response_enabled"` without any nearby documentation that this is an intentional shared contract.
+**Change:** separated area-scope contract by changing `DL_L_AREA_CR_ENABLED` literal to `"dl_area_city_response_enabled"`; module-scope `DL_L_MODULE_CR_ENABLED` remains `"dl_city_response_enabled"`.
+**Reason:** treat the duplicate literal as historical duplication and remove ambiguous shared-key coupling between module and area enable flags while keeping API/signatures unchanged.
+**Preserve:** city response logic flow, heat/level/offender contracts, and all function signatures remain unchanged; only the area key literal contract was split.
+**Validation:** static repository search only (`DL_L_AREA_CR_ENABLED`, `DL_L_MODULE_CR_ENABLED`, `dl_city_response_enabled`, `dl_area_city_response_enabled`). Compilation not run; user owns compilation.
+
 ## 2026-05-21 — Remove legacy blacksmith-specific debug entrypoint script
 
 **Task/PR/branch:** chore/remove-legacy-dl-dbg-time / delete obsolete manual BSMITH debug entrypoint.
