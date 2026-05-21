@@ -180,7 +180,9 @@ void DL_LogNpcDiagnosticWithSummary(object oNpc, string sSource, string sSummary
         return;
     }
 
-    DL_BsmithTraceStage(oNpc, "PROBLEM_SUMMARY", sSource + ":" + sSummary);
+    SetLocalString(oNpc, "dl_npc_diag_last_source", sSource);
+    SetLocalString(oNpc, "dl_npc_diag_last_summary", sSummary);
+    SetLocalInt(oNpc, "dl_npc_diag_last_abs_min", DL_GetAbsoluteMinute());
 }
 
 string DL_GetNpcDiagnosticSignatureWithSummary(object oNpc, string sSummary)
