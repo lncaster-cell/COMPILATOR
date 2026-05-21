@@ -54,18 +54,15 @@ int DL_TouchNpcFromAreaWorker(object oNpc, object oArea, int nPassMode, int nTic
     SetLocalInt(oNpc, DL_L_NPC_WORKER_TOUCH_SEQ_BEFORE_DBG, nSeqBefore);
     SetLocalInt(oNpc, DL_L_NPC_WORKER_TOUCH_SEQ_AFTER_DBG, nSeqBefore);
     DL_SetNpcRegularWorkerDebug(oNpc, oArea, nTickStamp, nPassMode, nBudget, nCursorBefore, nCursorAfter, TRUE, FALSE, "");
-    DL_BsmithTraceStage(oNpc, "WORKER_TOUCH_ENTER", "area_worker");
     DL_WorkerTouchNpc(oNpc);
     int nSeqAfter = GetLocalInt(oNpc, DL_L_NPC_WORKER_TOUCH_SEQ_DBG);
     SetLocalInt(oNpc, DL_L_NPC_WORKER_TOUCH_SEQ_AFTER_DBG, nSeqAfter);
     if (nSeqAfter != nSeqBefore)
     {
         DL_SetNpcRegularWorkerDebug(oNpc, oArea, nTickStamp, nPassMode, nBudget, nCursorBefore, nCursorAfter, TRUE, TRUE, "");
-        DL_BsmithTraceStage(oNpc, "WORKER_TOUCH_EXIT", "processed");
         return TRUE;
     }
 
-    DL_BsmithTraceStage(oNpc, "WORKER_TOUCH_EXIT", "not_processed");
     DL_SetNpcRegularWorkerDebug(oNpc, oArea, nTickStamp, nPassMode, nBudget, nCursorBefore, nCursorAfter, TRUE, FALSE, "skip_unknown");
     return FALSE;
 }
@@ -231,7 +228,6 @@ int DL_RunAreaNpcRoundRobinPass(object oArea, int nCursor, int nBudget, int nPas
 
         if (GetIsObjectValid(oCandidate))
         {
-            DL_BsmithTraceStage(oCandidate, "WORKER_REGISTRY_SEEN", "round_robin slot=" + IntToString(nSlot));
             if (GetObjectType(oCandidate) == OBJECT_TYPE_CREATURE &&
                 GetIsPC(oCandidate) == FALSE &&
                 GetIsDM(oCandidate) == FALSE &&
@@ -350,7 +346,6 @@ void DL_WorkerTouchNpc(object oNpc)
         return;
     }
 
-    DL_BsmithTraceStage(oNpc, "REGISTRY_CHECK", "after_repair");
     DL_ClearStaleTransitionHandoffProblemIfOwned(oNpc);
     if (GetLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC) == "registry_repair_verify_failed")
     {
@@ -365,17 +360,13 @@ void DL_WorkerTouchNpc(object oNpc)
     SetLocalInt(oNpc, DL_L_NPC_LAST_WORKER_TOUCH_HOUR_DBG, GetTimeHour());
     SetLocalInt(oNpc, DL_L_NPC_LAST_WORKER_TOUCH_MINUTE_DBG, GetTimeMinute());
     SetLocalInt(oNpc, DL_L_NPC_LAST_WORKER_TOUCH_ABS_MIN_DBG, DL_GetAbsoluteMinute());
-    DL_BsmithTraceStage(oNpc, "WORKER_TOUCH", "worker_touch");
 
     int nDirective = DL_ResolveNpcDirective(oNpc);
-    DL_BsmithTraceStage(oNpc, "DIRECTIVE_PROCESS", "invoke " + DL_GetDirectiveDebugLabel(nDirective));
     DL_ApplyDirectiveSkeleton(oNpc, nDirective);
-    DL_BsmithTraceStage(oNpc, "WORKER_EXIT", "after_directive");
 
     if (DL_GetNpcProblemSummary(oNpc) != "ok")
     {
         DL_MaybeLogNpcDiagnostic(oNpc, "worker", FALSE);
-        DL_BsmithTraceStage(oNpc, "PROBLEM_SUMMARY", DL_GetNpcProblemSummary(oNpc));
     }
     else
     {

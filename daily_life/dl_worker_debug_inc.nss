@@ -98,15 +98,6 @@ void DL_SetCriticalProcessFailedDebug(object oNpc, object oArea, int nSlot, int 
     }
     SetLocalInt(oNpc, DL_L_NPC_CRITICAL_REGISTRY_COUNT_DBG, nCount);
     SetLocalString(oNpc, DL_L_NPC_CRITICAL_PASS_MODE_DBG, DL_GetAreaWorkerPassModeDebugLabel(nPassMode));
-    DL_BsmithTraceStage(
-        oNpc,
-        "WORKER_SKIP",
-        "reason=critical_seen_but_not_touched critical_process_failed_reason=" + sReason +
-            " critical_slot=" + IntToString(nSlot) +
-            " critical_area=" + GetLocalString(oNpc, DL_L_NPC_CRITICAL_AREA_DBG) +
-            " critical_registry_count=" + IntToString(nCount) +
-            " critical_pass_mode=" + DL_GetAreaWorkerPassModeDebugLabel(nPassMode)
-    );
 }
 
 void DL_ClearCriticalProcessFailedDebug(object oNpc)
@@ -190,30 +181,9 @@ void DL_SetNpcRegularWorkerDebug(
     else
     {
         SetLocalString(oNpc, DL_L_NPC_TOUCH_SKIPPED_REASON_DBG, sSkipReason);
-        DL_BsmithTraceStage(oNpc, "WORKER_SKIP", "reason=" + sSkipReason);
     }
 }
 
 void DL_TraceAreaWorkerTickForRegisteredNpc(object oNpc, object oArea, int nTickStamp, int nPassMode, int nBudget, int nCursor)
 {
-    if (!GetIsObjectValid(oNpc) || GetTag(oNpc) != "blacksmith01")
-    {
-        return;
-    }
-
-    string sAreaTag = "";
-    if (GetIsObjectValid(oArea))
-    {
-        sAreaTag = GetTag(oArea);
-    }
-
-    DL_BsmithTraceStage(
-        oNpc,
-        "AREA_WORKER_TICK",
-        "area=" + sAreaTag +
-            " tick=" + IntToString(nTickStamp) +
-            " pass=" + DL_GetAreaWorkerPassModeDebugLabel(nPassMode) +
-            " budget=" + IntToString(nBudget) +
-            " cursor=" + IntToString(nCursor)
-    );
 }
