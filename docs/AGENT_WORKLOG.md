@@ -1,3 +1,14 @@
+## 2026-05-21 — Remove fake out-parameter risk in DL_SelectWorkTargetByKind (PR #991 follow-up)
+
+**Task/PR/branch:** fix/pr991-workkind-outparam / semantic-correctness fix for work-kind fallback propagation.
+**Files touched:** `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Observed symptom:** helper `DL_SelectWorkTargetByKind(..., string sResolvedKindOut)` assigned `sResolvedKindOut`, but NWScript does not provide safe caller-mutation for string parameters, so caller kind could stay stale (`fetch`) while target already fell back to craft/domestic.
+**First failing stage:** work-kind resolution state publication after target selection (kind/target divergence risk).
+**Change:** removed fake output parameter from `DL_SelectWorkTargetByKind` signature and implementation; helper now only returns selected target. Added explicit blacksmith FETCH-without-fetch-target fallback normalization at blacksmith callsites before writing resolved kind / resolve state / applying work progress (`sKind = DL_WORK_KIND_CRAFT`). Domestic worker callsites continue using their existing `DL_ResolveDomesticWorkerWorkKind(..., bHasFetch)` policy and fallback kind arguments unchanged, preserving pre-#991 behavior.
+**Reason:** preserve PR #991 cleanup while eliminating semantic risk from pseudo out-parameter usage and keeping kind/target state consistent.
+**Preserve:** no waypoint-tag changes; no local-key literal changes; no work-kind literal changes; no movement/directive/finalizer/worker/transition/focus/city-response logic changes.
+**Validation:** static text/search checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-21 — Emergency stabilization after cleanup PR stack (#990/#975/#983 compatibility)
 
 **Task/PR/branch:** hotfix/dl-stabilization-post-990 / emergency compile+compatibility stabilization audit.
