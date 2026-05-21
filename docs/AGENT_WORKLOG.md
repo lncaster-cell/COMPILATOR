@@ -741,12 +741,12 @@ Entry template:
 **Preserve:** no local-key or status literal value changes; no behavior/pipeline rewrites; `DL_FOCUS_STATUS_MOVING_TO_ANCHOR` usage in `DL_NpcNeedsCriticalWorkerTouch` remains constant-based.
 **Validation:** static text/search checks only. Compilation not run; user owns compilation.
 
-## 2026-05-21 — Cross-file focus-status contract deduplication (public/social/meal literals)
+## 2026-05-21 — Meal focus-status classifier deduplication helper
 
-**Task/PR/branch:** current task / eliminate duplicated focus-status literals in `daily_life/` checks.
-**Files touched:** `daily_life/dl_diag_inc.nss`, `daily_life/dl_social_scene_inc.nss`, `daily_life/dl_res_directive_state_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** `DL_L_NPC_FOCUS_STATUS` filtering/comparison logic still had raw literals for `on_public_anchor`, `on_social_anchor`, and `on_meal_anchor` prefix in some includes, duplicating contract values already defined in `daily_life/dl_focus_contract_inc.nss`.
-**Change:** replaced those `DL_L_NPC_FOCUS_STATUS` raw literal checks with canonical constants: `DL_FOCUS_STATUS_ON_PUBLIC_ANCHOR`, `DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR`, `DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX` (and aligned same meal-prefix check in directive fast-path state include).
-**Reason:** remove cross-file contract duplication/drift risk while preserving byte-identical status semantics and existing diagnostic/filter behavior.
-**Preserve:** include-order left unchanged (no broad declaration hacks, no include reordering); filtering logic in diagnostics/social scene remains logically identical.
+**Task/PR/branch:** current task / deduplicate meal-anchor focus-status prefix checks.
+**Files touched:** `daily_life/dl_res_directive_state_inc.nss`, `daily_life/dl_res_inc.nss`, `daily_life/dl_diag_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** meal focus-state classification was duplicated with direct prefix checks (`GetSubString(..., 0, 15)`) and mixed literal/constant usage across resolver and diagnostics includes.
+**Change:** added unified helper `DL_IsMealFocusStatus(string sFocusStatus)` in resolver directive-state include; helper computes prefix length via `GetStringLength(DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX)` and checks prefix match once. Replaced direct meal-prefix comparisons in `dl_res_directive_state_inc.nss`, `dl_res_inc.nss`, and `dl_diag_inc.nss` with helper calls.
+**Reason:** remove hardcoded prefix length/literal drift risk while preserving existing runtime semantics for both base meal-anchor focus and suffixed variants (e.g., `on_meal_anchor_sitting`).
+**Preserve:** no focus status/local-key literal value changes; no directive/finalizer/worker pipeline rewrites; diagnostics behavior unchanged except shared classifier source.
 **Validation:** static text/search checks only. Compilation not run; user owns compilation.
