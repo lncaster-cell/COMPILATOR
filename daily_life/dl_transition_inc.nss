@@ -65,8 +65,8 @@ string DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_REGISTRY_REPAIR_FAILED
 string DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_REGISTRY_AREA_MISMATCH = "post_jump_finalizer_registry_area_mismatch";
 string DL_TRANSITION_REGISTRY_PROBLEM_POST_JUMP_FINALIZER_UNEXPECTED_AREA = "post_jump_finalizer_unexpected_area";
 
-string DL_NAV_DEBUG_REASON_POST_JUMP_FINALIZER_COMPLETE = "post_jump_finalizer_complete";
-string DL_NAV_DEBUG_REASON_POST_JUMP_FINALIZER_SAME_AREA_COMPLETE = "post_jump_finalizer_same_area_complete";
+string DL_NAV_DEBUG_REASON_POST_JUMP_FINALIZER_COMPLETE = DL_POST_JUMP_RESULT_COMPLETE;
+string DL_NAV_DEBUG_REASON_POST_JUMP_FINALIZER_SAME_AREA_COMPLETE = DL_POST_JUMP_RESULT_SAME_AREA_COMPLETE;
 
 string DL_BSMITH_STAGE_TRANSITION_FINALIZER = "TRANSITION_FINALIZER";
 
@@ -79,6 +79,32 @@ void DL_ClearNpcRegistryLocals(object oNpc);
 void DL_WorkerTouchNpc(object oNpc);
 int DL_RemoveStaleNpcReferenceFromAreaRegistry(object oArea, object oNpc);
 void DL_BsmithTraceStage(object oNpc, string sStage, string sNote);
+
+
+int DL_IsTransitionStatusIdle(string sTransitionStatus)
+{
+    return sTransitionStatus == "" || sTransitionStatus == "idle";
+}
+
+int DL_IsTransitionStatusActive(string sTransitionStatus)
+{
+    return !DL_IsTransitionStatusIdle(sTransitionStatus);
+}
+
+int DL_IsTransitionExecutionStateActive(object oNpc)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return FALSE;
+    }
+
+    if (GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) != "")
+    {
+        return TRUE;
+    }
+
+    return DL_IsTransitionStatusActive(GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS));
+}
 
 void DL_TraceTransitionFinalizer(object oNpc, string sResult, string sExtra)
 {
@@ -840,11 +866,11 @@ void DL_FinalizeTransitionAfterQueuedJump(object oNpc)
         sTargetZone != "" &&
         (bPendingExitValid || bJumpTargetWasValid))
     {
-        sResult = "post_jump_finalizer_same_area_complete";
+        sResult = DL_POST_JUMP_RESULT_SAME_AREA_COMPLETE;
         DL_ApplyTransitionFinalizerCompletionSideEffects(
             oNpc,
             sTargetZone,
-            "post_jump_finalizer_same_area_complete",
+            DL_POST_JUMP_RESULT_SAME_AREA_COMPLETE,
             FALSE,
             sResult
         );
@@ -910,11 +936,11 @@ void DL_FinalizeTransitionAfterQueuedJump(object oNpc)
     if (GetIsObjectValid(oExpectedArea) && oCurrentArea == oExpectedArea)
     {
         DL_RequestTransitionRegistryHandoff(oNpc, oOldArea, oExpectedArea);
-        sResult = "post_jump_finalizer_complete";
+        sResult = DL_POST_JUMP_RESULT_COMPLETE;
         DL_ApplyTransitionFinalizerCompletionSideEffects(
             oNpc,
             sTargetZone,
-            "post_jump_finalizer_complete",
+            DL_POST_JUMP_RESULT_COMPLETE,
             TRUE,
             sResult
         );
