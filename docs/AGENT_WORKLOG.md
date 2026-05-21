@@ -707,3 +707,13 @@ Entry template:
 **Reason:** reduce duplication while preserving runtime behavior, include-order compatibility, and existing movement/sleep reissue timing semantics.
 **Preserve:** all stamp consumers still use the same day-second format (`hour*3600 + minute*60 + second`); all existing local-key literals and stamp local variable keys are unchanged.
 **Validation:** static text/search checks only. Compilation not run; user owns compilation.
+
+## 2026-05-21 — Canonical move-action reissue semantics unified across anchor/move/sleep owners
+
+**Task/PR/branch:** current branch / deduplicate `DL_ShouldReissue*` helpers without changing external contracts.
+**Files touched:** `daily_life/dl_move_job_inc.nss`, `daily_life/dl_sleep_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** reissue decision logic was duplicated across `DL_ShouldReissueMoveJobAction`, `DL_ShouldReissueSleepAction`, and `DL_ShouldReissueSleepMoveAction`, while anchor helper already provided parameterized canonical semantics via `nReissueSeconds`.
+**Change:** selected `DL_ShouldReissueAnchorMoveAction(object oNpc, string sKey, int nReissueSeconds)` as canonical mechanism; converted move/sleep helpers to thin wrappers/direct calls to it; added contract comment that reissue semantics are unified for all owner pipelines.
+**Reason:** remove semantic drift risk and centralize move-action reissue behavior while preserving existing owner-specific timeouts (`DL_MOVE_ACTION_REISSUE_SECONDS`, `DL_SLEEP_ACTION_REISSUE_SECONDS`) and all existing local-key literal contracts/callsites.
+**Preserve:** no literal local-key migration; no timeout value changes; no directive/move/finalizer/worker architecture changes.
+**Validation:** static text/search checks only. Compilation not run; user owns compilation.
