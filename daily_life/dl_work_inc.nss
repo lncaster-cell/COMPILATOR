@@ -1,5 +1,7 @@
 const string DL_L_NPC_WORK_ACTION_STAMP = "dl_work_anchor_action_stamp";
 const string DL_L_NPC_WORK_ACTION_TARGET = "dl_work_anchor_action_target";
+// NOTE: keep literal aligned with sleep status; contexts are isolated by different local fields
+// (DL_L_NPC_WORK_STATUS vs DL_L_NPC_SLEEP_STATUS), so downstream diagnostics do not mix channels.
 const string DL_WORK_STATUS_MISSING_WAYPOINTS = "missing_waypoints";
 const string DL_WORK_STATUS_MOVING_TO_ANCHOR = "moving_to_anchor";
 const string DL_WORK_STATUS_ON_ANCHOR = "on_anchor";

@@ -1,3 +1,13 @@
+## 2026-05-21 — Validate missing_waypoints status-channel separation (work vs sleep)
+
+**Task/PR/branch:** current branch / diagnostics-contract audit for `missing_waypoints` usage.
+**Files touched:** `daily_life/dl_work_inc.nss`, `daily_life/dl_sleep_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** both `DL_WORK_STATUS_MISSING_WAYPOINTS` and `DL_SLEEP_STATUS_MISSING_WAYPOINTS` intentionally used the same literal `"missing_waypoints"`.
+**Change:** repository-wide search confirmed each status writes only to its own local field (`DL_L_NPC_WORK_STATUS` vs `DL_L_NPC_SLEEP_STATUS`); added explicit comments near both constants documenting that shared literal is intentional because channels are field-separated.
+**Reason:** preserve downstream parsing and diagnostics invariants without unnecessary literal split; prevent future accidental "cleanup" that could break cross-session expectations.
+**Preserve:** no status literals changed; no checks/logging behavior changed; no pipeline/movement/worker/finalizer behavior changes.
+**Validation:** static text/search checks only (`DL_WORK_STATUS_MISSING_WAYPOINTS`, `DL_SLEEP_STATUS_MISSING_WAYPOINTS`, `missing_waypoints`, local-field usage). Compilation not run; user owns compilation.
+
 ## 2026-05-21 — Remove legacy blacksmith-specific debug entrypoint script
 
 **Task/PR/branch:** chore/remove-legacy-dl-dbg-time / delete obsolete manual BSMITH debug entrypoint.
