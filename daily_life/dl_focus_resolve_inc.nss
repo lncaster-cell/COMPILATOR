@@ -28,11 +28,6 @@ object DL_ResolveSocialPartnerObject(object oNpc, string sPartnerTag)
         if (oCandidate == oNpc)
         {
             SetLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC, "social_partner_self");
-            DL_LogChatDebugEvent(
-                oNpc,
-                "social_partner_lookup",
-                "social partner lookup tag=" + sPartnerTag + " result=self_ignored"
-            );
         }
         else if (!DL_IsActivePipelineNpc(oCandidate))
         {
@@ -57,19 +52,9 @@ object DL_ResolveSocialPartnerObject(object oNpc, string sPartnerTag)
         DeleteLocalObject(oNpc, DL_L_NPC_CACHE_SOCIAL_PARTNER_OBJ);
         if (bTagFoundOutsideArea)
         {
-            DL_LogChatDebugEvent(
-                oNpc,
-                "social_partner_lookup",
-                "social partner lookup tag=" + sPartnerTag + " result=found_outside_area"
-            );
         }
         else if (!bTagFound)
         {
-            DL_LogChatDebugEvent(
-                oNpc,
-                "social_partner_lookup",
-                "social partner lookup tag=" + sPartnerTag + " result=tag_not_found"
-            );
         }
         return OBJECT_INVALID;
     }
@@ -160,11 +145,6 @@ object DL_ResolveMealWaypoint(object oNpc, string sMealKind)
             oTargetArea = DL_GetWorkArea(oNpc);
             if (GetIsObjectValid(oTargetArea))
             {
-                DL_LogChatDebugEvent(
-                    oNpc,
-                    "fallback_meal_work",
-                    "fallback meal->work reason=missing_meal_area kind=" + sMealKind + " area=" + GetTag(oTargetArea)
-                );
             }
         }
     }
@@ -174,11 +154,6 @@ object DL_ResolveMealWaypoint(object oNpc, string sMealKind)
         oTargetArea = DL_GetHomeArea(oNpc);
         if (GetIsObjectValid(oTargetArea) && sMealKind == DL_MEAL_KIND_LUNCH)
         {
-            DL_LogChatDebugEvent(
-                oNpc,
-                "fallback_meal_home",
-                "fallback meal->home reason=missing_meal_and_work_area kind=" + sMealKind + " area=" + GetTag(oTargetArea)
-            );
         }
     }
 

@@ -2,13 +2,7 @@
 #include "dl_move_job_decl_inc"
 #include "dl_transition_inc"
 
-
 // Compile-compatibility shims/wrappers preserved for include-order stability.
-void DL_LogChatDebugEvent(object oNpc, string sKind, string sPayload)
-{
-    // Intentionally no-op: legacy diagnostic hook retained for compile compatibility.
-}
-
 int DL_HasTransitionExecutionState(object oNpc)
 {
     if (!GetIsObjectValid(oNpc))
@@ -658,7 +652,6 @@ int DL_FinalizeReachedDirectiveMoveJob(object oNpc, int nEffectiveDirective)
     }
 
     SetLocalInt(oNpc, DL_L_NPC_REACHED_FINALIZE_USED_FOCUS_DBG, FALSE);
-
 
     if (!DL_HasMoveJob(oNpc))
     {

@@ -59,7 +59,6 @@ void DL_VerifyChillSitOrFallback(object oNpc, object oChair, object oSeat)
         DeleteLocalInt(oNpc, DL_L_NPC_CHILL_SIT_RETRY_UNTIL);
         SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, DL_FOCUS_STATUS_ON_CHILL_ANCHOR);
         SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oSeat));
-        DL_LogChatDebugEvent(oNpc, DL_FOCUS_STATUS_ON_CHILL_ANCHOR, "on_chill_anchor chair=" + GetTag(oChair));
         return;
     }
 
@@ -86,7 +85,6 @@ int DL_TryProgressChillLegacyChair(object oNpc, object oSeat)
         DeleteLocalInt(oNpc, DL_L_NPC_CHILL_SIT_RETRY_UNTIL);
         SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, DL_FOCUS_STATUS_ON_CHILL_ANCHOR);
         SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oSeat));
-        DL_LogChatDebugEvent(oNpc, DL_FOCUS_STATUS_ON_CHILL_ANCHOR, "on_chill_anchor legacy_chair=" + GetTag(oChair));
         return TRUE;
     }
 
@@ -114,7 +112,6 @@ int DL_TryProgressChillLegacyChair(object oNpc, object oSeat)
     AssignCommand(oNpc, ClearAllActions(TRUE));
     AssignCommand(oNpc, ActionSit(oChair));
     DelayCommand(DL_CHILL_SIT_VERIFY_DELAY, DL_VerifyChillSitOrFallback(oNpc, oChair, oSeat));
-    DL_LogChatDebugEvent(oNpc, DL_FOCUS_STATUS_SITTING_CHILL_ATTEMPT, "sitting_chill_attempt legacy_chair=" + GetTag(oChair));
     return TRUE;
 }
 
@@ -160,11 +157,5 @@ void DL_ExecuteChillDirective(object oNpc)
         SetLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC, "missing_chill_seat");
         return;
     }
-
-    DL_LogChatDebugEvent(
-        oNpc,
-        "target_chill",
-        "target dir=CHILL area=" + GetTag(GetArea(oSeat)) + " anchor=" + GetTag(oSeat)
-    );
     DL_ProgressChillAtSeat(oNpc, oSeat);
 }
