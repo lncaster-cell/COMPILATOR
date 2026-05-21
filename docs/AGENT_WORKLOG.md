@@ -626,3 +626,13 @@ Entry template:
 **Reason:** reduce `dl_focus_inc.nss` size and isolate social focus execution logic without changing behavior.
 **Preserve:** no helper signature/name changes; no debug/status/probe/local-key literal changes; no movement/meal/chill/public/core focus logic edits.
 **Validation:** static/text checks only. Compilation not run; user owns compilation.
+
+## 2026-05-21 — Remove active BSMITH runtime callsites and obsolete trace-off script
+
+**Task/PR/branch:** chore/remove-final-bsmith-wrappers / remove remaining no-op BSMITH runtime references.
+**Files touched:** `daily_life/dl_worker_inc.nss`, `daily_life/dl_move_job_inc.nss`, `daily_life/dl_worker_critical_inc.nss`, `daily_life/dl_transition_inc.nss`, `daily_life/dl_res_inc.nss`, `daily_life/dl_worker_debug_inc.nss`, `daily_life/bsmith_trace_off.nss` (deleted), `docs/AGENT_WORKLOG.md`.
+**Context:** heavy BSMITH tracing was already disabled and central diagnostics decoupled, but runtime code still invoked deprecated no-op `DL_BsmithTraceStage(...)`, and an obsolete hardcoded blacksmith trace-off script remained.
+**Change:** removed all active `DL_BsmithTraceStage(...)` callsites from Daily Life runtime includes listed above; removed final compatibility wrapper definitions `DL_BsmithTraceDisable(object oNpc)` and `DL_BsmithTraceStage(object oNpc, string sStage, string sNote)` from `dl_res_inc.nss`; deleted obsolete `daily_life/bsmith_trace_off.nss`.
+**Reason:** complete behavior-preserving cleanup of deprecated BSMITH/blacksmith-specific runtime references after prior deprecation PRs.
+**Preserve:** no gameplay, movement, transition/finalizer, worker scheduling, directive resolution, or registry logic changes beyond deleting no-op trace calls and obsolete wrapper/script.
+**Validation:** repository text/search checks only (excluding docs for runtime-symbol verification), plus targeted diff review of allowed files. Compilation not run; user owns compilation.
