@@ -1,3 +1,13 @@
+## 2026-05-21 — Central Daily Life diagnostics decoupled from deprecated BSMITH trace sink
+
+**Task/PR/branch:** chore/decouple-diag-from-bsmith / remove central diagnostic dependency on deprecated BSMITH wrapper.
+**Files touched:** `daily_life/dl_diag_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** core NPC diagnostic sink still emitted through `DL_BsmithTraceStage`, leaving central Daily Life diagnostics coupled to legacy blacksmith-specific tracing.
+**Change:** updated `DL_LogNpcDiagnosticWithSummary(object oNpc, string sSource, string sSummary)` to keep existing object validity guard and replace BSMITH emission with NPC-local snapshot writes: `dl_npc_diag_last_source`, `dl_npc_diag_last_summary`, `dl_npc_diag_last_abs_min` (timestamp from `DL_GetAbsoluteMinute()`).
+**Reason:** make central Daily Life diagnostic layer independent from deprecated BSMITH trace wrapper while preserving caller flow (`DL_MaybeLogNpcDiagnostic` -> `DL_LogNpcDiagnosticWithSummary`) and avoiding gameplay/worker/movement/transition behavior changes.
+**Preserve:** `DL_BsmithTraceStage`/`DL_BsmithTraceDisable` remain in resolver include for compatibility; no edits to `dl_res_inc.nss` or `dl_dbg_time.nss`; no BSMITH output strings added.
+**Validation:** static text/search checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-21 — Deprecate and disable legacy BSMITH runtime trace in resolver include
 
 **Task/PR/branch:** chore/disable-bsmith-legacy-trace / deprecate BSMITH stage trace runtime path.
