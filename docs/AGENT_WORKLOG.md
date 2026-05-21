@@ -729,3 +729,13 @@ Entry template:
 **Reason:** remove drift risk between literal checks and shared focus-status contracts without changing runtime values/semantics.
 **Preserve:** no local-key or status literal value changes; no behavior/pipeline rewrites; `DL_FOCUS_STATUS_MOVING_TO_ANCHOR` usage in `DL_NpcNeedsCriticalWorkerTouch` remains constant-based.
 **Validation:** static text/search checks only. Compilation not run; user owns compilation.
+
+## 2026-05-21 — Cross-file focus-status contract deduplication (public/social/meal literals)
+
+**Task/PR/branch:** current task / eliminate duplicated focus-status literals in `daily_life/` checks.
+**Files touched:** `daily_life/dl_diag_inc.nss`, `daily_life/dl_social_scene_inc.nss`, `daily_life/dl_res_directive_state_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `DL_L_NPC_FOCUS_STATUS` filtering/comparison logic still had raw literals for `on_public_anchor`, `on_social_anchor`, and `on_meal_anchor` prefix in some includes, duplicating contract values already defined in `daily_life/dl_focus_contract_inc.nss`.
+**Change:** replaced those `DL_L_NPC_FOCUS_STATUS` raw literal checks with canonical constants: `DL_FOCUS_STATUS_ON_PUBLIC_ANCHOR`, `DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR`, `DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX` (and aligned same meal-prefix check in directive fast-path state include).
+**Reason:** remove cross-file contract duplication/drift risk while preserving byte-identical status semantics and existing diagnostic/filter behavior.
+**Preserve:** include-order left unchanged (no broad declaration hacks, no include reordering); filtering logic in diagnostics/social scene remains logically identical.
+**Validation:** static text/search checks only. Compilation not run; user owns compilation.
