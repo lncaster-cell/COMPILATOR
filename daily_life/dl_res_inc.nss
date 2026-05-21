@@ -16,8 +16,7 @@ int DL_HasTransitionExecutionState(object oNpc)
         return FALSE;
     }
 
-    return GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" ||
-        GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) != "";
+    return DL_IsTransitionExecutionStateActive(oNpc);
 }
 
 void DL_ClearTransitionExecutionStateWithReason(object oNpc, string sReason, string sOwner)
@@ -26,7 +25,14 @@ void DL_ClearTransitionExecutionStateWithReason(object oNpc, string sReason, str
 
     if (GetIsObjectValid(oNpc) && sReason != "")
     {
-        SetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC, sReason);
+        if (sOwner == "")
+        {
+            SetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC, sReason);
+        }
+        else
+        {
+            SetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC, "owner=" + sOwner + " reason=" + sReason);
+        }
     }
 }
 
@@ -532,8 +538,7 @@ void DL_BsmithDetectContradictions(object oNpc, string sStage, object oMoveObj, 
     int bWaitingForTransition =
         sRunningState == DL_MOVE_STATE_WAITING_TRANSITION ||
         (sMoveResult == DL_MOVE_RESULT_RUNNING &&
-            GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" &&
-            GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "idle");
+            DL_IsTransitionExecutionStateActive(oNpc));
 
     int nCurrentActionNow = GetCurrentAction(oNpc);
     int nCurrentActionDbg = GetLocalInt(oNpc, DL_L_NPC_MOVE_CURRENT_ACTION_DBG);
@@ -569,9 +574,13 @@ void DL_BsmithDetectContradictions(object oNpc, string sStage, object oMoveObj, 
         int bRecentTransitionFinalize =
             GetLocalString(oNpc, "dl_post_jump_result") == "post_jump_finalizer_complete" ||
             GetLocalString(oNpc, "dl_post_jump_result") == "post_jump_finalizer_same_area_complete";
-        if (bStableIdentityContext && !bRecentTransitionFinalize && GetIsObjectValid(oPrev) && oPrev != oMoveObj)
+        int bLifecycleReresolveWindow =
+            GetLocalInt(oNpc, "dl_transition_pending_finalizer_expected") == TRUE ||
+            GetLocalString(oNpc, "dl_transition_registry_handoff") == "transition_registry_handoff" ||
+            GetLocalString(oNpc, "dl_transition_registry_problem") != "";
+        if (bStableIdentityContext && !bRecentTransitionFinalize && !bLifecycleReresolveWindow && GetIsObjectValid(oPrev) && oPrev != oMoveObj)
         {
-            DL_BsmithContradiction(oNpc, "TARGET_IDENTITY_CHANGED", "tag=" + sMoveTag + " prev_area=" + sPrevArea + " new_area=" + sNewArea + " raw=" + FloatToString(fRawDist, 1, 2));
+            DL_BsmithContradiction(oNpc, "TARGET_IDENTITY_CHANGED", "reason=stable_context_identity_swap tag=" + sMoveTag + " prev_area=" + sPrevArea + " new_area=" + sNewArea + " raw=" + FloatToString(fRawDist, 1, 2));
             DL_BsmithClassify(oNpc, "TARGET_RESOLUTION_BUG", "medium", "target_identity_changed");
         }
         SetLocalString(oNpc, "dl_bsmith_last_target_tag", sMoveTag);
@@ -590,8 +599,7 @@ void DL_BsmithMaybeClassify(object oNpc, string sProblem)
     int bWaitingForTransition =
         sRunningState == DL_MOVE_STATE_WAITING_TRANSITION ||
         (GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_RUNNING &&
-            GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" &&
-            GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "idle");
+            DL_IsTransitionExecutionStateActive(oNpc));
 
     if (!bWaitingForTransition && GetLocalInt(oNpc, "dl_bsmith_bad_action_samples") >= 3)
     {
@@ -610,7 +618,7 @@ void DL_BsmithMaybeClassify(object oNpc, string sProblem)
     {
         DL_BsmithClassify(oNpc, "AREA_REGISTRY_STALE", "high", "registry_area_mismatch");
     }
-    if (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" && GetLocalString(oNpc, "dl_post_jump_result") == "post_jump_finalizer_complete")
+    if (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" && GetLocalString(oNpc, "dl_post_jump_result") == DL_POST_JUMP_RESULT_COMPLETE)
     {
         DL_BsmithClassify(oNpc, "TRANSITION_HANDOFF_STALE", "medium", "post_jump_with_transition_state");
     }
@@ -1224,7 +1232,7 @@ int DL_ProcessTransitionMoveInApply(object oNpc, int nEffectiveDirective)
     SetLocalInt(oNpc, DL_L_NPC_TRANSITION_EXECUTE_ATTEMPTED_DBG, FALSE);
     SetLocalInt(oNpc, DL_L_NPC_TRANSITION_EXECUTE_SUCCESS_DBG, FALSE);
 
-    if (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) == "")
+    if (!DL_IsTransitionStatusActive(GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS)))
     {
         DL_NavSetState(oNpc, "moving_to_entry", GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE), "");
     }
