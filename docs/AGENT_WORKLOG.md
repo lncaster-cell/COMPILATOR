@@ -1,12 +1,12 @@
-## 2026-05-21 — Deduplicate critical stale-reached predicate core helper
+## 2026-05-21 — Focus anchor status contract-consistency cleanup (literal -> constants)
 
-**Task/PR/branch:** current branch / refactor stale-reached critical predicate deduplication in worker critical include.
-**Files touched:** `daily_life/dl_worker_critical_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** stale-reached critical checks were duplicated between generic (`DL_IsStaleReachedMoveJobCritical`) and area-registered (`DL_IsRegisteredCurrentAreaStaleReachedMoveCritical`) predicates.
-**Change:** extracted shared stale-reached core into new helper `DL_IsStaleReachedMoveCore(object oNpc)` (valid NPC, has move job, `move_result == running`, canonical reached now, no `ACTION_MOVETOPOINT`), switched `DL_IsStaleReachedMoveJobCritical` to fully delegate to that helper, and kept `DL_IsRegisteredCurrentAreaStaleReachedMoveCritical` as area/registry checks layered above the core helper.
-**Reason:** remove duplicate predicate logic while preserving existing diagnostics behavior, early-return order semantics, and stale-reached classifier reason strings (`stale_reached_without_moveto`).
-**Preserve:** no local-key literal/status changes; no worker/directive/finalizer pipeline rewrite; area-specific ownership checks remain only in the registered-area predicate.
-**Validation:** static text/diff checks only. Compilation not run; user owns compilation.
+**Task/PR/branch:** current branch / focus status contract consistency cleanup in `daily_life/`.
+**Files touched:** `daily_life/dl_diag_inc.nss`, `daily_life/dl_res_directive_state_inc.nss`, `daily_life/dl_res_inc.nss`, `daily_life/dl_social_scene_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** focus status checks for anchor states mixed raw literals and contract constants, which risked drift across includes and made status-domain checks less uniform.
+**Change:** replaced literal checks for focus-status anchor values with existing constants where `DL_L_NPC_FOCUS_STATUS` is read: `DL_FOCUS_STATUS_ON_CHILL_ANCHOR`, `DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR`, `DL_FOCUS_STATUS_ON_PUBLIC_ANCHOR`, and `DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX`.
+**Reason:** enforce contract consistency without changing any literal values or runtime behavior; keep include ownership/order stable by reusing already-available constants (no new compile-order include hacks).
+**Preserve:** no local-key literal/status literal value migration; no directive/move/finalizer pipeline rewrite; no diagnostics removal.
+**Validation:** static text/search checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-21 — Sleep reissue helper: defensive invalid-object guard parity
 
