@@ -147,15 +147,15 @@ int DL_NpcNeedsCriticalWorkerTouch(object oNpc)
         return TRUE;
     }
 
-    if (GetLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC) == "regular_worker_not_touching_registered_npc")
+    if (GetLocalString(oNpc, DL_L_NPC_BLOCKED_DIAGNOSTIC) == DL_DIAG_REGULAR_WORKER_NOT_TOUCHING_REGISTERED_NPC)
     {
-        DL_SetCriticalWorkerDebug(oNpc, "regular_worker_not_touching_registered_npc");
+        DL_SetCriticalWorkerDebug(oNpc, DL_DIAG_REGULAR_WORKER_NOT_TOUCHING_REGISTERED_NPC);
         return TRUE;
     }
 
-    if (DL_GetNpcProblemSummary(oNpc) == "regular_worker_not_touching_registered_npc")
+    if (DL_GetNpcProblemSummary(oNpc) == DL_DIAG_REGULAR_WORKER_NOT_TOUCHING_REGISTERED_NPC)
     {
-        DL_SetCriticalWorkerDebug(oNpc, "regular_worker_not_touching_registered_npc");
+        DL_SetCriticalWorkerDebug(oNpc, DL_DIAG_REGULAR_WORKER_NOT_TOUCHING_REGISTERED_NPC);
         return TRUE;
     }
 
