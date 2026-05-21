@@ -16,6 +16,7 @@ const string DL_L_NPC_SOCIAL_SCENE_PLAY_RESULT = "dl_social_scene_play_result";
 const string DL_SOCIAL_SCENE_DEFAULT = "social_default";
 const string DL_SOCIAL_SCENE_TAVERN_LIVE = "social_tavern_live";
 const int DL_SOCIAL_SCENE_SOLO_WAIT_MINUTES = 3;
+const string DL_ANIM_IDLE_PAUSE = "pause";
 
 int DL_GetSocialSceneStepCount(string sSceneId)
 {
@@ -168,7 +169,7 @@ void DL_ClearSocialSceneState(object oNpc)
 int DL_SocialSceneIsRealAnim(string sAnim)
 {
     if (sAnim == "") return FALSE;
-    if (sAnim == "pause") return FALSE;
+    if (sAnim == DL_ANIM_IDLE_PAUSE) return FALSE;
     return TRUE;
 }
 

@@ -697,3 +697,13 @@ Entry template:
 **Reason:** eliminate dead no-op hook usage while preserving behavior and active diagnostics ownership.
 **Preserve:** no gameplay/movement/transition/finalizer/worker/directive/sleep/work/focus logic changes beyond deleting no-op call statements; `dl_diag_inc.nss` untouched.
 **Validation:** static text/search checks only (`DL_LogChatDebugEvent` absence, changed-file audit). Compilation not run; user owns compilation.
+
+## 2026-05-21 — Unify shared idle pause animation literal in Daily Life focus/social paths
+
+**Task/PR/branch:** current task / deduplicate `"pause"` literal in `daily_life/` without behavior changes.
+**Files touched:** `daily_life/dl_social_scene_inc.nss`, `daily_life/dl_focus_public_inc.nss`, `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `"pause"` was used in three places for the same idle/non-speaking loop semantics (public-anchor fallback animation and social-scene non-real animation filter).
+**Change:** added shared constant `DL_ANIM_IDLE_PAUSE = "pause"` in social-scene contract block and replaced matching local literals with that constant in public directive execution, reached-finalize public branch, and social-scene real-animation guard.
+**Reason:** remove literal duplication/drift risk while preserving exact runtime animation behavior and existing AssignCommand/PlayCustomAnimation flow.
+**Preserve:** literal value remains byte-identical (`"pause"`); no action queue behavior or directive/finalizer pipeline rewrites.
+**Validation:** static text/search checks only. Compilation not run; user owns compilation.
