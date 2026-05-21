@@ -162,11 +162,6 @@ void DL_ClearMoveJob(object oNpc)
     DeleteLocalInt(oNpc, DL_L_NPC_MOVE_CURRENT_ACTION_DBG);
 }
 
-int DL_GetMoveJobTickStamp()
-{
-    return (GetTimeHour() * 3600) + (GetTimeMinute() * 60) + GetTimeSecond();
-}
-
 int DL_ShouldReissueMoveJobAction(object oNpc, string sKey)
 {
     if (!GetIsObjectValid(oNpc))
@@ -179,7 +174,7 @@ int DL_ShouldReissueMoveJobAction(object oNpc, string sKey)
         return TRUE;
     }
 
-    int nNow = DL_GetMoveJobTickStamp();
+    int nNow = DL_GetAnchorMoveActionStamp();
     int nLast = GetLocalInt(oNpc, sKey);
 
     if (nLast <= 0 || nNow < nLast || (nNow - nLast) >= DL_MOVE_ACTION_REISSUE_SECONDS)
@@ -645,7 +640,7 @@ void DL_MarkMoveJobReachedNow(object oNpc, string sReason)
     SetLocalFloat(oNpc, DL_L_NPC_MOVE_DIST_DELTA_DBG, 0.0);
     SetLocalInt(oNpc, DL_L_NPC_MOVE_CURRENT_ACTION_DBG, GetCurrentAction(oNpc));
     SetLocalInt(oNpc, DL_L_NPC_MOVE_ACTION_REISSUED_DBG, FALSE);
-    DL_RecordMoveJobProgressSample(oNpc, fDistance, DL_GetMoveJobTickStamp());
+    DL_RecordMoveJobProgressSample(oNpc, fDistance, DL_GetAnchorMoveActionStamp());
     if (GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) != DL_MOVE_OWNER_TRANSITION &&
         GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE) != DL_NAV_MOVE_PHASE_TRANSITION_TO_AREA)
     {
@@ -677,7 +672,7 @@ void DL_IssueMoveJobAction(object oNpc, object oTarget)
         DL_ClearTransitionExecutionState(oNpc);
     }
     DL_ResetCustomAnimationBeforeAnchorMove(oNpc);
-    SetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET, DL_GetMoveJobTickStamp());
+    SetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET, DL_GetAnchorMoveActionStamp());
     if (GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) == DL_MOVE_OWNER_TRANSITION ||
         GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE) == DL_NAV_MOVE_PHASE_TRANSITION_TO_AREA)
     {
@@ -753,7 +748,7 @@ int DL_TickMoveJob(object oNpc)
         return TRUE;
     }
 
-    int nNowTick = DL_GetMoveJobTickStamp();
+    int nNowTick = DL_GetAnchorMoveActionStamp();
     int nCurrentAction = GetCurrentAction(oNpc);
     float fDistance = GetDistanceBetween(oNpc, oTarget);
     SetLocalInt(oNpc, DL_L_NPC_MOVE_CURRENT_ACTION_DBG, nCurrentAction);

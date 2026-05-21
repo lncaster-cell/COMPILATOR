@@ -104,13 +104,9 @@ int DL_HasSleepExitBedPlacement(object oNpc)
 
     return FALSE;
 }
-int DL_GetSleepActionStamp()
-{
-    return (GetTimeHour() * 3600) + (GetTimeMinute() * 60) + GetTimeSecond();
-}
 int DL_ShouldReissueSleepAction(object oNpc, string sKey)
 {
-    int nNow = DL_GetSleepActionStamp();
+    int nNow = DL_GetAnchorMoveActionStamp();
     int nLast = GetLocalInt(oNpc, sKey);
 
     if (nLast <= 0 || nNow < nLast || (nNow - nLast) >= DL_SLEEP_ACTION_REISSUE_SECONDS)
@@ -136,7 +132,7 @@ int DL_ShouldReissueSleepMoveAction(object oNpc, string sKey)
 }
 void DL_MarkSleepActionIssued(object oNpc, string sKey)
 {
-    SetLocalInt(oNpc, sKey, DL_GetSleepActionStamp());
+    SetLocalInt(oNpc, sKey, DL_GetAnchorMoveActionStamp());
 }
 void DL_ClearSleepActionIssueState(object oNpc)
 {
