@@ -19,6 +19,16 @@
 **Preserve:** all key literal strings are unchanged byte-for-byte; no pipeline behavior/diagnostic-path rewrites.
 **Validation:** static/text checks only. Compilation not run; user owns compilation.
 
+## 2026-05-21 — Directive cleanup diagnostics: split focus cleanup trigger from transition cleanup flag
+
+**Task/PR/branch:** current branch / targeted diagnostics-correctness patch in `DL_PreemptOldDirectiveState`.
+**Files touched:** `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** directive preemption cleanup summary marked `cleared_transition=1` when only focus cleanup ran, which mixed focus and transition diagnostics and could mislead transition-state debugging.
+**Change:** in `DL_PreemptOldDirectiveState`, detached transition flag from focus cleanup path; added `bTriggeredFocusCleanup` and `bHadTransitionExecutionState`; now `cleared_transition` is set only when transition execution state is confirmed and transition cleanup is invoked, while cleanup report additionally logs `focus_cleanup_triggered` and `had_transition_state`.
+**Reason:** preserve existing directive/move/finalizer pipeline and keep patch minimal while making cleanup diagnostics semantically correct for active Daily Life root-cause investigations.
+**Preserve:** no local-key literal renames; no directive pipeline rewrite; no worker/transition ownership changes; no diagnostic removals.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-21 — Daily Life invariant hardening: stale-critical filter + emergency-close context guard
 
 **Task/PR/branch:** current branch / Daily Life bugfix pass (logical conflicts in movement invariant path).
