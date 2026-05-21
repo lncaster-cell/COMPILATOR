@@ -443,3 +443,13 @@ Entry template:
 **Reason:** reduce `dl_worker_inc.nss` size and keep transition handoff code isolated while preserving existing handoff logic/contracts and include ownership.
 **Preserve:** worker runtime scheduling, area registry fallback/recovery, and critical stale-reached recovery paths were not changed.
 **Validation:** static checks only. Compilation not run; user owns compilation.
+
+## 2026-05-21 — PR #945 compile-order follow-up: forward declaration for handoff helper call
+
+**Task/PR/branch:** continue PR #945 / `refactor/worker-handoff-helpers`.
+**Files touched:** `daily_life/dl_worker_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** compiler pipeline failed with undeclared identifier `DL_ClearStaleTransitionHandoffProblemIfOwned` inside moved `DL_RunTransitionRegistryHandoffTick` body in `dl_worker_handoff_inc.nss` because declaration appeared later in parse order.
+**Change:** added minimal forward declaration `void DL_ClearStaleTransitionHandoffProblemIfOwned(object oNpc);` immediately before `#include "dl_worker_handoff_inc"` in `dl_worker_inc.nss`.
+**Reason:** fix include-order symbol visibility only; preserve exact runtime behavior and moved helper bodies.
+**Preserve:** no registry recovery, critical recovery, or worker runtime scheduling changes.
+**Validation:** static checks only. Compilation not run; user owns compilation.

@@ -103,6 +103,8 @@ void DL_ClearAreaRegistryRebuildPending(object oArea)
     DeleteLocalInt(oArea, DL_L_AREA_REGISTRY_REPAIR_CURSOR);
 }
 
+void DL_ClearStaleTransitionHandoffProblemIfOwned(object oNpc);
+
 #include "dl_worker_handoff_inc"
 
 
