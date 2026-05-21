@@ -555,3 +555,13 @@ Entry template:
 **Reason:** reduce `dl_focus_inc.nss` size and isolate resolve/chair/cache logic while preserving existing focus execution pipeline.
 **Preserve:** no movement/action/animation/social-scene execution logic changes; no local-key literal renames; no debug/status string changes; no fallback tag/search cap/cache TTL changes; no new area scans, DB calls, DelayCommand usage, or extra object lookup calls introduced.
 **Validation:** static checks only. Compilation not run; user owns compilation.
+
+## 2026-05-21 — Extract meal focus execution helpers into dedicated include
+
+**Task/PR/branch:** refactor/focus-meal-include / isolate MEAL directive execution helpers from `dl_focus_inc.nss`.
+**Files touched:** `daily_life/dl_focus_inc.nss`, `daily_life/dl_focus_meal_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `dl_focus_inc.nss` contained meal/chill/social/public focus execution logic together; task required isolating only MEAL execution/helper implementations without behavior change.
+**Change:** moved these implementations verbatim to new include `daily_life/dl_focus_meal_inc.nss`: `DL_ApplyMealAnimationFallback`, `DL_ShouldUseMealLegacyActionSit`, `DL_GetMealWaypointAnimation`, `DL_ExecuteMealWaypointAnimation`, `DL_VerifyMealSitOrFallback`, `DL_TryProgressMealLegacyChair`, `DL_ExecuteMealDirective`; inserted `#include "dl_focus_meal_inc"` inside `dl_focus_inc.nss` after `DL_ProgressFocusAtTarget`/`DL_ApplyFocusWaypointAnimation` and before downstream focus directive handlers.
+**Reason:** reduce `dl_focus_inc.nss` size and isolate meal-specific focus logic while preserving existing call graph and include ownership (`dl_focus_inc.nss` remains include owner).
+**Preserve:** no logic rewrite; no local-key literal/diagnostic/status/timing changes; no chill/social/public execution changes; no additional scans/tag lookups/DB calls.
+**Validation:** static/text checks only. Compilation not run; user owns compilation.
