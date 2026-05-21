@@ -63,18 +63,6 @@ int DL_ProgressFocusAtTarget(object oNpc, object oTarget, string sOnAnchorStatus
     int bFinalizedTransition = DL_NavTryFinalizeCompletedTransition(oNpc, oTarget);
     if (bFinalizedTransition)
     {
-        DL_LogChatDebugEvent(
-            oNpc,
-            "post_transition_complete",
-            "post_transition_complete" +
-                " npc_area=" + GetLocalString(oNpc, "dl_nav_debug_npc_area") +
-                " target_area=" + GetLocalString(oNpc, "dl_nav_debug_target_area") +
-                " current_zone=" + GetLocalString(oNpc, "dl_nav_debug_current_zone") +
-                " target_zone=" + GetLocalString(oNpc, "dl_nav_debug_target_zone") +
-                " old_transition_status=" + GetLocalString(oNpc, "dl_nav_debug_old_transition_status") +
-                " focus_target=" + GetLocalString(oNpc, "dl_nav_debug_focus_target") +
-                " current_action=" + IntToString(GetLocalInt(oNpc, "dl_nav_debug_current_action"))
-        );
     }
     if (!bFinalizedTransition && DL_NavTryAdvanceFromAnchorForOwner(oNpc, oTarget, DL_GetFocusMoveOwner(oNpc)))
     {
@@ -102,7 +90,6 @@ int DL_ProgressFocusAtTarget(object oNpc, object oTarget, string sOnAnchorStatus
     {
         PlayCustomAnimation(oNpc, sAnim, TRUE);
     }
-    DL_LogChatDebugEvent(oNpc, sOnAnchorStatus, sOnAnchorStatus + " anchor=" + GetTag(oTarget));
     return TRUE;
 }
 int DL_ApplyFocusWaypointAnimation(object oNpc, object oAnchor, string sStableStatus, string sAnim, float fLoopDuration)
@@ -138,12 +125,6 @@ int DL_ApplyFocusWaypointAnimation(object oNpc, object oAnchor, string sStableSt
     {
         AssignCommand(oNpc, ActionPlayAnimation(ANIMATION_LOOPING_SIT_CHAIR, 1.0, fLoopDuration));
     }
-
-    DL_LogChatDebugEvent(
-        oNpc,
-        sStableStatus,
-        sStableStatus + " waypoint_animation anchor=" + sAnchorTag + " anim=" + sAnim + " custom=" + IntToString(bPlayedCustom)
-    );
     return TRUE;
 }
 

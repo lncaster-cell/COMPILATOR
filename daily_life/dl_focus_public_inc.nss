@@ -12,10 +12,5 @@ void DL_ExecutePublicDirective(object oNpc)
     {
         sAnim = "talk01";
     }
-    DL_LogChatDebugEvent(
-        oNpc,
-        "target_public",
-        "target dir=PUBLIC area=" + GetTag(GetArea(oPublic)) + " anchor=" + GetTag(oPublic)
-    );
     DL_ProgressFocusAtTarget(oNpc, oPublic, DL_FOCUS_STATUS_ON_PUBLIC_ANCHOR, sAnim);
 }
