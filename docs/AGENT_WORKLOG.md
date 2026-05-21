@@ -575,3 +575,13 @@ Entry template:
 **Reason:** reduce `dl_focus_inc.nss` size and isolate chill-specific logic without changing runtime behavior or contracts.
 **Preserve:** no meal/social/public/core movement logic edits; no local-key literal/status/debug/timing changes; no new scans/tag lookups/DB/delay calls.
 **Validation:** static checks only. Compilation not run; user owns compilation.
+
+## 2026-05-21 — Extract PUBLIC focus directive execution into dedicated include
+
+**Task/PR/branch:** refactor/focus-public-include / isolate PUBLIC directive execution from `dl_focus_inc.nss`.
+**Files touched:** `daily_life/dl_focus_inc.nss`, `daily_life/dl_focus_public_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `dl_focus_inc.nss` still contained PUBLIC directive execution inline after prior MEAL/CHILL extractions.
+**Change:** moved only `DL_ExecutePublicDirective` implementation verbatim into new include `daily_life/dl_focus_public_inc.nss`; added `#include "dl_focus_public_inc"` in `dl_focus_inc.nss` after `#include "dl_focus_chill_inc"` and before social helper functions.
+**Reason:** reduce `dl_focus_inc.nss` size and isolate public-specific focus execution while preserving include ownership and behavior.
+**Preserve:** no logic rewrite; no local-key literal/status/debug/timing changes; no meal/chill/social/core movement logic edits; no new scans/tag lookups/DB/delay calls.
+**Validation:** static checks only. Compilation not run; user owns compilation.
