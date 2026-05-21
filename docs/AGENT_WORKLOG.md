@@ -1,12 +1,12 @@
-## 2026-05-21 — City Response: split module/area enable local-key contracts
+## 2026-05-21 — Validate missing_waypoints status-channel separation (work vs sleep)
 
-**Task/PR/branch:** current branch / audit `dl_city_response_enabled` literal duplication in city response contracts.
-**Files touched:** `daily_life/dl_city_response_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** `DL_L_MODULE_CR_ENABLED` and `DL_L_AREA_CR_ENABLED` in `dl_city_response_inc.nss` used the same literal `"dl_city_response_enabled"` without any nearby documentation that this is an intentional shared contract.
-**Change:** separated area-scope contract by changing `DL_L_AREA_CR_ENABLED` literal to `"dl_area_city_response_enabled"`; module-scope `DL_L_MODULE_CR_ENABLED` remains `"dl_city_response_enabled"`.
-**Reason:** treat the duplicate literal as historical duplication and remove ambiguous shared-key coupling between module and area enable flags while keeping API/signatures unchanged.
-**Preserve:** city response logic flow, heat/level/offender contracts, and all function signatures remain unchanged; only the area key literal contract was split.
-**Validation:** static repository search only (`DL_L_AREA_CR_ENABLED`, `DL_L_MODULE_CR_ENABLED`, `dl_city_response_enabled`, `dl_area_city_response_enabled`). Compilation not run; user owns compilation.
+**Task/PR/branch:** current branch / diagnostics-contract audit for `missing_waypoints` usage.
+**Files touched:** `daily_life/dl_work_inc.nss`, `daily_life/dl_sleep_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** both `DL_WORK_STATUS_MISSING_WAYPOINTS` and `DL_SLEEP_STATUS_MISSING_WAYPOINTS` intentionally used the same literal `"missing_waypoints"`.
+**Change:** repository-wide search confirmed each status writes only to its own local field (`DL_L_NPC_WORK_STATUS` vs `DL_L_NPC_SLEEP_STATUS`); added explicit comments near both constants documenting that shared literal is intentional because channels are field-separated.
+**Reason:** preserve downstream parsing and diagnostics invariants without unnecessary literal split; prevent future accidental "cleanup" that could break cross-session expectations.
+**Preserve:** no status literals changed; no checks/logging behavior changed; no pipeline/movement/worker/finalizer behavior changes.
+**Validation:** static text/search checks only (`DL_WORK_STATUS_MISSING_WAYPOINTS`, `DL_SLEEP_STATUS_MISSING_WAYPOINTS`, `missing_waypoints`, local-field usage). Compilation not run; user owns compilation.
 
 ## 2026-05-21 — Remove legacy blacksmith-specific debug entrypoint script
 

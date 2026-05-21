@@ -2,6 +2,8 @@ const string DL_L_NPC_SLEEP_APPROACH_ACTION_STAMP = "dl_sleep_approach_action_st
 const string DL_L_NPC_SLEEP_BED_ACTION_STAMP = "dl_sleep_bed_action_stamp";
 const int DL_SLEEP_ACTION_REISSUE_SECONDS = 6;
 
+// NOTE: keep literal aligned with work status; contexts are isolated by different local fields
+// (DL_L_NPC_SLEEP_STATUS vs DL_L_NPC_WORK_STATUS), so downstream diagnostics do not mix channels.
 const string DL_SLEEP_STATUS_MISSING_WAYPOINTS = "missing_waypoints";
 const string DL_SLEEP_STATUS_MOVING_VIA_NAVIGATION = "moving_via_navigation";
 const string DL_SLEEP_STATUS_MOVING_TO_APPROACH = "moving_to_approach";
