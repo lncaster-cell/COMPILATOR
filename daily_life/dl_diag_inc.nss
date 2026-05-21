@@ -162,10 +162,10 @@ string DL_GetNpcProblemSummary(object oNpc)
 
     string sFocusStatus = GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS);
     if (sFocusStatus != "" &&
-        sFocusStatus != DL_FOCUS_STATUS_ON_CHILL_ANCHOR &&
-        sFocusStatus != DL_FOCUS_STATUS_ON_PUBLIC_ANCHOR &&
-        sFocusStatus != DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR &&
-        GetSubString(sFocusStatus, 0, 15) != DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX)
+        sFocusStatus != "on_chill_anchor" &&
+        sFocusStatus != "on_public_anchor" &&
+        sFocusStatus != "on_social_anchor" &&
+        GetSubString(sFocusStatus, 0, GetStringLength(DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX)) != DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX)
     {
         return "focus:" + sFocusStatus;
     }
