@@ -1,3 +1,14 @@
+## 2026-05-21 — Deprecate and disable legacy BSMITH runtime trace in resolver include
+
+**Task/PR/branch:** chore/disable-bsmith-legacy-trace / deprecate BSMITH stage trace runtime path.
+**Files touched:** `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** legacy BSMITH forensic trace for `blacksmith01` duplicated central diagnostics and carried runtime-heavy logic in resolver include.
+**Change:** kept `DL_BsmithTraceDisable(object oNpc)` as compatibility cleanup (still clears `dl_bsmith_trace` and `dl_bsmith_trace_budget` on module and valid NPC); converted `DL_BsmithTraceStage(object oNpc, string sStage, string sNote)` to deprecated no-op returning immediately; removed now-unused heavy BSMITH helper implementations (`DL_BsmithAreaTag`, `DL_BsmithObjectValid`, `DL_BsmithTraceBudget`, `DL_BsmithTraceEnabled`, `DL_BsmithConsumeTraceBudget`, `DL_BsmithEmitLine`, `DL_BsmithContradiction`, `DL_BsmithClassify`, `DL_BsmithFallbackObjectByTag`, `DL_BsmithMoveObject`, `DL_BsmithFocusObject`, `DL_BsmithDetectContradictions`, `DL_BsmithMaybeClassify`) from `dl_res_inc.nss` runtime path.
+**Reason:** disable BSMITH-specific runtime tracing with minimal compatibility-preserving surface and no gameplay/movement/directive/finalizer/worker behavior changes.
+**Preserve:** `DL_BsmithTraceStage` signature unchanged for cross-include compatibility; `DL_BsmithTraceDisable` signature/cleanup contract unchanged; no edits to `dl_dbg_time.nss` or `dl_diag_inc.nss`.
+**Validation:** static text/search checks only. Compilation not run; user owns compilation.
+
+
 ## 2026-05-21 — Critical stale-reached classifier: only escalate without ACTION_MOVETOPOINT
 
 **Task/PR/branch:** current branch / refine `DL_IsStaleReachedMoveJobCritical` escalation criteria.
