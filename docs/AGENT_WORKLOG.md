@@ -9,6 +9,16 @@
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 
+## 2026-05-21 — Compile-order compatibility hardening for cross-include key globals in dl_res_inc
+
+**Task/PR/branch:** current branch / compile-order resilience hardening for Daily Life resolver include.
+**Files touched:** `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `dl_res_inc.nss` exports local-key contracts that are consumed across multiple Daily Life includes (`move_job`, `focus`, `sleep`, `work`, `diag`, `worker_critical`), and these keys are part of active include-order chains where `const string` initialization order can be fragile on this NWScript compiler.
+**Change:** converted the most cross-include conflict-prone key declarations from `const string` to compiler-safe globals (`string KEY = "literal";`) while preserving literal values exactly: `DL_L_NPC_DIRECTIVE`, `DL_L_NPC_SLEEP_STATUS`, `DL_L_NPC_WORK_STATUS`, `DL_L_NPC_FOCUS_STATUS`, `DL_L_NPC_FOCUS_TARGET`, `DL_L_NPC_MOVE_OWNER`, `DL_L_NPC_MOVE_TARGET_TAG`, `DL_L_NPC_MOVE_TARGET_AREA`, `DL_L_NPC_MOVE_RADIUS`, `DL_L_NPC_MOVE_TICKET`, `DL_L_NPC_MOVE_RESULT`. Left local/intra-file keys as `const` to keep scope of change narrow.
+**Reason:** harden compile-order compatibility without changing runtime behavior or local-key literal contracts.
+**Preserve:** all key literal strings are unchanged byte-for-byte; no pipeline behavior/diagnostic-path rewrites.
+**Validation:** static/text checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-21 — Daily Life invariant hardening: stale-critical filter + emergency-close context guard
 
 **Task/PR/branch:** current branch / Daily Life bugfix pass (logical conflicts in movement invariant path).

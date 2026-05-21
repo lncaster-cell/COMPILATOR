@@ -40,7 +40,7 @@ void DL_ClearTransitionExecutionStateWithReason(object oNpc, string sReason, str
 string DL_GetNpcProblemSummary(object oNpc);
 // Scope: basic BLACKSMITH/GATE_POST/TRADER WORK/SLEEP window split.
 
-const string DL_L_NPC_DIRECTIVE = "dl_npc_directive";
+string DL_L_NPC_DIRECTIVE = "dl_npc_directive";
 const string DL_L_NPC_MAT_REQ = "dl_npc_mat_req";
 const string DL_L_NPC_MAT_TAG = "dl_npc_mat_tag";
 const string DL_L_NPC_DIALOGUE_MODE = "dl_npc_dialogue_mode";
@@ -48,12 +48,12 @@ const string DL_L_NPC_SERVICE_MODE = "dl_npc_service_mode";
 const string DL_L_NPC_PROFILE_ID = "dl_profile_id";
 const string DL_L_NPC_STATE = "dl_state";
 const string DL_L_NPC_SLEEP_PHASE = "dl_npc_sleep_phase";
-const string DL_L_NPC_SLEEP_STATUS = "dl_npc_sleep_status";
+string DL_L_NPC_SLEEP_STATUS = "dl_npc_sleep_status";
 const string DL_L_NPC_SLEEP_TARGET = "dl_npc_sleep_target";
 const string DL_L_NPC_SLEEP_DIAGNOSTIC = "dl_npc_sleep_diagnostic";
 const string DL_L_NPC_WORK_KIND = "dl_npc_work_kind";
 const string DL_L_NPC_WORK_TARGET = "dl_npc_work_target";
-const string DL_L_NPC_WORK_STATUS = "dl_npc_work_status";
+string DL_L_NPC_WORK_STATUS = "dl_npc_work_status";
 const string DL_L_NPC_WORK_DIAGNOSTIC = "dl_npc_work_diagnostic";
 const string DL_L_NPC_WORK_FASTPATH_PRESENTATION_MINUTE = "dl_work_fastpath_presentation_minute";
 const string DL_L_NPC_GUARD_SHIFT_START = "dl_guard_shift_start";
@@ -79,8 +79,8 @@ const string DL_L_NPC_CACHE_WORK_AREA = "dl_cache_work_area";
 const string DL_L_NPC_CACHE_MEAL_AREA = "dl_cache_meal_area";
 const string DL_L_NPC_CACHE_SOCIAL_AREA = "dl_cache_social_area";
 const string DL_L_NPC_CACHE_PUBLIC_AREA = "dl_cache_public_area";
-const string DL_L_NPC_FOCUS_STATUS = "dl_npc_focus_status";
-const string DL_L_NPC_FOCUS_TARGET = "dl_npc_focus_target";
+string DL_L_NPC_FOCUS_STATUS = "dl_npc_focus_status";
+string DL_L_NPC_FOCUS_TARGET = "dl_npc_focus_target";
 const string DL_L_NPC_FOCUS_DIAGNOSTIC = "dl_npc_focus_diagnostic";
 const string DL_L_NPC_SOCIAL_SLOT = "dl_social_slot";
 const string DL_L_NPC_SOCIAL_PARTNER_TAG = "dl_social_partner_tag";
@@ -131,13 +131,13 @@ const string DL_L_NPC_TRANSITION_EXECUTE_ATTEMPTED_DBG = "transition_execute_att
 const string DL_L_NPC_TRANSITION_EXECUTE_SUCCESS_DBG = "transition_execute_success";
 const string DL_L_NPC_TRANSITION_MISMATCH_SUPPRESSED_DBG = "transition_mismatch_suppressed";
 
-const string DL_L_NPC_MOVE_OWNER = "dl_move_owner";
+string DL_L_NPC_MOVE_OWNER = "dl_move_owner";
 const string DL_L_NPC_MOVE_PHASE = "dl_move_phase";
-const string DL_L_NPC_MOVE_TARGET_TAG = "dl_move_target_tag";
-const string DL_L_NPC_MOVE_TARGET_AREA = "dl_move_target_area";
-const string DL_L_NPC_MOVE_RADIUS = "dl_move_radius";
-const string DL_L_NPC_MOVE_TICKET = "dl_move_ticket";
-const string DL_L_NPC_MOVE_RESULT = "dl_move_result";
+string DL_L_NPC_MOVE_TARGET_TAG = "dl_move_target_tag";
+string DL_L_NPC_MOVE_TARGET_AREA = "dl_move_target_area";
+string DL_L_NPC_MOVE_RADIUS = "dl_move_radius";
+string DL_L_NPC_MOVE_TICKET = "dl_move_ticket";
+string DL_L_NPC_MOVE_RESULT = "dl_move_result";
 const string DL_L_NPC_MOVE_DIAGNOSTIC = "dl_move_diagnostic";
 const string DL_L_NPC_MOVE_TARGET_OBJ = "dl_move_target_obj";
 
