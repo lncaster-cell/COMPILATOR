@@ -67,7 +67,6 @@ void DL_VerifyMealSitOrFallback(object oNpc, object oChair, object oMeal, string
         DeleteLocalInt(oNpc, DL_L_NPC_MEAL_SIT_RETRY_UNTIL);
         SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, DL_FOCUS_STATUS_ON_MEAL_ANCHOR_SITTING);
         SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oMeal));
-        DL_LogChatDebugEvent(oNpc, DL_FOCUS_STATUS_ON_MEAL_ANCHOR_SITTING, "on_meal_anchor_sitting chair=" + GetTag(oChair));
         return;
     }
 
@@ -92,7 +91,6 @@ int DL_TryProgressMealLegacyChair(object oNpc, object oMeal, string sMealKind, s
         DeleteLocalInt(oNpc, DL_L_NPC_MEAL_SIT_RETRY_UNTIL);
         SetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS, DL_FOCUS_STATUS_ON_MEAL_ANCHOR_SITTING);
         SetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET, GetTag(oMeal));
-        DL_LogChatDebugEvent(oNpc, DL_FOCUS_STATUS_ON_MEAL_ANCHOR_SITTING, "on_meal_anchor_sitting chair=" + GetTag(oChair));
         return TRUE;
     }
 
@@ -128,7 +126,6 @@ int DL_TryProgressMealLegacyChair(object oNpc, object oMeal, string sMealKind, s
     AssignCommand(oNpc, ClearAllActions(TRUE));
     AssignCommand(oNpc, ActionSit(oChair));
     DelayCommand(DL_MEAL_SIT_VERIFY_DELAY, DL_VerifyMealSitOrFallback(oNpc, oChair, oMeal, sMealKind, sAnim));
-    DL_LogChatDebugEvent(oNpc, DL_FOCUS_STATUS_SITTING_MEAL_ATTEMPT, "sitting_meal_attempt chair=" + GetTag(oChair));
     return TRUE;
 }
 void DL_ExecuteMealDirective(object oNpc)
@@ -142,12 +139,6 @@ void DL_ExecuteMealDirective(object oNpc)
     }
 
     string sAnim = DL_GetMealWaypointAnimation(oNpc, sMealKind);
-
-    DL_LogChatDebugEvent(
-        oNpc,
-        "target_meal",
-        "target dir=MEAL area=" + GetTag(GetArea(oMeal)) + " anchor=" + GetTag(oMeal) + " kind=" + sMealKind
-    );
 
     if (DL_NavTryAdvanceFromAnchorForOwner(oNpc, oMeal, DL_GetFocusMoveOwner(oNpc)))
     {

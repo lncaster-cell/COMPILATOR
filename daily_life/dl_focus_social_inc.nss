@@ -3,7 +3,6 @@ int DL_ShouldFallbackSocialToPublic(object oNpc)
     object oMe = DL_ResolveSocialWaypoint(oNpc);
     if (!GetIsObjectValid(oMe))
     {
-        DL_LogChatDebugEvent(oNpc, "fallback_social_public", "fallback social->public reason=missing_social_area_or_anchor");
         return TRUE;
     }
 
@@ -66,7 +65,6 @@ int DL_TryStartSocialSceneAtReachedAnchor(object oNpc, object oAnchor, object oP
     );
     DL_ClearTransitionExecutionState(oNpc);
     DeleteLocalString(oNpc, DL_L_NPC_FOCUS_DIAGNOSTIC);
-    DL_LogChatDebugEvent(oNpc, DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR, "on_social_anchor anchor=" + GetTag(oAnchor));
     DL_TickSocialScene(oNpc, oAnchor, oPartner, bPartnerOnAnchor);
     return TRUE;
 }
@@ -199,16 +197,6 @@ void DL_ExecuteSocialDirective(object oNpc)
         DL_TickSocialScene(oNpc, oMe, oPartner, bPartnerOnAnchor);
         return;
     }
-
-    DL_LogChatDebugEvent(
-        oNpc,
-        "target_social",
-        "target dir=SOCIAL area=" + GetTag(GetArea(oMe)) + " anchor=" + GetTag(oMe) +
-            " social_anchor=" + GetTag(oMe) +
-            " social_slot=" + GetLocalString(oNpc, DL_L_NPC_SOCIAL_SLOT) +
-            " social_partner_tag=" + sPartnerTag +
-            " social_partner_valid=" + IntToString(GetIsObjectValid(oPartner))
-    );
 
     DL_ProgressFocusAtTarget(oNpc, oMe, DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR, "");
 
