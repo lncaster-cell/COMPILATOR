@@ -339,7 +339,13 @@ void DL_ApplyPostJumpCompletionSuccess(object oNpc, string sTargetZone, string s
     SetLocalInt(oNpc, "dl_post_jump_worker_touch_called", TRUE);
     SetLocalString(oNpc, "dl_transition_registry_worker_touch_area", GetLocalString(oNpc, "dl_worker_touch_area"));
     SetLocalString(oNpc, "dl_post_jump_result", sReason);
-    DeleteLocalInt(oNpc, "dl_transition_pending_finalizer_expected");
+
+    // Guarded cleanup only: pre-finalizer abort/reset path.
+    // Canonical lifecycle cleanup lives in DL_FinalizePostJumpTransitionResult.
+    if (GetLocalInt(oNpc, "dl_post_jump_finalizer_called") != TRUE)
+    {
+        DeleteLocalInt(oNpc, "dl_transition_pending_finalizer_expected");
+    }
 }
 
 void DL_NavSetState(object oNpc, string sStatus, string sTargetZone, string sDiagnostic)
