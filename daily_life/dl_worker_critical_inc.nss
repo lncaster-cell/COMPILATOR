@@ -96,12 +96,6 @@ int DL_IsStaleReachedMoveJobCritical(object oNpc)
         return TRUE;
     }
 
-    if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "moving_to_anchor" &&
-        GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) == GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG))
-    {
-        return TRUE;
-    }
-
     return FALSE;
 }
 
