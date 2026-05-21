@@ -1,11 +1,12 @@
-## 2026-05-21 — Focus anchor status contract-consistency cleanup (literal -> constants)
+## 2026-05-21 — diagnostic contract dedup: regular_worker_not_touching_registered_npc
 
-**Task/PR/branch:** current branch / focus status contract consistency cleanup in `daily_life/`.
-**Files touched:** `daily_life/dl_diag_inc.nss`, `daily_life/dl_res_directive_state_inc.nss`, `daily_life/dl_res_inc.nss`, `daily_life/dl_social_scene_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** focus status checks for anchor states mixed raw literals and contract constants, which risked drift across includes and made status-domain checks less uniform.
-**Change:** replaced literal checks for focus-status anchor values with existing constants where `DL_L_NPC_FOCUS_STATUS` is read: `DL_FOCUS_STATUS_ON_CHILL_ANCHOR`, `DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR`, `DL_FOCUS_STATUS_ON_PUBLIC_ANCHOR`, and `DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX`.
-**Reason:** enforce contract consistency without changing any literal values or runtime behavior; keep include ownership/order stable by reusing already-available constants (no new compile-order include hacks).
-**Preserve:** no local-key literal/status literal value migration; no directive/move/finalizer pipeline rewrite; no diagnostics removal.
+**Task/PR/branch:** current task / diagnostic contract dedup for regular-worker stale-touch summary literal.
+**Files touched:** `daily_life/dl_res_contract_inc.nss`, `daily_life/dl_diag_inc.nss`, `daily_life/dl_worker_critical_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** the diagnostic literal `"regular_worker_not_touching_registered_npc"` was duplicated across problem-summary return and critical-worker checks/debug reasons.
+**Change:** added shared diagnostics contract symbol `DL_DIAG_REGULAR_WORKER_NOT_TOUCHING_REGISTERED_NPC` in the existing resolver/diagnostics contract include and replaced all in-repo `daily_life/` literal comparisons/returns/debug reason writes with that symbol.
+**Reason:** remove literal drift risk while preserving byte-identical external diagnostic value for existing debug consumers.
+**External-consumer compatibility:** literal value unchanged (`"regular_worker_not_touching_registered_npc"`); only symbol indirection changed.
+**Preserve:** no movement/worker/finalizer pipeline behavior changes; no local-key contract literal changes.
 **Validation:** static text/search checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-21 — Sleep reissue helper: defensive invalid-object guard parity
