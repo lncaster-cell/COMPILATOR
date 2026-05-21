@@ -565,3 +565,13 @@ Entry template:
 **Reason:** reduce `dl_focus_inc.nss` size and isolate meal-specific focus logic while preserving existing call graph and include ownership (`dl_focus_inc.nss` remains include owner).
 **Preserve:** no logic rewrite; no local-key literal/diagnostic/status/timing changes; no chill/social/public execution changes; no additional scans/tag lookups/DB calls.
 **Validation:** static/text checks only. Compilation not run; user owns compilation.
+
+## 2026-05-21 — Extract CHILL focus execution helpers into dedicated include
+
+**Task/PR/branch:** refactor/focus-chill-include / isolate CHILL directive execution from `dl_focus_inc.nss`.
+**Files touched:** `daily_life/dl_focus_inc.nss`, `daily_life/dl_focus_chill_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `dl_focus_inc.nss` mixed CHILL-specific execution helpers with broader focus/public/social orchestration, increasing file size and coupling.
+**Change:** moved only CHILL execution/helper implementations (`DL_ApplyChillAnimationFallback`, `DL_ShouldUseChillLegacyActionSit`, `DL_ExecuteChillWaypointAnimation`, `DL_VerifyChillSitOrFallback`, `DL_TryProgressChillLegacyChair`, `DL_ProgressChillAtSeat`, `DL_ExecuteChillDirective`) into new include `daily_life/dl_focus_chill_inc.nss`; added `#include "dl_focus_chill_inc"` inside `dl_focus_inc.nss` immediately after `#include "dl_focus_meal_inc"` and before downstream directive handlers.
+**Reason:** reduce `dl_focus_inc.nss` size and isolate chill-specific logic without changing runtime behavior or contracts.
+**Preserve:** no meal/social/public/core movement logic edits; no local-key literal/status/debug/timing changes; no new scans/tag lookups/DB/delay calls.
+**Validation:** static checks only. Compilation not run; user owns compilation.
