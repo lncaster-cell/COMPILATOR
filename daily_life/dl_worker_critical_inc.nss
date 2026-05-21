@@ -91,12 +91,14 @@ int DL_IsStaleReachedMoveJobCritical(object oNpc)
         return FALSE;
     }
 
-    if (GetCurrentAction(oNpc) != ACTION_MOVETOPOINT)
+    if (GetCurrentAction(oNpc) == ACTION_MOVETOPOINT)
     {
-        return TRUE;
+        DL_BsmithTraceStage(oNpc, "CRITICAL_WORKER", "in_progress_moveto_near_target");
+        return FALSE;
     }
 
-    return FALSE;
+    DL_BsmithTraceStage(oNpc, "CRITICAL_WORKER", "stale_reached_without_moveto");
+    return TRUE;
 }
 
 // AUDIT(#864): FALLBACK/EMERGENCY CLASSIFIER.
@@ -129,8 +131,7 @@ int DL_NpcNeedsCriticalWorkerTouch(object oNpc)
 
         if (DL_IsStaleReachedMoveJobCritical(oNpc))
         {
-            DL_SetCriticalWorkerDebug(oNpc, "stale_reached_move_job");
-            DL_BsmithTraceStage(oNpc, "CRITICAL_WORKER", "stale_reached_move_job");
+            DL_SetCriticalWorkerDebug(oNpc, "stale_reached_without_moveto");
             return TRUE;
         }
     }
@@ -219,8 +220,8 @@ int DL_ProcessCriticalAreaCursorNpc(object oArea, int nPassMode, int nTickStamp,
                 {
                     DL_ClearCriticalProcessFailedDebug(oNpc);
                     SetLocalInt(oNpc, DL_L_NPC_EMERGENCY_STALE_REACHED_TOUCH_DBG, FALSE);
-                    DL_SetCriticalWorkerDebug(oNpc, "stale_reached_move_job");
-                    DL_BsmithTraceStage(oNpc, "CRITICAL_BYPASS", "stale_reached_move_job bypass=" + sBypassKind + " slot=" + IntToString(nSlot));
+                    DL_SetCriticalWorkerDebug(oNpc, "stale_reached_without_moveto");
+                    DL_BsmithTraceStage(oNpc, "CRITICAL_BYPASS", "stale_reached_without_moveto bypass=" + sBypassKind + " slot=" + IntToString(nSlot));
                     if (DL_TouchNpcFromAreaWorker(oNpc, oArea, nPassMode, nTickStamp, DL_WORKER_BUDGET_MIN, nSlot, nSlot))
                     {
                         SetLocalInt(oNpc, DL_L_NPC_LAST_TOUCH_TICK, nTickStamp);

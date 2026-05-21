@@ -1,22 +1,11 @@
-## 2026-05-21 — BSMITH TARGET_IDENTITY_CHANGED guard against legitimate lifecycle re-resolve
+## 2026-05-21 — Critical stale-reached classifier: only escalate without ACTION_MOVETOPOINT
 
-**Task/PR/branch:** current branch / `dl_res_inc.nss` contradiction-triage refinement.
-**Files touched:** `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** `TARGET_IDENTITY_CHANGED` contradiction could trigger in stable tag/area/distance context during legitimate transition/handoff lifecycle windows where move target object can be re-resolved intentionally.
-**Change:** kept the existing stable-context base check (`tag`, `area`, `distance`) and added lifecycle guard suppression for known re-resolve windows (`dl_transition_pending_finalizer_expected`, `dl_transition_registry_handoff`, `dl_transition_registry_problem`). Kept the same contradiction field and made evidence more specific by adding `reason=stable_context_identity_swap`.
-**Reason:** reduce false-positive contradiction noise while preserving useful triage signal and existing local-key literal contracts.
-**Preserve:** no local-key literal value changes; no diagnostic field removals; no movement/directive/finalizer pipeline rewrites.
-**Validation:** static checks only. Compilation not run; user owns compilation.
-
-
-## 2026-05-21 — Decouple generic move-job reissue from sleep include
-
-**Task/PR/branch:** current branch / move-job include ownership cleanup for reissue helper usage.
-**Files touched:** `daily_life/dl_move_job_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** generic move tick path still referenced sleep-specific helper (`DL_ShouldReissueSleepAction`) and sleep stamp provider (`DL_GetSleepActionStamp`), creating shared move logic -> sleep include compile-order/ownership coupling.
-**Change:** introduced move-owner helper `DL_ShouldReissueMoveJobAction` plus local move reissue constant (`DL_MOVE_ACTION_REISSUE_SECONDS = 6`), switched move tick reissue condition to the new helper, and changed `DL_GetMoveJobTickStamp` to compute its own day-second stamp directly.
-**Reason:** keep the same reissue timing semantics (6-second threshold, midnight wrap-safe behavior via `nNow < nLast`) while removing sleep include dependency from generic move path.
-**Preserve:** no local-key literal changes; no movement pipeline rewrite; sleep include keeps its own `DL_ShouldReissueSleepAction`/`DL_ShouldReissueSleepMoveAction` path with no shared->sleep reverse dependency.
+**Task/PR/branch:** current branch / refine `DL_IsStaleReachedMoveJobCritical` escalation criteria.
+**Files touched:** `daily_life/dl_worker_critical_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** critical stale-reached classifier still needed explicit diagnostic split between true stale contradictions and normal in-progress move actions near target.
+**Change:** kept existing early guards (`DL_HasMoveJob`, `move_result == running`, `DL_IsMoveJobAtTargetNow`), changed action branch to return non-critical when `GetCurrentAction(oNpc) == ACTION_MOVETOPOINT` with BSMITH trace reason `in_progress_moveto_near_target`, and escalate only when move action is absent with BSMITH trace reason `stale_reached_without_moveto`; aligned critical debug/bypass reason strings to `stale_reached_without_moveto`.
+**Reason:** preserve canonical reached/finalize pipeline and prevent false critical escalation from normal in-progress `ACTION_MOVETOPOINT` states while retaining actionable diagnostics for stale no-moveto contradictions.
+**Preserve:** emergency path still routes through worker touch/finalizer pipeline (`DL_NpcNeedsCriticalWorkerTouch`/critical bypass path); no local-key literal contract changes.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 
