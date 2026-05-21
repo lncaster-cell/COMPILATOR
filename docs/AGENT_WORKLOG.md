@@ -1,12 +1,12 @@
-## 2026-05-21 — Post-jump result checks unified to transition constants
+## 2026-05-21 — Transition clear diagnostic now includes owner context (compat-safe)
 
-**Task/PR/branch:** current branch / daily_life post-jump result source unification.
-**Files touched:** `daily_life/dl_transition_inc.nss`, `daily_life/dl_res_inc.nss`, `daily_life/dl_diag_inc.nss`, `daily_life/dl_worker_critical_inc.nss`, `daily_life/dl_worker_registry_recovery_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** post-jump result checks used duplicated raw literals (`post_jump_finalizer_complete`, `post_jump_finalizer_same_area_complete`) across resolver/diagnostic/worker paths, increasing drift risk against transition-owner contracts.
-**Change:** replaced raw comparisons/assignments in touched Daily Life includes with transition-owner globals `DL_POST_JUMP_RESULT_COMPLETE` and `DL_POST_JUMP_RESULT_SAME_AREA_COMPLETE`; retained literal runtime values only at owner declarations in `dl_transition_inc.nss`; preserved nav/BSMITH diagnostic payload values via same constants so emitted strings remain unchanged.
-**Reason:** enforce one code-level source for post-jump result contracts without changing literal contract values or behavior.
-**Preserve:** do not rename `dl_post_jump_result` local key; do not change literal result values; keep BSMITH/finalizer diagnostics semantically identical.
-**Validation:** static grep checks only. Compilation not run; user owns compilation.
+**Task/PR/branch:** current branch / Daily Life diagnostic context refinement.
+**Files touched:** `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `DL_ClearTransitionExecutionStateWithReason` accepted `sOwner` but wrote only raw `sReason` into `DL_L_NPC_TRANSITION_DIAGNOSTIC`, reducing owner-stage visibility in active BSMITH/transition debugging.
+**Change:** updated `DL_ClearTransitionExecutionStateWithReason` to write `owner=<owner> reason=<reason>` when `sOwner` is non-empty, while preserving legacy write (`sReason` only) when `sOwner == ""`.
+**Reason:** improve transition clear observability across `focus/work/sleep/res` callers without breaking existing checks that expect the old reason-only payload when owner is absent.
+**Preserve:** no local-key literal changes; caller reason literals (e.g., `owner_clear`) unchanged; transition clear pipeline unchanged.
+**Validation:** static checks only. Compilation not run; user owns compilation.
 
 
 ## 2026-05-21 — Daily Life invariant hardening: stale-critical filter + emergency-close context guard
