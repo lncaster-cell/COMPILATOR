@@ -565,8 +565,8 @@ void DL_BsmithDetectContradictions(object oNpc, string sStage, object oMoveObj, 
             GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_AREA) == sNewArea &&
             fRawDist <= 10.00;
         int bRecentTransitionFinalize =
-            GetLocalString(oNpc, "dl_post_jump_result") == "post_jump_finalizer_complete" ||
-            GetLocalString(oNpc, "dl_post_jump_result") == "post_jump_finalizer_same_area_complete";
+            GetLocalString(oNpc, "dl_post_jump_result") == DL_POST_JUMP_RESULT_COMPLETE ||
+            GetLocalString(oNpc, "dl_post_jump_result") == DL_POST_JUMP_RESULT_SAME_AREA_COMPLETE;
         if (bStableIdentityContext && !bRecentTransitionFinalize && GetIsObjectValid(oPrev) && oPrev != oMoveObj)
         {
             DL_BsmithContradiction(oNpc, "TARGET_IDENTITY_CHANGED", "tag=" + sMoveTag + " prev_area=" + sPrevArea + " new_area=" + sNewArea + " raw=" + FloatToString(fRawDist, 1, 2));
@@ -607,7 +607,7 @@ void DL_BsmithMaybeClassify(object oNpc, string sProblem)
     {
         DL_BsmithClassify(oNpc, "AREA_REGISTRY_STALE", "high", "registry_area_mismatch");
     }
-    if (DL_IsTransitionExecutionStateActive(oNpc) && GetLocalString(oNpc, "dl_post_jump_result") == "post_jump_finalizer_complete")
+    if (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" && GetLocalString(oNpc, "dl_post_jump_result") == DL_POST_JUMP_RESULT_COMPLETE)
     {
         DL_BsmithClassify(oNpc, "TRANSITION_HANDOFF_STALE", "medium", "post_jump_with_transition_state");
     }
