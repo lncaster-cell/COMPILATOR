@@ -1,3 +1,13 @@
+## 2026-05-21 — Canonical transition-active helper contract in resolver/classifier paths
+
+**Task/PR/branch:** current branch / transition active-state semantics unification.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `daily_life/dl_res_inc.nss`, `daily_life/dl_diag_inc.nss`, `daily_life/dl_worker_critical_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** transition activity checks diverged across call sites (`status != ""`, `status != "idle"`, and status/target combinations), risking contradiction/classifier drift.
+**Change:** added canonical helpers in transition include: `DL_IsTransitionStatusIdle`, `DL_IsTransitionStatusActive`, `DL_IsTransitionExecutionStateActive`; rewired `DL_HasTransitionExecutionState`, BSMITH `bWaitingForTransition` branches, stale post-jump transition classify check, transition move apply guard, diagnostic transition-status classifier, and worker stale-transition check to this single contract.
+**Reason:** keep one explicit semantic: transition status is idle only for `""` or `"idle"`; transition execution state is active when target is present or status is active.
+**Preserve:** runtime local-key literals and status literal contracts (`"idle"` and existing transition statuses) are unchanged.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 
 ## 2026-05-21 — Daily Life invariant hardening: stale-critical filter + emergency-close context guard
 

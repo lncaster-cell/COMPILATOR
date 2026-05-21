@@ -143,7 +143,7 @@ string DL_GetNpcProblemSummary(object oNpc)
     {
         return "transitioning_no_focus_move_anchor";
     }
-    if (sTransitionStatus != "" && sTransitionStatus != "transitioning")
+    if (DL_IsTransitionStatusActive(sTransitionStatus) && sTransitionStatus != "transitioning")
     {
         return "transition_status:" + sTransitionStatus;
     }

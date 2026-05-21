@@ -80,6 +80,32 @@ void DL_WorkerTouchNpc(object oNpc);
 int DL_RemoveStaleNpcReferenceFromAreaRegistry(object oArea, object oNpc);
 void DL_BsmithTraceStage(object oNpc, string sStage, string sNote);
 
+
+int DL_IsTransitionStatusIdle(string sTransitionStatus)
+{
+    return sTransitionStatus == "" || sTransitionStatus == "idle";
+}
+
+int DL_IsTransitionStatusActive(string sTransitionStatus)
+{
+    return !DL_IsTransitionStatusIdle(sTransitionStatus);
+}
+
+int DL_IsTransitionExecutionStateActive(object oNpc)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return FALSE;
+    }
+
+    if (GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) != "")
+    {
+        return TRUE;
+    }
+
+    return DL_IsTransitionStatusActive(GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS));
+}
+
 void DL_TraceTransitionFinalizer(object oNpc, string sResult, string sExtra)
 {
     string sNote = "result=" + sResult;

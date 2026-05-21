@@ -142,8 +142,7 @@ int DL_NpcNeedsCriticalWorkerTouch(object oNpc)
     }
 
     if (GetLocalString(oNpc, "dl_post_jump_result") == "post_jump_finalizer_complete" &&
-        (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" ||
-            GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) != "" ||
+        (DL_IsTransitionExecutionStateActive(oNpc) ||
             GetLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC) != ""))
     {
         DL_SetCriticalWorkerDebug(oNpc, "stale_transition_after_post_jump");
