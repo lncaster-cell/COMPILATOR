@@ -698,12 +698,12 @@ Entry template:
 **Preserve:** no gameplay/movement/transition/finalizer/worker/directive/sleep/work/focus logic changes beyond deleting no-op call statements; `dl_diag_inc.nss` untouched.
 **Validation:** static text/search checks only (`DL_LogChatDebugEvent` absence, changed-file audit). Compilation not run; user owns compilation.
 
-## 2026-05-21 — Canonical stamp helper unification for anchor/sleep/move includes
+## 2026-05-21 — Unify shared idle pause animation literal in Daily Life focus/social paths
 
-**Task/PR/branch:** current branch / contract-preserving stamp-helper cleanup across Daily Life movement/sleep includes.
-**Files touched:** `daily_life/dl_sleep_inc.nss`, `daily_life/dl_move_job_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** day-second stamp computation existed in three variants (`DL_GetAnchorMoveActionStamp`, `DL_GetSleepActionStamp`, `DL_GetMoveJobTickStamp`) with identical logic, creating duplicate maintenance points across include boundaries.
-**Change:** selected `DL_GetAnchorMoveActionStamp` as canonical helper and replaced sleep/move-job stamp usage with this helper; removed duplicate function bodies `DL_GetSleepActionStamp` and `DL_GetMoveJobTickStamp`.
-**Reason:** reduce duplication while preserving runtime behavior, include-order compatibility, and existing movement/sleep reissue timing semantics.
-**Preserve:** all stamp consumers still use the same day-second format (`hour*3600 + minute*60 + second`); all existing local-key literals and stamp local variable keys are unchanged.
+**Task/PR/branch:** current task / deduplicate `"pause"` literal in `daily_life/` without behavior changes.
+**Files touched:** `daily_life/dl_social_scene_inc.nss`, `daily_life/dl_focus_public_inc.nss`, `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `"pause"` was used in three places for the same idle/non-speaking loop semantics (public-anchor fallback animation and social-scene non-real animation filter).
+**Change:** added shared constant `DL_ANIM_IDLE_PAUSE = "pause"` in social-scene contract block and replaced matching local literals with that constant in public directive execution, reached-finalize public branch, and social-scene real-animation guard.
+**Reason:** remove literal duplication/drift risk while preserving exact runtime animation behavior and existing AssignCommand/PlayCustomAnimation flow.
+**Preserve:** literal value remains byte-identical (`"pause"`); no action queue behavior or directive/finalizer pipeline rewrites.
 **Validation:** static text/search checks only. Compilation not run; user owns compilation.
