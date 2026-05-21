@@ -474,3 +474,13 @@ Entry template:
 **Reason:** reduce `dl_worker_inc.nss` size while preserving compile-order visibility and exact runtime behavior.
 **Preserve:** worker runtime scheduling, transition handoff pipeline, worker debug helper ownership, and critical stale-reached recovery paths were not changed.
 **Validation:** static checks only. Compilation not run; user owns compilation.
+
+## 2026-05-21 — Worker contract extraction include (`dl_worker_contract_inc`)
+
+**Task/PR/branch:** current task / new worker contract include extraction.
+**Files touched:** `daily_life/dl_worker_inc.nss`, `daily_life/dl_worker_contract_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** worker constants and forward declarations were still embedded at the top of `dl_worker_inc.nss`, making include dependencies implicit and fragile.
+**Change:** moved only the top worker contract section (worker/local/debug constants, pass/budget constants, and worker forward declarations including `DL_ClearStaleTransitionHandoffProblemIfOwned`) into new include `daily_life/dl_worker_contract_inc.nss`; replaced that top block in `dl_worker_inc.nss` with `#include "dl_worker_contract_inc"` and kept implementation bodies in place.
+**Reason:** make worker include dependencies explicit and reduce include-order fragility without behavior changes.
+**Preserve:** no function implementations moved in this step; no constant renames/value changes; no runtime scheduling, registry recovery, critical recovery, transition handoff, or debug helper logic changes.
+**Validation:** static checks only. Compilation not run; user owns compilation.

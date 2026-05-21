@@ -1,70 +1,4 @@
-const string DL_L_MODULE_WORKER_SEQ = "dl_module_worker_seq";
-const string DL_L_MODULE_WORKER_TICKS = "dl_module_worker_ticks";
-const string DL_L_MODULE_WORKER_LAST_PROCESSED = "dl_module_worker_last_processed";
-const string DL_L_MODULE_RESYNC_LAST_PROCESSED = "dl_module_resync_last_processed";
-const string DL_L_AREA_WORKER_LAST_PROCESSED = "dl_area_worker_last_processed";
-const string DL_L_AREA_RESYNC_LAST_PROCESSED = "dl_area_resync_last_processed";
-const string DL_L_NPC_LAST_TOUCH_TICK = "dl_npc_last_touch_tick";
-const string DL_L_AREA_WORKER_TICK_AREA_DBG = "area_worker_tick_area";
-const string DL_L_AREA_WORKER_TICK_SEQ_DBG = "area_worker_tick_seq";
-const string DL_L_NPC_WORKER_TOUCH_SEQ_DBG = "npc_worker_touch_seq";
-const string DL_L_NPC_LAST_WORKER_TOUCH_HOUR_DBG = "npc_last_worker_touch_hour";
-const string DL_L_NPC_LAST_WORKER_TOUCH_MINUTE_DBG = "npc_last_worker_touch_minute";
-const string DL_L_NPC_LAST_WORKER_TOUCH_ABS_MIN_DBG = "npc_last_worker_touch_abs_minute";
-const string DL_L_NPC_PROCESSED_BY_RR_DBG = "npc_processed_by_round_robin";
-const string DL_L_NPC_REGISTRY_SLOT_DBG = "npc_registry_slot";
-const string DL_L_NPC_REGISTRY_COUNT_DBG = "npc_registry_count";
-const string DL_L_NPC_SLOT_CONTAINS_SELF_DBG = "npc_slot_contains_self";
-const string DL_L_AREA_WORKER_PASS_MODE_DBG = "area_worker_pass_mode";
-const string DL_L_AREA_WORKER_BUDGET_DBG = "area_worker_budget";
-const string DL_L_AREA_WORKER_CURSOR_BEFORE_DBG = "area_worker_cursor_before";
-const string DL_L_AREA_WORKER_CURSOR_AFTER_DBG = "area_worker_cursor_after";
-const string DL_L_NPC_SEEN_BY_RR_DBG = "npc_seen_by_round_robin";
-const string DL_L_NPC_TOUCH_SKIPPED_REASON_DBG = "npc_touch_skipped_reason";
-const string DL_L_NPC_WORKER_TOUCH_SEQ_BEFORE_DBG = "npc_worker_touch_seq_before";
-const string DL_L_NPC_WORKER_TOUCH_SEQ_AFTER_DBG = "npc_worker_touch_seq_after";
-const string DL_L_AREA_CACHED_PLAYER_COUNT_DBG = "area_cached_player_count";
-const string DL_L_AREA_ACTUAL_PLAYER_COUNT_DBG = "area_actual_player_count";
-const string DL_L_AREA_TIER_BEFORE_LIFECYCLE_DBG = "area_tier_before_lifecycle";
-const string DL_L_AREA_TIER_AFTER_LIFECYCLE_DBG = "area_tier_after_lifecycle";
-const string DL_L_AREA_HOTNESS_REPAIRED_DBG = "area_hotness_repaired";
-const string DL_L_AREA_WORKER_FORCED_HOT_PLAYER_DBG = "area_worker_forced_hot_due_to_player";
-const string DL_L_AREA_PLAYER_COUNT_STALE_REPAIRED_DBG = "area_player_count_stale_repaired";
-const string DL_L_AREA_HOTNESS_BUG_PLAYER_PRESENT_DBG = "area_hotness_bug_player_present";
-const string DL_L_NPC_CRITICAL_WORKER_TOUCH_DBG = "critical_worker_touch";
-const string DL_L_NPC_CRITICAL_REASON_DBG = "critical_reason";
-const string DL_L_NPC_CRITICAL_BYPASSED_LAST_TOUCH_DBG = "critical_bypassed_last_touch_gate";
-const string DL_L_NPC_CRITICAL_BYPASSED_WARM_DBG = "critical_bypassed_warm_gate";
-const string DL_L_NPC_CRITICAL_SEEN_NOT_TOUCHED_DBG = "critical_seen_but_not_touched";
-const string DL_L_NPC_CRITICAL_PROCESS_FAILED_REASON_DBG = "critical_process_failed_reason";
-const string DL_L_NPC_CRITICAL_SLOT_DBG = "critical_slot";
-const string DL_L_NPC_CRITICAL_AREA_DBG = "critical_area";
-const string DL_L_NPC_CRITICAL_REGISTRY_COUNT_DBG = "critical_registry_count";
-const string DL_L_NPC_CRITICAL_PASS_MODE_DBG = "critical_pass_mode";
-const string DL_L_NPC_EMERGENCY_STALE_REACHED_TOUCH_DBG = "emergency_worker_touch_for_stale_reached";
-
-const int DL_AREA_PASS_MODE_WORKER = 1;
-const int DL_AREA_PASS_MODE_RESYNC = 2;
-const int DL_AREA_PASS_MODE_WARM = 3;
-const string DL_L_AREA_PASS_LAST_CANDIDATES = "dl_area_pass_last_candidates";
-const string DL_L_AREA_PASS_FALLBACK_COUNT = "dl_area_pass_fallback_count";
-const string DL_L_MODULE_PASS_FALLBACK_COUNT = "dl_module_pass_fallback_count";
-const string DL_L_AREA_PASS_FALLBACK_LAST_TICK = "dl_area_pass_fallback_last_tick";
-const string DL_L_AREA_REGISTRY_REBUILD_PENDING = "dl_area_registry_rebuild_pending";
-const string DL_L_AREA_REGISTRY_REBUILD_OBJ_CURSOR = "dl_area_registry_rebuild_obj_cursor";
-const string DL_L_AREA_REGISTRY_REPAIR_CURSOR = "dl_area_registry_repair_cursor";
-const string DL_L_AREA_TRANSITION_HANDOFF_SLOT_PREFIX = "dl_area_transition_handoff_slot_";
-const string DL_L_AREA_TRANSITION_HANDOFF_CURSOR = "dl_area_transition_handoff_cursor";
-
-const int DL_FALLBACK_OBJECT_HOP_MULTIPLIER = 8;
-const int DL_TRANSITION_HANDOFF_SLOT_COUNT = 4;
-
-void DL_WorkerTouchNpc(object oNpc);
-int DL_TouchNpcFromAreaWorker(object oNpc, object oArea, int nPassMode, int nTickStamp, int nBudget, int nCursorBefore, int nCursorAfter);
-void DL_SetNpcRegularWorkerDebug(object oNpc, object oArea, int nTickStamp, int nPassMode, int nBudget, int nCursorBefore, int nCursorAfter, int bSeenByRoundRobin, int bProcessedByRoundRobin, string sSkipReason);
-int DL_ProcessAreaNpcByPassMode(object oArea, object oNpc, int nPassMode, int nTickStamp, int nBudget, int nCursorBefore, int nCursorAfter);
-int DL_RemoveStaleNpcReferenceFromAreaRegistrySlot(object oArea, object oNpc, int nSlot);
-int DL_IsNpcRegistryOwnerForArea(object oNpc, object oArea);
+#include "dl_worker_contract_inc"
 
 #include "dl_worker_debug_inc"
 
@@ -102,8 +36,6 @@ void DL_ClearAreaRegistryRebuildPending(object oArea)
     DeleteLocalInt(oArea, DL_L_AREA_REGISTRY_REBUILD_OBJ_CURSOR);
     DeleteLocalInt(oArea, DL_L_AREA_REGISTRY_REPAIR_CURSOR);
 }
-
-void DL_ClearStaleTransitionHandoffProblemIfOwned(object oNpc);
 
 #include "dl_worker_handoff_inc"
 
