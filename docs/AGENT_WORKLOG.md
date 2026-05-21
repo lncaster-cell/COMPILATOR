@@ -1,3 +1,13 @@
+## 2026-05-21 — Focus anchor status contract-consistency cleanup (literal -> constants)
+
+**Task/PR/branch:** current branch / focus status contract consistency cleanup in `daily_life/`.
+**Files touched:** `daily_life/dl_diag_inc.nss`, `daily_life/dl_res_directive_state_inc.nss`, `daily_life/dl_res_inc.nss`, `daily_life/dl_social_scene_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** focus status checks for anchor states mixed raw literals and contract constants, which risked drift across includes and made status-domain checks less uniform.
+**Change:** replaced literal checks for focus-status anchor values with existing constants where `DL_L_NPC_FOCUS_STATUS` is read: `DL_FOCUS_STATUS_ON_CHILL_ANCHOR`, `DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR`, `DL_FOCUS_STATUS_ON_PUBLIC_ANCHOR`, and `DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX`.
+**Reason:** enforce contract consistency without changing any literal values or runtime behavior; keep include ownership/order stable by reusing already-available constants (no new compile-order include hacks).
+**Preserve:** no local-key literal/status literal value migration; no directive/move/finalizer pipeline rewrite; no diagnostics removal.
+**Validation:** static text/search checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-21 — Sleep reissue helper: defensive invalid-object guard parity
 
 **Task/PR/branch:** current branch / compatibility-safe defensive hardening for sleep reissue helper.

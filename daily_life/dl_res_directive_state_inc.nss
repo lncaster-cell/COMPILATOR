@@ -83,7 +83,7 @@ int DL_ShouldUseDirectiveFastPath(object oNpc, int nEffectiveDirective)
 
     if (nEffectiveDirective == DL_DIR_CHILL)
     {
-        return GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "on_chill_anchor" &&
+        return GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == DL_FOCUS_STATUS_ON_CHILL_ANCHOR &&
                GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) != "";
     }
 
