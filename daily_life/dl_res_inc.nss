@@ -470,8 +470,8 @@ int DL_IsFocusStateCompatibleWithDirective(object oNpc, int nDirective)
 
     if (sFocusStatus == DL_FOCUS_STATUS_ON_PUBLIC_ANCHOR) return nDirective == DL_DIR_PUBLIC;
     if (sFocusStatus == DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR) return nDirective == DL_DIR_SOCIAL;
-    if (GetSubString(sFocusStatus, 0, 15) == "on_meal_anchor") return nDirective == DL_DIR_MEAL;
-    if (sFocusStatus == "on_chill_anchor") return nDirective == DL_DIR_CHILL;
+    if (GetSubString(sFocusStatus, 0, 15) == DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX) return nDirective == DL_DIR_MEAL;
+    if (sFocusStatus == DL_FOCUS_STATUS_ON_CHILL_ANCHOR) return nDirective == DL_DIR_CHILL;
 
     if (sFocusStatus == DL_FOCUS_STATUS_MOVING_TO_ANCHOR)
     {
@@ -701,7 +701,7 @@ int DL_FinalizeReachedDirectiveMoveJob(object oNpc, int nEffectiveDirective)
 
     if (sOwner == DL_MOVE_OWNER_PUBLIC && nEffectiveDirective == DL_DIR_PUBLIC)
     {
-        string sAnim = "pause";
+        string sAnim = DL_ANIM_IDLE_PAUSE;
         if ((DL_GetTagDeterministicOffset(GetTag(oNpc), 100, 0) % 2) == 0)
         {
             sAnim = "talk01";
@@ -783,12 +783,12 @@ int DL_IsDirectiveStableAfterReachedFinalize(object oNpc, int nEffectiveDirectiv
     }
     if (nEffectiveDirective == DL_DIR_MEAL)
     {
-        return GetSubString(GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS), 0, 15) == "on_meal_anchor" &&
+        return GetSubString(GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS), 0, 15) == DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX &&
                GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) != "";
     }
     if (nEffectiveDirective == DL_DIR_CHILL)
     {
-        return GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "on_chill_anchor" &&
+        return GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == DL_FOCUS_STATUS_ON_CHILL_ANCHOR &&
                GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) != "";
     }
     if (nEffectiveDirective == DL_DIR_WORK)

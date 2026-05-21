@@ -7,7 +7,7 @@ void DL_ExecutePublicDirective(object oNpc)
         return;
     }
 
-    string sAnim = "pause";
+    string sAnim = DL_ANIM_IDLE_PAUSE;
     if ((DL_GetTagDeterministicOffset(GetTag(oNpc), 100, 0) % 2) == 0)
     {
         sAnim = "talk01";
