@@ -773,3 +773,13 @@ Entry template:
 **Diagnostics/invariants:** negative finalizer result branches (`post_jump_finalizer_not_expected`, `...area_not_changed`, `...unexpected_area`) remain unchanged and continue writing `dl_post_jump_result`, transition diagnostic payload, and `dl_transition_registry_problem` via `DL_SetFinalizerOutcomeState`/`DL_FinalizePostJumpTransitionResult`.
 **Preserve:** no local-key literal changes; no transition/worker/finalizer behavior rewrite beyond lifecycle clear-point disambiguation.
 **Validation:** static text/search checks only. Compilation not run; user owns compilation.
+
+## 2026-05-21 — Remove fake string out-parameter from work-target selection
+
+**Task/PR/branch:** current task / `fix/dl-work-kind-no-fake-out-param`.
+**Files touched:** `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `DL_SelectWorkTargetByKind` accepted `sResolvedKindOut` and attempted to mutate caller string variables, which is unsafe for NWScript-style value parameters and could leave kind/target mismatched when FETCH falls back.
+**Change:** removed `sResolvedKindOut` and all fallback-mutation arguments from `DL_SelectWorkTargetByKind`; added helper `DL_ResolveWorkKindForAvailableFetch(sKind, bAllowFetch, sFallbackKind)`; updated blacksmith resolve/execution callsites to explicitly compute `bHasFetch`, resolve FETCH→CRAFT kind before target selection, and then call simplified selector; kept domestic worker policy in `DL_ResolveDomesticWorkerWorkKind(oNpc, bHasFetch)` and passed final `sKind` into selector without out-parameter behavior.
+**Reason:** make fallback kind resolution explicit and deterministic, eliminate fake out-parameter risk, and preserve existing domestic-worker work-kind policy.
+**Preserve:** no waypoint tag changes; no local-key literal changes; no work-kind literal changes; no transition/focus/city response/move-finalizer-worker pipeline edits.
+**Validation:** static text/search checks only. Compilation not run; user owns compilation.
