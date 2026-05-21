@@ -719,3 +719,13 @@ Entry template:
 **Reason:** remove literal duplication/drift risk while preserving exact runtime animation behavior and existing AssignCommand/PlayCustomAnimation flow.
 **Preserve:** literal value remains byte-identical (`"pause"`); no action queue behavior or directive/finalizer pipeline rewrites.
 **Validation:** static text/search checks only. Compilation not run; user owns compilation.
+
+## 2026-05-21 — Meal focus prefix checks: replace magic length/literal with shared contract constant
+
+**Task/PR/branch:** current branch / `on_meal_anchor` prefix-check normalization.
+**Files touched:** `daily_life/dl_res_inc.nss`, `daily_life/dl_res_directive_state_inc.nss`, `daily_life/dl_diag_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** several Daily Life focus-status prefix checks still used hardcoded `GetSubString(..., 0, 15)` and literal `"on_meal_anchor"`, which risks drift from the canonical focus contract include.
+**Change:** switched meal-status prefix comparisons to `DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX` and dynamic prefix length via `GetStringLength(DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX)` in resolver compatibility checks, directive fast-path checks, and diagnostic problem-summary validation.
+**Reason:** remove magic-number/string duplication while preserving runtime contract and behavior; prefix semantics still intentionally match both `on_meal_anchor` and `on_meal_anchor_sitting`.
+**Preserve:** no local-key literal migrations; no pipeline ownership changes; no behavior rewrite outside prefix compare normalization.
+**Validation:** static text/search checks only (`rg` for old hardcoded prefix checks). Compilation not run; user owns compilation.

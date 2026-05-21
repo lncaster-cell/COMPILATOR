@@ -470,7 +470,7 @@ int DL_IsFocusStateCompatibleWithDirective(object oNpc, int nDirective)
 
     if (sFocusStatus == DL_FOCUS_STATUS_ON_PUBLIC_ANCHOR) return nDirective == DL_DIR_PUBLIC;
     if (sFocusStatus == DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR) return nDirective == DL_DIR_SOCIAL;
-    if (GetSubString(sFocusStatus, 0, 15) == "on_meal_anchor") return nDirective == DL_DIR_MEAL;
+    if (GetSubString(sFocusStatus, 0, GetStringLength(DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX)) == DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX) return nDirective == DL_DIR_MEAL;
     if (sFocusStatus == "on_chill_anchor") return nDirective == DL_DIR_CHILL;
 
     if (sFocusStatus == DL_FOCUS_STATUS_MOVING_TO_ANCHOR)
@@ -783,7 +783,7 @@ int DL_IsDirectiveStableAfterReachedFinalize(object oNpc, int nEffectiveDirectiv
     }
     if (nEffectiveDirective == DL_DIR_MEAL)
     {
-        return GetSubString(GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS), 0, 15) == "on_meal_anchor" &&
+        return GetSubString(GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS), 0, GetStringLength(DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX)) == DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX &&
                GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) != "";
     }
     if (nEffectiveDirective == DL_DIR_CHILL)

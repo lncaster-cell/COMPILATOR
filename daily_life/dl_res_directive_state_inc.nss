@@ -63,7 +63,7 @@ int DL_ShouldUseDirectiveFastPath(object oNpc, int nEffectiveDirective)
     if (nEffectiveDirective == DL_DIR_MEAL)
     {
         string sFocusStatus = GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS);
-        return GetSubString(sFocusStatus, 0, 15) == "on_meal_anchor" &&
+        return GetSubString(sFocusStatus, 0, GetStringLength(DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX)) == DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX &&
                GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) != "";
     }
 
