@@ -423,3 +423,13 @@ Entry template:
 **Reason:** preserve runtime behavior and debugging contracts exactly while retaining the refactor split requested in PR #942.
 **Preserve:** include order remains `dl_worker_debug_inc` before `dl_worker_inc`; retained necessary forward declaration in `dl_worker_inc.nss` for early callsites.
 **Validation:** static checks only. Compilation not run; user owns compilation.
+
+## 2026-05-21 — PR #944 include-order fix for extracted worker debug include
+
+**Task/PR/branch:** continue PR #944 / `work` branch head.
+**Files touched:** `daily_life/dl_core_inc.nss`, `daily_life/dl_worker_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** compiler pipeline failed because `dl_worker_debug_inc.nss` was included from `dl_core_inc.nss` before worker constants/prototypes from `dl_worker_inc.nss` were parsed.
+**Change:** removed `#include "dl_worker_debug_inc"` from `dl_core_inc.nss`; added `#include "dl_worker_debug_inc"` inside `dl_worker_inc.nss` after worker constants and after required forward declarations (`DL_SetNpcRegularWorkerDebug`, `DL_RemoveStaleNpcReferenceFromAreaRegistrySlot`, `DL_IsNpcRegistryOwnerForArea`).
+**Reason:** preserve extracted debug-helper structure while fixing compile order dependency without changing runtime behavior.
+**Preserve:** no worker runtime logic edits; no additional function moves.
+**Validation:** static checks only. Compilation not run; user owns compilation.

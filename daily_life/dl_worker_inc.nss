@@ -66,6 +66,8 @@ int DL_ProcessAreaNpcByPassMode(object oArea, object oNpc, int nPassMode, int nT
 int DL_RemoveStaleNpcReferenceFromAreaRegistrySlot(object oArea, object oNpc, int nSlot);
 int DL_IsNpcRegistryOwnerForArea(object oNpc, object oArea);
 
+#include "dl_worker_debug_inc"
+
 int DL_GetCursorAdvance(int nNpcProcessed, int nCandidatesSeen, int nNpcSeen)
 {
     int nAdvance = nNpcProcessed;
