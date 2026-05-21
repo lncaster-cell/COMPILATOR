@@ -666,3 +666,13 @@ Entry template:
 **Reason:** reduce resolver include size and isolate directive-state/fast-path helper implementation ownership while preserving include-order behavior and runtime contracts.
 **Preserve:** function names/signatures/bodies unchanged; directive fallback (social→public) unchanged; fast-path eligibility/refresh timing unchanged; no edits to focus recovery/move bridge/finalizer/apply pipeline function bodies; no edits to cache/worker/transition includes.
 **Validation:** static text/search checks only (single implementation location for moved functions, include placement, untouched protected function regions). Compilation not run; user owns compilation.
+
+## 2026-05-21 — Remove dead no-op apply-pipeline trace hook from resolver apply flow
+
+**Task/PR/branch:** chore/remove-dead-dl-trace-apply-pipeline / remove obsolete `DL_TraceApplyPipeline` no-op.
+**Files touched:** `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** after prior BSMITH cleanup, resolver helper `DL_TraceApplyPipeline(object oNpc, string sStage)` was an empty no-op but was still called at multiple `DL_ApplyDirectiveSkeleton` stages.
+**Change:** removed the empty `DL_TraceApplyPipeline` definition and removed all callsites from `dl_res_inc.nss` apply pipeline paths.
+**Reason:** delete dead code with zero side effects while preserving existing directive/move/finalizer/worker behavior.
+**Preserve:** no gameplay, movement, transition, finalizer, worker, directive resolution, fast-path, cache, local-key, or diagnostics behavior changes beyond removing dead no-op calls and their stage-string arguments.
+**Validation:** static text/search checks only (`DL_TraceApplyPipeline` absence, file-focused diff review). Compilation not run; user owns compilation.

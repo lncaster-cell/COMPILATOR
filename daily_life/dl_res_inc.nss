@@ -769,10 +769,6 @@ int DL_FinalizeReachedDirectiveMoveJob(object oNpc, int nEffectiveDirective)
     return FALSE;
 }
 
-void DL_TraceApplyPipeline(object oNpc, string sStage)
-{
-}
-
 int DL_IsDirectiveStableAfterReachedFinalize(object oNpc, int nEffectiveDirective)
 {
     // Stable-stage mapping (general "arrived and settled" stage -> owner status):
@@ -960,7 +956,6 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
     int nPrevDirective = GetLocalInt(oNpc, DL_L_NPC_DIRECTIVE);
     int nApplyStartMoveTicket = GetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET);
     string sApplyStartMoveTarget = GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG);
-    DL_TraceApplyPipeline(oNpc, "APPLY_ENTER");
 
     if (nPrevDirective != nEffectiveDirective)
     {
@@ -974,17 +969,14 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
             DL_IsMoveJobOwnerCompatibleWithDirective(oNpc, nEffectiveDirective) &&
             DL_IsMoveJobAtTargetNow(oNpc))
         {
-            DL_TraceApplyPipeline(oNpc, "BEFORE_FINALIZE_REACHED");
             if (DL_FinalizeReachedDirectiveMoveJob(oNpc, nEffectiveDirective))
             {
                 DL_VerifyReachedFinalizeClosure(oNpc, nEffectiveDirective);
             }
-            DL_TraceApplyPipeline(oNpc, "AFTER_FINALIZE_REACHED");
         }
         DL_RecoverReachedFocusAnchorMoveState(oNpc);
         if (DL_ProcessTransitionMoveInApply(oNpc, nEffectiveDirective))
         {
-            DL_TraceApplyPipeline(oNpc, "APPLY_EXIT");
             return;
         }
         if (!DL_IsMoveJobOwnerCompatibleWithDirective(oNpc, nEffectiveDirective))
@@ -1021,24 +1013,18 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
     int bMoveJobTicked = FALSE;
     if (nPrevDirective == nEffectiveDirective && DL_IsMoveJobOwnerCompatibleWithDirective(oNpc, nEffectiveDirective))
     {
-        DL_TraceApplyPipeline(oNpc, "BEFORE_TICK_MOVE_JOB");
         bMoveJobTicked = DL_TickMoveJob(oNpc);
         if (bMoveJobTicked && DL_GetMoveJobResult(oNpc) == DL_MOVE_RESULT_REACHED)
         {
-            DL_TraceApplyPipeline(oNpc, "BEFORE_FINALIZE_REACHED");
             if (DL_FinalizeReachedDirectiveMoveJob(oNpc, nEffectiveDirective))
             {
                 DL_VerifyReachedFinalizeClosure(oNpc, nEffectiveDirective);
             }
-            DL_TraceApplyPipeline(oNpc, "AFTER_FINALIZE_REACHED");
             bReachedOrClearedEarlier = TRUE;
         }
-        DL_TraceApplyPipeline(oNpc, "AFTER_TICK_MOVE_JOB");
     }
     else
     {
-        DL_TraceApplyPipeline(oNpc, "BEFORE_TICK_MOVE_JOB");
-        DL_TraceApplyPipeline(oNpc, "AFTER_TICK_MOVE_JOB");
     }
 
     if (!DL_HasMoveJob(oNpc) || GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_REACHED)
@@ -1049,13 +1035,11 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
 
     if (bMoveJobTicked && DL_GetMoveJobResult(oNpc) == DL_MOVE_RESULT_RUNNING)
     {
-        DL_TraceApplyPipeline(oNpc, "BEFORE_FINALIZE_REACHED");
         if (DL_FinalizeReachedDirectiveMoveJob(oNpc, nEffectiveDirective))
         {
             DL_VerifyReachedFinalizeClosure(oNpc, nEffectiveDirective);
             bReachedOrClearedEarlier = TRUE;
         }
-        DL_TraceApplyPipeline(oNpc, "AFTER_FINALIZE_REACHED");
         if (GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_RUNNING)
         {
             DL_EnforceReachedMoveApplyExitInvariant(oNpc, nEffectiveDirective);
@@ -1070,23 +1054,19 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
 
     if (nPrevDirective == nEffectiveDirective && DL_ShouldUseDirectiveFastPath(oNpc, nEffectiveDirective))
     {
-        DL_TraceApplyPipeline(oNpc, "BEFORE_DIRECTIVE_EXECUTOR");
         if (nEffectiveDirective == DL_DIR_WORK)
         {
             DL_RefreshWorkPresentationOnFastPath(oNpc);
         }
-        DL_TraceApplyPipeline(oNpc, "AFTER_DIRECTIVE_EXECUTOR");
 
         DL_DetectApplyMoveRegression(oNpc, bReachedOrClearedEarlier, nMoveTicketBefore, sMoveTargetBefore, "AFTER_DIRECTIVE_EXECUTOR", nEffectiveDirective);
         DL_ApplyMaterializationSkeleton(oNpc, nEffectiveDirective);
         DL_EnforceReachedMoveApplyExitInvariant(oNpc, nEffectiveDirective);
-        DL_TraceApplyPipeline(oNpc, "APPLY_EXIT");
         return;
     }
 
     SetLocalInt(oNpc, DL_L_NPC_DIRECTIVE, nEffectiveDirective);
 
-    DL_TraceApplyPipeline(oNpc, "BEFORE_DIRECTIVE_EXECUTOR");
     if (nEffectiveDirective == DL_DIR_SLEEP)
     {
         DL_ClearWorkExecutionState(oNpc);
@@ -1151,10 +1131,8 @@ void DL_ApplyDirectiveSkeleton(object oNpc, int nDirective)
     {
         DL_ApplyIdleLikeDirectiveState(oNpc, FALSE);
     }
-    DL_TraceApplyPipeline(oNpc, "AFTER_DIRECTIVE_EXECUTOR");
 
     DL_DetectApplyMoveRegression(oNpc, bReachedOrClearedEarlier, nMoveTicketBefore, sMoveTargetBefore, "AFTER_DIRECTIVE_EXECUTOR", nEffectiveDirective);
     DL_ApplyMaterializationSkeleton(oNpc, nEffectiveDirective);
     DL_EnforceReachedMoveApplyExitInvariant(oNpc, nEffectiveDirective);
-    DL_TraceApplyPipeline(oNpc, "APPLY_EXIT");
 }
