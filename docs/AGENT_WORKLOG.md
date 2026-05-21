@@ -433,3 +433,13 @@ Entry template:
 **Reason:** preserve extracted debug-helper structure while fixing compile order dependency without changing runtime behavior.
 **Preserve:** no worker runtime logic edits; no additional function moves.
 **Validation:** static checks only. Compilation not run; user owns compilation.
+
+## 2026-05-21 — Worker transition handoff helper extraction into dedicated include
+
+**Task/PR/branch:** `refactor/worker-handoff-helpers` / current task.
+**Files touched:** `daily_life/dl_worker_inc.nss`, `daily_life/dl_worker_handoff_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `dl_worker_inc.nss` contained transition registry handoff helper implementations interleaved with worker flow; task required isolating only handoff helpers without runtime behavior change.
+**Change:** moved these functions verbatim into new include `dl_worker_handoff_inc.nss`: `DL_GetAreaTransitionHandoffSlotKey`, `DL_SetTransitionRegistryHandoffDebug`, `DL_QueueTransitionRegistryHandoff`, `DL_RequestTransitionRegistryHandoff`, `DL_RunTransitionRegistryHandoffTick`; added `#include "dl_worker_handoff_inc"` inside `dl_worker_inc.nss` in place of removed helper bodies after worker constants/prototypes are available.
+**Reason:** reduce `dl_worker_inc.nss` size and keep transition handoff code isolated while preserving existing handoff logic/contracts and include ownership.
+**Preserve:** worker runtime scheduling, area registry fallback/recovery, and critical stale-reached recovery paths were not changed.
+**Validation:** static checks only. Compilation not run; user owns compilation.
