@@ -733,10 +733,20 @@ Entry template:
 
 ## 2026-05-21 — Meal focus prefix checks: replace magic length/literal with shared contract constant
 
-**Task/PR/branch:** current branch / `on_meal_anchor` prefix-check normalization.
-**Files touched:** `daily_life/dl_res_inc.nss`, `daily_life/dl_res_directive_state_inc.nss`, `daily_life/dl_diag_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** several Daily Life focus-status prefix checks still used hardcoded `GetSubString(..., 0, 15)` and literal `"on_meal_anchor"`, which risks drift from the canonical focus contract include.
-**Change:** switched meal-status prefix comparisons to `DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX` and dynamic prefix length via `GetStringLength(DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX)` in resolver compatibility checks, directive fast-path checks, and diagnostic problem-summary validation.
-**Reason:** remove magic-number/string duplication while preserving runtime contract and behavior; prefix semantics still intentionally match both `on_meal_anchor` and `on_meal_anchor_sitting`.
-**Preserve:** no local-key literal migrations; no pipeline ownership changes; no behavior rewrite outside prefix compare normalization.
-**Validation:** static text/search checks only (`rg` for old hardcoded prefix checks). Compilation not run; user owns compilation.
+**Task/PR/branch:** current branch / contract-consistency cleanup for `DL_L_NPC_FOCUS_STATUS` comparisons.
+**Files touched:** `daily_life/dl_res_directive_state_inc.nss`, `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** a few focus-status comparisons still used raw literals (`"on_chill_anchor"`, meal prefix literal), while canonical focus status constants already exist in `dl_focus_contract_inc.nss`.
+**Change:** replaced matching raw `DL_L_NPC_FOCUS_STATUS` comparisons with existing constants: `DL_FOCUS_STATUS_ON_CHILL_ANCHOR` and `DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX`.
+**Reason:** remove drift risk between literal checks and shared focus-status contracts without changing runtime values/semantics.
+**Preserve:** no local-key or status literal value changes; no behavior/pipeline rewrites; `DL_FOCUS_STATUS_MOVING_TO_ANCHOR` usage in `DL_NpcNeedsCriticalWorkerTouch` remains constant-based.
+**Validation:** static text/search checks only. Compilation not run; user owns compilation.
+
+## 2026-05-21 — Cross-file focus-status contract deduplication (public/social/meal literals)
+
+**Task/PR/branch:** current task / eliminate duplicated focus-status literals in `daily_life/` checks.
+**Files touched:** `daily_life/dl_diag_inc.nss`, `daily_life/dl_social_scene_inc.nss`, `daily_life/dl_res_directive_state_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `DL_L_NPC_FOCUS_STATUS` filtering/comparison logic still had raw literals for `on_public_anchor`, `on_social_anchor`, and `on_meal_anchor` prefix in some includes, duplicating contract values already defined in `daily_life/dl_focus_contract_inc.nss`.
+**Change:** replaced those `DL_L_NPC_FOCUS_STATUS` raw literal checks with canonical constants: `DL_FOCUS_STATUS_ON_PUBLIC_ANCHOR`, `DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR`, `DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX` (and aligned same meal-prefix check in directive fast-path state include).
+**Reason:** remove cross-file contract duplication/drift risk while preserving byte-identical status semantics and existing diagnostic/filter behavior.
+**Preserve:** include-order left unchanged (no broad declaration hacks, no include reordering); filtering logic in diagnostics/social scene remains logically identical.
+**Validation:** static text/search checks only. Compilation not run; user owns compilation.
