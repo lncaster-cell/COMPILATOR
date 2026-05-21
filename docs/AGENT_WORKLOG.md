@@ -646,3 +646,13 @@ Entry template:
 **Reason:** reduce `dl_res_inc.nss` size and make resolver/runtime contracts explicit while preserving include-order behavior and symbol contracts.
 **Preserve:** no function bodies moved; const vs non-const declarations preserved exactly; no gameplay/movement/transition/worker/directive/cache behavior changes.
 **Validation:** static diff/review only. Compilation not run; user owns compilation.
+
+## 2026-05-21 — Extract resolver cache/reset helpers into dedicated include
+
+**Task/PR/branch:** refactor/dl-res-cache-include / isolate resolver cache epoch/reset helper implementations.
+**Files touched:** `daily_life/dl_res_inc.nss`, `daily_life/dl_res_cache_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** resolver include had cache epoch/reset helper implementations interleaved before directive/apply pipeline helpers, increasing size and coupling.
+**Change:** moved these functions verbatim from `dl_res_inc.nss` into new include `dl_res_cache_inc.nss`: `DL_GetModuleCacheEpoch`, `DL_ConsumeModuleCacheResetRequest`, `DL_ClearAreaNavigationCache`, `DL_MaybeRefreshAreaCachesForEpoch`, `DL_ClearNpcWaypointCaches`, `DL_ClearNpcAreaCaches`, `DL_ClearNpcRuntimeCaches`, `DL_MaybeRefreshNpcCachesForEpoch`; inserted `#include "dl_res_cache_inc"` in `dl_res_inc.nss` immediately after existing include block (`dl_anchor_cache_inc`/`dl_presentation_inc`/`dl_anchor_move_inc`/`dl_sleep_inc`/`dl_move_job_inc`/`dl_work_inc`/`dl_focus_inc`) and before `DL_SetInteractionModes`.
+**Reason:** reduce `dl_res_inc.nss` size and isolate resolver cache helper implementations without altering runtime behavior.
+**Preserve:** function names/signatures/bodies unchanged; local-key literals/constants unchanged; module/area/NPC cache epoch/reset semantics unchanged; directive/move/finalizer/apply pipeline functions not moved or edited.
+**Validation:** static text/search checks only (function location, include placement, no duplicate implementations). Compilation not run; user owns compilation.
