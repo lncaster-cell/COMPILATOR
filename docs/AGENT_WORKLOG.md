@@ -1,12 +1,13 @@
-## 2026-05-21 — No-op diagnostics shim audit in `daily_life/` (worker trace hook contract)
+## 2026-05-21 — Work CRAFT/FETCH/else classifier unification in dl_work_inc
 
-**Task/PR/branch:** current task / audit intentional no-op diagnostic/helper functions under `daily_life/`.
-**Files touched:** `daily_life/dl_worker_debug_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** user requested a full no-op audit for diagnostic/helper-named functions (empty body `{}`), including explicit decision for `DL_LogChatDebugEvent` and `DL_TraceAreaWorkerTickForRegisteredNpc`.
-**Change:** audited `daily_life/*.nss` for empty-body functions; current code contains one diagnostic/helper no-op: `DL_TraceAreaWorkerTickForRegisteredNpc(...)` in `dl_worker_debug_inc.nss`; added explicit intentional no-op contract comment beside the stub explaining it is a compatibility/instrumentation shim and that active runtime diagnostics remain owned by existing worker debug-local writers. Confirmed `DL_LogChatDebugEvent` remains intentionally **removed** (already deleted in prior cleanup) and should not be reintroduced as a no-op shim.
-**Reason:** prevent future agents from randomly re-implementing/removing shims without context, while preserving current debug invariants around worker touch + reached/finalize paths and avoiding duplicate telemetry channels.
-**Preserve:** no changes to movement/finalizer/directive behavior; no BSMITH/reached/finalize invariant logic removed or rewritten.
-**Validation:** static text/search checks only (`python` no-op scan + `rg` symbol audit). Compilation not run; user owns compilation.
+**Task/PR/branch:** current branch / user request to centralize repeated `CRAFT/FETCH/else` ladders in work target selection.
+**Files touched:** `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** multiple work-resolution paths (resolve-for-profile, resolve-target-for-profile, execute-directive) repeated the same `CRAFT/FETCH/else` target-selection ladder with the same fallback intent.
+**Change:** added canonical kind-classification helpers (`DL_IsWorkKindCraft`, `DL_IsWorkKindFetch`) and shared selector `DL_SelectWorkTargetByKind`; replaced duplicated ladders in blacksmith and domestic paths with this helper.
+**Reason:** remove logic drift risk while preserving each path’s business behavior and fallback policy.
+**Fallback invariants preserved:** blacksmith `FETCH` still falls back to `CRAFT` target when fetch waypoint is invalid; domestic path keeps primary-as-default behavior and uses existing resolved kind/fetch availability flow.
+**Preserve:** no local-key literal changes; no movement/directive/finalizer/worker pipeline rewrites; anchor/fallback resolution contracts unchanged.
+**Validation:** static text/diff checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-21 — diagnostic contract dedup: regular_worker_not_touching_registered_npc
 
