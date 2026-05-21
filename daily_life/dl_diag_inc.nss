@@ -38,7 +38,7 @@ string DL_GetNpcProblemSummary(object oNpc)
 {
     object oCurrentArea = GetArea(oNpc);
     object oRegisteredArea = GetLocalObject(oNpc, "dl_npc_reg_area");
-    if (GetLocalString(oNpc, "dl_post_jump_result") == "post_jump_finalizer_complete" &&
+    if (GetLocalString(oNpc, "dl_post_jump_result") == DL_POST_JUMP_RESULT_COMPLETE &&
         GetIsObjectValid(oCurrentArea) &&
         oRegisteredArea == oCurrentArea &&
         GetLocalString(oNpc, "dl_transition_registry_problem") == DL_TRANSITION_REGISTRY_PROBLEM_TARGET_AREA_WORKER_NOT_TICKING_OR_NOT_OWNING_NPC)
