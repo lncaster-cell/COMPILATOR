@@ -186,4 +186,9 @@ void DL_SetNpcRegularWorkerDebug(
 
 void DL_TraceAreaWorkerTickForRegisteredNpc(object oNpc, object oArea, int nTickStamp, int nPassMode, int nBudget, int nCursor)
 {
+    // INTENTIONAL NO-OP CONTRACT (2026-05 stage):
+    // Keep this shim as a stable callsite target for critical-worker instrumentation hooks.
+    // Runtime diagnostics for worker touch/reached/finalize invariants are owned by
+    // DL_SetNpcRegularWorkerDebug and related debug-local writers, so this function must
+    // not emit alternate tracing that could duplicate or conflict with active invariants.
 }

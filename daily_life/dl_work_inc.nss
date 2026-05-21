@@ -87,6 +87,52 @@ object DL_ResolveWorkAnchorWithFallback(
     );
 }
 
+
+
+// Single source of truth for work kind classification in CRAFT/FETCH/else branches.
+int DL_IsWorkKindCraft(string sKind)
+{
+    return sKind == DL_WORK_KIND_CRAFT;
+}
+
+int DL_IsWorkKindFetch(string sKind)
+{
+    return sKind == DL_WORK_KIND_FETCH;
+}
+
+object DL_SelectWorkTargetByKind(
+    string sKind,
+    object oPrimaryTarget,
+    object oCraftTarget,
+    object oFetchTarget,
+    int bAllowFetch,
+    string sFallbackKind,
+    string sResolvedKindOut
+)
+{
+    string sResolvedKind = sKind;
+    object oTarget = oPrimaryTarget;
+
+    if (DL_IsWorkKindCraft(sResolvedKind))
+    {
+        oTarget = oCraftTarget;
+    }
+    else if (DL_IsWorkKindFetch(sResolvedKind))
+    {
+        if (bAllowFetch)
+        {
+            oTarget = oFetchTarget;
+        }
+        else
+        {
+            sResolvedKind = sFallbackKind;
+            oTarget = oCraftTarget;
+        }
+    }
+
+    sResolvedKindOut = sResolvedKind;
+    return oTarget;
+}
 object DL_ResolveWorkAnchorByKind(
     object oNpc,
     object oArea,
@@ -230,23 +276,15 @@ int DL_ResolveWorkForProfile(object oNpc, string sProfile)
             return FALSE;
         }
 
-        oTarget = oForge;
-        if (sBlacksmithKind == DL_WORK_KIND_CRAFT)
-        {
-            oTarget = oCraft;
-        }
-        else if (sBlacksmithKind == DL_WORK_KIND_FETCH)
-        {
-            if (GetIsObjectValid(oFetch))
-            {
-                oTarget = oFetch;
-            }
-            else
-            {
-                sBlacksmithKind = DL_WORK_KIND_CRAFT;
-                oTarget = oCraft;
-            }
-        }
+        oTarget = DL_SelectWorkTargetByKind(
+            sBlacksmithKind,
+            oForge,
+            oCraft,
+            oFetch,
+            GetIsObjectValid(oFetch),
+            DL_WORK_KIND_CRAFT,
+            sBlacksmithKind
+        );
 
         SetLocalString(oNpc, DL_L_NPC_WORK_RESOLVED_KIND, sBlacksmithKind);
         SetLocalObject(oNpc, DL_L_NPC_WORK_RESOLVED_TARGET, oTarget);
@@ -282,15 +320,15 @@ int DL_ResolveWorkForProfile(object oNpc, string sProfile)
         }
 
         sKind = DL_ResolveDomesticWorkerWorkKind(oNpc, bHasFetch);
-        oTarget = oPrimary;
-        if (sKind == DL_WORK_KIND_CRAFT)
-        {
-            oTarget = oSecondary;
-        }
-        else if (sKind == DL_WORK_KIND_FETCH)
-        {
-            oTarget = oFetch;
-        }
+        oTarget = DL_SelectWorkTargetByKind(
+            sKind,
+            oPrimary,
+            oSecondary,
+            oFetch,
+            bHasFetch,
+            DL_WORK_KIND_DOMESTIC,
+            sKind
+        );
     }
 
     if (!GetIsObjectValid(oTarget))
@@ -361,23 +399,15 @@ object DL_ResolveWorkTargetForProfile(object oNpc, string sProfile, string sKind
             return OBJECT_INVALID;
         }
 
-        object oTarget = oForge;
-        if (sKind == DL_WORK_KIND_CRAFT)
-        {
-            oTarget = oCraft;
-        }
-        else if (sKind == DL_WORK_KIND_FETCH)
-        {
-            if (GetIsObjectValid(oFetch))
-            {
-                oTarget = oFetch;
-            }
-            else
-            {
-                sKind = DL_WORK_KIND_CRAFT;
-                oTarget = oCraft;
-            }
-        }
+        object oTarget = DL_SelectWorkTargetByKind(
+            sKind,
+            oForge,
+            oCraft,
+            oFetch,
+            GetIsObjectValid(oFetch),
+            DL_WORK_KIND_CRAFT,
+            sKind
+        );
 
         DL_SetWorkResolveState(oNpc, sKind, "");
         return oTarget;
@@ -410,15 +440,15 @@ object DL_ResolveWorkTargetForProfile(object oNpc, string sProfile, string sKind
         }
 
         string sKind = DL_ResolveDomesticWorkerWorkKind(oNpc, bHasFetch);
-        object oTarget = oPrimary;
-        if (sKind == DL_WORK_KIND_CRAFT)
-        {
-            oTarget = oSecondary;
-        }
-        else if (sKind == DL_WORK_KIND_FETCH)
-        {
-            oTarget = oFetch;
-        }
+        object oTarget = DL_SelectWorkTargetByKind(
+            sKind,
+            oPrimary,
+            oSecondary,
+            oFetch,
+            bHasFetch,
+            DL_WORK_KIND_DOMESTIC,
+            sKind
+        );
 
         DL_SetWorkResolveState(oNpc, sKind, "");
         return oTarget;
@@ -647,23 +677,15 @@ void DL_ExecuteWorkDirective(object oNpc)
             return;
         }
 
-        object oTarget = oForge;
-        if (sKind == DL_WORK_KIND_CRAFT)
-        {
-            oTarget = oCraft;
-        }
-        else if (sKind == DL_WORK_KIND_FETCH)
-        {
-            if (GetIsObjectValid(oFetch))
-            {
-                oTarget = oFetch;
-            }
-            else
-            {
-                sKind = DL_WORK_KIND_CRAFT;
-                oTarget = oCraft;
-            }
-        }
+        object oTarget = DL_SelectWorkTargetByKind(
+            sKind,
+            oForge,
+            oCraft,
+            oFetch,
+            GetIsObjectValid(oFetch),
+            DL_WORK_KIND_CRAFT,
+            sKind
+        );
 
         DL_ApplyWorkTargetAndProgress(oNpc, sKind, oTarget);
         return;
@@ -695,15 +717,15 @@ void DL_ExecuteWorkDirective(object oNpc)
         }
 
         string sKind = DL_ResolveDomesticWorkerWorkKind(oNpc, bHasFetch);
-        object oHomeWork = oPrimary;
-        if (sKind == DL_WORK_KIND_CRAFT)
-        {
-            oHomeWork = oSecondary;
-        }
-        else if (sKind == DL_WORK_KIND_FETCH)
-        {
-            oHomeWork = oFetch;
-        }
+        object oHomeWork = DL_SelectWorkTargetByKind(
+            sKind,
+            oPrimary,
+            oSecondary,
+            oFetch,
+            bHasFetch,
+            DL_WORK_KIND_DOMESTIC,
+            sKind
+        );
 
         DL_ApplyWorkTargetAndProgress(oNpc, sKind, oHomeWork);
         return;
