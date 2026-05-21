@@ -164,25 +164,9 @@ void DL_ClearMoveJob(object oNpc)
 
 int DL_ShouldReissueMoveJobAction(object oNpc, string sKey)
 {
-    if (!GetIsObjectValid(oNpc))
-    {
-        return FALSE;
-    }
-
-    if (GetCurrentAction(oNpc) != ACTION_MOVETOPOINT)
-    {
-        return TRUE;
-    }
-
-    int nNow = DL_GetAnchorMoveActionStamp();
-    int nLast = GetLocalInt(oNpc, sKey);
-
-    if (nLast <= 0 || nNow < nLast || (nNow - nLast) >= DL_MOVE_ACTION_REISSUE_SECONDS)
-    {
-        return TRUE;
-    }
-
-    return FALSE;
+    // Contract: canonical move-action reissue semantics for all owner pipelines
+    // are centralized in DL_ShouldReissueAnchorMoveAction(..., nReissueSeconds).
+    return DL_ShouldReissueAnchorMoveAction(oNpc, sKey, DL_MOVE_ACTION_REISSUE_SECONDS);
 }
 
 int DL_GetMoveJobElapsedSeconds(int nNow, int nThen)

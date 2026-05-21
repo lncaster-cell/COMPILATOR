@@ -178,7 +178,7 @@ void DL_TickSocialScene(object oNpc, object oAnchor, object oPartner, int bPartn
     if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oAnchor)) return;
 
     string sAnchorTag = GetTag(oAnchor);
-    if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) != "on_social_anchor") return;
+    if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) != DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR) return;
     if (GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) != sAnchorTag) return;
 
     if (GetLocalString(oNpc, DL_L_NPC_SOCIAL_SCENE_ANCHOR) != sAnchorTag)

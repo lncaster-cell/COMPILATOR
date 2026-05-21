@@ -1,6 +1,6 @@
-int DL_IsRegisteredCurrentAreaStaleReachedMoveCritical(object oNpc, object oArea)
+int DL_IsStaleReachedMoveCore(object oNpc)
 {
-    if (!GetIsObjectValid(oNpc) || !GetIsObjectValid(oArea))
+    if (!GetIsObjectValid(oNpc))
     {
         return FALSE;
     }
@@ -21,6 +21,21 @@ int DL_IsRegisteredCurrentAreaStaleReachedMoveCritical(object oNpc, object oArea
     }
 
     if (GetCurrentAction(oNpc) == ACTION_MOVETOPOINT)
+    {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+int DL_IsRegisteredCurrentAreaStaleReachedMoveCritical(object oNpc, object oArea)
+{
+    if (!GetIsObjectValid(oArea))
+    {
+        return FALSE;
+    }
+
+    if (!DL_IsStaleReachedMoveCore(oNpc))
     {
         return FALSE;
     }
@@ -74,27 +89,7 @@ int DL_EmergencyTouchCriticalStaleReachedNpc(object oNpc, object oArea, int nPas
 
 int DL_IsStaleReachedMoveJobCritical(object oNpc)
 {
-    if (!DL_HasMoveJob(oNpc))
-    {
-        return FALSE;
-    }
-
-    if (GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) != DL_MOVE_RESULT_RUNNING)
-    {
-        return FALSE;
-    }
-
-    if (!DL_IsMoveJobAtTargetNow(oNpc))
-    {
-        return FALSE;
-    }
-
-    if (GetCurrentAction(oNpc) == ACTION_MOVETOPOINT)
-    {
-        return FALSE;
-    }
-
-    return TRUE;
+    return DL_IsStaleReachedMoveCore(oNpc);
 }
 
 // AUDIT(#864): FALLBACK/EMERGENCY CLASSIFIER.
