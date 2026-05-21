@@ -1,3 +1,13 @@
+## 2026-05-21 — Critical stale-reached classifier: only escalate without ACTION_MOVETOPOINT
+
+**Task/PR/branch:** current branch / refine `DL_IsStaleReachedMoveJobCritical` escalation criteria.
+**Files touched:** `daily_life/dl_worker_critical_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** critical stale-reached classifier still needed explicit diagnostic split between true stale contradictions and normal in-progress move actions near target.
+**Change:** kept existing early guards (`DL_HasMoveJob`, `move_result == running`, `DL_IsMoveJobAtTargetNow`), changed action branch to return non-critical when `GetCurrentAction(oNpc) == ACTION_MOVETOPOINT` with BSMITH trace reason `in_progress_moveto_near_target`, and escalate only when move action is absent with BSMITH trace reason `stale_reached_without_moveto`; aligned critical debug/bypass reason strings to `stale_reached_without_moveto`.
+**Reason:** preserve canonical reached/finalize pipeline and prevent false critical escalation from normal in-progress `ACTION_MOVETOPOINT` states while retaining actionable diagnostics for stale no-moveto contradictions.
+**Preserve:** emergency path still routes through worker touch/finalizer pipeline (`DL_NpcNeedsCriticalWorkerTouch`/critical bypass path); no local-key literal contract changes.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 
 ## 2026-05-21 — Daily Life invariant hardening: stale-critical filter + emergency-close context guard
 
