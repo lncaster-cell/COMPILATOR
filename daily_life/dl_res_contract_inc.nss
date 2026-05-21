@@ -1,6 +1,7 @@
 // Step 05+: resolver/materialization skeleton.
 string DL_GetNpcProblemSummary(object oNpc);
 // Scope: basic BLACKSMITH/GATE_POST/TRADER WORK/SLEEP window split.
+const string DL_DIAG_REGULAR_WORKER_NOT_TOUCHING_REGISTERED_NPC = "regular_worker_not_touching_registered_npc";
 
 string DL_L_NPC_DIRECTIVE = "dl_npc_directive";
 const string DL_L_NPC_MAT_REQ = "dl_npc_mat_req";
@@ -183,4 +184,3 @@ object DL_ResolveChillWaypoint(object oNpc);
 int DL_ShouldFallbackSocialToPublic(object oNpc);
 void DL_MaybeRefreshNpcCachesForEpoch(object oNpc);
 void DL_MaybeRefreshAreaCachesForEpoch(object oArea);
-

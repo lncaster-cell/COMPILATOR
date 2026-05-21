@@ -1,3 +1,14 @@
+## 2026-05-21 — diagnostic contract dedup: regular_worker_not_touching_registered_npc
+
+**Task/PR/branch:** current task / diagnostic contract dedup for regular-worker stale-touch summary literal.
+**Files touched:** `daily_life/dl_res_contract_inc.nss`, `daily_life/dl_diag_inc.nss`, `daily_life/dl_worker_critical_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** the diagnostic literal `"regular_worker_not_touching_registered_npc"` was duplicated across problem-summary return and critical-worker checks/debug reasons.
+**Change:** added shared diagnostics contract symbol `DL_DIAG_REGULAR_WORKER_NOT_TOUCHING_REGISTERED_NPC` in the existing resolver/diagnostics contract include and replaced all in-repo `daily_life/` literal comparisons/returns/debug reason writes with that symbol.
+**Reason:** remove literal drift risk while preserving byte-identical external diagnostic value for existing debug consumers.
+**External-consumer compatibility:** literal value unchanged (`"regular_worker_not_touching_registered_npc"`); only symbol indirection changed.
+**Preserve:** no movement/worker/finalizer pipeline behavior changes; no local-key contract literal changes.
+**Validation:** static text/search checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-21 — Sleep reissue helper: defensive invalid-object guard parity
 
 **Task/PR/branch:** current branch / compatibility-safe defensive hardening for sleep reissue helper.
@@ -720,7 +731,7 @@ Entry template:
 **Preserve:** literal value remains byte-identical (`"pause"`); no action queue behavior or directive/finalizer pipeline rewrites.
 **Validation:** static text/search checks only. Compilation not run; user owns compilation.
 
-## 2026-05-21 — Focus-status contract consistency cleanup (literal → constants)
+## 2026-05-21 — Meal focus prefix checks: replace magic length/literal with shared contract constant
 
 **Task/PR/branch:** current branch / contract-consistency cleanup for `DL_L_NPC_FOCUS_STATUS` comparisons.
 **Files touched:** `daily_life/dl_res_directive_state_inc.nss`, `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.

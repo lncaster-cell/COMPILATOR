@@ -30,6 +30,18 @@ int DL_ResolveEffectiveDirective(object oNpc, int nDirective)
 
     return nDirective;
 }
+
+int DL_IsMealFocusStatus(string sFocusStatus)
+{
+    int nMealPrefixLength = GetStringLength(DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX);
+    if (GetStringLength(sFocusStatus) < nMealPrefixLength)
+    {
+        return FALSE;
+    }
+
+    return GetSubString(sFocusStatus, 0, nMealPrefixLength) == DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX;
+}
+
 int DL_ShouldUseDirectiveFastPath(object oNpc, int nEffectiveDirective)
 {
     if (!GetIsObjectValid(oNpc))
