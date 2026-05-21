@@ -1,11 +1,11 @@
-## 2026-05-21 — Transition finalizer cache-invalidation deduplication
+## 2026-05-21 — BSMITH TARGET_IDENTITY_CHANGED guard against legitimate lifecycle re-resolve
 
-**Task/PR/branch:** current branch / transition completion cleanup in `dl_transition_inc.nss`.
-**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** transition completion/finalizer paths performed direct `DL_NavInvalidateInferZoneCache(...)` immediately before `DL_ClearTransitionExecutionState(...)`, which already invalidates the same cache, creating duplicate invalidation side effects and ambiguous diagnostic ownership.
-**Change:** introduced `DL_ClearTransitionExecutionStateWithCacheReason(object oNpc, string sCacheReason)` as canonical transition-state clear+cache-invalidate helper, made `DL_ClearTransitionExecutionState` delegate to it with default reason `clear_transition_execution_state`, and switched both completion finalize paths (`transition_finalize_complete_side_effects`, `transition_finalize_completed_transition`) to call the new helper directly without a preceding standalone invalidation call.
-**Reason:** keep one canonical invalidation source per transition-clear path while preserving explicit reason observability per finalize stage.
-**Preserve:** local-key literals/contracts unchanged; post-jump same-area and complete finalize paths still share the same side-effect helper behavior and now use identical clear/invalidate ownership.
+**Task/PR/branch:** current branch / `dl_res_inc.nss` contradiction-triage refinement.
+**Files touched:** `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `TARGET_IDENTITY_CHANGED` contradiction could trigger in stable tag/area/distance context during legitimate transition/handoff lifecycle windows where move target object can be re-resolved intentionally.
+**Change:** kept the existing stable-context base check (`tag`, `area`, `distance`) and added lifecycle guard suppression for known re-resolve windows (`dl_transition_pending_finalizer_expected`, `dl_transition_registry_handoff`, `dl_transition_registry_problem`). Kept the same contradiction field and made evidence more specific by adding `reason=stable_context_identity_swap`.
+**Reason:** reduce false-positive contradiction noise while preserving useful triage signal and existing local-key literal contracts.
+**Preserve:** no local-key literal value changes; no diagnostic field removals; no movement/directive/finalizer pipeline rewrites.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 

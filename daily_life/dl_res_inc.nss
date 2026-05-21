@@ -572,11 +572,15 @@ void DL_BsmithDetectContradictions(object oNpc, string sStage, object oMoveObj, 
             GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_AREA) == sNewArea &&
             fRawDist <= 10.00;
         int bRecentTransitionFinalize =
-            GetLocalString(oNpc, "dl_post_jump_result") == DL_POST_JUMP_RESULT_COMPLETE ||
-            GetLocalString(oNpc, "dl_post_jump_result") == DL_POST_JUMP_RESULT_SAME_AREA_COMPLETE;
-        if (bStableIdentityContext && !bRecentTransitionFinalize && GetIsObjectValid(oPrev) && oPrev != oMoveObj)
+            GetLocalString(oNpc, "dl_post_jump_result") == "post_jump_finalizer_complete" ||
+            GetLocalString(oNpc, "dl_post_jump_result") == "post_jump_finalizer_same_area_complete";
+        int bLifecycleReresolveWindow =
+            GetLocalInt(oNpc, "dl_transition_pending_finalizer_expected") == TRUE ||
+            GetLocalString(oNpc, "dl_transition_registry_handoff") == "transition_registry_handoff" ||
+            GetLocalString(oNpc, "dl_transition_registry_problem") != "";
+        if (bStableIdentityContext && !bRecentTransitionFinalize && !bLifecycleReresolveWindow && GetIsObjectValid(oPrev) && oPrev != oMoveObj)
         {
-            DL_BsmithContradiction(oNpc, "TARGET_IDENTITY_CHANGED", "tag=" + sMoveTag + " prev_area=" + sPrevArea + " new_area=" + sNewArea + " raw=" + FloatToString(fRawDist, 1, 2));
+            DL_BsmithContradiction(oNpc, "TARGET_IDENTITY_CHANGED", "reason=stable_context_identity_swap tag=" + sMoveTag + " prev_area=" + sPrevArea + " new_area=" + sNewArea + " raw=" + FloatToString(fRawDist, 1, 2));
             DL_BsmithClassify(oNpc, "TARGET_RESOLUTION_BUG", "medium", "target_identity_changed");
         }
         SetLocalString(oNpc, "dl_bsmith_last_target_tag", sMoveTag);
