@@ -1,3 +1,13 @@
+## 2026-05-21 — No-op diagnostics shim audit in `daily_life/` (worker trace hook contract)
+
+**Task/PR/branch:** current task / audit intentional no-op diagnostic/helper functions under `daily_life/`.
+**Files touched:** `daily_life/dl_worker_debug_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** user requested a full no-op audit for diagnostic/helper-named functions (empty body `{}`), including explicit decision for `DL_LogChatDebugEvent` and `DL_TraceAreaWorkerTickForRegisteredNpc`.
+**Change:** audited `daily_life/*.nss` for empty-body functions; current code contains one diagnostic/helper no-op: `DL_TraceAreaWorkerTickForRegisteredNpc(...)` in `dl_worker_debug_inc.nss`; added explicit intentional no-op contract comment beside the stub explaining it is a compatibility/instrumentation shim and that active runtime diagnostics remain owned by existing worker debug-local writers. Confirmed `DL_LogChatDebugEvent` remains intentionally **removed** (already deleted in prior cleanup) and should not be reintroduced as a no-op shim.
+**Reason:** prevent future agents from randomly re-implementing/removing shims without context, while preserving current debug invariants around worker touch + reached/finalize paths and avoiding duplicate telemetry channels.
+**Preserve:** no changes to movement/finalizer/directive behavior; no BSMITH/reached/finalize invariant logic removed or rewritten.
+**Validation:** static text/search checks only (`python` no-op scan + `rg` symbol audit). Compilation not run; user owns compilation.
+
 ## 2026-05-21 — diagnostic contract dedup: regular_worker_not_touching_registered_npc
 
 **Task/PR/branch:** current task / diagnostic contract dedup for regular-worker stale-touch summary literal.
