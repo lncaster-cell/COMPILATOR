@@ -697,3 +697,13 @@ Entry template:
 **Reason:** eliminate dead no-op hook usage while preserving behavior and active diagnostics ownership.
 **Preserve:** no gameplay/movement/transition/finalizer/worker/directive/sleep/work/focus logic changes beyond deleting no-op call statements; `dl_diag_inc.nss` untouched.
 **Validation:** static text/search checks only (`DL_LogChatDebugEvent` absence, changed-file audit). Compilation not run; user owns compilation.
+
+## 2026-05-21 — Canonical stamp helper unification for anchor/sleep/move includes
+
+**Task/PR/branch:** current branch / contract-preserving stamp-helper cleanup across Daily Life movement/sleep includes.
+**Files touched:** `daily_life/dl_sleep_inc.nss`, `daily_life/dl_move_job_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** day-second stamp computation existed in three variants (`DL_GetAnchorMoveActionStamp`, `DL_GetSleepActionStamp`, `DL_GetMoveJobTickStamp`) with identical logic, creating duplicate maintenance points across include boundaries.
+**Change:** selected `DL_GetAnchorMoveActionStamp` as canonical helper and replaced sleep/move-job stamp usage with this helper; removed duplicate function bodies `DL_GetSleepActionStamp` and `DL_GetMoveJobTickStamp`.
+**Reason:** reduce duplication while preserving runtime behavior, include-order compatibility, and existing movement/sleep reissue timing semantics.
+**Preserve:** all stamp consumers still use the same day-second format (`hour*3600 + minute*60 + second`); all existing local-key literals and stamp local variable keys are unchanged.
+**Validation:** static text/search checks only. Compilation not run; user owns compilation.
