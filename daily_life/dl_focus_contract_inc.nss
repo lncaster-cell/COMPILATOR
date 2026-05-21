@@ -23,12 +23,12 @@ const string DL_L_NPC_SOCIAL_PROBE_FOCUS_STATUS_BEFORE = "dl_social_probe_focus_
 const string DL_L_NPC_SOCIAL_PROBE_CURRENT_ACTION = "dl_social_probe_current_action";
 // Contract note: intentionally shares literal with work status moving marker.
 // Domain must be inferred from owner key DL_L_NPC_FOCUS_STATUS (focus domain).
-const string DL_FOCUS_STATUS_MOVING_TO_ANCHOR = "moving_to_anchor";
-const string DL_FOCUS_STATUS_ON_PUBLIC_ANCHOR = "on_public_anchor";
-const string DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR = "on_social_anchor";
-const string DL_FOCUS_STATUS_ON_CHILL_ANCHOR = "on_chill_anchor";
-const string DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX = "on_meal_anchor";
-const string DL_FOCUS_STATUS_ON_MEAL_ANCHOR_SITTING = "on_meal_anchor_sitting";
+string DL_FOCUS_STATUS_MOVING_TO_ANCHOR = "moving_to_anchor";
+string DL_FOCUS_STATUS_ON_PUBLIC_ANCHOR = "on_public_anchor";
+string DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR = "on_social_anchor";
+string DL_FOCUS_STATUS_ON_CHILL_ANCHOR = "on_chill_anchor";
+string DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX = "on_meal_anchor";
+string DL_FOCUS_STATUS_ON_MEAL_ANCHOR_SITTING = "on_meal_anchor_sitting";
 const string DL_FOCUS_STATUS_SITTING_MEAL_ATTEMPT = "sitting_meal_attempt";
 const string DL_FOCUS_STATUS_SITTING_CHILL_ATTEMPT = "sitting_chill_attempt";
 const string DL_FOCUS_STATUS_MISSING_CHILL_CHAIR = "missing_chill_chair";

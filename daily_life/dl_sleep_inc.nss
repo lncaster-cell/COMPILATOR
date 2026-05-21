@@ -106,13 +106,24 @@ int DL_HasSleepExitBedPlacement(object oNpc)
 }
 int DL_ShouldReissueSleepAction(object oNpc, string sKey)
 {
-    // Keep sleep external contract intact; delegate to the canonical helper.
-    return DL_ShouldReissueAnchorMoveAction(oNpc, sKey, DL_SLEEP_ACTION_REISSUE_SECONDS);
+    if (!GetIsObjectValid(oNpc))
+    {
+        return FALSE;
+    }
+
+    int nNow = DL_GetAnchorMoveActionStamp();
+    int nLast = GetLocalInt(oNpc, sKey);
+
+    if (nLast <= 0 || nNow < nLast || (nNow - nLast) >= DL_SLEEP_ACTION_REISSUE_SECONDS)
+    {
+        return TRUE;
+    }
+
+    return FALSE;
 }
 int DL_ShouldReissueSleepMoveAction(object oNpc, string sKey)
 {
-    // Thin-wrapper preserved for compatibility with existing sleep callsites.
-    return DL_ShouldReissueSleepAction(oNpc, sKey);
+    return DL_ShouldReissueAnchorMoveAction(oNpc, sKey, DL_SLEEP_ACTION_REISSUE_SECONDS);
 }
 void DL_MarkSleepActionIssued(object oNpc, string sKey)
 {
