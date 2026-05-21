@@ -636,3 +636,13 @@ Entry template:
 **Reason:** complete behavior-preserving cleanup of deprecated BSMITH/blacksmith-specific runtime references after prior deprecation PRs.
 **Preserve:** no gameplay, movement, transition/finalizer, worker scheduling, directive resolution, or registry logic changes beyond deleting no-op trace calls and obsolete wrapper/script.
 **Validation:** repository text/search checks only (excluding docs for runtime-symbol verification), plus targeted diff review of allowed files. Compilation not run; user owns compilation.
+
+## 2026-05-21 — Extract resolver contract symbols into dedicated include
+
+**Task/PR/branch:** refactor/dl-res-contract-include / resolver contract extraction from `dl_res_inc.nss`.
+**Files touched:** `daily_life/dl_res_inc.nss`, `daily_life/dl_res_contract_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** resolver include contained a large mixed contract block (local-key contracts, constants, forward declarations) before scheduler and resolver helper functions.
+**Change:** moved only the resolver contract block (forward declarations plus resolver/runtime contract constants/keys) from `dl_res_inc.nss` into new include `dl_res_contract_inc.nss`; inserted `#include "dl_res_contract_inc"` immediately after compile-compatibility shim functions and before `#include "dl_sched_inc"`.
+**Reason:** reduce `dl_res_inc.nss` size and make resolver/runtime contracts explicit while preserving include-order behavior and symbol contracts.
+**Preserve:** no function bodies moved; const vs non-const declarations preserved exactly; no gameplay/movement/transition/worker/directive/cache behavior changes.
+**Validation:** static diff/review only. Compilation not run; user owns compilation.
