@@ -1,5 +1,7 @@
 const string DL_L_NPC_WORK_ACTION_STAMP = "dl_work_anchor_action_stamp";
 const string DL_L_NPC_WORK_ACTION_TARGET = "dl_work_anchor_action_target";
+// NOTE: keep literal aligned with sleep status; contexts are isolated by different local fields
+// (DL_L_NPC_WORK_STATUS vs DL_L_NPC_SLEEP_STATUS), so downstream diagnostics do not mix channels.
 const string DL_WORK_STATUS_MISSING_WAYPOINTS = "missing_waypoints";
 // Contract note: intentionally shares literal with focus status moving marker.
 // Domain must be inferred from owner key DL_L_NPC_WORK_STATUS (work domain).
@@ -8,7 +10,6 @@ const string DL_WORK_STATUS_ON_ANCHOR = "on_anchor";
 const string DL_L_NPC_WORK_RESOLVED_KIND = "dl_work_resolved_kind";
 const string DL_L_NPC_WORK_RESOLVED_TARGET = "dl_work_resolved_target";
 const string DL_L_NPC_WORK_RESOLVE_MISSING_DIAG = "dl_work_resolve_missing_diag";
-
 
 void DL_ExecuteWorkDirective(object oNpc);
 object DL_ResolveWorkWaypointByRoleParams(object oNpc, object oArea, string sAnchorKey, string sAnchorCacheKey, string sFallbackCacheKey, string sFallbackPrefix, string sFallbackSuffix, string sFallbackDefaultTag);
@@ -581,12 +582,6 @@ void DL_LogWorkTargetSelection(object oNpc, object oTarget, string sKind)
     {
         return;
     }
-
-    DL_LogChatDebugEvent(
-        oNpc,
-        "target_work",
-        "target dir=WORK area=" + GetTag(GetArea(oTarget)) + " anchor=" + GetTag(oTarget) + " kind=" + sKind
-    );
 }
 
 void DL_ApplyWorkTargetAndProgress(object oNpc, string sKind, object oTarget)

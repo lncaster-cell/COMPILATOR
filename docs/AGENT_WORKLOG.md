@@ -687,3 +687,13 @@ Entry template:
 **Reason:** delete dead code with zero side effects while preserving existing directive/move/finalizer/worker behavior.
 **Preserve:** no gameplay, movement, transition, finalizer, worker, directive resolution, fast-path, cache, local-key, or diagnostics behavior changes beyond removing dead no-op calls and their stage-string arguments.
 **Validation:** static text/search checks only (`DL_TraceApplyPipeline` absence, file-focused diff review). Compilation not run; user owns compilation.
+
+## 2026-05-21 — Remove legacy no-op `DL_LogChatDebugEvent` hook and callsites
+
+**Task/PR/branch:** chore/remove-dl-log-chat-debug-hook / audit + delete dead Daily Life chat-debug shim.
+**Files touched:** `daily_life/dl_res_inc.nss`, `daily_life/dl_sleep_inc.nss`, `daily_life/dl_work_inc.nss`, `daily_life/dl_focus_inc.nss`, `daily_life/dl_focus_resolve_inc.nss`, `daily_life/dl_focus_meal_inc.nss`, `daily_life/dl_focus_chill_inc.nss`, `daily_life/dl_focus_public_inc.nss`, `daily_life/dl_focus_social_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `DL_LogChatDebugEvent(object oNpc, string sKind, string sPayload)` in resolver include was a no-op compatibility shim and had lingering callsites across sleep/work/focus code.
+**Change:** audited non-doc code for `DL_LogChatDebugEvent`; confirmed only one definition in `dl_res_inc.nss` and it was empty/no-op; removed that definition and removed all active callsites in Daily Life includes without changing surrounding flow.
+**Reason:** eliminate dead no-op hook usage while preserving behavior and active diagnostics ownership.
+**Preserve:** no gameplay/movement/transition/finalizer/worker/directive/sleep/work/focus logic changes beyond deleting no-op call statements; `dl_diag_inc.nss` untouched.
+**Validation:** static text/search checks only (`DL_LogChatDebugEvent` absence, changed-file audit). Compilation not run; user owns compilation.
