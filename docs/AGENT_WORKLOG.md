@@ -1,3 +1,14 @@
+
+## 2026-05-21 — Extract worker critical/emergency recovery helpers into dedicated include
+
+**Task/PR/branch:** refactor/worker-critical-include / extract critical worker helpers from `dl_worker_inc.nss`.
+**Files touched:** `daily_life/dl_worker_inc.nss`, `daily_life/dl_worker_critical_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `dl_worker_inc.nss` contained critical/emergency recovery helper implementations intermixed with core worker pass/runtime code, increasing file size and reducing maintainability.
+**Change:** moved only these implementations to new include `daily_life/dl_worker_critical_inc.nss`: `DL_IsRegisteredCurrentAreaStaleReachedMoveCritical`, `DL_EmergencyTouchCriticalStaleReachedNpc`, `DL_IsStaleReachedMoveJobCritical`, `DL_NpcNeedsCriticalWorkerTouch`, `DL_GetAreaWorkerCursorNpc`, `DL_ProcessCriticalAreaCursorNpc`; inserted `#include "dl_worker_critical_inc"` inside `dl_worker_inc.nss` after worker constants/declarations, `dl_worker_debug_inc`, and `dl_worker_handoff_inc`.
+**Reason:** reduce `dl_worker_inc.nss` size while preserving exact runtime behavior and existing include ownership contracts.
+**Preserve:** no logic rewrites; no debug string/critical reason/local-key changes; no scheduling/transition-handoff/worker-debug/registry-recovery edits.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-20 — Fix anchor move reissue helper ownership
 
 **Task/PR/branch:** current branch / emergency compile recovery for Daily Life main.
