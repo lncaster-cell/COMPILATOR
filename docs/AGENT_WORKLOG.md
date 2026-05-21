@@ -707,3 +707,13 @@ Entry template:
 **Reason:** reduce duplication while preserving runtime behavior, include-order compatibility, and existing movement/sleep reissue timing semantics.
 **Preserve:** all stamp consumers still use the same day-second format (`hour*3600 + minute*60 + second`); all existing local-key literals and stamp local variable keys are unchanged.
 **Validation:** static text/search checks only. Compilation not run; user owns compilation.
+
+## 2026-05-21 — Focus-status contract consistency cleanup (literal → constants)
+
+**Task/PR/branch:** current branch / contract-consistency cleanup for `DL_L_NPC_FOCUS_STATUS` comparisons.
+**Files touched:** `daily_life/dl_res_directive_state_inc.nss`, `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** a few focus-status comparisons still used raw literals (`"on_chill_anchor"`, meal prefix literal), while canonical focus status constants already exist in `dl_focus_contract_inc.nss`.
+**Change:** replaced matching raw `DL_L_NPC_FOCUS_STATUS` comparisons with existing constants: `DL_FOCUS_STATUS_ON_CHILL_ANCHOR` and `DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX`.
+**Reason:** remove drift risk between literal checks and shared focus-status contracts without changing runtime values/semantics.
+**Preserve:** no local-key or status literal value changes; no behavior/pipeline rewrites; `DL_FOCUS_STATUS_MOVING_TO_ANCHOR` usage in `DL_NpcNeedsCriticalWorkerTouch` remains constant-based.
+**Validation:** static text/search checks only. Compilation not run; user owns compilation.
