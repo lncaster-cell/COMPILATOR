@@ -132,7 +132,7 @@ int DL_NpcNeedsCriticalWorkerTouch(object oNpc)
         }
     }
 
-    if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == "moving_to_anchor" && DL_IsMoveJobAtTargetNow(oNpc))
+    if (GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == DL_FOCUS_STATUS_MOVING_TO_ANCHOR && DL_IsMoveJobAtTargetNow(oNpc))
     {
         DL_SetCriticalWorkerDebug(oNpc, "focus_anchor_reached");
         return TRUE;

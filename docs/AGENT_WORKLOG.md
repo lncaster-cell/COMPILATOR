@@ -1,12 +1,13 @@
-## 2026-05-21 — Validate missing_waypoints status-channel separation (work vs sleep)
+## 2026-05-21 — moving_to_anchor domain contract audit (work vs focus)
 
-**Task/PR/branch:** current branch / diagnostics-contract audit for `missing_waypoints` usage.
-**Files touched:** `daily_life/dl_work_inc.nss`, `daily_life/dl_sleep_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** both `DL_WORK_STATUS_MISSING_WAYPOINTS` and `DL_SLEEP_STATUS_MISSING_WAYPOINTS` intentionally used the same literal `"missing_waypoints"`.
-**Change:** repository-wide search confirmed each status writes only to its own local field (`DL_L_NPC_WORK_STATUS` vs `DL_L_NPC_SLEEP_STATUS`); added explicit comments near both constants documenting that shared literal is intentional because channels are field-separated.
-**Reason:** preserve downstream parsing and diagnostics invariants without unnecessary literal split; prevent future accidental "cleanup" that could break cross-session expectations.
-**Preserve:** no status literals changed; no checks/logging behavior changed; no pipeline/movement/worker/finalizer behavior changes.
-**Validation:** static text/search checks only (`DL_WORK_STATUS_MISSING_WAYPOINTS`, `DL_SLEEP_STATUS_MISSING_WAYPOINTS`, `missing_waypoints`, local-field usage). Compilation not run; user owns compilation.
+**Task/PR/branch:** current branch / status-domain ambiguity audit for `moving_to_anchor`.
+**Files touched:** `daily_life/dl_work_inc.nss`, `daily_life/dl_focus_contract_inc.nss`, `daily_life/dl_worker_critical_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** both `DL_WORK_STATUS_MOVING_TO_ANCHOR` and `DL_FOCUS_STATUS_MOVING_TO_ANCHOR` intentionally used the same literal value (`"moving_to_anchor"`), while some checks/calls still used raw string literals.
+**Change:** normalized raw comparisons/assignments to constants (`DL_WORK_STATUS_MOVING_TO_ANCHOR`, `DL_FOCUS_STATUS_MOVING_TO_ANCHOR`) in work move-job begin and critical worker focus-state check; added explicit contract comments next to both constants documenting that shared value is intentional and that domain is carried by owner key (`DL_L_NPC_WORK_STATUS` vs `DL_L_NPC_FOCUS_STATUS`).
+**Reason:** remove literal drift risk and make status-domain intent explicit for future debugging without changing runtime status values or migration contracts.
+**Diagnostics decision:** kept shared value (no migration to `work_moving_to_anchor`/`focus_moving_to_anchor`), because existing diagnostic summary channel already preserves domain prefixes (`work_status:` and `focus:`) and the owner key determines status namespace.
+**Preserve:** local-key/status literal values unchanged (`"moving_to_anchor"` remains byte-identical); no pipeline behavior rewrites.
+**Validation:** static text/search checks only. Compilation not run; user owns compilation.
 
 ## 2026-05-21 — Remove legacy blacksmith-specific debug entrypoint script
 

@@ -3,6 +3,8 @@ const string DL_L_NPC_WORK_ACTION_TARGET = "dl_work_anchor_action_target";
 // NOTE: keep literal aligned with sleep status; contexts are isolated by different local fields
 // (DL_L_NPC_WORK_STATUS vs DL_L_NPC_SLEEP_STATUS), so downstream diagnostics do not mix channels.
 const string DL_WORK_STATUS_MISSING_WAYPOINTS = "missing_waypoints";
+// Contract note: intentionally shares literal with focus status moving marker.
+// Domain must be inferred from owner key DL_L_NPC_WORK_STATUS (work domain).
 const string DL_WORK_STATUS_MOVING_TO_ANCHOR = "moving_to_anchor";
 const string DL_WORK_STATUS_ON_ANCHOR = "on_anchor";
 const string DL_L_NPC_WORK_RESOLVED_KIND = "dl_work_resolved_kind";
@@ -565,7 +567,7 @@ void DL_IssueWorkMoveAction(object oNpc, object oTarget)
         oNpc,
         oTarget,
         DL_L_NPC_WORK_STATUS,
-        "moving_to_anchor",
+        DL_WORK_STATUS_MOVING_TO_ANCHOR,
         DL_L_NPC_WORK_TARGET,
         DL_L_NPC_WORK_ACTION_TARGET,
         DL_MOVE_OWNER_WORK,
