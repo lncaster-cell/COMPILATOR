@@ -5,7 +5,7 @@ void DL_ApplyMealAnimationFallback(object oNpc, object oMeal, string sMealKind, 
         return;
     }
 
-    string sStableStatus = "on_meal_anchor_" + sMealKind;
+    string sStableStatus = DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX + "_" + sMealKind;
     string sMealTag = GetTag(oMeal);
     int bAlreadyStable = GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == sStableStatus &&
                          GetLocalString(oNpc, DL_L_NPC_FOCUS_TARGET) == sMealTag;
@@ -45,7 +45,7 @@ string DL_GetMealWaypointAnimation(object oNpc, string sMealKind)
 int DL_ExecuteMealWaypointAnimation(object oNpc, object oMeal, string sMealKind, string sAnim)
 {
     DeleteLocalInt(oNpc, DL_L_NPC_MEAL_SIT_RETRY_UNTIL);
-    return DL_ApplyFocusWaypointAnimation(oNpc, oMeal, "on_meal_anchor_" + sMealKind, sAnim, DL_MEAL_LOOP_ANIM_DURATION);
+    return DL_ApplyFocusWaypointAnimation(oNpc, oMeal, DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX + "_" + sMealKind, sAnim, DL_MEAL_LOOP_ANIM_DURATION);
 }
 
 void DL_VerifyMealSitOrFallback(object oNpc, object oChair, object oMeal, string sMealKind, string sAnim)

@@ -729,3 +729,13 @@ Entry template:
 **Reason:** remove drift risk between literal checks and shared focus-status contracts without changing runtime values/semantics.
 **Preserve:** no local-key or status literal value changes; no behavior/pipeline rewrites; `DL_FOCUS_STATUS_MOVING_TO_ANCHOR` usage in `DL_NpcNeedsCriticalWorkerTouch` remains constant-based.
 **Validation:** static text/search checks only. Compilation not run; user owns compilation.
+
+## 2026-05-21 — Meal focus status prefix contract alignment in meal include
+
+**Task/PR/branch:** current task / normalize meal status builders to shared prefix contract.
+**Files touched:** `daily_life/dl_focus_meal_inc.nss`, `daily_life/dl_res_directive_state_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `dl_focus_meal_inc.nss` still built meal focus statuses via raw literal concatenation (`"on_meal_anchor_" + sMealKind`), while repository contract uses `DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX` for meal-prefix comparisons.
+**Change:** replaced both meal-status concatenations in `dl_focus_meal_inc.nss` with `DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX + "_" + sMealKind`; additionally aligned one remaining raw fast-path prefix check in `dl_res_directive_state_inc.nss` to `DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX`.
+**Reason:** contract alignment to prevent literal drift and keep status construction/checks anchored to a single shared constant.
+**Preserve:** resulting runtime status literals are byte-identical (`"on_meal_anchor_<meal_kind>"`); no directive, move, finalizer, or worker behavior changes.
+**Validation:** static text/search checks only. Compilation not run; user owns compilation.
