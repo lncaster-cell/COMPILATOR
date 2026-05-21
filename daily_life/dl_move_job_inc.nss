@@ -53,6 +53,7 @@ const string DL_L_NPC_SAME_MOVE_JOB_REBEGIN_TARGET_DBG = "same_move_job_rebegin_
 const float DL_MOVE_PROGRESS_EPSILON = 0.15;
 const int DL_MOVE_NO_PROGRESS_SECONDS = 8;
 const int DL_MOVE_PERSISTENT_REISSUE_COUNT = 3;
+const int DL_MOVE_ACTION_REISSUE_SECONDS = 6;
 const string DL_MOVE_STATE_ACTIVE = "running_active";
 const string DL_MOVE_STATE_WAITING_TRANSITION = "running_waiting_transition";
 const string DL_MOVE_STATE_REISSUE = "running_reissue";
@@ -165,7 +166,30 @@ void DL_ClearMoveJob(object oNpc)
 
 int DL_GetMoveJobTickStamp()
 {
-    return DL_GetSleepActionStamp();
+    return (GetTimeHour() * 3600) + (GetTimeMinute() * 60) + GetTimeSecond();
+}
+
+int DL_ShouldReissueMoveJobAction(object oNpc, string sKey)
+{
+    if (!GetIsObjectValid(oNpc))
+    {
+        return FALSE;
+    }
+
+    if (GetCurrentAction(oNpc) != ACTION_MOVETOPOINT)
+    {
+        return TRUE;
+    }
+
+    int nNow = DL_GetMoveJobTickStamp();
+    int nLast = GetLocalInt(oNpc, sKey);
+
+    if (nLast <= 0 || nNow < nLast || (nNow - nLast) >= DL_MOVE_ACTION_REISSUE_SECONDS)
+    {
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 int DL_GetMoveJobElapsedSeconds(int nNow, int nThen)
@@ -658,7 +682,7 @@ void DL_IssueMoveJobAction(object oNpc, object oTarget)
         DL_ClearTransitionExecutionState(oNpc);
     }
     DL_ResetCustomAnimationBeforeAnchorMove(oNpc);
-    SetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET, DL_GetSleepActionStamp());
+    SetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET, DL_GetMoveJobTickStamp());
     if (GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) == DL_MOVE_OWNER_TRANSITION ||
         GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE) == DL_NAV_MOVE_PHASE_TRANSITION_TO_AREA)
     {
@@ -772,7 +796,7 @@ int DL_TickMoveJob(object oNpc)
         }
     }
 
-    if (nCurrentAction != ACTION_MOVETOPOINT || DL_ShouldReissueSleepAction(oNpc, DL_L_NPC_MOVE_TICKET))
+    if (DL_ShouldReissueMoveJobAction(oNpc, DL_L_NPC_MOVE_TICKET))
     {
         DL_IssueMoveJobAction(oNpc, oTarget);
         SetLocalInt(oNpc, DL_L_NPC_MOVE_ACTION_REISSUED_DBG, TRUE);
