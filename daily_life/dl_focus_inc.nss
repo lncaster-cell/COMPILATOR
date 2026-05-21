@@ -147,11 +147,7 @@ int DL_ApplyFocusWaypointAnimation(object oNpc, object oAnchor, string sStableSt
     return TRUE;
 }
 
-
-
 #include "dl_focus_meal_inc"
-
-
 
 #include "dl_focus_chill_inc"
 
