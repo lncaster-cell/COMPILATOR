@@ -1,11 +1,11 @@
-## 2026-05-21 — Transition clear diagnostic now includes owner context (compat-safe)
+## 2026-05-21 — Transition finalizer cache-invalidation deduplication
 
-**Task/PR/branch:** current branch / Daily Life diagnostic context refinement.
-**Files touched:** `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** `DL_ClearTransitionExecutionStateWithReason` accepted `sOwner` but wrote only raw `sReason` into `DL_L_NPC_TRANSITION_DIAGNOSTIC`, reducing owner-stage visibility in active BSMITH/transition debugging.
-**Change:** updated `DL_ClearTransitionExecutionStateWithReason` to write `owner=<owner> reason=<reason>` when `sOwner` is non-empty, while preserving legacy write (`sReason` only) when `sOwner == ""`.
-**Reason:** improve transition clear observability across `focus/work/sleep/res` callers without breaking existing checks that expect the old reason-only payload when owner is absent.
-**Preserve:** no local-key literal changes; caller reason literals (e.g., `owner_clear`) unchanged; transition clear pipeline unchanged.
+**Task/PR/branch:** current branch / transition completion cleanup in `dl_transition_inc.nss`.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** transition completion/finalizer paths performed direct `DL_NavInvalidateInferZoneCache(...)` immediately before `DL_ClearTransitionExecutionState(...)`, which already invalidates the same cache, creating duplicate invalidation side effects and ambiguous diagnostic ownership.
+**Change:** introduced `DL_ClearTransitionExecutionStateWithCacheReason(object oNpc, string sCacheReason)` as canonical transition-state clear+cache-invalidate helper, made `DL_ClearTransitionExecutionState` delegate to it with default reason `clear_transition_execution_state`, and switched both completion finalize paths (`transition_finalize_complete_side_effects`, `transition_finalize_completed_transition`) to call the new helper directly without a preceding standalone invalidation call.
+**Reason:** keep one canonical invalidation source per transition-clear path while preserving explicit reason observability per finalize stage.
+**Preserve:** local-key literals/contracts unchanged; post-jump same-area and complete finalize paths still share the same side-effect helper behavior and now use identical clear/invalidate ownership.
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 

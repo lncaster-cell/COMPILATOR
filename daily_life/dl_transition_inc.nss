@@ -300,13 +300,18 @@ void DL_NavInvalidateInferZoneCache(object oSubject, string sReason)
     }
 }
 
-void DL_ClearTransitionExecutionState(object oNpc)
+void DL_ClearTransitionExecutionStateWithCacheReason(object oNpc, string sCacheReason)
 {
     if (!GetIsObjectValid(oNpc)) return;
-    DL_NavInvalidateInferZoneCache(oNpc, "clear_transition_execution_state");
+    DL_NavInvalidateInferZoneCache(oNpc, sCacheReason);
     DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS);
     DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET);
     DeleteLocalString(oNpc, DL_L_NPC_TRANSITION_DIAGNOSTIC);
+}
+
+void DL_ClearTransitionExecutionState(object oNpc)
+{
+    DL_ClearTransitionExecutionStateWithCacheReason(oNpc, "clear_transition_execution_state");
 }
 
 void DL_ApplyPostJumpCompletionSuccess(object oNpc, string sTargetZone, string sReason)
@@ -790,8 +795,7 @@ void DL_ApplyTransitionFinalizerCompletionSideEffects(
     int bHandoffTouchCalled,
     string sResult)
 {
-    DL_NavInvalidateInferZoneCache(oNpc, "transition_finalize_complete_side_effects");
-    DL_ClearTransitionExecutionState(oNpc);
+    DL_ClearTransitionExecutionStateWithCacheReason(oNpc, "transition_finalize_complete_side_effects");
     DL_NavClearFocusMoveIssueStateAfterJump(oNpc);
     DL_NavSetNpcCurrentZone(oNpc, sTargetZone);
     DL_NavSetDebug(oNpc, sTargetZone, sTargetZone, "", sDebugStage);
@@ -1033,8 +1037,7 @@ int DL_NavTryFinalizeCompletedTransition(object oNpc, object oTargetAnchor)
         sFinalZone = DL_NavGetAreaZoneId(oTargetArea);
     }
 
-    DL_NavInvalidateInferZoneCache(oNpc, "transition_finalize_completed_transition");
-    DL_ClearTransitionExecutionState(oNpc);
+    DL_ClearTransitionExecutionStateWithCacheReason(oNpc, "transition_finalize_completed_transition");
     DL_NavClearFocusMoveIssueStateAfterJump(oNpc);
     DL_NavSetNpcCurrentZone(oNpc, sFinalZone);
     DL_NavSetDebug(oNpc, sFinalZone, sFinalZone, "", "post_transition_complete");
