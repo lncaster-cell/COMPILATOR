@@ -504,3 +504,13 @@ Entry template:
 **Reason:** make worker include dependencies explicit and reduce include-order fragility without behavior changes.
 **Preserve:** no function implementations moved in this step; no constant renames/value changes; no runtime scheduling, registry recovery, critical recovery, transition handoff, or debug helper logic changes.
 **Validation:** static checks only. Compilation not run; user owns compilation.
+
+## 2026-05-21 — Focus contract extraction include (`dl_focus_contract_inc`)
+
+**Task/PR/branch:** `refactor/focus-contract-include` / current task.
+**Files touched:** `daily_life/dl_focus_inc.nss`, `daily_life/dl_focus_contract_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** focus constants/local-key/status/cap contracts were embedded at the top of `dl_focus_inc.nss`, making focus include dependencies less explicit.
+**Change:** moved only the top focus contract block (focus cache keys, social probe keys, focus status constants, and focus cap/timing/animation constants) into new include `daily_life/dl_focus_contract_inc.nss`; replaced that block in `daily_life/dl_focus_inc.nss` with `#include "dl_focus_contract_inc"` immediately after `#include "dl_social_scene_inc"`.
+**Reason:** make focus include dependencies explicit and prepare follow-up focus refactors while preserving runtime behavior.
+**Preserve:** no function bodies moved or rewritten; no constant renames/value changes; no local-key literal/status/debug string changes; no movement/focus/social/meal/chill/chair behavior changes.
+**Validation:** static checks only. Compilation not run; user owns compilation.

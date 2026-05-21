@@ -16,8 +16,7 @@ int DL_HasTransitionExecutionState(object oNpc)
         return FALSE;
     }
 
-    return GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" ||
-        GetLocalString(oNpc, DL_L_NPC_TRANSITION_TARGET) != "";
+    return DL_IsTransitionExecutionStateActive(oNpc);
 }
 
 void DL_ClearTransitionExecutionStateWithReason(object oNpc, string sReason, string sOwner)
@@ -532,8 +531,7 @@ void DL_BsmithDetectContradictions(object oNpc, string sStage, object oMoveObj, 
     int bWaitingForTransition =
         sRunningState == DL_MOVE_STATE_WAITING_TRANSITION ||
         (sMoveResult == DL_MOVE_RESULT_RUNNING &&
-            GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" &&
-            GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "idle");
+            DL_IsTransitionExecutionStateActive(oNpc));
 
     int nCurrentActionNow = GetCurrentAction(oNpc);
     int nCurrentActionDbg = GetLocalInt(oNpc, DL_L_NPC_MOVE_CURRENT_ACTION_DBG);
@@ -590,8 +588,7 @@ void DL_BsmithMaybeClassify(object oNpc, string sProblem)
     int bWaitingForTransition =
         sRunningState == DL_MOVE_STATE_WAITING_TRANSITION ||
         (GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_RUNNING &&
-            GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "" &&
-            GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) != "idle");
+            DL_IsTransitionExecutionStateActive(oNpc));
 
     if (!bWaitingForTransition && GetLocalInt(oNpc, "dl_bsmith_bad_action_samples") >= 3)
     {
@@ -1224,7 +1221,7 @@ int DL_ProcessTransitionMoveInApply(object oNpc, int nEffectiveDirective)
     SetLocalInt(oNpc, DL_L_NPC_TRANSITION_EXECUTE_ATTEMPTED_DBG, FALSE);
     SetLocalInt(oNpc, DL_L_NPC_TRANSITION_EXECUTE_SUCCESS_DBG, FALSE);
 
-    if (GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS) == "")
+    if (!DL_IsTransitionStatusActive(GetLocalString(oNpc, DL_L_NPC_TRANSITION_STATUS)))
     {
         DL_NavSetState(oNpc, "moving_to_entry", GetLocalString(oNpc, DL_L_NPC_MOVE_PHASE), "");
     }
