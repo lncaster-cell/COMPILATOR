@@ -656,3 +656,13 @@ Entry template:
 **Reason:** reduce `dl_res_inc.nss` size and isolate resolver cache helper implementations without altering runtime behavior.
 **Preserve:** function names/signatures/bodies unchanged; local-key literals/constants unchanged; module/area/NPC cache epoch/reset semantics unchanged; directive/move/finalizer/apply pipeline functions not moved or edited.
 **Validation:** static text/search checks only (function location, include placement, no duplicate implementations). Compilation not run; user owns compilation.
+
+## 2026-05-21 — Extract resolver directive-state and fast-path helpers into dedicated include
+
+**Task/PR/branch:** refactor/dl-res-directive-state-include / isolate directive state + fast-path helper implementations from resolver include.
+**Files touched:** `daily_life/dl_res_inc.nss`, `daily_life/dl_res_directive_state_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `dl_res_inc.nss` had directive-state and same-directive fast-path helpers inline between resolver cache include and focus recovery/finalizer/apply pipeline logic.
+**Change:** moved these function implementations verbatim from `dl_res_inc.nss` into new include `dl_res_directive_state_inc.nss`: `DL_SetInteractionModes`, `DL_IsProfileServiceAvailable`, `DL_ApplyIdleLikeDirectiveState`, `DL_ResolveEffectiveDirective`, `DL_ShouldUseDirectiveFastPath`, `DL_RefreshWorkPresentationOnFastPath`; inserted `#include "dl_res_directive_state_inc"` in `dl_res_inc.nss` immediately after `#include "dl_res_cache_inc"` and before `DL_ResolveFocusTargetInCurrentArea`.
+**Reason:** reduce resolver include size and isolate directive-state/fast-path helper implementation ownership while preserving include-order behavior and runtime contracts.
+**Preserve:** function names/signatures/bodies unchanged; directive fallback (social→public) unchanged; fast-path eligibility/refresh timing unchanged; no edits to focus recovery/move bridge/finalizer/apply pipeline function bodies; no edits to cache/worker/transition includes.
+**Validation:** static text/search checks only (single implementation location for moved functions, include placement, untouched protected function regions). Compilation not run; user owns compilation.
