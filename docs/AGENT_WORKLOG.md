@@ -1,3 +1,13 @@
+## 2026-05-21 — Transition finalizer cache-invalidation deduplication
+
+**Task/PR/branch:** current branch / transition completion cleanup in `dl_transition_inc.nss`.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** transition completion/finalizer paths performed direct `DL_NavInvalidateInferZoneCache(...)` immediately before `DL_ClearTransitionExecutionState(...)`, which already invalidates the same cache, creating duplicate invalidation side effects and ambiguous diagnostic ownership.
+**Change:** introduced `DL_ClearTransitionExecutionStateWithCacheReason(object oNpc, string sCacheReason)` as canonical transition-state clear+cache-invalidate helper, made `DL_ClearTransitionExecutionState` delegate to it with default reason `clear_transition_execution_state`, and switched both completion finalize paths (`transition_finalize_complete_side_effects`, `transition_finalize_completed_transition`) to call the new helper directly without a preceding standalone invalidation call.
+**Reason:** keep one canonical invalidation source per transition-clear path while preserving explicit reason observability per finalize stage.
+**Preserve:** local-key literals/contracts unchanged; post-jump same-area and complete finalize paths still share the same side-effect helper behavior and now use identical clear/invalidate ownership.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 
 ## 2026-05-21 — Daily Life invariant hardening: stale-critical filter + emergency-close context guard
 
