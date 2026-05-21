@@ -106,6 +106,11 @@ int DL_HasSleepExitBedPlacement(object oNpc)
 }
 int DL_ShouldReissueSleepAction(object oNpc, string sKey)
 {
+    if (!GetIsObjectValid(oNpc))
+    {
+        return FALSE;
+    }
+
     int nNow = DL_GetAnchorMoveActionStamp();
     int nLast = GetLocalInt(oNpc, sKey);
 

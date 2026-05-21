@@ -1,3 +1,15 @@
+## 2026-05-21 — Sleep reissue helper: defensive invalid-object guard parity
+
+**Task/PR/branch:** current branch / compatibility-safe defensive hardening for sleep reissue helper.
+**Files touched:** `daily_life/dl_sleep_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `DL_ShouldReissueSleepMoveAction` already had an invalid-object early return, while `DL_ShouldReissueSleepAction` did not; direct helper callers are expected to pass valid NPCs, but parity with other reissue helpers reduces accidental invalid-handle reads.
+**Change:** added early guard to `DL_ShouldReissueSleepAction(object oNpc, string sKey)`:
+`if (!GetIsObjectValid(oNpc)) return FALSE;`.
+**Reason:** compatibility-safe defensive fix; preserves intended flow for valid NPC inputs and aligns helper semantics with `DL_ShouldReissueSleepMoveAction` without introducing duplicate or contradictory behavior.
+**Callsite audit:** checked all `DL_ShouldReissueSleepAction`/`DL_ShouldReissueSleepMoveAction` usages; current callsites already pass valid `oNpc` in normal pipeline paths, so intended behavior remains unchanged.
+**Preserve:** no local-key literal changes, no sleep/move pipeline rewrites, no diagnostics removal.
+**Validation:** static text/search checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-21 — moving_to_anchor domain contract audit (work vs focus)
 
 **Task/PR/branch:** current branch / status-domain ambiguity audit for `moving_to_anchor`.
