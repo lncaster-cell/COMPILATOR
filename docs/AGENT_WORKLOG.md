@@ -1,13 +1,12 @@
-## 2026-05-21 — Work CRAFT/FETCH/else classifier unification in dl_work_inc
+## 2026-05-21 — Blacksmith work anchor branch dedup for FETCH/CRAFT
 
-**Task/PR/branch:** current branch / user request to centralize repeated `CRAFT/FETCH/else` ladders in work target selection.
+**Task/PR/branch:** current task / logical dedup in blacksmith work-anchor resolver.
 **Files touched:** `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** multiple work-resolution paths (resolve-for-profile, resolve-target-for-profile, execute-directive) repeated the same `CRAFT/FETCH/else` target-selection ladder with the same fallback intent.
-**Change:** added canonical kind-classification helpers (`DL_IsWorkKindCraft`, `DL_IsWorkKindFetch`) and shared selector `DL_SelectWorkTargetByKind`; replaced duplicated ladders in blacksmith and domestic paths with this helper.
-**Reason:** remove logic drift risk while preserving each path’s business behavior and fallback policy.
-**Fallback invariants preserved:** blacksmith `FETCH` still falls back to `CRAFT` target when fetch waypoint is invalid; domestic path keeps primary-as-default behavior and uses existing resolved kind/fetch availability flow.
-**Preserve:** no local-key literal changes; no movement/directive/finalizer/worker pipeline rewrites; anchor/fallback resolution contracts unchanged.
-**Validation:** static text/diff checks only. Compilation not run; user owns compilation.
+**Context:** `DL_ResolveBlacksmithWorkAnchorByKind` had duplicated FETCH and CRAFT branches with identical resolve call shape and arguments.
+**Change:** merged `DL_WORK_KIND_FETCH` and `DL_WORK_KIND_CRAFT` checks into one shared conditional branch and kept the shared return block unchanged; FORGE fallback branch remains unchanged.
+**Reason:** logical deduplication to reduce branch duplication and drift risk without changing runtime contract, signatures, or waypoint-resolution behavior.
+**Preserve:** wrappers `DL_ResolveBlacksmithForgeWaypoint`, `DL_ResolveBlacksmithCraftWaypoint`, `DL_ResolveBlacksmithFetchWaypoint` unchanged and still delegate to `DL_ResolveBlacksmithWorkAnchorByKind` with the same kinds.
+**Validation:** static text/diff review only. Compilation not run; user owns compilation.
 
 ## 2026-05-21 — diagnostic contract dedup: regular_worker_not_touching_registered_npc
 
