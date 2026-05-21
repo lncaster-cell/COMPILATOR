@@ -9,6 +9,17 @@
 **Validation:** static checks only. Compilation not run; user owns compilation.
 
 
+## 2026-05-21 — Decouple generic move-job reissue from sleep include
+
+**Task/PR/branch:** current branch / move-job include ownership cleanup for reissue helper usage.
+**Files touched:** `daily_life/dl_move_job_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** generic move tick path still referenced sleep-specific helper (`DL_ShouldReissueSleepAction`) and sleep stamp provider (`DL_GetSleepActionStamp`), creating shared move logic -> sleep include compile-order/ownership coupling.
+**Change:** introduced move-owner helper `DL_ShouldReissueMoveJobAction` plus local move reissue constant (`DL_MOVE_ACTION_REISSUE_SECONDS = 6`), switched move tick reissue condition to the new helper, and changed `DL_GetMoveJobTickStamp` to compute its own day-second stamp directly.
+**Reason:** keep the same reissue timing semantics (6-second threshold, midnight wrap-safe behavior via `nNow < nLast`) while removing sleep include dependency from generic move path.
+**Preserve:** no local-key literal changes; no movement pipeline rewrite; sleep include keeps its own `DL_ShouldReissueSleepAction`/`DL_ShouldReissueSleepMoveAction` path with no shared->sleep reverse dependency.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
+
 ## 2026-05-21 — Daily Life invariant hardening: stale-critical filter + emergency-close context guard
 
 **Task/PR/branch:** current branch / Daily Life bugfix pass (logical conflicts in movement invariant path).
