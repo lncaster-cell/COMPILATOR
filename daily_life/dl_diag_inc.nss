@@ -69,7 +69,7 @@ string DL_GetNpcProblemSummary(object oNpc)
         ((nAreaTick > 0 && nNpcWorkerTick > 0 && (nAreaTick - nNpcWorkerTick) > 1) ||
             (nLastWorkerAbsMin > 0 && (nNowAbsMin - nLastWorkerAbsMin) > 1)))
     {
-        return "regular_worker_not_touching_registered_npc";
+        return DL_DIAG_REGULAR_WORKER_NOT_TOUCHING_REGISTERED_NPC;
     }
 
     string sHandoffDiag = GetLocalString(oNpc, "dl_transition_registry_problem");
