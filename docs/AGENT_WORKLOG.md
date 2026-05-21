@@ -585,3 +585,13 @@ Entry template:
 **Reason:** reduce `dl_focus_inc.nss` size and isolate public-specific focus execution while preserving include ownership and behavior.
 **Preserve:** no logic rewrite; no local-key literal/status/debug/timing changes; no meal/chill/social/core movement logic edits; no new scans/tag lookups/DB/delay calls.
 **Validation:** static checks only. Compilation not run; user owns compilation.
+
+## 2026-05-21 — Extract SOCIAL focus execution helpers into dedicated include
+
+**Task/PR/branch:** refactor/focus-social-include / split social-specific focus execution from `dl_focus_inc.nss`.
+**Files touched:** `daily_life/dl_focus_inc.nss`, `daily_life/dl_focus_social_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `dl_focus_inc.nss` had SOCIAL-only directive execution helpers inline with broader focus execution code, increasing file size and reducing locality of social logic.
+**Change:** moved only `DL_ShouldFallbackSocialToPublic`, `DL_SetSocialArrivalProbeFailure`, `DL_TryStartSocialSceneAtReachedAnchor`, and `DL_ExecuteSocialDirective` implementations verbatim into new include `daily_life/dl_focus_social_inc.nss`; inserted `#include "dl_focus_social_inc"` in `dl_focus_inc.nss` directly after `#include "dl_focus_public_inc"` at the former function location.
+**Reason:** reduce `dl_focus_inc.nss` size and isolate social focus execution logic without changing behavior.
+**Preserve:** no helper signature/name changes; no debug/status/probe/local-key literal changes; no movement/meal/chill/public/core focus logic edits.
+**Validation:** static/text checks only. Compilation not run; user owns compilation.
