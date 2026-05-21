@@ -545,3 +545,13 @@ Entry template:
 **Reason:** make focus include dependencies explicit and prepare follow-up focus refactors while preserving runtime behavior.
 **Preserve:** no function bodies moved or rewritten; no constant renames/value changes; no local-key literal/status/debug string changes; no movement/focus/social/meal/chill/chair behavior changes.
 **Validation:** static checks only. Compilation not run; user owns compilation.
+
+## 2026-05-21 — Focus resolve helper extraction include (`dl_focus_resolve_inc`)
+
+**Task/PR/branch:** `refactor/focus-resolve-include` / current task.
+**Files touched:** `daily_life/dl_focus_inc.nss`, `daily_life/dl_focus_resolve_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `dl_focus_inc.nss` still mixed focus execution flow with resolve/cache/chair helper implementations; task required extracting only listed resolve helpers into a dedicated include with no runtime behavior changes.
+**Change:** moved only these functions verbatim from `daily_life/dl_focus_inc.nss` into new include `daily_life/dl_focus_resolve_inc.nss`: `DL_ResolveSocialPartnerObject`, `DL_GetNpcCachedPlaceableByTagInArea`, `DL_ResolveMealKind`, `DL_ResolveMealWaypoint`, `DL_ResolveSocialWaypoint`, `DL_ResolvePublicWaypoint`, `DL_ResolveChillWaypoint`, `DL_ResolveChillChairObject`, `DL_IsMealChairTagCandidate`, `DL_FindNearestMealChairObject`, `DL_ResolveMealChairObject`, `DL_ShouldAttemptMealActionSit`; added `#include "dl_focus_resolve_inc"` in `dl_focus_inc.nss` after `DL_ShouldIssueFocusMoveAction` / `DL_GetFocusMoveOwner` / `DL_IssueFocusMoveAction` / `DL_ClearFocusExecutionState` and before downstream callers.
+**Reason:** reduce `dl_focus_inc.nss` size and isolate resolve/chair/cache logic while preserving existing focus execution pipeline.
+**Preserve:** no movement/action/animation/social-scene execution logic changes; no local-key literal renames; no debug/status string changes; no fallback tag/search cap/cache TTL changes; no new area scans, DB calls, DelayCommand usage, or extra object lookup calls introduced.
+**Validation:** static checks only. Compilation not run; user owns compilation.
