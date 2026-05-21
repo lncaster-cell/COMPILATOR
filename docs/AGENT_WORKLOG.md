@@ -1,3 +1,13 @@
+## 2026-05-21 — Deduplicate critical stale-reached predicate core helper
+
+**Task/PR/branch:** current branch / refactor stale-reached critical predicate deduplication in worker critical include.
+**Files touched:** `daily_life/dl_worker_critical_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** stale-reached critical checks were duplicated between generic (`DL_IsStaleReachedMoveJobCritical`) and area-registered (`DL_IsRegisteredCurrentAreaStaleReachedMoveCritical`) predicates.
+**Change:** extracted shared stale-reached core into new helper `DL_IsStaleReachedMoveCore(object oNpc)` (valid NPC, has move job, `move_result == running`, canonical reached now, no `ACTION_MOVETOPOINT`), switched `DL_IsStaleReachedMoveJobCritical` to fully delegate to that helper, and kept `DL_IsRegisteredCurrentAreaStaleReachedMoveCritical` as area/registry checks layered above the core helper.
+**Reason:** remove duplicate predicate logic while preserving existing diagnostics behavior, early-return order semantics, and stale-reached classifier reason strings (`stale_reached_without_moveto`).
+**Preserve:** no local-key literal/status changes; no worker/directive/finalizer pipeline rewrite; area-specific ownership checks remain only in the registered-area predicate.
+**Validation:** static text/diff checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-21 — Sleep reissue helper: defensive invalid-object guard parity
 
 **Task/PR/branch:** current branch / compatibility-safe defensive hardening for sleep reissue helper.
