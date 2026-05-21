@@ -1,3 +1,15 @@
+## 2026-05-21 — Emergency stabilization after cleanup PR stack (#990/#975/#983 compatibility)
+
+**Task/PR/branch:** hotfix/dl-stabilization-post-990 / emergency compile+compatibility stabilization audit.
+**Files touched:** `daily_life/dl_focus_contract_inc.nss`, `daily_life/dl_city_response_inc.nss`, `daily_life/dl_sleep_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Observed symptom:** compiler pipeline failed after PR #990 with `NSC1051` in `dl_focus_contract_inc.nss` (`DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR` const init order failure), plus compatibility drift risks from #975 and #983.
+**First failing stage:** compile-time constant initialization stage in focus contract include.
+**Change:** converted the six focus status contract symbols to compiler-safe global `string` declarations with direct literal initialization (`moving_to_anchor`, `on_public_anchor`, `on_social_anchor`, `on_chill_anchor`, `on_meal_anchor`, `on_meal_anchor_sitting`) to avoid cross-include const init-order failure while preserving byte-identical runtime values.
+**City Response compatibility:** added `DL_L_AREA_CR_ENABLED_LEGACY = "dl_city_response_enabled"` and updated `DL_CR_IsEnabledForArea` to accept either the new area key or the legacy key.
+**Sleep reissue audit/fix:** restored sleep-specific timestamp-only reissue semantics in `DL_ShouldReissueSleepAction` (invalid NPC => `FALSE`; no current-action shortcut), and kept `DL_ShouldReissueSleepMoveAction` on current anchor-move helper path for intentional MOVETOPOINT-gated behavior.
+**Preserve:** no directive/move/finalizer/worker pipeline rewrites; no local-key literal migrations beyond adding legacy city-response area key; no DB calls/DelayCommand/area scans added.
+**Validation:** static text/search checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-21 — diagnostic contract dedup: regular_worker_not_touching_registered_npc
 
 **Task/PR/branch:** current task / diagnostic contract dedup for regular-worker stale-touch summary literal.

@@ -5,6 +5,7 @@ const string DL_L_MODULE_CR_LAST_ABS_MIN = "dl_cr_last_abs_min";
 
 const string DL_L_NPC_CR_LAST_INCIDENT_ABS_MIN = "dl_cr_last_incident_abs_min";
 const string DL_L_AREA_CR_ENABLED = "dl_area_city_response_enabled";
+const string DL_L_AREA_CR_ENABLED_LEGACY = "dl_city_response_enabled";
 
 const int DL_CR_HEAT_MIN = 0;
 const int DL_CR_HEAT_MAX = 100;
@@ -36,7 +37,8 @@ int DL_CR_IsEnabledForArea(object oArea)
         return FALSE;
     }
 
-    return GetLocalInt(oArea, DL_L_AREA_CR_ENABLED) == TRUE;
+    return GetLocalInt(oArea, DL_L_AREA_CR_ENABLED) == TRUE ||
+           GetLocalInt(oArea, DL_L_AREA_CR_ENABLED_LEGACY) == TRUE;
 }
 
 int DL_CR_GetLevelByHeat(int nHeat)
