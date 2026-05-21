@@ -1,3 +1,14 @@
+## 2026-05-21 — moving_to_anchor domain contract audit (work vs focus)
+
+**Task/PR/branch:** current branch / status-domain ambiguity audit for `moving_to_anchor`.
+**Files touched:** `daily_life/dl_work_inc.nss`, `daily_life/dl_focus_contract_inc.nss`, `daily_life/dl_worker_critical_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** both `DL_WORK_STATUS_MOVING_TO_ANCHOR` and `DL_FOCUS_STATUS_MOVING_TO_ANCHOR` intentionally used the same literal value (`"moving_to_anchor"`), while some checks/calls still used raw string literals.
+**Change:** normalized raw comparisons/assignments to constants (`DL_WORK_STATUS_MOVING_TO_ANCHOR`, `DL_FOCUS_STATUS_MOVING_TO_ANCHOR`) in work move-job begin and critical worker focus-state check; added explicit contract comments next to both constants documenting that shared value is intentional and that domain is carried by owner key (`DL_L_NPC_WORK_STATUS` vs `DL_L_NPC_FOCUS_STATUS`).
+**Reason:** remove literal drift risk and make status-domain intent explicit for future debugging without changing runtime status values or migration contracts.
+**Diagnostics decision:** kept shared value (no migration to `work_moving_to_anchor`/`focus_moving_to_anchor`), because existing diagnostic summary channel already preserves domain prefixes (`work_status:` and `focus:`) and the owner key determines status namespace.
+**Preserve:** local-key/status literal values unchanged (`"moving_to_anchor"` remains byte-identical); no pipeline behavior rewrites.
+**Validation:** static text/search checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-21 — Remove legacy blacksmith-specific debug entrypoint script
 
 **Task/PR/branch:** chore/remove-legacy-dl-dbg-time / delete obsolete manual BSMITH debug entrypoint.

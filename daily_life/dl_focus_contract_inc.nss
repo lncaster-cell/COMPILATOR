@@ -21,6 +21,8 @@ const string DL_L_NPC_SOCIAL_PROBE_ABS_MIN = "dl_social_probe_abs_min";
 const string DL_L_NPC_SOCIAL_PROBE_NOW_DIST = "dl_social_probe_now_dist";
 const string DL_L_NPC_SOCIAL_PROBE_FOCUS_STATUS_BEFORE = "dl_social_probe_focus_status_before";
 const string DL_L_NPC_SOCIAL_PROBE_CURRENT_ACTION = "dl_social_probe_current_action";
+// Contract note: intentionally shares literal with work status moving marker.
+// Domain must be inferred from owner key DL_L_NPC_FOCUS_STATUS (focus domain).
 const string DL_FOCUS_STATUS_MOVING_TO_ANCHOR = "moving_to_anchor";
 const string DL_FOCUS_STATUS_ON_PUBLIC_ANCHOR = "on_public_anchor";
 const string DL_FOCUS_STATUS_ON_SOCIAL_ANCHOR = "on_social_anchor";
@@ -52,4 +54,3 @@ const float DL_MEAL_LOOP_ANIM_DURATION = 30.0;
 const float DL_CHILL_SIT_VERIFY_DELAY = 4.0;
 const float DL_CHILL_LOOP_ANIM_DURATION = 30.0;
 const string DL_CHILL_ANIM_SIT_IDLE = "sitidle";
-
