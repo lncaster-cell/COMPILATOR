@@ -1,4 +1,14 @@
 
+## 2026-05-21 — Daily Life invariant hardening: stale-critical filter + emergency-close context guard
+
+**Task/PR/branch:** current branch / Daily Life bugfix pass (logical conflicts in movement invariant path).
+**Files touched:** `daily_life/dl_worker_critical_inc.nss`, `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** static analysis found two contradiction risks in active movement-debug paths: (1) stale-reached critical classifier could escalate while `ACTION_MOVETOPOINT` was still active; (2) apply-exit emergency close could run after context changed (ticket/owner/target drift) between finalize attempt and fallback close.
+**Change:** tightened `DL_IsStaleReachedMoveJobCritical` to only classify stale critical when move is canonically reached/running and current action is **not** `ACTION_MOVETOPOINT`; removed the additional moving-to-anchor branch that forced `TRUE` under active move action. Added guard snapshots (`move_ticket`, `move_owner`, `move_target_tag`) in `DL_DetectApplyMoveRegression` and `DL_EnforceReachedMoveApplyExitInvariant`; `DL_EmergencyCloseReachedMoveInvariant` now runs only when context is unchanged, otherwise emits `INVARIANT` trace `invariant_skip_context_changed`.
+**Reason:** preserve canonical worker/finalizer pipeline and BSMITH observability while preventing false critical escalation and late fallback closure on stale context.
+**Preserve:** no local-key literal renames; no broad scans/polling; no transition/directive architecture rewrite; no diagnostic field removals.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 ## 2026-05-21 — Extract worker critical/emergency recovery helpers into dedicated include
 
 **Task/PR/branch:** refactor/worker-critical-include / extract critical worker helpers from `dl_worker_inc.nss`.

@@ -1755,10 +1755,22 @@ void DL_DetectApplyMoveRegression(object oNpc, int bReachedOrClearedEarlier, int
         DL_BsmithTraceStage(oNpc, "INVARIANT", "move_result_regressed_to_running stage=" + sStage + " reason=same_tick_reopened_reached_move");
         if (DL_IsMoveJobAtTargetNow(oNpc))
         {
+            int nGuardTicket = GetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET);
+            string sGuardOwner = GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER);
+            string sGuardTarget = GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG);
             DL_FinalizeReachedDirectiveMoveJob(oNpc, nEffectiveDirective);
             if (GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_RUNNING)
             {
-                DL_EmergencyCloseReachedMoveInvariant(oNpc, nEffectiveDirective);
+                if (GetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET) == nGuardTicket &&
+                    GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) == sGuardOwner &&
+                    GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG) == sGuardTarget)
+                {
+                    DL_EmergencyCloseReachedMoveInvariant(oNpc, nEffectiveDirective);
+                }
+                else
+                {
+                    DL_BsmithTraceStage(oNpc, "INVARIANT", "invariant_skip_context_changed");
+                }
             }
         }
     }
@@ -1772,6 +1784,9 @@ void DL_EnforceReachedMoveApplyExitInvariant(object oNpc, int nEffectiveDirectiv
         (GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_RUNNING ||
             GetLocalString(oNpc, DL_L_NPC_FOCUS_STATUS) == DL_FOCUS_STATUS_MOVING_TO_ANCHOR))
     {
+        int nGuardTicket = GetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET);
+        string sGuardOwner = GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER);
+        string sGuardTarget = GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG);
         SetLocalInt(oNpc, DL_L_NPC_INVARIANT_REACHED_MOVE_STILL_RUNNING_DBG, TRUE);
         DL_BsmithTraceStage(oNpc, "INVARIANT", "invariant_violation_reached_move_still_running");
         if (DL_FinalizeReachedDirectiveMoveJob(oNpc, nEffectiveDirective))
@@ -1780,7 +1795,16 @@ void DL_EnforceReachedMoveApplyExitInvariant(object oNpc, int nEffectiveDirectiv
         }
         if (GetLocalString(oNpc, DL_L_NPC_MOVE_RESULT) == DL_MOVE_RESULT_RUNNING)
         {
-            DL_EmergencyCloseReachedMoveInvariant(oNpc, nEffectiveDirective);
+            if (GetLocalInt(oNpc, DL_L_NPC_MOVE_TICKET) == nGuardTicket &&
+                GetLocalString(oNpc, DL_L_NPC_MOVE_OWNER) == sGuardOwner &&
+                GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG) == sGuardTarget)
+            {
+                DL_EmergencyCloseReachedMoveInvariant(oNpc, nEffectiveDirective);
+            }
+            else
+            {
+                DL_BsmithTraceStage(oNpc, "INVARIANT", "invariant_skip_context_changed");
+            }
         }
     }
 }
