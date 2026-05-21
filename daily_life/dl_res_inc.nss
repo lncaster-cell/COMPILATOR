@@ -1339,7 +1339,9 @@ void DL_PreemptOldDirectiveState(object oNpc, int nPrevDirective, int nEffective
     string sOldMoveTarget = GetLocalString(oNpc, DL_L_NPC_MOVE_TARGET_TAG);
     int bHadMoveJob = DL_HasMoveJob(oNpc);
     int bClearedFocus = FALSE;
+    int bTriggeredFocusCleanup = FALSE;
     int bClearedTransition = FALSE;
+    int bHadTransitionExecutionState = FALSE;
 
     SetLocalInt(oNpc, DL_L_NPC_DBG_DIRECTIVE_PREEMPTED_OLD_MOVE, bHadMoveJob);
     SetLocalString(oNpc, DL_L_NPC_DBG_OLD_MOVE_OWNER, sOldMoveOwner);
@@ -1355,10 +1357,11 @@ void DL_PreemptOldDirectiveState(object oNpc, int nPrevDirective, int nEffective
     {
         DL_ClearFocusExecutionState(oNpc);
         bClearedFocus = TRUE;
-        bClearedTransition = TRUE;
+        bTriggeredFocusCleanup = TRUE;
     }
 
-    if (DL_HasTransitionExecutionState(oNpc))
+    bHadTransitionExecutionState = DL_HasTransitionExecutionState(oNpc);
+    if (bHadTransitionExecutionState)
     {
         DL_ClearTransitionExecutionStateWithReason(oNpc, "owner_clear", "res");
         bClearedTransition = TRUE;
@@ -1380,6 +1383,8 @@ void DL_PreemptOldDirectiveState(object oNpc, int nPrevDirective, int nEffective
             " old_move_target=" + sOldMoveTarget +
             " cleared_move=" + IntToString(bHadMoveJob) +
             " cleared_focus=" + IntToString(bClearedFocus) +
+            " focus_cleanup_triggered=" + IntToString(bTriggeredFocusCleanup) +
+            " had_transition_state=" + IntToString(bHadTransitionExecutionState) +
             " cleared_transition=" + IntToString(bClearedTransition)
     );
     SetLocalString(oNpc, DL_L_NPC_DBG_DIRECTIVE_CHANGE_CLEANUP, GetLocalString(oNpc, DL_L_NPC_LAST_DIRECTIVE_CLEANUP));
