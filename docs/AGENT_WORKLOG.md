@@ -453,3 +453,13 @@ Entry template:
 **Reason:** fix include-order symbol visibility only; preserve exact runtime behavior and moved helper bodies.
 **Preserve:** no registry recovery, critical recovery, or worker runtime scheduling changes.
 **Validation:** static checks only. Compilation not run; user owns compilation.
+
+## 2026-05-21 — Worker registry recovery helper extraction into dedicated include
+
+**Task/PR/branch:** `refactor/worker-registry-recovery` / current task.
+**Files touched:** `daily_life/dl_worker_inc.nss`, `daily_life/dl_worker_registry_recovery_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `dl_worker_inc.nss` still contained area registry recovery/helper implementations interleaved with worker flow; task required extracting only the registry recovery helper implementations without behavior changes.
+**Change:** moved these functions verbatim into new include `dl_worker_registry_recovery_inc.nss`: `DL_RemoveStaleNpcReferenceFromAreaRegistrySlot`, `DL_IsNpcRegistryOwnerForArea`, `DL_ClearStaleTransitionHandoffProblemIfOwned`, `DL_RunAreaRegistryFallbackIntegrityRepair`, `DL_RunAreaRegistryFallbackCatchupScan`, `DL_RunAreaRegistryFallbackRecovery`; added `#include "dl_worker_registry_recovery_inc"` inside `dl_worker_inc.nss` at the former implementation location.
+**Reason:** reduce `dl_worker_inc.nss` size while preserving compile-order visibility and exact runtime behavior.
+**Preserve:** worker runtime scheduling, transition handoff pipeline, worker debug helper ownership, and critical stale-reached recovery paths were not changed.
+**Validation:** static checks only. Compilation not run; user owns compilation.
