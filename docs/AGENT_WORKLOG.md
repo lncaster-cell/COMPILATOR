@@ -750,3 +750,14 @@ Entry template:
 **Reason:** contract alignment to prevent literal drift and keep status construction/checks anchored to a single shared constant.
 **Preserve:** resulting runtime status literals are byte-identical (`"on_meal_anchor_<meal_kind>"`); no directive, move, finalizer, or worker behavior changes.
 **Validation:** static text/search checks only. Compilation not run; user owns compilation.
+
+## 2026-05-21 — Transition pending-finalizer flag lifecycle contract (canonical cleanup point)
+
+**Task/PR/branch:** current branch / lifecycle audit and cleanup-point canonicalization for `dl_transition_pending_finalizer_expected`.
+**Files touched:** `daily_life/dl_transition_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** lifecycle audit found one set point (`DL_SetPendingTransitionAfterJump`), one guard check (`DL_FinalizeTransitionAfterQueuedJump`), and two cleanup points (`DL_ApplyPostJumpCompletionSuccess` and `DL_FinalizePostJumpTransitionResult`), creating duplicate-clear ambiguity.
+**Change:** preserved canonical cleanup in `DL_FinalizePostJumpTransitionResult` and converted early clear in `DL_ApplyPostJumpCompletionSuccess` into guarded cleanup with explicit comment: “pre-finalizer abort/reset path”; guarded by `dl_post_jump_finalizer_called != TRUE`.
+**Reason:** enforce single canonical final cleanup contract while keeping safe pre-finalizer abort/reset behavior and avoiding duplicate-lifecycle drift.
+**Diagnostics/invariants:** negative finalizer result branches (`post_jump_finalizer_not_expected`, `...area_not_changed`, `...unexpected_area`) remain unchanged and continue writing `dl_post_jump_result`, transition diagnostic payload, and `dl_transition_registry_problem` via `DL_SetFinalizerOutcomeState`/`DL_FinalizePostJumpTransitionResult`.
+**Preserve:** no local-key literal changes; no transition/worker/finalizer behavior rewrite beyond lifecycle clear-point disambiguation.
+**Validation:** static text/search checks only. Compilation not run; user owns compilation.
