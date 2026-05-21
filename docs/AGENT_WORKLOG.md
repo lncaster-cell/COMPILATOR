@@ -1,3 +1,13 @@
+## 2026-05-21 — Remove legacy blacksmith-specific debug entrypoint script
+
+**Task/PR/branch:** chore/remove-legacy-dl-dbg-time / delete obsolete manual BSMITH debug entrypoint.
+**Files touched:** `daily_life/dl_dbg_time.nss` (deleted), `docs/AGENT_WORKLOG.md`.
+**Context:** central Daily Life diagnostics were decoupled from deprecated BSMITH trace sink, but legacy manual script `dl_dbg_time` still existed and was hardcoded to `blacksmith01` with BSMITH_STATUS/TARGET/PROBLEM_SUMMARY output lines.
+**Change:** removed `daily_life/dl_dbg_time.nss` without replacement.
+**Reason:** eliminate the last blacksmith01-specific manual debug entrypoint and prevent continued dependency on deprecated `dl_bsmith_*` local diagnostics.
+**Preserve:** no edits to `dl_res_inc.nss` or `dl_diag_inc.nss`; compatibility wrappers `DL_BsmithTraceStage` and `DL_BsmithTraceDisable` remain intact; gameplay/movement/transition/finalizer/worker/directive logic unchanged.
+**Validation:** repository text searches only (`dl_dbg_time`, `blacksmith01`, `BSMITH_STATUS`, `BSMITH_TARGET`, `BSMITH_PROBLEM_SUMMARY`, `BSMITH_TRACE_SETUP`) plus compatibility-symbol presence checks. Compilation not run; user owns compilation.
+
 ## 2026-05-21 — Central Daily Life diagnostics decoupled from deprecated BSMITH trace sink
 
 **Task/PR/branch:** chore/decouple-diag-from-bsmith / remove central diagnostic dependency on deprecated BSMITH wrapper.
