@@ -1,3 +1,13 @@
+## 2026-05-21 — Blacksmith work anchor branch dedup for FETCH/CRAFT
+
+**Task/PR/branch:** current task / logical dedup in blacksmith work-anchor resolver.
+**Files touched:** `daily_life/dl_work_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `DL_ResolveBlacksmithWorkAnchorByKind` had duplicated FETCH and CRAFT branches with identical resolve call shape and arguments.
+**Change:** merged `DL_WORK_KIND_FETCH` and `DL_WORK_KIND_CRAFT` checks into one shared conditional branch and kept the shared return block unchanged; FORGE fallback branch remains unchanged.
+**Reason:** logical deduplication to reduce branch duplication and drift risk without changing runtime contract, signatures, or waypoint-resolution behavior.
+**Preserve:** wrappers `DL_ResolveBlacksmithForgeWaypoint`, `DL_ResolveBlacksmithCraftWaypoint`, `DL_ResolveBlacksmithFetchWaypoint` unchanged and still delegate to `DL_ResolveBlacksmithWorkAnchorByKind` with the same kinds.
+**Validation:** static text/diff review only. Compilation not run; user owns compilation.
+
 ## 2026-05-21 — diagnostic contract dedup: regular_worker_not_touching_registered_npc
 
 **Task/PR/branch:** current task / diagnostic contract dedup for regular-worker stale-touch summary literal.

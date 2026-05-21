@@ -129,19 +129,7 @@ object DL_ResolveWorkAnchorByKind(
 
 object DL_ResolveBlacksmithWorkAnchorByKind(object oNpc, string sKind)
 {
-    if (sKind == DL_WORK_KIND_FETCH)
-    {
-        return DL_ResolveWorkAnchorByKind(
-            oNpc,
-            DL_GetWorkArea(oNpc),
-            sKind,
-            DL_L_NPC_CACHE_WORK_CRAFT,
-            "_craft",
-            "dl_work_craft"
-        );
-    }
-
-    if (sKind == DL_WORK_KIND_CRAFT)
+    if (sKind == DL_WORK_KIND_FETCH || sKind == DL_WORK_KIND_CRAFT)
     {
         return DL_ResolveWorkAnchorByKind(
             oNpc,
