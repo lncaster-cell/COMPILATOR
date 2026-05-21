@@ -404,3 +404,22 @@ Entry template:
 **Reason:** recent helper refactors left forward declarations without bodies, producing unresolved body errors during compile; this restores compile-time symbol completeness without redesigning transition/work behavior.
 **Preserve:** no movement/directive/worker/registry/nav behavior redesign; literal local-key contracts unchanged.
 **Validation:** compilation/check attempted per task; see current task report.
+
+## 2026-05-21 — Extract worker debug/helper implementations into dedicated include (PR #942 continuation)
+
+**Task/PR/branch:** continue PR #942 / `refactor-worker-debug-helpers`.
+**Files touched:** `daily_life/dl_worker_debug_inc.nss`, `daily_life/dl_worker_inc.nss`, `daily_life/dl_core_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Change:** moved implementations for the worker debug/helper functions from `dl_worker_inc.nss` into `dl_worker_debug_inc.nss`: `DL_GetAreaWorkerPassModeDebugLabel`, `DL_GetAreaTierDebugLabel`, `DL_SetAreaHotnessDebug`, `DL_CopyAreaHotnessDebugToNpc`, `DL_ClearCriticalWorkerDebug`, `DL_SetCriticalWorkerDebug`, `DL_SetCriticalProcessFailedDebug`, `DL_ClearCriticalProcessFailedDebug`, `DL_SetAreaWorkerPassDebug`, `DL_SetNpcRegularWorkerDebug`, `DL_TraceAreaWorkerTickForRegisteredNpc`; wired include order so `dl_worker_debug_inc.nss` is included before `dl_worker_inc.nss` via `dl_core_inc.nss`; retained forward declaration in `dl_worker_inc.nss` for `DL_SetNpcRegularWorkerDebug` because it is referenced by early code paths in the same include.
+**Reason:** separate worker debug/helper implementations from main worker flow without touching runtime scheduling/worker logic.
+**Preserve:** no changes to critical worker processing pipeline functions listed as out-of-scope in task; no new scans/tag lookups/DB/delay usage.
+**Validation:** static text checks only. Compilation not run; user owns compilation.
+
+## 2026-05-21 — PR #942 follow-up: restore exact worker debug/helper bodies after extraction
+
+**Task/PR/branch:** continue PR #942 / `refactor-worker-debug-helpers` follow-up.
+**Files touched:** `daily_life/dl_worker_debug_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** prior extraction changed implementation details in the new debug include (literal keys/compact rewrites/numeric pass-mode checks), which violated the strict no-behavior-change and no-debug-contract-change constraints.
+**Change:** restored the moved worker debug/helper implementations in `dl_worker_debug_inc.nss` to match the original bodies exactly (same constants, same local-key identifiers, same control flow/format), while keeping them extracted out of `dl_worker_inc.nss`.
+**Reason:** preserve runtime behavior and debugging contracts exactly while retaining the refactor split requested in PR #942.
+**Preserve:** include order remains `dl_worker_debug_inc` before `dl_worker_inc`; retained necessary forward declaration in `dl_worker_inc.nss` for early callsites.
+**Validation:** static checks only. Compilation not run; user owns compilation.
