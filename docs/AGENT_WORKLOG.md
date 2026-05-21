@@ -1,3 +1,13 @@
+## 2026-05-21 — BSMITH TARGET_IDENTITY_CHANGED guard against legitimate lifecycle re-resolve
+
+**Task/PR/branch:** current branch / `dl_res_inc.nss` contradiction-triage refinement.
+**Files touched:** `daily_life/dl_res_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `TARGET_IDENTITY_CHANGED` contradiction could trigger in stable tag/area/distance context during legitimate transition/handoff lifecycle windows where move target object can be re-resolved intentionally.
+**Change:** kept the existing stable-context base check (`tag`, `area`, `distance`) and added lifecycle guard suppression for known re-resolve windows (`dl_transition_pending_finalizer_expected`, `dl_transition_registry_handoff`, `dl_transition_registry_problem`). Kept the same contradiction field and made evidence more specific by adding `reason=stable_context_identity_swap`.
+**Reason:** reduce false-positive contradiction noise while preserving useful triage signal and existing local-key literal contracts.
+**Preserve:** no local-key literal value changes; no diagnostic field removals; no movement/directive/finalizer pipeline rewrites.
+**Validation:** static checks only. Compilation not run; user owns compilation.
+
 
 ## 2026-05-21 — Daily Life invariant hardening: stale-critical filter + emergency-close context guard
 
