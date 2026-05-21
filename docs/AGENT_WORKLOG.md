@@ -741,12 +741,12 @@ Entry template:
 **Preserve:** no local-key or status literal value changes; no behavior/pipeline rewrites; `DL_FOCUS_STATUS_MOVING_TO_ANCHOR` usage in `DL_NpcNeedsCriticalWorkerTouch` remains constant-based.
 **Validation:** static text/search checks only. Compilation not run; user owns compilation.
 
-## 2026-05-21 — Meal focus-status classifier deduplication helper
+## 2026-05-21 — Meal focus status prefix contract alignment in meal include
 
-**Task/PR/branch:** current task / deduplicate meal-anchor focus-status prefix checks.
-**Files touched:** `daily_life/dl_res_directive_state_inc.nss`, `daily_life/dl_res_inc.nss`, `daily_life/dl_diag_inc.nss`, `docs/AGENT_WORKLOG.md`.
-**Context:** meal focus-state classification was duplicated with direct prefix checks (`GetSubString(..., 0, 15)`) and mixed literal/constant usage across resolver and diagnostics includes.
-**Change:** added unified helper `DL_IsMealFocusStatus(string sFocusStatus)` in resolver directive-state include; helper computes prefix length via `GetStringLength(DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX)` and checks prefix match once. Replaced direct meal-prefix comparisons in `dl_res_directive_state_inc.nss`, `dl_res_inc.nss`, and `dl_diag_inc.nss` with helper calls.
-**Reason:** remove hardcoded prefix length/literal drift risk while preserving existing runtime semantics for both base meal-anchor focus and suffixed variants (e.g., `on_meal_anchor_sitting`).
-**Preserve:** no focus status/local-key literal value changes; no directive/finalizer/worker pipeline rewrites; diagnostics behavior unchanged except shared classifier source.
+**Task/PR/branch:** current task / normalize meal status builders to shared prefix contract.
+**Files touched:** `daily_life/dl_focus_meal_inc.nss`, `daily_life/dl_res_directive_state_inc.nss`, `docs/AGENT_WORKLOG.md`.
+**Context:** `dl_focus_meal_inc.nss` still built meal focus statuses via raw literal concatenation (`"on_meal_anchor_" + sMealKind`), while repository contract uses `DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX` for meal-prefix comparisons.
+**Change:** replaced both meal-status concatenations in `dl_focus_meal_inc.nss` with `DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX + "_" + sMealKind`; additionally aligned one remaining raw fast-path prefix check in `dl_res_directive_state_inc.nss` to `DL_FOCUS_STATUS_ON_MEAL_ANCHOR_PREFIX`.
+**Reason:** contract alignment to prevent literal drift and keep status construction/checks anchored to a single shared constant.
+**Preserve:** resulting runtime status literals are byte-identical (`"on_meal_anchor_<meal_kind>"`); no directive, move, finalizer, or worker behavior changes.
 **Validation:** static text/search checks only. Compilation not run; user owns compilation.
