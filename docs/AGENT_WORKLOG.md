@@ -783,3 +783,12 @@ Entry template:
 **Reason:** make fallback kind resolution explicit and deterministic, eliminate fake out-parameter risk, and preserve existing domestic-worker work-kind policy.
 **Preserve:** no waypoint tag changes; no local-key literal changes; no work-kind literal changes; no transition/focus/city response/move-finalizer-worker pipeline edits.
 **Validation:** static text/search checks only. Compilation not run; user owns compilation.
+
+## 2026-05-25 — Task 01: WorldSimulator C#/.NET/WPF skeleton
+
+**Task/PR/branch:** Task 01 from `docs/world-sim/19_codex_task_plan.md` (solution skeleton bootstrap).
+**Files touched:** `WorldSimulator.sln`, `README.md`, `src/WorldSimulator.App/*`, `src/WorldSimulator.Core/*`, `src/WorldSimulator.Persistence/*`, `docs/AGENT_WORKLOG.md`.
+**What changed:** Added minimal three-project solution skeleton for external simulator: WPF UI app with placeholder main window, Core class library placeholder, Persistence class library placeholder.
+**Why it changed:** Establish technical scaffolding for future world-simulator implementation while keeping simulation/save-load out of scope.
+**Compile status:** NWScript compilation not run; user owns compilation. (`dotnet build` check executed for the new .NET solution as requested by the task.)
+**Invariant/warning:** Keep architecture boundaries: App is UI-only; Core/Persistence must remain independent from WPF and from NWN2 runtime integration.
